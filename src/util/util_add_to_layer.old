@@ -1,0 +1,78 @@
+!**********************************************************************************************************************************
+!
+!  Unit Name   : util_add_to_layer
+!  Unit Type   : subroutine
+!  Project     : CTEM
+!  Language    : Fortran 90/95
+!
+!  Description : Adds elevation change to layer
+!  
+!
+!  Input
+!    Arguments : 
+!
+!  Output
+!    Arguments :
+!           
+! 
+!  Notes       :  
+!
+!**********************************************************************************************************************************
+subroutine util_add_to_layer(user,surfi,elchange,isrim,eraseonly,fcrat,profile,xl,yl)
+use module_globals
+use module_util, EXCEPT_THIS_ONE => util_add_to_layer
+implicit none
+
+! Arguments
+type(usertype),intent(in) :: user
+type(surftype),intent(inout) :: surfi
+real(DP),intent(in) :: elchange
+integer(I2B),intent(in),optional :: isrim
+logical,intent(in) :: eraseonly
+real(DP),intent(in),optional :: fcrat, profile
+real(DP),intent(in),optional :: xl,yl
+
+! Internals
+integer(I4B) :: layer,l
+
+! Executable code
+layer=0
+!  add to successively deep layers
+do l=1,user%numlayers
+   ! affect the layer if a crater pixel is recorded there:
+   if (surfi%c(l) > VSMALL) then
+      surfi%b(l) = surfi%b(l) + elchange
+      ! check to see if the crater pixel in this layer needs to be reset:
+      if (abs(surfi%b(l)) > (PROFFAC*surfi%r(l))) then
+        surfi%c(l) = 0._DP
+        surfi%r(l) = 0._DP
+        surfi%b(l) = 0._DP
+        surfi%isrim(l) = 0
+        if (user%dospatial_record) then
+           surfi%xl(l) = 0._SP
+           surfi%yl(l) = 0._SP
+        end if
+     endif
+   endif
+   ! mark layer as available if nothing is now recorded there:
+   if (surfi%c(l) <= VSMALL) layer = l
+end do
+
+! Emplace a new crater if requested and a spot is available
+if (.not.eraseonly) then
+   if (layer>0) then
+      surfi%c(layer) = fcrat
+      surfi%r(layer) = profile
+      surfi%b(layer) = 0._DP
+      surfi%isrim(layer) = isrim
+      if (user%dospatial_record) then
+         surfi%xl(layer) = real(xl,SP)
+         surfi%yl(layer) = real(yl,SP)
+      end if
+   else
+      write(*,*) 'No free layer to add crater pixel'
+      write(*,*) 'Crater size in pixels: ',int(fcrat/user%pix)
+   end if
+end if
+
+end subroutine util_add_to_layer
