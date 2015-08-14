@@ -9,7 +9,7 @@ rm dist/pfunc_*.dat
 rm dist/ocum_*.dat
 rm dist/tcum_*.dat
 rm dist/mass_*.dat
-rm dist/ctem_*.dat
+rm misc/ctem_*.dat
 rm presentation/presentation*.jpg
 rm surface_*.dat
 rm odistribution.dat
