@@ -56,7 +56,8 @@ real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to 
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 type regolayertype
    real(DP) :: thickness
-   real(DP) :: mixfrac  
+   real(DP) :: meltfrac 
+   real(DP) :: comp 
    type(regolayertype),pointer :: next
 end type
 
@@ -70,6 +71,10 @@ type surftype
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
+   integer(I4B) :: nmix             ! mixing frequency 
+!   integer(I4B) :: nmixf             ! mixing frequency
+   real(DP) :: dexcav               ! the deepest excavation depth 
+   real(DP) :: dmix                 ! the thickness of mixed stream tubes  
    type(regolayertype),pointer :: regolayer ! Pointer to the top of the regolith layer stack
 end type surftype
 
@@ -191,6 +196,7 @@ type usertype
    logical           :: popupconsole ! Pop up console window every output interval 
    logical           :: saveshaded   ! Output shaded relief images  
    logical           :: saverego     ! Output regolith map images 
+   logical           :: savecomp     ! Output composition map images
    logical           :: savepres     ! Output simplified console display images (presentation-compatible images) 
    logical           :: savetruelist ! Save the true cumulative crater distribution for each interval (large file size)
    real(DP)          :: shadedminh   ! Minimum height for shaded relief map (m)
@@ -206,6 +212,7 @@ type ejbtype
    real(DP) :: erad     ! Ejected radius  (m)
    real(DP) :: vesq     ! Ejection velocity squared (m**2 / s**2)
    real(DP) :: angle    ! Ejection angle (deg)
+   real(DP) :: meltfrac ! Melt Fraction (melt volume/total ejecta blanket volume at a pixel)
 !   real(SP) :: bedrock ! Fraction of bedrock contained in mixture
 end type ejbtype
 
@@ -221,6 +228,10 @@ character(len=PBARSIZE) :: pbarchar
 character(*),parameter :: DIAMFILE   = 'surface_diam.dat'
 character(*),parameter :: EJCOVFILE  = 'surface_ejc.dat'
 character(*),parameter :: DEMFILE    = 'surface_dem.dat'
+character(*),parameter :: REGOFILE   = 'surface_regotop.dat'
+character(*),parameter :: MELTFILE   = 'surface_melt.dat'
+character(*),parameter :: COMPFILE   = 'surface_comp.dat'
+character(*),parameter :: STACKNUMFILE = 'surface_stacknum.dat'
 !character(*),parameter :: THICKFILE  = 'surface_crustal_thickness.dat'
 character(*),parameter :: POSFILE    = 'surface_pos.dat'
 character(*),parameter :: ELEVFILE   = 'surface_original_crater_depth.dat'
