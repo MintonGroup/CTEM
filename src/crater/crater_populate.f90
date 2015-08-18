@@ -69,6 +69,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
    !character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   ! This is a test comment
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
