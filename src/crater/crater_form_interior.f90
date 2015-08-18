@@ -21,6 +21,7 @@
 subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    use module_globals
    use module_util
+   use module_regolith
    use module_crater, EXCEPT_THIS_ONE => crater_form_interior
    implicit none
 
@@ -54,9 +55,12 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    elchange = newdem - surfi%dem
    surfi%dem = newdem
 
-   
+     
    !change ejecta coverage
    surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
+
+   !do regotrack: pop stuff out
+   if (user%doregotrack) call regolith_traverse_pop(elchange,surfi)
 
    return
 end subroutine crater_form_interior
