@@ -24,6 +24,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    use module_ejecta
    use module_util
    !use module_crust
+   use module_regolith ! simulate regolith reowrking zone
    use module_crater, EXCEPT_THIS_ONE => crater_populate
    implicit none
 
@@ -69,11 +70,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
    !character(len=MESSAGESIZE) :: message  ! message for the progress bar
-   ! This is a test comment
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
    integer(I4B) :: ejtble
+   ! doregotrack
+   real(DP) :: melt
+   integer(I4B) :: mratio
 
    ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B)
    if (user%testflag) then
@@ -172,8 +175,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
     
       ! Place ejecta onto the surface
       if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
-         call ejecta_table_define(user,crater,domain,ejb,ejtble)
-         call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+         if (user%doregotrack) then 
+            call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
+            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+         else 
+            call ejecta_table_define(user,crater,domain,ejb,ejtble)
+            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+         end if
          call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
       else
          ejtble = 0
@@ -220,11 +228,26 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          end if
          call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
       end if
+
+
+      !if (user%doregotrack) then 
+      !   mratio = mod( nsincetally, 10 )
+      !   if ( mratio == 0 ) then
+      !      craters_since_tally = icrater - icrater_last_tally
+      !      finterval = craters_since_tally / real(ntotcrat,kind=DP)
+      !      call regolith_reworking_zone(user,surf,finterval)
+      !   end if
+      !end if
    
       if (nsincetally == tallycadence) then
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         if (.not.user%testflag) call ejecta_subcrater_diffusion(user,surf,domain,finterval)
+         !if (.not.user%testflag) call ejecta_subcrater_diffusion(user,surf,domain,finterval)
+         if (user%doregotrack) then 
+         !   call io_write_regodist(user,surf,finterval)
+         call regolith_reworking_zone(user,surf,finterval)
+         !write(*,*) finterval, craters_since_tally, icrater_last_tally, ntotcrat
+         end if
          icrater_last_tally = icrater
          call crater_tally_observed(user,surf,domain,nkilled,onum)
          ntotkilled = ntotkilled + nkilled
