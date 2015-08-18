@@ -58,7 +58,7 @@ integer(I4B)            :: nkilled
 integer(I4B)            :: ntotkilled 
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
-integer(I4B)            :: tallycadence,i,j
+integer(I4B)            :: tallycadence
 !$ real(DP)             :: t1,t2
 
 !$ t1 = omp_get_wtime()
@@ -136,9 +136,9 @@ if (.not.user%tallyonly) then
    call io_write_surf(user,surf)
 end if
 
-!if (user%testflag) then ! Draw a profile across the crater
+if (user%testflag) then ! Draw a profile across the crater
    call io_crater_profile(user,surf)
-!end if
+end if
 write(*,*) 'Writing output files'
 
 call io_write_dist(pdist,crtscl,domain,mass)
