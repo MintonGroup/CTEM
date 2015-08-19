@@ -16,9 +16,10 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_table_define(user,crater,domain,ejb,ejtble)
+subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    use module_globals
    use module_util
+   use module_regolith 
    use module_ejecta, EXCEPT_THIS_ONE => ejecta_table_define
    implicit none
 
@@ -28,16 +29,20 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble)
    type(domaintype),intent(inout)    :: domain
    type(ejbtype),dimension(EJBTABSIZE),intent(out) :: ejb
    integer(I4B),intent(out) :: ejtble
+   real(DP),intent(out),optional :: melt
 
    ! Internal variables
    integer(I4B) :: k
-   real(DP) :: erad,eradold,thick,midthick,vejsq,ejang,lrad
+   real(DP) :: erad,eradold,thick,vejsq,ejang,lrad
    logical :: firstrun
+
+   ! Regotrack internal variables
+   real(DP) :: rmelt,depthb,dimp,vimp
 
    ! Executable code
 
    ! Get estimate of size of ejb table
-   crater%ejdis = 3 * 2.3_DP * crater%frad**(1.006_DP)  ! Continuous ejecta distance From Melosh (1989) eq. 6.3.1
+   crater%ejdis = 25.0 * 2.3_DP * crater%frad**(1.006_DP)  ! Continuous ejecta distance From Melosh (1989) eq. 6.3.1
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
    domain%ejbres = (crater%ejdis - crater%frad) / EJBTABSIZE
    lrad = crater%frad
@@ -45,24 +50,63 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble)
    ejtble = EJBTABSIZE
    firstrun = .true.
    thick = 0._DP
-   do k = 0,EJBTABSIZE
-      call ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
-      if (k >= 1) then
-         call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
-         ejb(k)%lrad = log(lrad - 0.5_DP * domain%ejbres)
-         ejb(k)%thick = log(thick) 
-         ejb(k)%vesq = vejsq
-         ejb(k)%angle = ejang
-         ejb(k)%erad = erad
-         if ((thick <= VSMALL) .or. (abs(eradold - erad) < VSMALL)) then
-            ejtble = k
-            crater%ejdis = lrad
-            exit
+   
+   if (present(melt)) then
+    
+      if (user%testflag) then 
+         dimp = user%testimp
+         vimp = user%testvel
+      else
+         dimp = crater%imp
+         vimp = crater%impvel
+      end if 
+
+      call regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
+ 
+      !write(*,*) '     lrad/Df                   vej                       ebh                       melt & 
+      !           fraction              melt thickness'
+      do k = 0,EJBTABSIZE
+         call ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
+         if (k >= 1) then
+            call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
+            ejb(k)%lrad = log(lrad - 0.5_DP * domain%ejbres)
+            ejb(k)%thick = log(thick) 
+            ejb(k)%vesq = vejsq
+            ejb(k)%angle = ejang
+            ejb(k)%erad = erad
+            call regolith_melt_fraction(dimp,depthb,erad,eradold,rmelt,melt)
+            ejb(k)%meltfrac = melt
+            !write(*,*) lrad/crater%frad,sqrt(vejsq),thick,melt,thick*melt
+            if ((thick <= VSMALL) .or. (abs(eradold - erad) < VSMALL)) then
+               ejtble = k
+               crater%ejdis = lrad
+               exit
+            end if
          end if
-      end if
-      lrad = lrad + domain%ejbres
-      eradold = erad
-   end do
+         lrad = lrad + domain%ejbres
+         eradold = erad
+      end do
+      !write(*,*) 'A MELT ZONE of ',crater%frad,' meter-sized crater: ',rmelt,'at a rim',ejb(1)%meltfrac
+   else 
+     do k = 0,EJBTABSIZE
+        call ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
+        if (k >= 1) then
+           call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
+           ejb(k)%lrad = log(lrad - 0.5_DP * domain%ejbres)
+           ejb(k)%thick = log(thick) 
+           ejb(k)%vesq = vejsq
+           ejb(k)%angle = ejang
+           ejb(k)%erad = erad
+           if ((thick <= VSMALL) .or. (abs(eradold - erad) < VSMALL)) then
+              ejtble = k
+              crater%ejdis = lrad
+              exit
+           end if
+        end if
+        lrad = lrad + domain%ejbres
+        eradold = erad
+     end do
+   end if
    ! Get pixel space distance
    crater%ejdispx = nint(crater%ejdis / user%pix)
 
