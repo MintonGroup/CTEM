@@ -30,6 +30,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    use module_util
    use module_io
    use module_crater
+   use module_regolith
    use module_ejecta, EXCEPT_THIS_ONE => ejecta_emplace
    implicit none
 
@@ -43,8 +44,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
    ! Internal variables
    real(DP) :: lrad,lradsq,cdepth
-   integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq,loop,onum
-   integer(I4B) :: NLOOPS = 10
+   integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
    real(DP) :: xp,yp,fradsq,ebh,ejdissq,continuous
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
@@ -53,7 +53,10 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    integer(I4B),parameter :: NRAYS = 20
    real(DP),dimension(NRAYS) :: rn
    real(DP) :: theta,rieq,dis,lradp
-   integer(I4B) :: ieq
+   integer(I4B) :: ieq   
+
+   ! Streamtube
+   real(DP) :: comp 
 
    ! Executable code
 
@@ -86,9 +89,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    indarray = inc ! initialize this array to point to a corner (this should have 0 elevation change since we're only doing work
                   ! within a circle of radius irad
 
+   !Mixing
+   surf(crater%xlpx,crater%ylpx)%nmix = 0
+   !TESTING
+   !continuous = 23_DP * crater%frad**(1.006_DP)
    continuous = 2.3_DP * crater%frad**(1.006_DP)
    !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(user,domain,crater,ejb,ejtble) &
+   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble) &
    !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous)
    do j = -inc,inc
       do i = -inc,inc
@@ -118,22 +125,31 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
             rieq = NRAYS * (0.5_DP * theta / PI)
             ieq = ceiling(rieq)
             dis = (2*abs(ieq - rieq - 0.5_DP)) 
+            ! Model the discontinuous ejecta blanket as a "splat"
             lradp = crater%ejdis - rn(ieq) * (crater%ejdis - continuous)
             lradp = lradp - dis * (lradp - continuous)
-            if (lrad < lradp) then
-               ! We're inside either the continuous ejecta blanket or a ray, so we get the nominal ejecta blanket thickness
-               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
-            else
-               ! We are outside a ray
-               ebh = 0._DP
+            ! Get the nominal ejecta blanket thickness
+            !if (lrad < lradp) then
+            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+ 
+            if (user%doregotrack .and. ebh>1.0e-8) then
+               call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
+               call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
             end if
-            !call regolith_transport(user,surf,crater,domain,ejb,ejtble,xp,yp)
+            !else
+            !   ebh = 0._DP
+            !end if
+
             cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
          end if
          
       end do
    end do
    !$OMP END PARALLEL DO
+
+   !if (user%doregotrack) then 
+   !   if (surf(crater%xlpx,crater%ylpx)%nmix > 0) write(19,*) crater%frad/4.0
+   !end if
 
    if (user%dosoftening) then 
       ! Create box for soften calculation (will be no bigger than the grid itself)
@@ -190,6 +206,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
          end do
       end do
    end if
+
+   !if (user%doregotrack) call regolith_rays(user,crater,domain,ejtble,ejb)
 
    deallocate(cumulative_elchange,indarray)
 
