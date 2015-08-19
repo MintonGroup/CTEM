@@ -22,7 +22,7 @@
 !                crater :     May affects the value of the maximum affected distance
 !           
 ! 
-!  Notes       :  Crater ray model is notional and wrong.
+!  Notes       : Crater ray model is notional and wrong. The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
 subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
