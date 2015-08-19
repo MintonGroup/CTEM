@@ -57,6 +57,15 @@ save
       end subroutine io_read_surf
    end interface
 
+  interface
+      subroutine io_read_regotrack(user,surf)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(out) :: surf
+      end subroutine io_read_regotrack
+  end interface  
+
   interface   
       subroutine io_write_surf(user,surf)
       use module_globals
@@ -64,7 +73,16 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf
       end subroutine io_write_surf
-   end interface 
+   end interface
+
+  interface 
+      subroutine io_write_regotrack(user,surf)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(in) :: surf      
+      end subroutine io_write_regotrack
+  end interface 
 
   interface   
       subroutine io_crater_profile(user,surf)
@@ -160,5 +178,14 @@ save
       implicit none
       end subroutine io_splash
    end interface
+
+  !interface
+  !    subroutine io_write_regodist(user,surf)
+  !    use module_globals
+  !    implicit none
+  !    type(usertype),intent(in) :: user
+  !    type(surftype),dimension(:,:),intent(in) :: surf
+  !    end subroutine io_write_regodist
+  !end interface
 
 end module module_io
