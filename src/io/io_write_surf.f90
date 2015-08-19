@@ -82,6 +82,10 @@ subroutine io_write_surf(user,surf)
    end do
    close(LUN)
 
+   if (user%doregotrack) then
+      !call io_write_regodist(user,surf)
+      call io_write_regotrack(user,surf) 
+   end if
 !   if (user%docrustal_thinning) then
 !      recsize = sizeof(itmp) * user%gridsize * user%gridsize
 !      open(LUN,file=THICKFILE,status='replace',form='unformatted',recl=recsize,access='direct')
