@@ -16,6 +16,7 @@ crater/module_crater.f90\
 ejecta/module_ejecta.f90\
 init/module_init.f90\
 seismic/module_seismic.f90\
+regolith/module_regolith.f90\
 util/util_toupper.f90\
 util/util_mrgrnk.f90\
 util/util_add_to_layer.f90\
@@ -31,11 +32,13 @@ io/io_input.f90\
 io/io_read_prod.f90\
 io/io_read_vdist.f90\
 io/io_read_surf.f90\
+io/io_read_regotrack.f90\
 io/io_ejecta_table.f90\
 io/io_write_dist.f90\
 io/io_write_tally.f90\
 io/io_write_surf.f90\
 io/io_write_const.f90\
+io/io_write_regotrack.f90\
 io/io_crater_profile.f90\
 io/io_updatePbar.f90\
 io/io_resetPbar.f90\
@@ -66,9 +69,22 @@ crater/crater_slope_collapse.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
+init/init_regolith_stack.f90\
 seismic/seismic_shake.f90\
 seismic/seismic_distance.f90\
 seismic/seismic_table_define.f90\
 seismic/seismic_kdiff_func.f90\
+regolith/regolith_melt_fraction.f90\
+regolith/regolith_melt_zone.f90\
+regolith/regolith_pop.f90\
+regolith/regolith_push.f90\
+regolith/regolith_quartic_func.f90\
+regolith/regolith_streamtube.f90\
+regolith/regolith_streamtube_head.f90\
+regolith/regolith_streamtube_lineseg.f90\
+regolith/regolith_subpixel_streamtube.f90\
+regolith/regolith_transport.f90\
+regolith/regolith_traverse_pop.f90\
+regolith/regolith_traverse_streamtube.f90\
 main/CTEM.f90
 CLEANFILES = *.mod
