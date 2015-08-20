@@ -1,6 +1,6 @@
 !**********************************************************************************************************************************
 !
-!  Unit Name   : ejecta_transport
+!  Unit Name   : regolith_transport
 !  Unit Type   : subroutine
 !  Project     : CTEM
 !  Language    : Fortran 2003
@@ -10,76 +10,80 @@
 !  
 !
 !  Input
-!    Arguments : 
+!    Arguments : elchange  ::  elevation change of current ejecta deposited
+!                melt      ::  melt fraction of current ejecta deposited 
+!                subpixel_ejecta_thickness  ::  the minimum ejecta thickness determined by init_domain.f90  
 !
 !  Output
-!    Arguments :
+!    Arguments : surf      ::  surface 
 !           
 ! 
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_transport(user,surf,crater,domain,ejb,ejtble,xp,yp)
-   use module_globals
+subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
+   use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_transport
    implicit none
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(inout) :: surf
+   type(surftype),intent(inout) :: surfi
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
-   type(ejbtype),dimension(:),intent(in)    :: ejb
    integer(I4B),intent(in) :: ejtble
-   real(DP),intent(in) :: xp,yp
+   type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+   real(DP),intent(in)          :: lrad,ebh,comp
+   !integer(I4B),intent(in)      :: xpi,ypi
 
-   ! Internal variables
-   real(DP),dimension(4) :: ejecta_corner ! Corners of ejecta block
-   real(DP) :: x,y,lrad,loglrad,logtablerad,frac
-   integer(I4B) :: i,k
-   real(DP),parameter :: maxwellZ = 3.0
-   integer(I4B),parameter :: nsteps = 100
-   real(DP) :: theta,dtheta
+   ! Internal varialbes
+   real(DP) :: melt 
+   type(regolayertype) :: regotop 
+   !real(DP) :: minimum_deposition !5.0d-04 average size of impact glass: 500 micronmeter
 
-   ! Executable code
-   ! Calculate the boundaries of the ejected block that makes this pixel
-   do i=1,4
-      select case (i)
-      case(1)
-         x = xp - 0.5 * user%pix
-         y = yp - 0.5 * user%pix
-      case(2)
-         x = xp + 0.5 * user%pix
-         y = yp - 0.5 * user%pix
-      case(3)
-         x = xp - 0.5 * user%pix
-         y = yp + 0.5 * user%pix
-      case(4)
-         x = xp + 0.5 * user%pix
-         y = yp + 0.5 * user%pix
-      end select
+   ! Melt interpolation variables 
+   real(DP)     :: frac,logtablerad,loglrad,logdelta,outeredge,inneredge
+   integer(I4B) :: k
 
-      lrad = sqrt((crater%xl - x)**2 + (crater%yl - yp)**2)
-      k = min(int((lrad - crater%frad)/domain%ejbres) + 1,ejtble)
-      loglrad=log(lrad)
-      logtablerad = log(crater%frad + domain%ejbres*(k-1))
-      ! Interpolate back to position inside crater where the corner of the flow came from
-      if (k == 1) then
-         frac = (ejb(k+1)%erad - ejb(k)%erad)/domain%ejbres
-      else
-         frac = (ejb(k)%erad - ejb(k-1)%erad)/domain%ejbres
-      end if
-      ejecta_corner(i) = ejb(k)%erad + frac * (loglrad - logtablerad)
-   end do
+   ! Executalbe code
 
-   ! Now go through the Maxwell-Z streamlines and get the average material
-   ! properties in each segment
-   theta = 0.5*PI
-   dtheta = theta/nsteps
-   do i = 1,nsteps
+   ! Melt interpolation refered to ejecta_interpolate.f90 
 
-      theta = theta - dtheta
-   end do
+   outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
+   inneredge = crater%frad + 0.5_DP * domain%ejbres
+   k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
+   loglrad = log(lrad)
+   logtablerad = ejb(k)%lrad
+
+   if (k == ejtble) then
+      logdelta = logtablerad - ejb(k - 1)%lrad
+      frac = (loglrad - ejb(k-1)%lrad) / logdelta
+      melt = ejb(k)%meltfrac + ((ejb(k)%meltfrac - ejb(k-1)%meltfrac) * frac)
+   else 
+      logdelta = ejb(k + 1)%lrad - logtablerad 
+      frac = (loglrad - logtablerad) / logdelta 
+      melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac)
+   end if 
+   regotop%thickness = ebh
+   regotop%meltfrac = melt
+   regotop%comp = comp
+
+   !minimum_deposition = domain%small * user%gridsize
+   !write(*,*) minimum_deposition, domain%small
+   !minimum_deposition = 1.0d-03
+   !if (ebh >= minimum_deposition) then 
+   call regolith_push(surfi,regotop)
+   !else if (ebh < minimum_deposition .and. surfi%regolayer%thickness < minimum_deposition) then 
+   !        if ( .not. associated(surfi%regolayer%next) ) then 
+   !           call regolith_push(surfi,regotop)
+   !        else 
+   !           surfi%regolayer%meltfrac = ( surfi%regolayer%thickness * surfi%regolayer%meltfrac &
+   !                                      + ebh*melt )/(surfi%regolayer%thickness + ebh) 
+   !           surfi%regolayer%thickness = surfi%regolayer%thickness + ebh 
+   !        end if
+   !else if (ebh < minimum_deposition .and. surfi%regolayer%thickness >= minimum_deposition) then
+   !        call regolith_push(surfi,regotop)
+   !end if
 
    return
 end subroutine regolith_transport
