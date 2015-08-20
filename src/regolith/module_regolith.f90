@@ -145,19 +145,19 @@ save
       end subroutine regolith_streamtube_lineseg
    end interface 
 
-   interface 
-      subroutine regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,turnover,dmix)
+!   interface 
+!      subroutine regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,turnover,dmix)
 !      subroutine regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,turnover)
-      use module_globals 
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),intent(inout) :: surfi
-      real(DP),intent(in) :: cosi,coso,ri,rip1,erad,eradi,deltar,thetast
-      real(DP),intent(inout) :: vmare,totseb
-      logical,intent(inout) :: turnover
-      real(DP),intent(inout) :: dmix 
-      end subroutine regolith_streamtube_cylinder
-   end interface
+!      use module_globals 
+!      implicit none
+!      type(usertype),intent(in) :: user
+!      type(surftype),intent(inout) :: surfi
+!      real(DP),intent(in) :: cosi,coso,ri,rip1,erad,eradi,deltar,thetast
+!      real(DP),intent(inout) :: vmare,totseb
+!      logical,intent(inout) :: turnover
+!      real(DP),intent(inout) :: dmix 
+!      end subroutine regolith_streamtube_cylinder
+!   end interface
 
    interface 
       subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover,dmix)
