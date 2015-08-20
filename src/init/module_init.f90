@@ -43,15 +43,15 @@ save
       real(DP),dimension(:,:),intent(inout) :: prod,vdist
       real(DP),dimension(:,:),intent(out) :: pdist,crtscl
       end subroutine init_domain
-   end interface   
-
-   !interface
-   !   subroutine init_regolith_stack(user,surf)
-   !   use module_globals
-   !   implicit none
-   !   type(usertype),intent(in) :: user
-   !   type(surftype),dimension(:,:),intent(inout) :: surf
-   !   end subroutine init_regolith_stack
-   !end interface
+   end interface 
+  
+   interface
+      subroutine init_regolith_stack(user,surf)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      end subroutine init_regolith_stack
+   end interface
 
 end module module_init
