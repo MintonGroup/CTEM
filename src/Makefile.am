@@ -74,11 +74,16 @@ seismic/seismic_shake.f90\
 seismic/seismic_distance.f90\
 seismic/seismic_table_define.f90\
 seismic/seismic_kdiff_func.f90\
+regolith/regolith_circle_sector_func.f90\
+regolith/regolith_cubic_func.f90\
+regolith/regolith_melt_func.f90\
 regolith/regolith_melt_fraction.f90\
 regolith/regolith_melt_zone.f90\
 regolith/regolith_pop.f90\
 regolith/regolith_push.f90\
+regolith/regolith_quadratic_func.f90\
 regolith/regolith_quartic_func.f90\
+regolith/regolith_reworking_zone.f90\
 regolith/regolith_streamtube.f90\
 regolith/regolith_streamtube_head.f90\
 regolith/regolith_streamtube_lineseg.f90\
