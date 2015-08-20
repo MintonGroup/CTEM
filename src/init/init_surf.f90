@@ -40,7 +40,7 @@ subroutine init_surf(user,surf)
    end do
    !if (user%docrustal_thinning) surf%mantle = 0._DP
 
-   !if (user%doregotrack) call init_regolith_stack(user,surf)
-   
+   if (user%doregotrack) call init_regolith_stack(user,surf)
+
    return
    end subroutine init_surf
