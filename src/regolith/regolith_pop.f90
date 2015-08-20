@@ -1,7 +1,7 @@
 !**********************************************************************************************************************************
 !
 !  Unit Name   : regolith_pop
-!  Unit Type   : subroutine
+!  Unit Type   : function
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
@@ -19,26 +19,27 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_pop(regolayer,oldlayer)
+subroutine regolith_pop(surf)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_pop
    implicit none
 
    ! Arguments
-   type(regolayertype),pointer :: regolayer
-   type(regolayertype),intent(out) :: oldlayer
+   type(surftype),intent(inout):: surf
 
    ! Internal variables
+   type(regolayertype),pointer :: current
 
    ! Executable code
-   if (.not.associated(regolayer%next)) then
+   current => surf%regolayer
+   if (.not. associated(surf%regolayer%next)) then
       write(*,*) "Error: Dug too deep. Beware of balrog."
+      !write(*,*) surf%regolayer%thickness
+      !stop
    else
-      oldlayer = regolayer
-      regolayer => regolayer%next
+      surf%regolayer => surf%regolayer%next
+      deallocate (current)
    end if
-
-
    return
 end subroutine regolith_pop
 
