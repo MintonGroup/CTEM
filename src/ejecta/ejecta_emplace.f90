@@ -50,8 +50,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    integer(I4B) :: bigi,bigj
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
-   integer(I4B),parameter :: NRAYS = 20
-   real(DP),dimension(NRAYS) :: rn
+   !integer(I4B),parameter :: NRAYS = 20
+   integer(I4B) :: nrays = 20
+   real(DP),dimension(15) :: rn
    real(DP) :: theta,rieq,dis,lradp
    integer(I4B) :: ieq   
 
@@ -117,20 +118,24 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
-
+         
+         nrays = nint(6 * rn(15)) + 8
 
          if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
             ! Model the discontinuous ejecta blanket as a "splat"
             theta = atan2(j * 1._DP,i * 1._DP) + PI ! Azimuthal angle
-            rieq = NRAYS * (0.5_DP * theta / PI)
+            rieq = nrays * (0.5_DP * theta / PI)
             ieq = ceiling(rieq)
             dis = (2*abs(ieq - rieq - 0.5_DP)) 
             ! Model the discontinuous ejecta blanket as a "splat"
-            lradp = crater%ejdis - rn(ieq) * (crater%ejdis - continuous)
+            lradp = 3 * continuous - rn(ieq) * 2 * continuous
             lradp = lradp - dis * (lradp - continuous)
             ! Get the nominal ejecta blanket thickness
-            !if (lrad < lradp) then
-            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+            if (lrad < lradp) then 
+               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+            else
+               ebh = 0._DP
+            end if
  
             if (user%doregotrack .and. ebh>1.0e-8) then
                call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
