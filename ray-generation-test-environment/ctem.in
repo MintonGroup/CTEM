@@ -72,7 +72,7 @@ doregotrack     F
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      5.0                              ! Diameter of test impactor (m)
+testimp      1.0                              ! Diameter of test impactor (m)
 testvel      15.d3                             ! Velocity of test crater (m/s)
 testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0d0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
