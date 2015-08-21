@@ -392,6 +392,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%saverego
+         case ("SAVECOMP")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%savecomp
          case ("SAVEPRES")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
