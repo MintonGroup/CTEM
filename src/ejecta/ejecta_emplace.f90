@@ -132,6 +132,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
             lradp = lradp - dis * (lradp - continuous)
             ! Get the nominal ejecta blanket thickness
             if (lrad < lradp) then 
+               ! We are now in a ray!
                call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
             else
                ebh = 0._DP
@@ -141,9 +142,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
                call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
                call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
             end if
-            !else
-            !   ebh = 0._DP
-            !end if
 
             cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
          end if
