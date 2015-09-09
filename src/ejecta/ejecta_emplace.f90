@@ -59,7 +59,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    real(DP),dimension(15) :: rn
    real(DP) :: theta, lradp
    real(DP), parameter :: n1 = 4.0_DP
-   real(DP) :: n2, mag, x, y
+   real(DP) :: n2, mag
    ! Ray Mass conservation
    real(DP), parameter :: a = 16.8799 !a = 11.8126 ! Fitting parameters for a relation between ray length and radius of crater 
    real(DP), parameter :: b = 0.120621 !0.143   ! based on Jake's crater rays mapping studies! 
@@ -160,9 +160,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
             ! Create a splat varying with zimuthal angle with the same length of a splat
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI ! Azimuthal angle
             mag   = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(1.0_DP/n1)
-            x     = cos(theta) / mag
-            y     = sin(theta) / mag
-            lradp  = continuous * sqrt(x**2 + y**2)
+            lradp  = continuous / mag
             !lradp = mvrld * crater%frad ! Testing Jake's empirical formula with an assumption of homogeneous ejecta extent 
             if (lrad < lradp) then 
 !                We are now in a ray!
