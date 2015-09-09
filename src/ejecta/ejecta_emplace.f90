@@ -22,7 +22,11 @@
 !                crater :     May affects the value of the maximum affected distance
 !           
 ! 
-!  Notes       : Crater ray model is notional and wrong. The cutoff of ejecta thickness is still buggy.  
+!  Notes       : Crater ray model is based on a mathematic formula, superformula, developed by a belgium scientist, Johan Gielis. It
+!                attempts to simulate the shapes of biological creatures such as sea animals (starfish) or bacteria. This finding was 
+!                getting attention from Nature and Science magzine. Citation: Gielis, J. "A Generic Geometric Transformation that Unifies
+!                a Wide Range of Natural and Abstract Shapes." Amer. J. Botany 90, 333-338, 2003.
+!                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
 subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
@@ -50,15 +54,22 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    integer(I4B) :: bigi,bigj
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
-   !integer(I4B),parameter :: NRAYS = 20
-   integer(I4B) :: nrays = 20
+   !Ray model parameters and variables by Gielis superformula
+   integer(I4B) :: nrays
    real(DP),dimension(15) :: rn
-   real(DP) :: theta,rieq,dis,lradp
-   integer(I4B) :: ieq   
+   real(DP) :: theta, lradp
+   real(DP), parameter :: n1 = 4.0_DP
+   real(DP) :: n2, mag, x, y
+   ! Ray Mass conservation
+   real(DP), parameter :: a = 16.8799 !a = 11.8126 ! Fitting parameters for a relation between ray length and radius of crater 
+   real(DP), parameter :: b = 0.120621 !0.143   ! based on Jake's crater rays mapping studies! 
+   real(DP) :: mvrld                  ! median value of ray length distribution
+   real(DP) :: mvrldsc                ! median value of ray length distribution scaled by continunous ejecta extent
+   !real(DP) :: thinnest, lrad_thinnest, v_thinnest, theta_thinnest, rad_sec, vsq
 
    ! Streamtube
    real(DP) :: comp 
-
+   
    ! Executable code
 
    cdepth = DDRATIO * crater%fcrat
@@ -91,12 +102,35 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
                   ! within a circle of radius irad
 
    !Mixing
-   surf(crater%xlpx,crater%ylpx)%nmix = 0
+   !surf(crater%xlpx,crater%ylpx)%nmix = 0
    !TESTING
    !continuous = 23_DP * crater%frad**(1.006_DP)
    continuous = 2.3_DP * crater%frad**(1.006_DP)
+   ! From fitting Jake's mapping rays data, it is a linear function about the relationship between the median value of ray length 
+   ! distribution and the radius of rayed craters (in unit of kilometers)
+   ! Also, we need to scale it with the continuous ejecta's extent for ray model
+!#   mvrld      = a * (crater%frad/1000.0)**(b)
+!#   mvrldsc    = mvrld / (continuous/crater%frad)
+   ! It appears that no strong correlation between the number of rays and size of craters.
+   ! The average number of rays is about 10. The minimum and maximum number is 6 and 14 respectively.
+   nrays      = nint(8 * rn(15)) + 6
+   
+   ! Determine parameters of Ray model based on Gielis's superformula
+   ! There are three parameters regarding to our desired ray shape: n1, n2, m
+   ! m:  the repeating part of formula, and it controls the number of rays (arms).
+   ! n1: the default value is set as 4.0 in our rays case
+   ! n2: n2 and n1 combining together is to control the slenderness of a ray, in general, n1/n2 is always smaller than 1 in our cases.
+   !     The smaller the ratio, the skinnier a ray.
+!#   n2 = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
+
+   ! Testing the maximum ray length regardless of any scales of craters (~58 radii)
+   mvrld   = crater%ejdis
+   mvrldsc = mvrld / continuous
+   n2      = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
+!#   write(*,*) mvrld, mvrldsc, n2, nrays
+   !write(*,*) continuous / crater%frad, mvrld
    !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble) &
+   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2) &
    !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous)
    do j = -inc,inc
       do i = -inc,inc
@@ -119,21 +153,19 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
          
-         nrays = nint(6 * rn(15)) + 8
-
          if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
             ! Model the discontinuous ejecta blanket as a "splat"
-            theta = atan2(j * 1._DP,i * 1._DP) + PI ! Azimuthal angle
-            rieq = nrays * (0.5_DP * theta / PI)
-            ieq = ceiling(rieq)
-            dis = (2*abs(ieq - rieq - 0.5_DP)) 
-            ! Model the discontinuous ejecta blanket as a "splat"
-            lradp = 3 * continuous - rn(ieq) * 2 * continuous
-            lradp = lradp - dis * (lradp - continuous)
-            ! Get the nominal ejecta blanket thickness
+            ! Create a splat varying with zimuthal angle with the same length of a splat
+            theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI ! Azimuthal angle
+            mag   = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(1.0_DP/n1)
+            x     = cos(theta) / mag
+            y     = sin(theta) / mag
+            lradp  = continuous * sqrt(x**2 + y**2)
+            !lradp = mvrld * crater%frad ! Testing Jake's empirical formula with an assumption of homogeneous ejecta extent 
             if (lrad < lradp) then 
-               ! We are now in a ray!
+!                We are now in a ray!
                call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+!#               write(*,*) i * user%pix / crater%frad, j * user%pix / crater%frad
             else
                ebh = 0._DP
             end if
@@ -149,10 +181,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
       end do
    end do
    !$OMP END PARALLEL DO
-
-   !if (user%doregotrack) then 
-   !   if (surf(crater%xlpx,crater%ylpx)%nmix > 0) write(19,*) crater%frad/4.0
-   !end if
 
    if (user%dosoftening) then 
       ! Create box for soften calculation (will be no bigger than the grid itself)
