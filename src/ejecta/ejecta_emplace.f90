@@ -124,9 +124,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 !#   n2 = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
 
    ! Testing the maximum ray length regardless of any scales of craters (~58 radii)
-   mvrld   = crater%ejdis
-   mvrldsc = mvrld / continuous
-   n2      = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
+   ! mvrld   = crater%ejdis 
+   ! mvrldsc = mvrld / continuous
+   mvrld      = a * (crater%frad/1000.0)**(b) ! Taken into account Jake's ray mapping study
+   mvrldsc    = mvrld / (continuous/crater%frad)
+   n2         = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
 !#   write(*,*) mvrld, mvrldsc, n2, nrays
    !write(*,*) continuous / crater%frad, mvrld
    !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
