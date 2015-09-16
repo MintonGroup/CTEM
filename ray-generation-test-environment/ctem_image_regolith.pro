@@ -9,7 +9,7 @@ Device, Set_Resolution=[gridsize,gridsize],Set_Pixel_Depth=24, Decomposed=0
 loadct, 39
 TVLCT, red, green, blue, /GET
 
-minref = pix * 1.0d-4
+minref = pix * 1.0d-8
 regolith_scaled = dblarr(gridsize,gridsize)
 maxreg = max(regolith)
 minreg = min(regolith)
