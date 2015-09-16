@@ -68,8 +68,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    !real(DP) :: thinnest, lrad_thinnest, v_thinnest, theta_thinnest, rad_sec, vsq
 
    ! Streamtube
-   real(DP) :: comp 
-   
+   real(DP) :: comp
+
+   !Enhanced factor test
+   real(DP)     :: xef, yef, thetamax
+   integer(I4B) :: xefpi, yefpi, nef, ray_pix
+   integer(I4B), dimension(:), allocatable :: sf, tot
+   real(DP), dimension(:), allocatable     :: ef
+
    ! Executable code
 
    cdepth = DDRATIO * crater%fcrat
@@ -99,10 +105,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    call random_number(rn)
    cumulative_elchange = 0._DP
    indarray = inc ! initialize this array to point to a corner (this should have 0 elevation change since we're only doing work
-                  ! within a circle of radius irad
+                ! within a circle of radius irad
 
    !Mixing
    !surf(crater%xlpx,crater%ylpx)%nmix = 0
+
    !TESTING
    !continuous = 23_DP * crater%frad**(1.006_DP)
    continuous = 2.3_DP * crater%frad**(1.006_DP)
@@ -113,26 +120,77 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 !#   mvrldsc    = mvrld / (continuous/crater%frad)
    ! It appears that no strong correlation between the number of rays and size of craters.
    ! The average number of rays is about 10. The minimum and maximum number is 6 and 14 respectively.
-   nrays      = nint(8 * rn(15)) + 6
-   
+
    ! Determine parameters of Ray model based on Gielis's superformula
    ! There are three parameters regarding to our desired ray shape: n1, n2, m
    ! m:  the repeating part of formula, and it controls the number of rays (arms).
    ! n1: the default value is set as 4.0 in our rays case
    ! n2: n2 and n1 combining together is to control the slenderness of a ray, in general, n1/n2 is always smaller than 1 in our cases.
    !     The smaller the ratio, the skinnier a ray.
-!#   n2 = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
 
-   ! Testing the maximum ray length regardless of any scales of craters (~58 radii)
-   ! mvrld   = crater%ejdis 
-   ! mvrldsc = mvrld / continuous
-   mvrld      = a * (crater%frad/1000.0)**(b) ! Taken into account Jake's ray mapping study
-   mvrldsc    = mvrld / (continuous/crater%frad)
+   nrays      = nint(8 * rn(15)) + 6
+   !#mvrld      = a * (crater%frad/1000.0)**(b)
+   !#mvrldsc    = mvrld / (continuous/crater%frad)
+   mvrld      = crater%ejdis
+   mvrldsc    = mvrld / continuous
    n2         = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
-!#   write(*,*) mvrld, mvrldsc, n2, nrays
-   !write(*,*) continuous / crater%frad, mvrld
+   !write(*,*) inc
+ 
+   ! Enhanced factor test: Build a enhanced factor quick lookup table
+   ! Use a circular sector with an angle containning a half ray, which is pi/nrays. First, we determine the looping area for 
+   ! this sector, then the look-up table will be built while looping over each pixel and then making it to go to the right bin. 
+   ! The size of bin is one pixel. 
+   xef        = mvrld   
+   thetamax   = PI/dble(nrays)                   
+   yef        = mvrld * sin(thetamax)
+   xefpi      = nint(xef / user%pix)
+   yefpi      = nint(yef / user%pix)
+   !nef        = ceiling((mvrld - continuous) / user%pix)
+   nef        = ceiling( (mvrld - crater%frad) / user%pix)
+   allocate(sf(nef))
+   allocate(tot(nef))
+   allocate(ef(nef))
+   tot = 0
+   sf  = 0
+
+   do j = yefpi, 0, -1
+      do i = xefpi, 0, -1
+         xp     = (i + crater%xlpx) * user%pix
+         yp     = (j + crater%ylpx) * user%pix
+         lradsq = (xp - crater%xl)**2 + (yp - crater%yl)**2
+         lrad   = sqrt(lradsq) 
+         ! inside or outside a ray?
+         theta  = atan2(j * 1._DP,i * 1._DP)
+         mag    = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(1.0_DP/n1)
+         lradp  = continuous / mag
+         !if ( lrad > continuous .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
+         if (lrad >= crater%frad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
+            !ray_pix = ceiling((lrad - continuous) / user%pix)
+            ray_pix  = ceiling( (lrad - crater%frad) / user%pix)
+            tot(ray_pix) = tot(ray_pix) + 1
+            if (lrad < lradp) sf(ray_pix) = sf(ray_pix) + 1
+         end if
+      end do
+   end do
+
+   ef = dble(tot) / dble(sf)
+
+   ! Smooth out the enhanced factor lookup table
+   do i=1,nef
+      if (ef(i) /= ef(i) .or. ef(i) > VBIG) then 
+         ef(i) = dble(tot(i)) / 1.0 
+      end if
+   end do
+   
+   deallocate(sf)
+   deallocate(tot)
+   
+   !do i=1,nef
+   !write(*,*) (dble(i) - 0.5_DP) * user%pix + crater%frad, ef(i) 
+   !end do
+
    !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2) &
+   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef) &
    !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous)
    do j = -inc,inc
       do i = -inc,inc
@@ -154,33 +212,35 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
-         
+
+
          if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
-            ! Model the discontinuous ejecta blanket as a "splat"
-            ! Create a splat varying with zimuthal angle with the same length of a splat
-            theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI ! Azimuthal angle
+            theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
             mag   = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(1.0_DP/n1)
-            lradp  = continuous / mag
-            !lradp = mvrld * crater%frad ! Testing Jake's empirical formula with an assumption of homogeneous ejecta extent 
-            if (lrad < lradp) then 
-!                We are now in a ray!
-               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
-!#               write(*,*) i * user%pix / crater%frad, j * user%pix / crater%frad
-            else
-               ebh = 0._DP
+            lradp = continuous / mag
+
+            if (lrad < lradp) then
+            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+            ray_pix = ceiling((lrad - crater%frad) / user%pix)
+            !write(*,*) i, j, xpi, ypi, ray_pix, lrad, ebh
+            ebh     = ebh * ef(ray_pix)
+            else 
+            ebh = 0._DP
             end if
- 
+            
             if (user%doregotrack .and. ebh>1.0e-8) then
                call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
                call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
             end if
-
+   
             cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
          end if
          
       end do
    end do
    !$OMP END PARALLEL DO
+
+   deallocate(ef)
 
    if (user%dosoftening) then 
       ! Create box for soften calculation (will be no bigger than the grid itself)
