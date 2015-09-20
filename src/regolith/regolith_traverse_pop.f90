@@ -47,7 +47,7 @@ subroutine regolith_traverse_pop(elchange,surfi)
       surfi%dmix = surfi%dmix + z 
 
       do 
-       if (.not. associated(current)) exit
+       if (.not. associated(current%next)) exit
 
        if (abs(z)<=depth) then
           dz = depth - abs(z)
