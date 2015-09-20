@@ -62,7 +62,7 @@ subroutine regolith_reworking_zone(user,surf,finterval)
    !zmix1mm = t0 * ( 1.0e+06 )**(dts) / 100.0_DP ! Convert unit from centimeters in original formula to meters
    !zmixbig = t0 * ( mixtime )**(dts) / 100.0_DP
    !zmix     = t0 * (finterval * user%interval)**(dts) / 100.0_DP
-   zmix = 0.00017_DP
+   zmix = 0.001_DP
    
    !bigratio = int(mixtime/1.0e+07)
    !if (mod(bigratio,10) == 0 .and. bigratio /= 0) then 
@@ -85,39 +85,50 @@ subroutine regolith_reworking_zone(user,surf,finterval)
          current => surf(i,j)%regolayer
          z = surf(i,j)%regolayer%thickness
 
-         if (z <= zmix) then 
-            z0 = 0._DP
+         if (z < zmix .and. z > VSMALL) then 
             zmare = 0._DP
             ztot = 0._DP
-
+            !write(*,*) i,j,z
             do
 
              if (.not. associated(current%next)) exit
 
-             if (z <= zmix) then
+             if (z <= zmix .and. z > VSMALL) then
                 ztot  = ztot  + current%thickness
                 zmare = zmare + current%thickness * current%comp
                 current => current%next
                 z0 = z
                 z = z + current%thickness
+                !write(*,*) z0, z, ztot, zmare
              else 
                 ztot  = ztot  + (zmix - z0)
                 zmare = zmare + (zmix - z0) * current%comp
+                !write(*,*) z0, z, ztot, zmare
                 exit
              end if
 
             end do
-
+ 
+            if (abs(ztot) > VSMALL) then
             call regolith_traverse_pop(-1.0_DP * ztot, surf(i,j))
             newlayer%thickness  = ztot
             newlayer%comp       = zmare/ztot
             newlayer%meltfrac   = 0.0_DP
             call regolith_push(surf(i,j),newlayer)
+            end if
 
          end if
 
       end do
    end do
+
+   !do j=1,user%gridsize 
+   !   do i=1,user%gridsize
+   !      if (surf(i,j)%regolayer%thickness == zmix) then
+   !       write(*,*) i,j,surf(i,j)%regolayer%thickness,surf(i,j)%regolayer%comp
+   !      end if
+   !   end do
+   !end do
 
    return
 end subroutine regolith_reworking_zone
