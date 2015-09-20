@@ -36,7 +36,7 @@ subroutine io_write_regotrack(user,surf)
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    integer(I4B) :: itmp
-   real(DP),dimension(:,:),allocatable :: comptop!,surface
+   real(DP),dimension(user%gridsize,user%gridsize) :: comptop!,surface
    real(DP),dimension(:),allocatable :: marehisto
    real(DP) :: mare, z
 
@@ -45,8 +45,6 @@ subroutine io_write_regotrack(user,surf)
    !real(DP) :: z, zmare
 
    ! Executable code
-   allocate(comptop(user%gridsize,user%gridsize))
-
    open(LUN,file=MELTFILE,status='replace',form='unformatted')
    open(LUM,file=REGOFILE,status='replace',form='unformatted')
    open(LUC,file=COMPFILE,status='replace',form='unformatted')
@@ -57,22 +55,28 @@ subroutine io_write_regotrack(user,surf)
          current => surf(i,j)%regolayer
          comptop(i,j) = current%comp
          do 
-          if (.not. associated(current)) exit
+          if (.not. associated(current%next)) exit
           stacks_num(i,j) = stacks_num(i,j) + 1
           regotop(i,j) = current%thickness
-          melt(i,j) = current%meltfrac
           comp(i,j) = current%comp
+          melt(i,j) = current%meltfrac
           write(LUM) regotop(i,j)
-          write(LUN) melt(i,j) 
           write(LUC) comp(i,j)
+          write(LUN) melt(i,j) 
+          !if (regotop(i,j) == 0._DP) then
+          !write(*,*) i,j,stacks_num(i,j),regotop(i,j)!,comp(i,j)
+          !end if
           current => current%next
          end do
       end do 
    end do
-
-   close(LUN)
    close(LUM)
    close(LUC)
+
+   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
+   open(LUN,file='comptop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
+   write(LUN,rec=1) comptop
+   close(LUN)
 
    allocate(marehisto(user%gridsize))
    open(LUN,file='comphisto',status='replace')
@@ -87,32 +91,6 @@ subroutine io_write_regotrack(user,surf)
    end do
    close(LUN)
    deallocate(marehisto)
-
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
-   open(LUN,file='comptop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
-   write(LUN,rec=1) comptop
-   close(LUN)
-   deallocate(comptop)
-
-
-!   allocate(surface(user%gridsize,user%gridsize))
-!   do j=1,user%gridsize
-!      do i=1,user%gridsize
-!         z = 0._DP
-!         current => surf(i,j)%regolayer
-!         do k=1,stacks_num(i,j)
-!            if (.not. associated(current%next)) exit
-!            z = z + current%thickness
-!            current => current%next
-!         end do
-!         surface(i,j) = z         
-!      end do
-!   end do   
-
-!   open(LUN,file='regotop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
-!   write(LUN,rec=1) surface
-!   close(LUN)
-!   deallocate(surface)
 
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
    open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')
