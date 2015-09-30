@@ -69,7 +69,7 @@ subroutine io_read_regotrack(user,surf)
        stop
    end if 
 
-   !open(LUM,file=MELTFILE,status='old',form='unformatted',iostat=ioerr)
+   open(LUM,file=MELTFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(MELTFILE))
        stop
