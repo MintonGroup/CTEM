@@ -70,11 +70,16 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    ! Streamtube
    real(DP) :: comp
 
-   !Enhanced factor test
+   ! Enhanced factor test
    real(DP)     :: xef, yef, thetamax
    integer(I4B) :: xefpi, yefpi, nef, ray_pix
    integer(I4B), dimension(:), allocatable :: sf, tot
    real(DP), dimension(:), allocatable     :: ef
+ 
+   ! Flowery ray variables
+   integer(I4B)  :: nfrays
+   real(DP)      :: n1f, n2f, magf, lradf, rayf
+   !real(DP)      :: massray, massrayef, massej
 
    ! Executable code
 
@@ -112,7 +117,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
    !TESTING
    !continuous = 23_DP * crater%frad**(1.006_DP)
+   
+   ! *************************** Continuous Ejecta Formula  *****************************!
    continuous = 2.3_DP * crater%frad**(1.006_DP)
+
+   ! *************************** Superformula Ray Model              ************************************!
+   ! *************************** Part I.  Spoke and Skinny Ray Model ************************************!
    ! From fitting Jake's mapping rays data, it is a linear function about the relationship between the median value of ray length 
    ! distribution and the radius of rayed craters (in unit of kilometers)
    ! Also, we need to scale it with the continuous ejecta's extent for ray model
@@ -134,7 +144,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    mvrld      = crater%ejdis
    mvrldsc    = mvrld / continuous
    n2         = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
-   !write(*,*) inc
+
+   ! *************************** Part II. Flowery Ray Model         ************************************!
+   nfrays = 20
+   n1f  = 1.0_DP
+   n2f  = 0.5_DP
+   rayf = 7.5_DP
+   !n2f  = 2.0_DP * n1f * ( log10(magf) / log10(2.0_DP) ) + 2.0_DP
  
    ! Enhanced factor test: Build a enhanced factor quick lookup table
    ! Use a circular sector with an angle containning a half ray, which is pi/nrays. First, we determine the looping area for 
@@ -161,8 +177,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
          lrad   = sqrt(lradsq) 
          ! inside or outside a ray?
          theta  = atan2(j * 1._DP,i * 1._DP)
-         mag    = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(1.0_DP/n1)
-         lradp  = continuous / mag
+         mag    = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) !&
+         
+         magf   = rayf * ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f) 
+         lradp  = continuous * mag
+         lradf  = continuous * magf 
+         lradp  = max(lradp, lradf)
          !if ( lrad > continuous .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
          if (lrad >= crater%frad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
             !ray_pix = ceiling((lrad - continuous) / user%pix)
@@ -173,9 +193,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
       end do
    end do
 
-   ef = dble(tot) / dble(sf)
-
    ! Smooth out the enhanced factor lookup table
+   do i=1,nef
+      ef(i) = max( dble(tot(i)) / dble(sf(i)), 1.0_DP)
+   end do
+
    do i=1,nef
       if (ef(i) /= ef(i) .or. ef(i) > VBIG) then 
          ef(i) = dble(tot(i)) / 1.0 
@@ -188,10 +210,15 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    !do i=1,nef
    !write(*,*) (dble(i) - 0.5_DP) * user%pix + crater%frad, ef(i) 
    !end do
+   ! Testing if ray's mass with enhanced factor is conserved:
+   !massray = 0._DP
+   !massrayef = 0._DP
+   !massej  = 0._DP
 
-   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef) &
-   !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous)
+!   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
+!   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
+!   !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous) 
+!   !$OMP REDUCTION(+:massray,massej,massrayef)
    do j = -inc,inc
       do i = -inc,inc
 
@@ -216,31 +243,44 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
          if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
-            mag   = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(1.0_DP/n1)
-            lradp = continuous / mag
+            mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
+                    (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
+            magf  = rayf * ( ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + &
+                      (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f))
+            lradp = continuous * mag
+            lradf = continuous * magf
+            lradp = max(lradp, lradf) 
 
             if (lrad < lradp) then
-            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
-            ray_pix = ceiling((lrad - crater%frad) / user%pix)
-            !write(*,*) i, j, xpi, ypi, ray_pix, lrad, ebh
-            ebh     = ebh * ef(ray_pix)
-            else 
+               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+               ray_pix = ceiling((lrad - crater%frad) / user%pix)
+               !if (i>0 .and. j>0) write(*,*) lrad/crater%frad, ef(ray_pix), ebh, ebh * ef(ray_pix)
+               !massray   = massray + ebh * user%pix**2
+               !massej    = massej + ebh * user%pix**2
+               !massrayef = massrayef + ebh * ef(ray_pix) * user%pix**2
+               ebh       = ebh * ef(ray_pix)
+
+               if (user%doregotrack .and. ebh>1.0e-8) then
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
+                  call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)  
+               end if
+
+            else
+            !call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+            !massej = massej + ebh * user%pix**2
             ebh = 0._DP
             end if
-            
-            if (user%doregotrack .and. ebh>1.0e-8) then
-               call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
-               call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
-            end if
-   
+
             cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
          end if
          
       end do
    end do
-   !$OMP END PARALLEL DO
+!   !$OMP END PARALLEL DO
 
    deallocate(ef)
+
+   !write(*,*) massej, massray, massrayef, massray/massej, massrayef/massej
 
    if (user%dosoftening) then 
       ! Create box for soften calculation (will be no bigger than the grid itself)
