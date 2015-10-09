@@ -42,6 +42,8 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
    real(DP) :: h,hmean,hmeanbig,area,r1,r2,f1,f2,volume,hprofile,rmax,lrad,lradsq,newelev,melev,vtot
    type(surftype),dimension(0:EJBTABSIZE) :: profilesurf
    logical :: firstrun
+
+   real(DP) :: ejdis_regolith, ejdis_bedrock
     
    ! Executable code
 
@@ -177,6 +179,40 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
          exit
       endif
    end do
+
+   !# Next, we determine the impactor that we will only generate the ejecta rather than an actual crater based on a limit of vertical mixing.
+   !# Given that Gault's study on turnover depth on the Moon, the upper 0.5 mm layer would have turnovered more than 100 times in the first billion
+   !# years. And the upper 1 cm deep layer would turnover one time in the first 10^7 years. If we apply Gault's turnover model on our vertical mixing
+   !# , and we won't be bothered by enormous and astronomical number of small craters slowing down CTEM, and simply just want to simulate the effect 
+   !# without making any other contribution to, for example, regolith growth. So, I suggest that we can take this turnover depth, 1 cm in 10^7 years, as
+   !# our limit of craters that contribute to surface, and the size of this crater in diameter is eight times this turnover depth: 8 cm.   
+   domain%smallest_ejecta_index = 1
+   crater%impvel = vdist(1,domain%vnum)
+   crater%sinimpang = 1.0_DP
+   do k=1,domain%pnum
+      crater%imp = prod(1,k)
+      ! Do it as the above code trying to figure out the size of a crater with both strength models
+      crater%strflag = 0 
+      call crater_generate(user,crater,domain)
+      regolithfcrat = crater%fcrat
+      ejdis_regolith = 25.0 * 2.3_DP * crater%frad**(1.006_DP)
+      
+      crater%strflag = 1
+      call crater_generate(user,crater,domain)
+      bedrockfcrat = crater%fcrat
+      ejdis_bedrock = 25.0 * 2.3_DP * crater%frad**(1.006_DP)
+ 
+      fcrat = max(regolithfcrat, bedrockfcrat)
+      ejdis = max(ejdis_regolith, ejdis_bedrock)
+      if (ejdis > domain%smallest_ejecta) then
+         domain%smallest_ejecta_index = k
+         domain%smallest_ejecta_crater = fcrat
+         !write(*,*) domain%smallest_ejecta_index, prod(1,domain%smallest_ejecta_index),&
+         !domain%smallest_ejecta_crater
+         exit
+      end if
+   end do
+   !write(*,*) domain%smallest_ejecta_index, fcrat
 
    goto 1000 
    ! Now estimate the amount of topographic overturn produced by subpixel craters
