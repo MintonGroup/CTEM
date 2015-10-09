@@ -75,10 +75,16 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
    integer(I4B) :: ejtble
    ! doregotrack
-   real(DP) :: melt
-   integer(I4B) :: mratio
+   real(DP) :: melt, clock!, volume, r1, r2, h
+   !integer(I4B) :: reworkfreq, mratio, imratio
+   ! testing small impacts' composition mixing
+   !real(DP) :: whoohoo
+   ! Shallowest streamtube
+   !real(DP) :: erad,zmix
 
-   ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B)
+   !#ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B) 
+   ntotcrat = int(prod(2,domain%smallest_ejecta_index),kind=I8B)
+
    if (user%testflag) then
       ntotcrat = 1
       write(*,*) "Generating a test crater"
@@ -89,7 +95,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
       write(*,*) "y offset = ",user%testyoffset
    else
       write(*,'(" Generating random population of craters. Fewer than: ",I0)') ntotcrat
-      write(*,*) "Minimum impactor diameter: ",prod(1,domain%smallest_impactor_index)
+      write(*,*) "Minimum impactor diameter: ",prod(1,domain%smallest_impactor_index) 
       write(*,*) "Minimum crater diameter: ",domain%subcrater_limit
       write(*,*) "Maximum crater diameter: ",domain%biggest_crater
    end if
@@ -115,6 +121,23 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    end if
    icrater_last_tally = 0
    icrater = 0
+   clock = 0.0_DP
+   !whoohoo = 0._DP
+
+   ! Shallowest streamtube
+   !write(*,*) domain%subcrater_limit
+   !if (user%doregotrack) then
+   !   crater%frad = domain%subcrater_limit/2.0_DP
+   !   crater%sinimpang = 1.0_DP
+   !   crater%impvel = vdist(1,domain%vnum)
+   !   crater%imp = prod(1,domain%smallest_impactor_index)
+   !   crater%rad = crater%frad / TRSIM
+   !   call ejecta_table_define(user,crater,domain,ejb,ejtble)
+   !   erad = ejb(EJBTABSIZE)%erad
+   !   zmix = erad / 4.0_DP
+   !   write(*,*) crater%frad, crater%impvel, crater%imp, crater%rad, erad, zmix
+   !end if
+
    do while (icrater < ntotcrat)
       icrater = icrater + 1
       pbarpos = ceiling(real(icrater) / real(ntotcrat) * PBARRES)
@@ -143,10 +166,20 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
                                                                      ! the total distance to determine if it is worth doing the 
                                                                      ! full calculation later.
 
-      if (((crater%fcrat < domain%smallest_crater) .and. &
-          (crater%ejdis < domain%smallest_ejecta)) .or.  &
-          (crater%fcrat < domain%subcrater_limit))  cycle ! Ejecta and crater are both too small,so we'll ignore this crater 
-      
+      cycle
+
+
+!#      if (((crater%fcrat < domain%smallest_crater) .and. &
+!#          (crater%ejdis < domain%smallest_ejecta)) .or.  &
+!#          (crater%fcrat < domain%subcrater_limit))  cycle ! Ejecta and crater are both too small,so we'll ignore this crater 
+
+!     ***************************** Zone I ***************************
+!     If a crater is biiger than smallest crater and its ejecta can extend further than smallest ejecta, then
+!     we emplace a crater and its ejecta as usual.
+
+      if ( ((crater%fcrat > domain%smallest_crater) .and. & 
+            (crater%ejdis > domain%smallest_ejecta)) ) then 
+
       ! Crater is big enough to keep, so record it into the true distribution 
       ntrue = ntrue + 1
       if (ntrue > truesize) then  ! Resize the truelist array if necessary
@@ -229,26 +262,23 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
       end if
 
-
-      !if (user%doregotrack) then 
-      !   mratio = mod( nsincetally, 10 )
-      !   if ( mratio == 0 ) then
-      !      craters_since_tally = icrater - icrater_last_tally
-      !      finterval = craters_since_tally / real(ntotcrat,kind=DP)
-      !      call regolith_reworking_zone(user,surf,finterval)
-      !   end if
+      ! Gault's turnover mixing model
+      ! First of all, we will check "mixtime.dat" if it is any of mixing cycles in which we assign a three primary mixing
+      ! cycles based on Gault (1974) study: 0.5 mm, 1 cm, and 10 cm - mixing depth. The 0.5 mm is the most frequent turnover
+      ! that it occurs once per 10^4 years on average. And 1 cm and 10 cm are 10^7 and 10^9 years. To be honest, we have no idea
+      ! if it means something but we are trying to bring the mixing effect to regolith due to expensive cost of small impacts for 
+      ! simulating vertical mixing.  
+      !if (user%doregotrack) then
+          !clock =  clock + 1.0_DP / real(ntotcrat,kind=DP) 
+          !call regolith_reworking_zone(user,surf,clock)
+          !write(*,*) finterval * user%interval
       !end if
-   
+
       if (nsincetally == tallycadence) then
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         !if (.not.user%testflag) call ejecta_subcrater_diffusion(user,surf,domain,finterval)
-         if (user%doregotrack) then 
-         !   call io_write_regodist(user,surf,finterval)
-         call regolith_reworking_zone(user,surf,finterval)
-         !write(*,*) finterval, craters_since_tally, icrater_last_tally, ntotcrat
-         end if
          icrater_last_tally = icrater
+         if (user%doregotrack) call regolith_mix(user,surf,0.001_DP)
          call crater_tally_observed(user,surf,domain,nkilled,onum)
          ntotkilled = ntotkilled + nkilled
          nsincetally = 0
@@ -259,15 +289,49 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          end if
       end if
 
-   end do  ! end crater production loop 
+   else if (crater%ejdis > domain%smallest_ejecta .and. &
+            crater%fcrat > domain%smallest_ejecta_crater) then
 
+           if (user%doregotrack) then 
+              call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
+              call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+           else 
+              call ejecta_table_define(user,crater,domain,ejb,ejtble)
+              call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+           end if
+           call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
+ 
+           ! Check: Excavation volume of a Zone II crater vs elevation change
+           !if (crater%xlpx <= 500 .and. crater%xlpx >= 499 .and. crater%ylpx <= 500 .and. crater%ylpx >= 499) then
+           !do i = 2,ejtble 
+           !   r1 = exp(ejb(i-1)%lrad)
+           !   r2 = exp(ejb(i)%lrad)
+           !   h = exp(ejb(i-1)%thick)
+           !   volume = volume +  PI *  (r2**2 - r1**2) * h
+           !end do
+           !end if
+
+           !if (user%doregotrack) then
+           !    clock = clock + 1.0_DP / real(ntotcrat,kind=DP)
+           !    call regolith_reworking_zone(user,surf,finterval)
+               !write(*,*) finterval * user%interval
+           !end if
+
+   else  
+     !clock = clock + 1.0_DP / real(ntotcrat,kind=DP)
+     cycle
+   end if
+
+   end do  ! end crater production loop 
+ 
+   !write(*,*) volume / (user%pix**2) / (user%gridsize**2)
+ 
    craters_since_tally = icrater - icrater_last_tally
    finterval = craters_since_tally / real(ntotcrat,kind=DP)
    if (ntotcrat == 0) finterval = 1
    if (.not.user%testflag) call ejecta_subcrater_diffusion(user,surf,domain,finterval)
 
-   ! Resize the true crater size array to the actual number of craters produced
-   
+   ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats
    ddmax = rmax / cmax
    ddmin = rmin / cmin
@@ -278,7 +342,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    write(*,*) 'Maximum impactor diameter = ',imax
    write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
    write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
-
    
    return
 end subroutine crater_populate
