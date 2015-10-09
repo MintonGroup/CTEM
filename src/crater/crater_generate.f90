@@ -68,20 +68,26 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
          else! Draw a random impactor from the production SFD
       
             ! generate random impactor 
-            nmark = prod(2,domain%smallest_impactor_index) * rn(3)
+            !# nmark = prod(2,domain%smallest_impactor_index) * rn(3)
+            nmark = prod(2,domain%smallest_ejecta_index) * rn(3)
             ! Make a guess as to where in the SFD the impactor might be. 
             ! This could speed up the searching if the SFD has a lot of elements in it.
-            Nk = 1 + domain%pnum - domain%smallest_impactor_index 
-            klo = domain%smallest_impactor_index
-            khi = domain%pnum
-            k = klo + int(Nk * log(rn(3)) / prod(4,khi) / prod(4,klo))
+            !# Nk = 1 + domain%pnum - domain%smallest_impactor_index 
+            !# klo = domain%smallest_impactor_index
+            !# khi = domain%pnum
+            !# k = klo + int(Nk * log(rn(3)) / prod(4,khi) / prod(4,klo))
+            Nk    = 1 + domain%pnum - domain%smallest_ejecta_index
+            klo   = domain%smallest_ejecta_index
+            khi   = domain%pnum
+            k     = klo + int(Nk * log(rn(3)) / prod(4,khi) / prod(4,klo))
             
             ! Now search the table to find where the impactor actually is
             call util_search(prod,2,domain%pnum-1,nmark,k)
             if (k >= domain%pnum) then
                crater%imp = prod(1,domain%pnum)
             else
-               if (k <= domain%smallest_impactor_index) k = domain%smallest_impactor_index
+               !#if (k <= domain%smallest_impactor_index) k = domain%smallest_impactor_index
+               if (k <= domain%smallest_ejecta_index) k = domain%smallest_ejecta_index
                lnmark = log(nmark)
                lprod1 = prod(3,k) !log(prod(1,k))
                lprod1p = prod(3,k + 1) !log(prod(1,k + 1))
