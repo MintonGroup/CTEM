@@ -109,6 +109,8 @@ type domaintype
    real(DP)     :: GM        ! gravitational constant (m**3/s**2)
    real(DP)     :: small     ! Smallest unit of measurement (m)
    integer(I4B) :: smallest_impactor_index  ! Index of the smallest impactor to draw from the production SFD
+   integer(I4B) :: smallest_ejecta_index    ! Indext of the smallest impactor to produce ejecta otherwise a crater smaller than this will be ignored and treated as a part of vertical mixing model based on the assumption of their insignificant volume of ejecta 
+   real(DP)     :: smallest_ejecta_crater
    real(DP)     :: biggest_crater ! Largest crater to generate
    real(DP)     :: smallest_ejecta ! Smallest ejecta to generate (possibly from craters smaller than smallest_produced_crater)
    real(DP)     :: smallest_crater ! Smallest crater that leaves a depression on the surface
