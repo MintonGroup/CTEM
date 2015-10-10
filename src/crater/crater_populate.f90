@@ -166,19 +166,15 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
                                                                      ! the total distance to determine if it is worth doing the 
                                                                      ! full calculation later.
 
-      cycle
 
 
-!#      if (((crater%fcrat < domain%smallest_crater) .and. &
-!#          (crater%ejdis < domain%smallest_ejecta)) .or.  &
-!#          (crater%fcrat < domain%subcrater_limit))  cycle ! Ejecta and crater are both too small,so we'll ignore this crater 
+      if (((crater%fcrat < domain%smallest_ejecta_crater) .or. &
+          (crater%ejdis < domain%smallest_ejecta))) cycle ! Either ejecta or crater is too small,so we'll ignore this crater 
 
-!     ***************************** Zone I ***************************
-!     If a crater is biiger than smallest crater and its ejecta can extend further than smallest ejecta, then
-!     we emplace a crater and its ejecta as usual.
-
-      if ( ((crater%fcrat > domain%smallest_crater) .and. & 
-            (crater%ejdis > domain%smallest_ejecta)) ) then 
+!     *************************************   Zone I and II  *********************************************************
+!     If a crater is biiger than smallest crater that its ejecta extends out to 1.5 * pixel, then
+!     we will emplace ejecta. But only Zone I impacts in which craters are bigger than pixel sized crater, we will 
+!     emplace a crater. Otherwise, only ejecta is emplaced for Zone II impacts. 
 
       ! Crater is big enough to keep, so record it into the true distribution 
       ntrue = ntrue + 1
@@ -262,18 +258,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
       end if
 
-      ! Gault's turnover mixing model
-      ! First of all, we will check "mixtime.dat" if it is any of mixing cycles in which we assign a three primary mixing
-      ! cycles based on Gault (1974) study: 0.5 mm, 1 cm, and 10 cm - mixing depth. The 0.5 mm is the most frequent turnover
-      ! that it occurs once per 10^4 years on average. And 1 cm and 10 cm are 10^7 and 10^9 years. To be honest, we have no idea
-      ! if it means something but we are trying to bring the mixing effect to regolith due to expensive cost of small impacts for 
-      ! simulating vertical mixing.  
-      !if (user%doregotrack) then
-          !clock =  clock + 1.0_DP / real(ntotcrat,kind=DP) 
-          !call regolith_reworking_zone(user,surf,clock)
-          !write(*,*) finterval * user%interval
-      !end if
-
       if (nsincetally == tallycadence) then
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
@@ -289,42 +273,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          end if
       end if
 
-   else if (crater%ejdis > domain%smallest_ejecta .and. &
-            crater%fcrat > domain%smallest_ejecta_crater) then
-
-           if (user%doregotrack) then 
-              call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
-              call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-           else 
-              call ejecta_table_define(user,crater,domain,ejb,ejtble)
-              call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-           end if
-           call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
- 
-           ! Check: Excavation volume of a Zone II crater vs elevation change
-           !if (crater%xlpx <= 500 .and. crater%xlpx >= 499 .and. crater%ylpx <= 500 .and. crater%ylpx >= 499) then
-           !do i = 2,ejtble 
-           !   r1 = exp(ejb(i-1)%lrad)
-           !   r2 = exp(ejb(i)%lrad)
-           !   h = exp(ejb(i-1)%thick)
-           !   volume = volume +  PI *  (r2**2 - r1**2) * h
-           !end do
-           !end if
-
-           !if (user%doregotrack) then
-           !    clock = clock + 1.0_DP / real(ntotcrat,kind=DP)
-           !    call regolith_reworking_zone(user,surf,finterval)
-               !write(*,*) finterval * user%interval
-           !end if
-
-   else  
-     !clock = clock + 1.0_DP / real(ntotcrat,kind=DP)
-     cycle
-   end if
-
    end do  ! end crater production loop 
- 
-   !write(*,*) volume / (user%pix**2) / (user%gridsize**2)
  
    craters_since_tally = icrater - icrater_last_tally
    finterval = craters_since_tally / real(ntotcrat,kind=DP)
