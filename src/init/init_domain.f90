@@ -291,7 +291,9 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
    p=100 ! To be safe, we begin at a crater that is 7500 AU wide
    do 
       disthi=1e3_DP*SQRT2**p 
-      if (disthi < domain%subcrater_limit) then
+      !if (disthi < domain%subcrater_limit) then
+      if (disthi < domain%smallest_ejecta_crater) then ! Change the size of a bin in true crataer distribution for
+                                                       ! accommodating smallest craters that generate pixeled ejecta
          exit
       else
          p = p - 1
