@@ -64,7 +64,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    real(DP), parameter :: a = 16.8799 !a = 11.8126 ! Fitting parameters for a relation between ray length and radius of crater 
    real(DP), parameter :: b = 0.120621 !0.143   ! based on Jake's crater rays mapping studies! 
    real(DP) :: mvrld                  ! median value of ray length distribution
-   real(DP) :: mvrldsc                ! median value of ray length distribution scaled by continunous ejecta extent
+   real(DP) :: mvrldsc                ! median value of ray length distribution scaled by continuous ejecta extent
    !real(DP) :: thinnest, lrad_thinnest, v_thinnest, theta_thinnest, rad_sec, vsq
 
    ! Streamtube
@@ -123,7 +123,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
    ! *************************** Superformula Ray Model              ************************************!
    ! *************************** Part I.  Spoke and Skinny Ray Model ************************************!
-   ! From fitting Jake's mapping rays data, it is a linear function about the relationship between the median value of ray length 
+   ! From fitting Jake Elliot's ray mapping data, it is a linear function that describes the relationship between the median value of ray length 
    ! distribution and the radius of rayed craters (in unit of kilometers)
    ! Also, we need to scale it with the continuous ejecta's extent for ray model
 !#   mvrld      = a * (crater%frad/1000.0)**(b)
