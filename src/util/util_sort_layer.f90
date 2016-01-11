@@ -34,15 +34,20 @@ subroutine util_sort_layer(user,surf,crater)
    real(SP),dimension(user%numlayers) :: tempxpos,tempypos
    real(SP),dimension(user%numlayers) :: tempdepth,tempbaseline
    integer(I2B),dimension(user%numlayers) :: tempisrim
-   integer(I4B) :: i,j,k,inc,mx,my,iradsq
+   integer(I4B) :: i,j,k,inc,incsq,mx,my,iradsq
 
-   inc = crater%maxinc
+   inc = min(crater%maxinc,(user%gridsize - 1)/2)
+   incsq = inc*inc
+
 
    ! Executable code
+   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
+   !$OMP SHARED(user,crater,surf) &
+   !$OMP SHARED(inc,incsq)
    do j=-inc,inc
       do i=-inc,inc
          iradsq = i*i+j*j
-         if (iradsq <= inc**2) then
+         if (iradsq <= incsq) then
             mx = crater%xlpx + i
             my = crater%ylpx + j
             call util_periodic(mx,my,user%gridsize)
@@ -69,6 +74,7 @@ subroutine util_sort_layer(user,surf,crater)
          end if
       end do
    end do
+   !$OMP END PARALLEL DO
 
    return
 end subroutine util_sort_layer
