@@ -82,8 +82,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    ! Shallowest streamtube
    !real(DP) :: erad,zmix
 
-   !#ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B) 
-   ntotcrat = int(prod(2,domain%smallest_ejecta_index),kind=I8B)
+   ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B) 
+   !ntotcrat = int(prod(2,domain%smallest_ejecta_index),kind=I8B)
 
    if (user%testflag) then
       ntotcrat = 1
@@ -167,9 +167,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
                                                                      ! full calculation later.
 
 
+      ! The code generated too many craters, and was unsuable. So I removed this
+      ! bit and reverted to the old way of doing it
+      !if (((crater%fcrat < domain%smallest_ejecta_crater) .or. &
+      !    (crater%ejdis < domain%smallest_ejecta))) cycle ! Either ejecta or crater is too small,so we'll ignore this crater 
 
-      if (((crater%fcrat < domain%smallest_ejecta_crater) .or. &
-          (crater%ejdis < domain%smallest_ejecta))) cycle ! Either ejecta or crater is too small,so we'll ignore this crater 
+      if (((crater%fcrat < domain%smallest_crater) .and. &
+          (crater%ejdis < domain%smallest_ejecta)) .or.  &
+          (crater%fcrat < domain%subcrater_limit))  cycle ! Ejecta and crater are both too small,so we'll ignore this crater 
 
 !     *************************************   Zone I and II  *********************************************************
 !     If a crater is biiger than smallest crater that its ejecta extends out to 1.5 * pixel, then
