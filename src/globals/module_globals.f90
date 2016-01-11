@@ -14,7 +14,7 @@ module module_globals
 implicit none
 public
 
-character(len=*),parameter :: CTEMVER = "1.1"
+character(len=*),parameter :: CTEMVER = "1.X DEVELOPMENT"
 
 ! Symbolic names for kind types of 4-, 2-, and 1-byte integers:
 integer, parameter :: I8B = selected_int_kind(17)
@@ -261,12 +261,12 @@ real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see R
 !real(DP),parameter :: CT = KT * 1.0077158813689795507466256218613060723322903283648264_DP ! KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: DDRATIO = 0.19_DP        ! ?
-real(DP),parameter :: RDRATIO = 0.0390_DP      ! ?
-real(DP),parameter :: RIMDROP = 4.20_DP        ! Power law index for rim profile 
+real(DP),parameter :: RDRATIO = 0.0450_DP      ! ?
+real(DP),parameter :: RIMDROP = 4.10_DP        ! Power law index for rim profile 
 real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
-real(DP),parameter :: CXEXPS = 1._DP / 0.85_DP - 1.0_DP ! Complex crater scaling exponent (see Croft 1985)
+real(DP),parameter :: CXEXPS = 1._DP / 0.885_DP - 1.0_DP ! Complex crater scaling exponent (see Croft 1985)
 real(DP),parameter :: SIMCOMKS = 16533.8_DP    ! ?
 real(DP),parameter :: SIMCOMPS = -1.0303_DP    ! ?
 real(DP),parameter :: CXEXPI = 0.155_DP        ! ?
