@@ -262,7 +262,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
          icrater_last_tally = icrater
-         if (user%doregotrack) call regolith_mix(user,surf,0.001_DP)
+         !if (user%doregotrack) call regolith_mix(user,surf,0.001_DP)
          call crater_tally_observed(user,surf,domain,nkilled,onum)
          ntotkilled = ntotkilled + nkilled
          nsincetally = 0
