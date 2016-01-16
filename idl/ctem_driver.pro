@@ -187,6 +187,29 @@ while (ncount le numintervals) do begin
 		fname = 'misc/mass_' + fnum + '.dat'
 		file_copy, 'impactmass.dat', fname, /OVERWRITE
 
+		; make dem folder if there is not such a folder.
+		if (file_test('dem',/DIRECTORY) eq 0) then begin
+			file_mkdir,'dem'
+		endif
+	
+		;save a copy of the binned idealized production function
+		fname = 'dem/surface_dem_' + fnum + '.dat'
+		file_copy, 'surface_dem.dat', fname, /OVERWRITE	
+
+		; make ejc folder if there is not such a folder.
+		if (file_test('ejc',/DIRECTORY) eq 0) then begin
+			file_mkdir,'ejc'
+		endif	
+		
+		;save a copy of the binned idealized production function
+		fname = 'ejc/surface_ejc_' + fnum + '.dat'
+		file_copy, 'surface_ejc.dat', fname, /OVERWRITE			
+		
+		; save a copy of the cumulative true crater distribution if the user requests it
+		if strmatch(savetruelist,'T',/fold_case) then begin
+			fname = 'dist/tcum_' + fnum + '.dat'
+			file_copy, 'tcumulative.dat', fname, /OVERWRITE
+		endif
 
 	endif
 
