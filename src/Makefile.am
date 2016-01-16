@@ -66,6 +66,7 @@ crater/crater_tally_true.f90\
 crater/crater_tally_observed.f90\
 crater/crater_tally_calibrated_count.f90\
 crater/crater_slope_collapse.f90\
+porosity/porosity_form_interior.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
