@@ -313,6 +313,12 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%testtally
+         ! Porosity model
+         case ("POROSITYFLG")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%porosityflg
          ! Seismic variables (only required if doseismic is set to .true.
          case ("KILLATMAXCRATER")
             ifirst = ilast + 1
