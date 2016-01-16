@@ -1,0 +1,82 @@
+! CTEM Input file: Compatible with v. 1.1
+
+! IDL driver in uts
+interval     1.00e0                              ! Time interval between outputs (y)
+numintervals 1                                    ! Total number of intervals
+restart      F                                  ! Restart a previous run
+impfile      MintonLunarProduction.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
+popupconsole F                                  ! Pop up console window every output interval 
+saveshaded   T                                  ! Output shaded relief images  
+saverego     T                                  ! Output regolith map images 
+savepres     T                                  ! Output simplified console display images (presentation-compatible images)
+savetruelist T                                  ! Save the true cumulative crater distribution for each interval (large file size)
+! sfdcompare   SinusMedii-data-binned.dat         ! File name for the SFD comparison file used in the console display
+shadedminh   0.0                              ! Minimum height for shaded relief map (m) (Default - automatic)
+shadedmaxh   2.0                               ! Maximum height for shaded relief map (m) (Default - automatic)
+tallystart   10                                   ! Initial value of the tally cadence
+runtype      single                             ! Run type: options are normal / statistical
+                                                !    single:      craters accumulate in successive intervals
+                                                !    statistical: surface is reset between intervals
+
+! CTEM required inputs
+seed         1108267                            ! Random number generator seed
+gridsize     1000                            ! Size of grid in pixels
+numlayers    10                                 ! Number of perched layers
+pix          1.0e0                              ! Pixel size (m)
+mat          rock                               ! Material (rock or ice)
+! Bedrock scaling parameters
+mu_b         0.41d0                             ! Experimentally derived parameter for bedrock crater scaling law 
+kv_b         0.24d0                             ! Experimentally derived parameter for bedrock crater scaling law 
+trho_b       2250.0d0                           ! Target density (bedrock) (kg/m**3)
+ybar_b       0.18d6                               ! Bedrock strength (Pa)
+! Regolith scaling parameters
+mu_r         0.41d0                             ! Experimentally derived parameter for regolith crater scaling law 
+kv_r         0.24d0                             ! Experimentally derived parameter for regolith crater scaling law
+trho_r       1500.0d0                           ! Target density (regolith) (kg/m**3)
+ybar_r       0.00d6                              ! Regolith strength (Pa)
+! Body parameters
+gaccel       1.62d0                             ! Gravitational acceleration at target (m/s**2)
+trad         1737.35d3                          ! Target radius (m)
+prho         2500.0d0                           ! Projectile density (kg/m**3)
+sfdfile      production.dat                     ! Impactor SFD file (col 1: Dimp (m), col 2: ! impactors > D
+velfile      lunar-MBA-impactor-velocities.dat  ! Impactor velocity dist file
+
+! Seismic shaking input (required if seismic shaking is set to T, otherwise ignored)
+doseismic    F                                  ! Perform seismic shaking calculations with each impact - Default F
+seisq        2000.0d0                           ! Seimsic energy attenuation quality factor, Q 
+                                                ! Value taken from Richardson et al. (2005)
+
+tvel         100.d0                             ! Target p-wave speed (m/s)
+                                                ! Value taken from Watkins and Kovach (1973) LPSC 
+
+tfrac         2000.d0                             ! Mean free path for seismic wave scattering in target (m)
+                                                ! Value taken from Dainty et al. (1974) The Moon v. 9 p. 11
+
+regcoh       520.d0                             ! Regolith layer cohesion (Pa)
+                                                ! Value taken from Colwell et al. (2007) Rev. of Geophys. v. 45 p. RG2006
+                                                ! For upper 0-60 cm
+
+neff         5.0d-10                            ! Impact energy seismic efficiency factor 
+
+
+! Optional input. These have internally set default values that work reasonable well. Comment them out with
+countingmodel   Fassett                         ! Crater counter model. Default is by Caleb Fassett.
+deplimit        10d3                            ! Depth limit for craters (m) - Default is to ignore.
+maxcrat         1.00d0                          ! Fraction of gridsize that maximum crater can be - Default 1.0
+killatmaxcrater F                               ! Stop the run if a crater larger than the maximum is produced - Default F      
+basinimp        35.0d3                          ! Size of impactor to switch to lunar basin scaling law - Default is to ignore
+docollapse      T                               ! Do slope collapse - Default T
+dosoftening     T                               ! Do ejecta softening - Default T
+doangle         T                               ! Vary the impact angle. Set to F to have only vertical impacts - Default T
+doregotrack     F
+
+! Testing input. These are used to perform non-Monte Carlo tests.
+testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties
+testimp      1.0                              ! Diameter of test impactor (m)
+testvel      15.d3                             ! Velocity of test crater (m/s)
+testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
+testxoffset  0.0d0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
+testyoffset  0.0d0                             ! y-axis offset of crater center from grid center (m) - Default 0.0
+tallyonly    F                                 ! Tally the craters without generating any craters
+testtally    F                                 ! Set to T to count all non-cookie cut craters, regardless of score
+
