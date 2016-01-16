@@ -52,12 +52,17 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
          call util_remove_from_layer(surfi,layer)
       end do
    end if
-   elchange = newdem - surfi%dem
+   elchange  = newdem - surfi%dem
    surfi%dem = newdem
 
+   if (user%porosityflg) then
+   	  call porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
+   else
+      !change ejecta coverage
+      surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
+   end if    
      
-   !change ejecta coverage
-   surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
+
 
    !do regotrack: pop stuff out
    if (user%doregotrack) call regolith_traverse_pop(elchange,surfi)
