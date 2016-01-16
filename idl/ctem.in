@@ -2,7 +2,7 @@
 
 ! IDL driver in uts
 interval     1.00e7                              ! Time interval between outputs (y)
-numintervals 400                                  ! Total number of intervals
+numintervals 400                                ! Total number of intervals
 restart      F                                  ! Restart a previous run
 impfile      MintonLunarProduction.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
 popupconsole T                                  ! Pop up console window every output interval 
@@ -20,7 +20,7 @@ runtype      single                             ! Run type: options are normal /
 
 ! CTEM required inputs
 seed         9234568                            ! Random number generator seed
-gridsize     2000                            ! Size of grid in pixels
+gridsize     1000                               ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
 pix          3.6e0                              ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
@@ -71,7 +71,7 @@ doangle         T                               ! Vary the impact angle. Set to 
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      50.0                              ! Diameter of test impactor (m)
+testimp      10.0                              ! Diameter of test impactor (m)
 testvel      15.d3                             ! Velocity of test crater (m/s)
 testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0d0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
@@ -79,3 +79,5 @@ testyoffset  0.0d0                             ! y-axis offset of crater center 
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F                                 ! Set to T to count all non-cookie cut craters, regardless of score
 
+! Porosity input
+porosityflg  F                                 ! Porosity on/off flg. Set to F to turn the model off. Default F. 
