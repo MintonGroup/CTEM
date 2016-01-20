@@ -1,11 +1,11 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
-#AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR
+AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR
 #ifort debug flags
 #AM_FCFLAGS = -O0 -p -g -openmp -debug all -traceback -CB
 
 #gfortran optimized flags
-AM_FCFLAGS =  -O3 -fopenmp -ffree-form
+#AM_FCFLAGS =  -O3 -fopenmp -ffree-form
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
@@ -66,7 +66,8 @@ crater/crater_tally_true.f90\
 crater/crater_tally_observed.f90\
 crater/crater_tally_calibrated_count.f90\
 crater/crater_slope_collapse.f90\
-porosity/porosity_form_interior.f90\
+crater/crater_soften.f90\
+crater/crater_soften_accumulate.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
