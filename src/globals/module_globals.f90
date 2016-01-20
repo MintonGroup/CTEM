@@ -51,7 +51,7 @@ real(DP),parameter :: VBIG    = huge(1._DP)    ! Very big number
 real(DP),parameter :: SMALLFAC = 1e-5_DP   ! Smallest unit of measurement proportional to pixel size
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
-real(DP),parameter :: TALLYTARGET = 1.0e-4_DP  ! The target number of crater kills per px**2 during a tally step
+real(DP),parameter :: TALLYTARGET = 1.0e-3_DP  ! The target number of crater kills per px**2 during a tally step
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 type regolayertype
