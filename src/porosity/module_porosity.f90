@@ -21,7 +21,7 @@ save
       subroutine porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
       use module_globals
       implicit none
-   	  type(usertype),intent(in) :: user
+      type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       type(cratertype),intent(in) :: crater
       real(DP),intent(in) :: lradsq,elchange,newelev
