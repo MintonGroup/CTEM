@@ -17,6 +17,7 @@ ejecta/module_ejecta.f90\
 init/module_init.f90\
 seismic/module_seismic.f90\
 regolith/module_regolith.f90\
+porosity/module_porposity.f90\
 util/util_toupper.f90\
 util/util_mrgrnk.f90\
 util/util_add_to_layer.f90\
