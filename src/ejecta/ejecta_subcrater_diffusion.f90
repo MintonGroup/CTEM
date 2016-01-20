@@ -34,29 +34,27 @@ subroutine ejecta_subcrater_diffusion(user,surf,domain,finterval)
    ! Internal variables
    real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: cumulative_elchange,kdiff
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
-   integer(I4B) :: i,j,bigi,bigj,xpi,ypi
+   integer(I4B) :: i,j,xpi,ypi
    integer(I4B) :: maxhits = 1
 
-   if (user%dosoftening) then 
-      ! Create box for soften calculation (will be no bigger than the grid itself)
-      do j = 0,user%gridsize + 1
-         do i = 0,user%gridsize + 1
-            xpi = i
-            ypi = j
-            call util_periodic(xpi,ypi,user%gridsize)
-            indarray(1,i,j) = xpi
-            indarray(2,i,j) = ypi
-         end do
+   ! Create box for soften calculation (will be no bigger than the grid itself)
+   do j = 0,user%gridsize + 1
+      do i = 0,user%gridsize + 1
+         xpi = i
+         ypi = j
+         call util_periodic(xpi,ypi,user%gridsize)
+         indarray(1,i,j) = xpi
+         indarray(2,i,j) = ypi
       end do
-      kdiff = user%diffusion_const * user%interval * finterval 
-      call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
-      do j = 1,user%gridsize
-         do i = 1,user%gridsize
-            surf(i,j)%dem = surf(i,j)%dem + cumulative_elchange(i,j)
-            surf(i,j)%ejcov = max(surf(i,j)%ejcov + cumulative_elchange(i,j),0.0_DP)
-         end do
+   end do
+   kdiff = user%diffusion_const * user%interval * finterval 
+   call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
+   do j = 1,user%gridsize
+      do i = 1,user%gridsize
+         surf(i,j)%dem = surf(i,j)%dem + cumulative_elchange(i,j)
+         surf(i,j)%ejcov = max(surf(i,j)%ejcov + cumulative_elchange(i,j),0.0_DP)
       end do
-   end if
+   end do
 
 return
 end subroutine ejecta_subcrater_diffusion
