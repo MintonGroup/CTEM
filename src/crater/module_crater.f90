@@ -179,4 +179,28 @@ end interface
       end subroutine crater_slope_collapse
    end interface
 
+   interface
+      subroutine crater_soften(user,surf,crater,domain,kdiff)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      type(domaintype),intent(in) :: domain
+      real(DP),dimension(:,:),intent(in) :: kdiff
+      end subroutine crater_soften
+   end interface
+
+   interface
+      subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      type(domaintype),intent(in) :: domain
+      real(DP),dimension(:,:),intent(out) :: kdiff
+      end subroutine crater_soften_accumulate
+   end interface
+
 end module
