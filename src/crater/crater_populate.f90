@@ -69,6 +69,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B)            :: craters_since_tally,icrater_last_tally
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
+   real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: crater_soften_kdiff 
    !character(len=MESSAGESIZE) :: message  ! message for the progress bar
 
    ! ejecta blanket array
@@ -82,8 +83,12 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    ! Shallowest streamtube
    !real(DP) :: erad,zmix
 
+   ! Initialize the crater soften accumualtor
+   crater_soften_kdiff = 0.0_DP
+
    ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B) 
    !ntotcrat = int(prod(2,domain%smallest_ejecta_index),kind=I8B)
+
 
    if (user%testflag) then
       ntotcrat = 1
@@ -232,6 +237,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          if (.not.user%testflag) call io_updatePbar("")
       end if
 
+      ! Generate dynamic diffusion
+      if (user%dosoftening) call crater_soften(user,surf,crater,domain,crater_soften_kdiff)
 
       ! Collapse any remaining unstable slopes
       if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
@@ -266,6 +273,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
       if (nsincetally == tallycadence) then
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
+         if (user%dosoftening) then
+            call crater_soften(user,surf,crater,domain,crater_soften_kdiff)
+            crater_soften_kdiff = 0.0_DP
+         end if
+         call ejecta_subcrater_diffusion(user,surf,domain,finterval)
          icrater_last_tally = icrater
          !if (user%doregotrack) call regolith_mix(user,surf,0.001_DP)
          call crater_tally_observed(user,surf,domain,nkilled,onum)
@@ -276,14 +288,15 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          else
             tallycadence = max(1,int(tallycadence * TALLYTARGET / (nkilled / (1.0_DP * user%gridsize**2))))
          end if
-      end if
 
+      end if
    end do  ! end crater production loop 
  
    craters_since_tally = icrater - icrater_last_tally
    finterval = craters_since_tally / real(ntotcrat,kind=DP)
    if (ntotcrat == 0) finterval = 1
    if (.not.user%testflag) call ejecta_subcrater_diffusion(user,surf,domain,finterval)
+   if (user%dosoftening) call crater_soften(user,surf,crater,domain,crater_soften_kdiff)
 
    ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats
