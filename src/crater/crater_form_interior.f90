@@ -22,6 +22,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    use module_globals
    use module_util
    use module_regolith
+   use module_porosity
    use module_crater, EXCEPT_THIS_ONE => crater_form_interior
    implicit none
 
@@ -55,8 +56,8 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    elchange  = newdem - surfi%dem
    surfi%dem = newdem
 
-   if (user%porosityflg) then
-   	  call porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
+   if (user%doporosity) then
+      call porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
    else
       !change ejecta coverage
       surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
