@@ -85,7 +85,6 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%countingmodel = "FASSETT"
-   user%tallystart = 5000
    user%doporosity = .false.
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
@@ -429,11 +428,6 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%shadedmaxh
-         case ("TALLYSTART")
-            ifirst = ilast + 1
-            call io_get_token(line, ilength, ifirst, ilast, ierr)
-            token = line(ifirst:ilast)
-            read(token, *) user%tallystart
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
          !**************************************************************************
