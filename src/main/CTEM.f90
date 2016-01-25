@@ -58,7 +58,6 @@ integer(I4B)            :: nkilled
 integer(I4B)            :: ntotkilled 
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
-integer(I4B)            :: tallycadence
 !$ real(DP)             :: t1,t2
 
 !$ t1 = omp_get_wtime()
@@ -92,7 +91,7 @@ allocate(obsdist(6,domain%distl+1))
 call random_seed
 call random_seed(size=n)
 allocate(seedarr(n))
-call io_read_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,seedarr)
+call io_read_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
 call random_seed(put=seedarr)
 
 ! Read in old grid arrays, production function, and velocity distributions
@@ -110,12 +109,12 @@ if (.not.user%tallyonly) then
    else
       ntotcrat = nint(prod(2,domain%smallest_impactor_index))
    end if
-   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,tallycadence,fracdone)
+   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
    totalimpacts = totalimpacts + ntotcrat
-   call io_write_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,seedarr)
+   call io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
    call crater_tally_true(domain,truelist(:,1:ntrue),ntrue,truedist)
 end if
 
