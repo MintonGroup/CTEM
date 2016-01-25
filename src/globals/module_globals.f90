@@ -14,7 +14,7 @@ module module_globals
 implicit none
 public
 
-character(len=*),parameter :: CTEMVER = "1.X DEVELOPMENT"
+character(len=*),parameter :: CTEMVER = "1.3 DEVELOPMENT"
 
 ! Symbolic names for kind types of 4-, 2-, and 1-byte integers:
 integer, parameter :: I8B = selected_int_kind(17)
@@ -52,6 +52,7 @@ real(DP),parameter :: SMALLFAC = 1e-5_DP   ! Smallest unit of measurement propor
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
 real(DP),parameter :: TALLYTARGET = 1.0e-3_DP  ! The target number of crater kills per px**2 during a tally step
+real(DP),parameter :: TALLYCOVERAGE = 0.5_DP   ! The total area coverage to reach before a tally step is executed
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 type regolayertype
@@ -126,6 +127,7 @@ type domaintype
    real(DP)     :: vescsq    ! Escape velocity at target
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
+   integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
 end type domaintype 
 
 ! Derived data type for user input variables
@@ -205,7 +207,6 @@ type usertype
    real(DP)          :: shadedminh   ! Minimum height for shaded relief map (m)
    real(DP)          :: shadedmaxh   ! Maximum height for shaded relief map (m)
    character(STRMAX) :: sfdcompare   ! Type of run: 0 for normal, 1 for statistical (domain is reset between intervals)
-   integer(I4B)      :: tallystart   ! Initial tally cadence
 end type usertype
 
 ! Derived data type for the ejecta blanket table elements
@@ -279,5 +280,7 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
+
+
 
 end module module_globals
