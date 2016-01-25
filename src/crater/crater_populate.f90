@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,tallycadence,fracdone)
+subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone)
    use module_globals
    use module_seismic
    use module_io
@@ -39,7 +39,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B),intent(out)                        :: ntotkilled
    real(DP),dimension(:,:),allocatable,intent(out) :: truelist
    real(DP),intent(out)                            :: mass
-   integer(I4B),intent(inout)                      :: tallycadence
    real(DP),intent(out)                            :: fracdone
 
    ! Internal variables
@@ -70,7 +69,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
    real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: crater_soften_kdiff 
-   !character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   character(len=MESSAGESIZE) :: message  ! message for the progress bar
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -82,6 +81,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    !real(DP) :: whoohoo
    ! Shallowest streamtube
    !real(DP) :: erad,zmix
+   !real(DP),external :: targetfrac
+   !real(DP)  :: targetfrac
 
    ! Initialize the crater soften accumualtor
    crater_soften_kdiff = 0.0_DP
@@ -127,7 +128,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    icrater_last_tally = 0
    icrater = 0
    clock = 0.0_DP
-   !whoohoo = 0._DP
+   ! Reset coverage map
+   domain%tallycoverage = 0
 
    ! Shallowest streamtube
    !write(*,*) domain%subcrater_limit
@@ -238,7 +240,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
       end if
 
       ! Generate dynamic diffusion
-      if (user%dosoftening) call crater_soften(user,surf,crater,domain,crater_soften_kdiff)
+      if (user%dosoftening) call crater_soften_accumulate(user,surf,crater,domain,crater_soften_kdiff)
 
       ! Collapse any remaining unstable slopes
       if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
@@ -269,8 +271,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          end if
          call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
       end if
-
-      if (nsincetally == tallycadence) then
+      
+      if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
+         domain%tallycoverage = 0
+         write(message,'("Tally")')
+         call io_updatePbar(message)
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
          if (user%dosoftening) then
@@ -283,12 +288,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          call crater_tally_observed(user,surf,domain,nkilled,onum)
          ntotkilled = ntotkilled + nkilled
          nsincetally = 0
-         if (nkilled == 0) then
-            tallycadence = tallycadence * 2
-         else
-            tallycadence = max(1,int(tallycadence * TALLYTARGET / (nkilled / (1.0_DP * user%gridsize**2))))
-         end if
-
       end if
    end do  ! end crater production loop 
  
@@ -312,4 +311,5 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    
    return
 end subroutine crater_populate
+
 
