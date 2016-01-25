@@ -18,7 +18,7 @@ public
 save
 
    interface
-      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,tallycadence,fracdone)
+      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -31,7 +31,6 @@ save
       integer(I4B),intent(out)                     :: ntotkilled
       real(DP),dimension(:,:),intent(out)          :: truelist
       real(DP),intent(out)                         :: mass
-      integer(I4B),intent(inout)                   :: tallycadence
       real(DP),intent(out)                         :: fracdone
       end subroutine crater_populate
    end interface
@@ -88,7 +87,7 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
-      type(domaintype),intent(in) :: domain
+      type(domaintype),intent(inout) :: domain
       real(DP),intent(in) :: melev,xslp,yslp
       end subroutine crater_emplace
    end interface
