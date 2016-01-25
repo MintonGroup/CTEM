@@ -86,6 +86,7 @@ subroutine io_input(infile,user)
    user%killatmaxcrater = .false.
    user%countingmodel = "FASSETT"
    user%tallystart = 5000
+   user%doporosity = .false.
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -318,7 +319,7 @@ subroutine io_input(infile,user)
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%porosityflg
+            read(token, *) user%doporosity
          ! Seismic variables (only required if doseismic is set to .true.
          case ("KILLATMAXCRATER")
             ifirst = ilast + 1
