@@ -153,7 +153,7 @@ type usertype
    ! Optional input variables
    logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
    logical           :: doangle    ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
-   logical           :: porosityflg ! Porosity on/off flg. Set to F to turn the model off. Default F. 
+   logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
    real(DP)          :: deplimit  ! complex crater depth limit
