@@ -28,7 +28,7 @@ restart = "F"
 fracdone = 1.0d0
 masstot = 0.d0
 
-ctem_io_read_input,infilename,interval,numintervals,gridsize,pix,seed,numlayers,sfdfile,impfile,maxcrat,ph1,shadedmaxhdefault,shadedminhdefault,shadedminh,shadedmaxh,restart,runtype,popupconsole,saveshaded,saverego,savepres,savetruelist,tallycadence
+ctem_io_read_input,infilename,interval,numintervals,gridsize,pix,seed,numlayers,sfdfile,impfile,maxcrat,ph1,shadedmaxhdefault,shadedminhdefault,shadedminh,shadedmaxh,restart,runtype,popupconsole,saveshaded,saverego,savepres,savetruelist
 
 seedarr(0) = seed
 area = (gridsize * pix)^2
@@ -63,7 +63,7 @@ tdist = dblarr(6,distl)
 pdist = dblarr(6,pdistl)
 pdisttotal = dblarr(6,pdistl)
 
-datformat = "(I17,1X,I12,1X,E19.12,1X,A1,1X,I12,1X,F9.6,1X,E19.12)"
+datformat = "(I17,1X,I12,1X,E19.12,1X,A1,1X,F9.6,1X,E19.12)"
 
 
 if strmatch(restart,'F',/fold_case) then begin ; Start with a clean slate
@@ -76,7 +76,7 @@ if strmatch(restart,'F',/fold_case) then begin ; Start with a clean slate
 	if strmatch(runtype,'statistical',/fold_case) then begin
 		ncount = 1
 		openw,LUN,DATFILE,/GET_LUN
-		printf,LUN,totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,format=datformat
+		printf,LUN,totalimpacts,ncount,curyear,restart,fracdone,masstot,format=datformat
 		for n=0,seedn-1 do begin
 			printf,LUN,seedarr(n),format='(I12)'
 		endfor
@@ -97,7 +97,7 @@ endif else begin ; continue an old run
 
 	;read in constants file
 	openr,LUN,DATFILE,/GET_LUN
-	readf,LUN,totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,format=datformat
+	readf,LUN,totalimpacts,ncount,curyear,restart,fracdone,masstot,format=datformat
 	seedn = 0
 	while ~ eof(LUN) do begin 
 		readf,LUN,iseed
@@ -141,7 +141,7 @@ while (ncount le numintervals) do begin
 
 		;read in constants file
 		openr,LUN,DATFILE,/GET_LUN
-		readf,LUN,totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,format=datformat
+		readf,LUN,totalimpacts,ncount,curyear,restart,fracdone,masstot,format=datformat
 		seedn = 0
 		while ~ eof(LUN) do begin 
 			readf,LUN,iseed
@@ -187,29 +187,6 @@ while (ncount le numintervals) do begin
 		fname = 'misc/mass_' + fnum + '.dat'
 		file_copy, 'impactmass.dat', fname, /OVERWRITE
 
-		; make dem folder if there is not such a folder.
-		if (file_test('dem',/DIRECTORY) eq 0) then begin
-			file_mkdir,'dem'
-		endif
-	
-		;save a copy of the binned idealized production function
-		fname = 'dem/surface_dem_' + fnum + '.dat'
-		file_copy, 'surface_dem.dat', fname, /OVERWRITE	
-
-		; make ejc folder if there is not such a folder.
-		if (file_test('ejc',/DIRECTORY) eq 0) then begin
-			file_mkdir,'ejc'
-		endif	
-		
-		;save a copy of the binned idealized production function
-		fname = 'ejc/surface_ejc_' + fnum + '.dat'
-		file_copy, 'surface_ejc.dat', fname, /OVERWRITE			
-		
-		; save a copy of the cumulative true crater distribution if the user requests it
-		if strmatch(savetruelist,'T',/fold_case) then begin
-			fname = 'dist/tcum_' + fnum + '.dat'
-			file_copy, 'tcumulative.dat', fname, /OVERWRITE
-		endif
 
 	endif
 
@@ -244,7 +221,7 @@ while (ncount le numintervals) do begin
 	endelse
 
 	openw,LUN,DATFILE,/GET_LUN
-	printf,LUN,totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,format=datformat
+	printf,LUN,totalimpacts,ncount,curyear,restart,fracdone,masstot,format=datformat
 	for n=0,seedn-1 do begin
 		printf,LUN,seedarr(n),format='(I12)'
 	endfor
