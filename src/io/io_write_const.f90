@@ -17,13 +17,13 @@
 !
 !**********************************************************************************************************************************
 
-subroutine io_write_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,seedarr)
+subroutine io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_write_const
    implicit none
    
    ! Arguments
-   integer(I4B),intent(in) :: totalimpacts,ncount,tallycadence
+   integer(I4B),intent(in) :: totalimpacts,ncount
    logical,intent(in) :: restart
    real(DP),intent(in) :: curyear,fracdone,masstot
    integer(I4B),dimension(:),intent(in) :: seedarr
@@ -34,8 +34,8 @@ subroutine io_write_const(totalimpacts,ncount,curyear,restart,tallycadence,fracd
 
    open(unit=cfile,file=DATFILE,status='replace')
 
-   1000 format (I17,1X,I12,1X,ES19.12,1X,L1,1X,I12,1X,F9.6,1X,ES19.12)
-   write(cfile,1000) totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot
+   1000 format (I17,1X,I12,1X,ES19.12,1X,L1,1X,F9.6,1X,ES19.12)
+   write(cfile,1000) totalimpacts,ncount,curyear,restart,fracdone,masstot
    do l=1,size(seedarr)
       write(cfile,'(I12)') seedarr(l)
    end do
