@@ -25,6 +25,7 @@
 !**********************************************************************************************************************************
 subroutine porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
    use module_globals
+   use module_porosity, EXCEPT_THIS_ONE => porosity_form_interior
    implicit none
 
    ! Arguments
