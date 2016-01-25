@@ -25,23 +25,23 @@ save
    end interface
 
    interface
-      subroutine io_read_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,seedarr)
+      subroutine io_read_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
       use module_globals
       implicit none
       integer(I8B),intent(out) :: totalimpacts
       integer(I4B),dimension(:),intent(out) :: seedarr
-      integer(I4B),intent(out) :: ncount,tallycadence
+      integer(I4B),intent(out) :: ncount
       logical,intent(out) :: restart
       real(DP),intent(out) :: curyear,fracdone,masstot
       end subroutine io_read_const
    end interface
 
    interface
-      subroutine io_write_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,seedarr)
+      subroutine io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
       use module_globals
       implicit none
       integer(I8B),intent(in) :: totalimpacts
-      integer(I4B),intent(in) :: ncount,tallycadence
+      integer(I4B),intent(in) :: ncount
       logical,intent(in) :: restart
       real(DP),intent(in) :: curyear,fracdone,masstot
       integer(I4B),dimension(:),intent(in) :: seedarr
