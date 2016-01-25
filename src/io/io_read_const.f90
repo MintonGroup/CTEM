@@ -22,14 +22,14 @@
 !
 !**********************************************************************************************************************************
 
-subroutine io_read_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot,seedarr)
+subroutine io_read_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_read_const
    implicit none
    
    ! Arguments
    integer(I8B),intent(out) :: totalimpacts
-   integer(I4B),intent(out) :: ncount,tallycadence
+   integer(I4B),intent(out) :: ncount
    logical,intent(out) :: restart
    real(DP),intent(out) :: curyear,fracdone,masstot
    integer(I4B),dimension(:),intent(out) :: seedarr
@@ -39,7 +39,7 @@ subroutine io_read_const(totalimpacts,ncount,curyear,restart,tallycadence,fracdo
    integer(I4B) :: ioerr,l
 
    open(unit=cfile,file=DATFILE,status='old')
-   read(cfile,*) totalimpacts,ncount,curyear,restart,tallycadence,fracdone,masstot
+   read(cfile,*) totalimpacts,ncount,curyear,restart,fracdone,masstot
    do l=1,size(seedarr)
       read(cfile,*,iostat=ioerr) seedarr(l)
       if (ioerr/=0) seedarr(l)=abs(mod(((l-1)*181)*((seedarr(1)-83)*359),104729))
