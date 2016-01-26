@@ -198,7 +198,7 @@ end interface
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),dimension(:,:),intent(out) :: kdiff
+      real(DP),dimension(:,:),intent(inout) :: kdiff
       end subroutine crater_soften_accumulate
    end interface
 
