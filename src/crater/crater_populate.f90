@@ -274,8 +274,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
       
       if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
          domain%tallycoverage = 0
-         write(message,'("Tally")')
+         write(message,*) "Tally"
          call io_updatePbar(message)
+         !write(*,*)
+         !write(*,*) 'Tally step'
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
          if (user%dosoftening) then
@@ -286,6 +288,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          icrater_last_tally = icrater
          !if (user%doregotrack) call regolith_mix(user,surf,0.001_DP)
          call crater_tally_observed(user,surf,domain,nkilled,onum)
+         write(message,*) "Tally killed ",nkilled
+         call io_updatePbar(message)
          ntotkilled = ntotkilled + nkilled
          nsincetally = 0
       end if
