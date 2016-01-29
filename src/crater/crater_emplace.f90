@@ -28,7 +28,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
-   type(domaintype),intent(in) :: domain
+   type(domaintype),intent(inout) :: domain
    real(DP),intent(in) :: melev,xslp,yslp
 
    ! Internal variables
@@ -69,6 +69,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
             ! Form interior, rim, and ejecta blanket 
             if (lradsq < fradsq) then 
                call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,melev)
+               domain%tallycoverage = domain%tallycoverage + 1
             else 
                call crater_form_exterior(user,surf(xpi,ypi),crater,domain,lradsq,newelev) 
             end if
