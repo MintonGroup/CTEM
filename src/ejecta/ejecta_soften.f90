@@ -32,7 +32,7 @@ subroutine ejecta_soften(user,surf,N,indarray,cumulative_elchange)
    integer(I4B),dimension(2,N,N),intent(in) :: indarray
    real(DP),dimension(N,N),intent(inout) :: cumulative_elchange 
    !real(DP),parameter :: SOFTEN_FACTOR = 2.50_DP ! Constant in topographic diffusion term for ejecta blanket softening
-   real(DP),parameter :: SOFTEN_FACTOR = 2.00_DP ! Constant in topographic diffusion term for ejecta blanket softening
+   real(DP),parameter :: EJECTA_SOFTEN_FACTOR = 2.00_DP ! Constant in topographic diffusion term for ejecta blanket softening
 
    ! Internal variables
    integer(I4B) :: maxhits
@@ -46,7 +46,7 @@ subroutine ejecta_soften(user,surf,N,indarray,cumulative_elchange)
    maxhits = 1
 
    ! Diffusion constant for 1 time unit was found to be proportional to ejecta thickness times the pixel size
-   kdiff = SOFTEN_FACTOR * user%pix * ebharr 
+   kdiff = EJECTA_SOFTEN_FACTOR * user%pix * ebharr 
    !TESTING
    !kdiff = user%sf * user%pix**user%k * ebharr**user%p !**0.900
 
