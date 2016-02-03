@@ -18,7 +18,7 @@ public
 save
 
    interface
-      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone)
+      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -32,6 +32,7 @@ save
       real(DP),dimension(:,:),intent(out)          :: truelist
       real(DP),intent(out)                         :: mass
       real(DP),intent(out)                         :: fracdone
+      real(DP),dimension(:,:),intent(in),optional  :: nflux 
       end subroutine crater_populate
    end interface
 
@@ -93,7 +94,8 @@ save
    end interface
 
    interface
-      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
+      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
+          thickness_porous_tot,thickness_porous_mare)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -101,6 +103,7 @@ save
       type(cratertype),intent(in) :: crater
       real(DP),intent(in) :: lradsq
       real(DP),intent(in) :: newelev,melev
+      real(DP),intent(inout),optional :: thickness_porous_tot, thickness_porous_mare
       end subroutine crater_form_interior
    end interface
 
