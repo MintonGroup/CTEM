@@ -17,14 +17,14 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone)
+subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
    use module_globals
    use module_seismic
    use module_io
    use module_ejecta
    use module_util
    !use module_crust
-   use module_regolith ! simulate regolith reowrking zone
+   use module_regolith ! simulate regolith mixing 
    use module_crater, EXCEPT_THIS_ONE => crater_populate
    implicit none
 
@@ -40,6 +40,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    real(DP),dimension(:,:),allocatable,intent(out) :: truelist
    real(DP),intent(out)                            :: mass
    real(DP),intent(out)                            :: fracdone
+   real(DP),dimension(:,:),intent(in),optional     :: nflux 
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -76,13 +77,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B) :: ejtble
    ! doregotrack
    real(DP) :: melt, clock!, volume, r1, r2, h
-   !integer(I4B) :: reworkfreq, mratio, imratio
-   ! testing small impacts' composition mixing
-   !real(DP) :: whoohoo
-   ! Shallowest streamtube
-   !real(DP) :: erad,zmix
-   !real(DP),external :: targetfrac
-   !real(DP)  :: targetfrac
 
    ! Initialize the crater soften accumualtor
    crater_soften_kdiff = 0.0_DP
@@ -130,20 +124,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    clock = 0.0_DP
    ! Reset coverage map
    domain%tallycoverage = 0
-
-   ! Shallowest streamtube
-   !write(*,*) domain%subcrater_limit
-   !if (user%doregotrack) then
-   !   crater%frad = domain%subcrater_limit/2.0_DP
-   !   crater%sinimpang = 1.0_DP
-   !   crater%impvel = vdist(1,domain%vnum)
-   !   crater%imp = prod(1,domain%smallest_impactor_index)
-   !   crater%rad = crater%frad / TRSIM
-   !   call ejecta_table_define(user,crater,domain,ejb,ejtble)
-   !   erad = ejb(EJBTABSIZE)%erad
-   !   zmix = erad / 4.0_DP
-   !   write(*,*) crater%frad, crater%impvel, crater%imp, crater%rad, erad, zmix
-   !end if
 
    do while (icrater < ntotcrat)
       icrater = icrater + 1
@@ -286,7 +266,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          end if
          call ejecta_subcrater_diffusion(user,surf,domain,finterval)
          icrater_last_tally = icrater
-         !if (user%doregotrack) call regolith_mix(user,surf,0.001_DP)
+         if (user%doregotrack) then
+         call regolith_mix(user,surf,domain,nflux,finterval) 
+         end if
          call crater_tally_observed(user,surf,domain,nkilled,onum)
          write(message,*) "Tally killed ",nkilled
          call io_updatePbar(message)
@@ -312,8 +294,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    write(*,*) 'Maximum impactor diameter = ',imax
    write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
    write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
-   
+
    return
 end subroutine crater_populate
-
-
