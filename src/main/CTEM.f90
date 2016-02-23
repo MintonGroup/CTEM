@@ -59,6 +59,7 @@ integer(I4B)            :: ntotkilled
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
 !$ real(DP)             :: t1,t2
+real(DP),dimension(:,:),allocatable :: nflux
 
 !$ t1 = omp_get_wtime()
 call io_splash()
@@ -82,7 +83,7 @@ call io_read_prod(prod,user,domain)
 call io_read_vdist(vdist,user,domain)
 
 write(*,*) "Initializing simulation domain and determining minimum impactor size"
-call init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
+call init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
 
 allocate(truedist(6,domain%distl+1))
 allocate(obsdist(6,domain%distl+1))
@@ -109,7 +110,7 @@ if (.not.user%tallyonly) then
    else
       ntotcrat = nint(prod(2,domain%smallest_impactor_index))
    end if
-   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone)
+   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
