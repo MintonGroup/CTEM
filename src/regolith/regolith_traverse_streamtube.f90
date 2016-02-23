@@ -18,8 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,turnover,dmix)
-!subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,turnover)
+subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)!,turnover,dmix)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_streamtube
    implicit none
@@ -30,8 +29,6 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
    type(regolayertype),intent(inout) :: newlayer
    real(DP),intent(out)            :: vmare,totseb
-   logical,intent(inout)           :: turnover
-   real(DP),intent(inout)          :: dmix 
    !real(DP),dimension(200),intent(out) :: tots
    !real(DP),intent(out) :: thetast
    !integer(I4B),intent(out) :: cnt
@@ -68,8 +65,7 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
      !if (ri == 0.0 .or. rip1>=eradi .or. abs(thetast)>10.0) then
      !call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,&
      !     turnover)
-     call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,&
-          turnover,dmix)
+     call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb)!,turnover,dmix)
      !write(*,*) 'line',ri,rip1,zmax,vmare/(user%pix**2), totseb/(user%pix**2)
      !else
      !   call regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,&
