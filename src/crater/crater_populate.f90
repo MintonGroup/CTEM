@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
    use module_globals
    use module_seismic
    use module_io
@@ -33,7 +33,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    type(surftype),dimension(:,:),intent(inout)     :: surf
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
-   real(DP),dimension(:,:),intent(in)              :: prod,vdist
+   real(DP),dimension(:,:),intent(in)              :: prod,crtscl,vdist
    integer(I4B),intent(out)                        :: ntrue
    integer(I4B),intent(out)                        :: vistrue
    integer(I4B),intent(out)                        :: ntotkilled
@@ -69,7 +69,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B)            :: craters_since_tally,icrater_last_tally
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
-   real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: crater_soften_kdiff 
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
 
    ! ejecta blanket array
@@ -77,9 +76,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B) :: ejtble
    ! doregotrack
    real(DP) :: melt, clock!, volume, r1, r2, h
-
-   ! Initialize the crater soften accumualtor
-   crater_soften_kdiff = 0.0_DP
 
    ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B) 
    !ntotcrat = int(prod(2,domain%smallest_ejecta_index),kind=I8B)
@@ -190,6 +186,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
       crater%maxinc = 0
       ! Do seismic shaking
       if (user%doseismic) call seismic_shake(user,surf,crater,domain)
+      
+      ! Generate dynamic diffusion
+      if (user%dosoftening) call crater_soften(user,surf,crater,domain)
 
       ! find the average height and slope at crater location
       call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
@@ -219,8 +218,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          if (.not.user%testflag) call io_updatePbar("")
       end if
 
-      ! Generate dynamic diffusion
-      if (user%dosoftening) call crater_soften_accumulate(user,surf,crater,domain,crater_soften_kdiff)
 
       ! Collapse any remaining unstable slopes
       if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
@@ -260,11 +257,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          !write(*,*) 'Tally step'
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         if (user%dosoftening) then
-            call crater_soften(user,surf,crater,domain,crater_soften_kdiff)
-            crater_soften_kdiff = 0.0_DP
-         end if
-         call ejecta_subcrater_diffusion(user,surf,domain,finterval)
+         call crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
          icrater_last_tally = icrater
          if (user%doregotrack) then
          call regolith_mix(user,surf,domain,nflux,finterval) 
@@ -280,8 +273,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    craters_since_tally = icrater - icrater_last_tally
    finterval = craters_since_tally / real(ntotcrat,kind=DP)
    if (ntotcrat == 0) finterval = 1
-   if (.not.user%testflag) call ejecta_subcrater_diffusion(user,surf,domain,finterval)
-   if (user%dosoftening) call crater_soften(user,surf,crater,domain,crater_soften_kdiff)
+   if (.not.user%testflag) call crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
 
    ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats
