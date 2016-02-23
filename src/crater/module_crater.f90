@@ -18,14 +18,14 @@ public
 save
 
    interface
-      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+      subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout)  :: surf
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain
-      real(DP),dimension(:,:),intent(in)           :: prod,vdist
+      real(DP),dimension(:,:),intent(in)           :: prod,crtscl,vdist
       integer(I4B),intent(out)                     :: ntrue
       integer(I4B),intent(out)                     :: vistrue
       integer(I4B),intent(out)                     :: ntotkilled
@@ -182,27 +182,27 @@ end interface
    end interface
 
    interface
-      subroutine crater_soften(user,surf,crater,domain,kdiff)
+      subroutine crater_soften(user,surf,crater,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),dimension(:,:),intent(in) :: kdiff
       end subroutine crater_soften
    end interface
 
+
    interface
-      subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
+      subroutine crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
-      type(cratertype),intent(inout) :: crater
-      type(domaintype),intent(in) :: domain
-      real(DP),dimension(:,:),intent(inout) :: kdiff
-      end subroutine crater_soften_accumulate
+      real(DP),dimension(:,:),intent(in) :: prod,crtscl
+      type(domaintype),intent(in)    :: domain
+      real(DP),intent(in) :: finterval
+      end subroutine crater_subcrater_diffusion
    end interface
 
 end module
