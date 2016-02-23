@@ -18,8 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,turnover,dmix)
-!subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,turnover)
+subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb)!,turnover,dmix)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_lineseg
    implicit none
@@ -29,8 +28,6 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
    type(regolayertype),intent(inout) :: newlayer
    real(DP),intent(inout) :: vmare,totseb
-   logical,intent(inout) :: turnover
-   real(DP),intent(inout) :: dmix 
    ! internal variables
    real(DP),parameter :: a = 0.936457 
    real(DP),parameter :: b = 1.12368
@@ -74,12 +71,6 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
              vmare = vsgly * current%next%comp
              totseb = vsgly 
              !write(*,*) 'z<zmin',z,vmare/user%pix**2,vsgly/user%pix**2,ri,rip1,zmin,zmax,zstart,zend
-
-             if (zend > zmix) then
-                turnover = .true.
-                dmix = dmix + vsgly / (user%pix * user%pix)
-             end if
-
              exit
           else
              current => current%next
@@ -93,12 +84,6 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                        - tan(b/eradi * rstart)) - abs(b/eradi * rend - b/eradi * rstart))
                vmare = vmare + vsgly * current%comp
                totseb = totseb + vsgly
-
-               if (zend > zmix) then
-                  turnover = .true.
-                  dmix = dmix + vsgly / (user%pix * user%pix)
-               end if
-
                !write(*,*) 'lmid',z,current%comp,deltar,vsgly/user%pix**2,ri,rip1,rstart,rend,zmin,zmax,zstart,zend 
                current => current%next
                z = z + current%thickness
@@ -111,12 +96,6 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                vmare = vsgly * current%comp
                totseb = vsgly
                !write(*,*) 'z>zmax',z,vmare/user%pix**2,vsgly/user%pix**2,ri,rip1,zmin,zmax,zstart,zend
-
-               if (zstart > zmix) then
-                  turnover = .true.
-                  dmix = dmix + vsgly / (user%pix * user%pix)
-               end if
-
                exit
        else if (zend >= zmax .and. zstart > zmin) then 
                 ! last part of a stream tube
@@ -124,12 +103,6 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                        abs(b/eradi * rip1 - b/eradi * ri))
                vmare = vmare + (vsgly - totseb) * current%comp
                totseb = vsgly 
-
-               if (zstart > zmix) then
-                  turnover = .true.
-                  dmix = dmix + vsgly / (user%pix * user%pix)
-               end if
-
                !write(*,*) 'llast',z,current%comp,vmare/user%pix**2,vsgly/user%pix**2,ri,rip1,rstart,rend,zmin,zmax,zstart,zend
                exit
        !else 
