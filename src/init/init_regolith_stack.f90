@@ -69,12 +69,10 @@ subroutine init_regolith_stack(user,surf)
       end do
    end do
  
+!   call init_regolith_parab(user,surf)
+
    do yp = 1,user%gridsize
       do xp = 1,user%gridsize
-!!         surf(xp,yp)%nmixi = 0
-!!        surf(xp,yp)%nmixf = 0
-!!         surf(xp,yp)%dexcav = 0._DP
-!!         surf(xp,yp)%dmix = 0._DP
          if (xp<=user%gridsize/2) then 
             highland%thickness = 1000.0_DP
             highland%meltfrac  = 0._DP 
