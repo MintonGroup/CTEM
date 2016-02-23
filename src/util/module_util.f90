@@ -138,5 +138,14 @@ interface
    end subroutine util_diffusion_solver
 end interface
 
+interface
+   function util_area_intersection(R,xbar,ybar,P) result(area)
+   use module_globals
+   implicit none
+   real(DP),intent(in) :: R,xbar,ybar,P
+   real(DP) :: area
+   end function util_area_intersection
+end interface
+
 end module
 
