@@ -5,7 +5,7 @@ bin_PROGRAMS = CTEM
 #AM_FCFLAGS = -O0 -p -g -openmp -debug all -traceback -CB
 
 #gfortran optimized flags
-AM_FCFLAGS =  -O3 -fopenmp -ffree-form
+AM_FCFLAGS =  -O3 -fopenmp -ffree-form -g -fbounds-check -fbacktrace
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
@@ -73,6 +73,7 @@ init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
 init/init_regolith_stack.f90\
+init/init_regolith_parab.f90\
 seismic/seismic_shake.f90\
 seismic/seismic_distance.f90\
 seismic/seismic_table_define.f90\
@@ -86,7 +87,8 @@ regolith/regolith_pop.f90\
 regolith/regolith_push.f90\
 regolith/regolith_quadratic_func.f90\
 regolith/regolith_quartic_func.f90\
-regolith/regolith_reworking_zone.f90\
+regolith/regolith_mix.f90\
+regolith/regolith_mix_porous_regime.f90\
 regolith/regolith_streamtube.f90\
 regolith/regolith_streamtube_head.f90\
 regolith/regolith_streamtube_lineseg.f90\
