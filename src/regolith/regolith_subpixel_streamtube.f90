@@ -18,8 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover,dmix)
-!subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover)
+subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)!,turnover,dmix)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_subpixel_streamtube
    implicit none
@@ -30,8 +29,6 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    real(DP),intent(in)            :: deltar,ri,rip1,eradi
    type(regolayertype),intent(inout) :: newlayer
    real(DP),intent(out)            :: vmare,totseb
-   logical, intent(inout)          :: turnover
-   real(DP),intent(inout)          :: dmix 
 
    ! Traversing a linked list 
    real(DP),parameter :: a = 0.936457 
@@ -100,11 +97,6 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          vmare = vmare + vsgly * current%comp
          totseb = totseb + vsgly
 
-         if (z > zmix) then 
-            turnover = .true.
-            dmix = dmix + vsgly / (user%pix * user%pix)
-         end if
-
          current => current%next
          z = z + current%thickness 
          zstart = zend
@@ -116,25 +108,18 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          vsgly   = 0.25 * PI * deltar**2 * a**2 * eradi / b * (abs(tan(b) - b)) 
          vmare   = vmare + (vsgly - totseb) * current%comp
          totseb  = vsgly 
-     
-         if (z > zmix) then
-            turnover = .true.
-            dmix = dmix + vsgly / (user%pix * user%pix)
-         end if
-
          exit
       end if
      end do
-
-     call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,turnover,dmix)
-     !call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,turnover)
-
    end if
+
+   call regolith_streamtube_head(user,surfi,deltar,vmare,totseb)
 
    x = vmare/totseb
    if (x /= x .or. x > 1.1 .or. x < -1.e-5) then
    write(*,*) 'Subpix',x,deltar,ri,rip1,z,zend,zmax,vmare,totseb,vsgly,current%comp,current%thickness,&
               surfi%regolayer%thickness,surfi%regolayer%comp
+   stop
    end if
 
    return
