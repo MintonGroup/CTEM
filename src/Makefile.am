@@ -1,11 +1,11 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
-#AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR
+AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR
 #ifort debug flags
 #AM_FCFLAGS = -O0 -p -g -openmp -debug all -traceback -CB
 
 #gfortran optimized flags
-AM_FCFLAGS =  -O3 -fopenmp -ffree-form -g -fbounds-check -fbacktrace
+AM_FCFLAGS =  -O3 -fopenmp -ffree-form
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
@@ -27,6 +27,7 @@ util/util_periodic.f90\
 util/util_search.f90\
 util/util_rootbracketed.f90\
 util/util_diffusion_solver.f90\
+util/util_area_intersection.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -53,7 +54,6 @@ ejecta/ejecta_interpolate.f90\
 ejecta/ejecta_rootfind.f90\
 ejecta/ejecta_soften.f90\
 ejecta/ejecta_distance_estimate.f90\
-ejecta/ejecta_subcrater_diffusion.f90\
 crater/crater_populate.f90\
 crater/crater_scale.f90\
 crater/crater_generate.f90\
@@ -68,7 +68,7 @@ crater/crater_tally_observed.f90\
 crater/crater_tally_calibrated_count.f90\
 crater/crater_slope_collapse.f90\
 crater/crater_soften.f90\
-crater/crater_soften_accumulate.f90\
+crater/crater_subcrater_diffusion.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
