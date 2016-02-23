@@ -132,16 +132,4 @@ save
       real(DP),intent(out) :: ejdis_estimate
       end subroutine ejecta_distance_estimate
    end interface
-
-   interface
-      subroutine ejecta_subcrater_diffusion(user,surf,domain,finterval)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(inout) :: surf
-      type(domaintype),intent(in)    :: domain
-      real(DP),intent(in) :: finterval
-      end subroutine ejecta_subcrater_diffusion
-   end interface
-
 end module
