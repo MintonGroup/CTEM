@@ -117,6 +117,7 @@ type domaintype
    real(DP)     :: smallest_crater ! Smallest crater that leaves a depression on the surface
    real(DP)     :: subcrater_limit ! Smallest crater that causes any effect on the surface
    real(DP)     :: subpixel_ejecta_thickness ! Average thickness of ejecta produced by subpixel craters
+   real(DP)     :: subpixel_diffusion_const ! Diffusion constant for sub-pixel topographic diffusion
    real(DP)     :: smallest_counted_crater ! Smallest countable crater
    integer(I4B) :: distl     ! Number of bins in the true crater distribution
    integer(I4B) :: pdistl    ! Number of bins in the production distribution
@@ -171,7 +172,7 @@ type usertype
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the ejecta terrain softening model
-   real(DP)          :: diffusion_const
+   real(DP)          :: diffusion_const 
 
    ! Regolith tracking variables
    logical           :: doregotrack ! Set T to use the regolith tracking model (EXPERIMENTAL)
@@ -280,6 +281,10 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
+real(DP),parameter :: SOFTEN_FACTOR = 0.40_DP   ! Extra per crater diffusion constant
+real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
+real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
+real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
 
 
 
