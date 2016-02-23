@@ -110,7 +110,7 @@ if (.not.user%tallyonly) then
    else
       ntotcrat = nint(prod(2,domain%smallest_impactor_index))
    end if
-   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+   call crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
