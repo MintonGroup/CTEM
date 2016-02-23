@@ -40,7 +40,7 @@ subroutine crater_soften(user,surf,crater,domain)
    !real(DP) :: SOFTEN_FACTOR = 2.00e-3_DP ! Constant in topographic diffusion term for crater softening
 
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
-   real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq
+   real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,xbar,ybar
 
    ! TESTING
    !open(unit=55,file="SOFTEN_FACTOR.test",status="old")
@@ -51,7 +51,7 @@ subroutine crater_soften(user,surf,crater,domain)
 
    kappatmax = SOFTEN_FACTOR * crater%fcrat**SOFTEN_SLOPE
    
-   inc = max(min(crater%frimpx,PBCLIM * user%gridsize),1) + 1
+   inc = max(min(crater%frimpx + 1,PBCLIM * user%gridsize),1) 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
@@ -78,7 +78,9 @@ subroutine crater_soften(user,surf,crater,domain)
             xp = xpi * user%pix
             yp = ypi * user%pix
             
-            lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+            xbar = xp - crater%xl 
+            ybar = yp - crater%yl
+            lradsq = xbar**2 + ybar**2
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
@@ -91,7 +93,7 @@ subroutine crater_soften(user,surf,crater,domain)
             if (lradsq < fradsq) then 
                kappat(i,j) = kappatmax
             else 
-               kappat(i,j) = 0.0_DP
+               kappat(i,j) = kappatmax * util_area_intersection(crater%frad,xbar,ybar,user%pix)
             end if
 
          end if
