@@ -18,7 +18,7 @@
 !  Notes       :  The stream tube's head is always attached to the surface. 
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover,dmix)
+subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dmix)
 !subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_head
@@ -28,8 +28,6 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover,dmix
    type(surftype),intent(in) :: surfi
    real(DP),intent(in) :: deltar
    real(DP),intent(inout) :: totmare,tots
-   logical,intent(inout)  :: turnover
-   real(DP),intent(inout) :: dmix 
 
    ! internal variables
    type(regolayertype),pointer :: current
@@ -70,12 +68,6 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover,dmix
          tothead = tothead + vhead * vratio 
          totmarehead = totmarehead + vhead * vratio * current%comp
          !write(*,*) '1',zstart,zend,current%comp,vhead*vratio/2500.0,totmarehead/2500.0,tothead/2500.0
-
-         if (zend > zmix) then
-            turnover = .true. 
-            dmix = dmix + (vhead * vratio) / (user%pix * user%pix)
-         end if
-
          current => current%next
          z = z + current%thickness
          zstart = zend
@@ -83,12 +75,6 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover,dmix
       else 
          totmarehead = totmarehead + (vsgly-tothead) * current%comp
          tothead = vsgly
-
-         if (zend > zmix) then
-            turnover = .true. 
-            dmix = dmix + vsgly / (user%pix * user%pix)
-         end if
-
          !write(*,*) '2',zstart,zend,current%comp,(vsgly-tothead)/2500.0,totmarehead/2500.0,tothead/2500.0
          exit
       end if
