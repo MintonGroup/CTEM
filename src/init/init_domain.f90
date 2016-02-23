@@ -49,6 +49,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    real(DP) :: f, a_crat, t !f: the fraction of a surface disturbed by craters
                                    !a_crat: the area of a crater, which is pi * r^2. 
                                    !t: time
+   real(DP) :: kappaNdot,dN
     
    ! Executable code
 
@@ -294,8 +295,37 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
       p = p + 1
    end do
 
-   domain%initialize = .false.
    domain%small = user%pix * SMALLFAC
+
+
+   !Calculate the sub-pixel topographic diffusion
+   !domain%subpixel_diffusion_const = 0.0_DP
+   !if (user%dosoftening) then
+   !   if (user%doangle) then 
+   !      crater%sinimpang = 0.5_DP * SQRT2 ! Use 45 degree impact angle if user is allowing impact angle to vary
+   !   else
+   !      crater%sinimpang = 1.0_DP ! Use 90 degree impact angle if user is not allowing impact angle to vary
+   !   end if
+   !   crater%impvel = rmsvel
+   !   do k=2,domain%pnum
+   !      crater%imp = prod(1,k)
+   !      dN = (prod(2,k - 1) - prod(2,k)) / domain%area / user%interval
+   !      ! Do it as the above code trying to figure out the size of a crater with both strength models
+   !      crater%strflag = 0 
+   !      call crater_generate(user,crater,domain)
+   !      if (crater%fcrat > domain%smallest_crater) exit
+   !      ! First get the baseline per-crater diffusion rate
+   !      kappaNdot = 0.1_DP * crater%fcrat**4
+!
+!         ! Now add in the extra per-crater diffusion
+!         kappaNdot = kappaNdot + (SOFTEN_FACTOR * 0.25_DP * PI) * crater%fcrat**(2._DP + SOFTEN_SLOPE)
+!         domain%subpixel_diffusion_const = domain%subpixel_diffusion_const + kappaNdot * dN
+!      end do
+!   end if
+   domain%subpixel_diffusion_const = 0.0_DP
+   !write(*,*) "Sub-pixel kappa: ",domain%subpixel_diffusion_const
+
+   domain%initialize = .false.
    return
 
 end subroutine init_domain
