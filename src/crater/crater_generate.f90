@@ -101,8 +101,8 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
          end if
       end if
       crater%imp = crater%imp * (1._DP + 1.0e-3_DP*rn(3)) ! Some user-input SFDs can result in many craters having identical 
-                                                          ! diameters. This random number prevents more than one crater from having 
-                                                          ! exactly the same diameter, as diameter is used as identification.
+                                                         ! diameters. This random number prevents more than one crater from having 
+      !write(*,*) crater%imp                                                    ! exactly the same diameter, as diameter is used as identification.
    end if
                                                        
 
@@ -150,18 +150,21 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
             end if
          end if
       end if
+      !crater%impvel = 18342.0_DP ! single crater size test: crater%impvel = root mean sqaure velocity
    end if
+
+   !crater%sinimpang = 0.5_DP * SQRT2 ! single crater size test: crater%sinimpang = PI/2.0_DP
 
    !  scale to crater size
    if (.not.domain%initialize) crater%strflag = 0 ! Begin with regolith strength
    call crater_scale(user,crater%imp,crater%rad,crater%grad,crater%strflag,crater%sinimpang,crater%impvel)
-   if (.not.domain%initialize) then
-      dburial = EXFAC * crater%rad
-      if (dburial > surf(crater%xlpx,crater%ylpx)%ejcov) then
-         crater%strflag = 1 ! Use bedrock strength
-         call crater_scale(user,crater%imp,crater%rad,crater%grad,crater%strflag,crater%sinimpang,crater%impvel)
-      end if
-   end if
+   if (.not.domain%initialize) then ! single crater size test:
+      dburial = EXFAC * crater%rad  ! single crater size test:
+      if (dburial > surf(crater%xlpx,crater%ylpx)%ejcov) then ! single crater size test:
+         crater%strflag = 1 ! Use bedrock strength ! single crater size test:
+         call crater_scale(user,crater%imp,crater%rad,crater%grad,crater%strflag,crater%sinimpang,crater%impvel) ! single crater size test:
+      end if ! single crater size test:
+   end if ! single crater size test:
 
 
    trfin = 2 * TRSIM * crater%rad
@@ -182,6 +185,7 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
    end if
 
    crater%frad = 0.5_DP  * crater%fcrat
+   !write(*,*) crater%frad
    ! Get pixel space values
    crater%fcratpx = nint(crater%fcrat / user%pix)
    return
