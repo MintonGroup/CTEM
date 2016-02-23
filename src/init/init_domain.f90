@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
+subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    use module_globals
    use module_crater
    use module_ejecta
@@ -30,6 +30,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
    real(DP),dimension(:,:),intent(inout)           :: prod,vdist
    real(DP),dimension(:,:),intent(out)             :: crtscl
    real(DP),dimension(:,:),intent(out),allocatable :: pdist
+   real(DP),dimension(:,:),intent(inout),allocatable, optional :: nflux
 
    ! Internals
    integer(I4B),parameter :: tistfac=100 ! Temporary storage array for crater tally is 100x larger than the displayed bin size
@@ -43,7 +44,11 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
    type(surftype),dimension(0:EJBTABSIZE) :: profilesurf
    logical :: firstrun
 
-   real(DP) :: ejdis_regolith, ejdis_bedrock
+   !real(DP) :: ejdis_regolith, ejdis_bedrock
+   ! Test sub-pixel mixing:
+   real(DP) :: f, a_crat, t !f: the fraction of a surface disturbed by craters
+                                   !a_crat: the area of a crater, which is pi * r^2. 
+                                   !t: time
     
    ! Executable code
 
@@ -139,7 +144,6 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
       pdist(3,i) = pdist(3,i) + diffnum * log(crtscl(2,k)) ! Geometric mean (intermediate step)
       pdist(4,i) = pdist(4,i) + diffnum      ! Differential number
    end do
-   
 
    do i = 1,domain%pdistl
       if (pdist(4,i) > 0._DP) then
@@ -150,8 +154,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
       pdist(5,i) = sum(pdist(4,i:domain%pdistl)) ! Cumulative number
       pdist(6,i) = (pdist(4,i)*pdist(3,i)**3)/(domain%area*(pdist(2,i)-pdist(1,i))) ! R-value
    end do
-   
-
+    
    ! Next we determine the smallest impactor that we ever expect to consider in this simulation
    ! This will be the smallest of: the impactor that produces a crater at least 1 pixel wide at the maximum velocity, the impactor
    ! that produces an ejecta blanket 3 pixels wide, or the smallest impactor in the production SFD
@@ -186,99 +189,79 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
    !# , and we won't be bothered by enormous and astronomical number of small craters slowing down CTEM, and simply just want to simulate the effect 
    !# without making any other contribution to, for example, regolith growth. So, I suggest that we can take this turnover depth, 1 cm in 10^7 years, as
    !# our limit of craters that contribute to surface, and the size of this crater in diameter is eight times this turnover depth: 8 cm.   
-   domain%smallest_ejecta_index = 1
-   crater%impvel = vdist(1,domain%vnum)
-   crater%sinimpang = 1.0_DP
-   do k=1,domain%pnum
-      crater%imp = prod(1,k)
+   !domain%smallest_ejecta_index = 1
+   !crater%impvel = vdist(1,domain%vnum)
+   !crater%sinimpang = 1.0_DP
+   !do k=1,domain%pnum
+   !   crater%imp = prod(1,k)
       ! Do it as the above code trying to figure out the size of a crater with both strength models
-      crater%strflag = 0 
-      call crater_generate(user,crater,domain)
-      regolithfcrat = crater%fcrat
-      ejdis_regolith = 25.0 * 2.3_DP * crater%frad**(1.006_DP)
+   !   crater%strflag = 0 
+   !   call crater_generate(user,crater,domain)
+   !   regolithfcrat = crater%fcrat
+   !   ejdis_regolith = 25.0 * 2.3_DP * crater%frad**(1.006_DP)
       
-      crater%strflag = 1
-      call crater_generate(user,crater,domain)
-      bedrockfcrat = crater%fcrat
-      ejdis_bedrock = 25.0 * 2.3_DP * crater%frad**(1.006_DP)
+   !   crater%strflag = 1
+   !   call crater_generate(user,crater,domain)
+   !   bedrockfcrat = crater%fcrat
+   !   ejdis_bedrock = 25.0 * 2.3_DP * crater%frad**(1.006_DP)
  
-      fcrat = max(regolithfcrat, bedrockfcrat)
-      ejdis = max(ejdis_regolith, ejdis_bedrock)
-      if (ejdis > domain%smallest_ejecta) then
-         domain%smallest_ejecta_index = k
-         domain%smallest_ejecta_crater = fcrat
+   !   fcrat = max(regolithfcrat, bedrockfcrat)
+   !   ejdis = max(ejdis_regolith, ejdis_bedrock)
+   !   if (ejdis > domain%smallest_ejecta) then
+   !      domain%smallest_ejecta_index = k
+   !      domain%smallest_ejecta_crater = fcrat
          !write(*,*) domain%smallest_ejecta_index, prod(1,domain%smallest_ejecta_index),&
          !domain%smallest_ejecta_crater
-         exit
-      end if
-   end do
+   !      exit
+   !   end if
+   !end do
    !write(*,*) domain%smallest_ejecta_index, fcrat
 
-   goto 1000 
+   ! Testing retriving the impactor production SFD for all craters.
+   !write(*,*) domain%pnum
+   !do i = 1,domain%pnum !smallest_impactor_index
+   !diffnum = prod(2,i) - prod(2,i+1)
+   !write(*,*) prod(1,i), diffnum
+   !write(*,*) pdist(1,i), pdist(1,4)
+   !end do
+
+!   goto 1000 
    ! Now estimate the amount of topographic overturn produced by subpixel craters
    ! This will be modeled as a diffusion rate
+
+   if (present(nflux)) then 
+   allocate(nflux(2,domain%smallest_impactor_index))
    crater%impvel = rmsvel
-   k = domain%smallest_impactor_index
-   crater%sinimpang = 0.5_DP
-   domain%subpixel_ejecta_thickness = 0.0_DP
-   call ejecta_distance_estimate(user,crater,domain,ejdis)
-   vtot = 0._DP
-   hmean = 0._DP
-   hmeanbig = 0._DP
-   do k = 1,domain%pnum 
-   !do k = domain%smallest_impactor_index,1,-1
+   crater%sinimpang = 0.5_DP * SQRT2
+   crater%strflag = 0
+   do k = 1,domain%smallest_impactor_index
       crater%imp  = prod(1,k)
-
       ! Calculate crater size based on both strength models
-      crater%strflag = 0
+      diffnum = prod(2,k) - prod(2,k+1)
       call crater_generate(user,crater,domain)
-      call ejecta_table_define(user,crater,domain,ejb,ejtble)
-      ejdis = crater%ejdis
-      if (crater%fcrat > domain%biggest_crater) exit
-
-      area = 0.0_DP
-      volume = 0.0_DP
-
-      ! Estimate the total volume of ejecta produced per impact
-      do i = 2,ejtble 
-         r1 = exp(ejb(i-1)%lrad)
-         r2 = exp(ejb(i)%lrad)
-         h = exp(ejb(i-1)%thick)
-         volume = volume +  PI *  (r2**2 - r1**2) * h
-      end do
-     
-      ! Now estimate the volume of material excavated by the craterform itself
-      ! We'll construct a crater profile
-      !domain%small = crater%frad * SMALLFAC
-      !call crater_find_visible(user,crater,domain)
-      !rmax = crater%frad * (domain%small/crater%rheight)**(-1._DP/RIMDROP) !  Maximum distance of crater form
-      !profilesurf%dem = 0._DP
-      !newelev = 0._DP
-      !melev = 0._DP
-      !do i = 0,EJBTABSIZE
-      !   lrad = rmax * i / real(EJBTABSIZE,kind=DP)
-      !   lradsq = lrad**2
-      !   if (lrad < crater%frad) then
-      !      call crater_form_interior(user,profilesurf(i),crater,lradsq,newelev,melev)
-      !   else 
-      !      call crater_form_exterior(profilesurf(i),crater,domain,lradsq,newelev) 
-      !   end if 
-      !end do
-      !do i = 1,EJBTABSIZE
-      !   r1 = rmax * (i - 1) / real(EJBTABSIZE,kind=DP)
-      !   r2 = rmax * i  / real(EJBTABSIZE,kind=DP)
-      !   f1 = (profilesurf(i - 1)%dem)
-      !   f2 = (profilesurf(i)%dem)
-      !   h = 0.5_DP * (f1 + f2)
-      !   volume = volume +  PI *  (r2**2 - r1**2) * abs(h)
-      !end do
-      if (k < domain%smallest_impactor_index) then
-         hmean = hmean + volume * (prod(2, k) - prod(2,k + 1)) 
-      else
-         hmeanbig = hmeanbig + volume * (prod(2, k) - prod(2,k + 1)) 
-      end if
-      !domain%subpixel_ejecta_thickness = max(domain%subpixel_ejecta_thickness, hmean )
+      !write(*,*) k, crater%fcrat, diffnum
+      ! My-T model for turnover 
+      ! Since we obtain the total differential number for a given size of a crater, 
+      ! it allows us to calculate the average impact rate for a given size of a crater,
+      ! which is defined as variable, "nflux". 
+      ! It is, nflux = dN(k,k+1) / A_tot / t_tot.
+      ! Then, we can use this to calculate the fraction of a area for a given time by
+      ! a tanh function in whcih Toshi derived an analytical model, which is that the 
+      ! probabiluty of filling the surface by the same sized circle is past-dependent 
+      ! event. That is, based on the limited space, as the disturbed surface becomes larger, 
+      ! the probability of a new circle overlapping with the previous disturbed area is 
+      ! dependent on the surface area of the  disturbed area. 
+      ! This function is: p = (1 - exp(-2*nflux*pi*r^2)) / (1 + exp(-2*nflux*pi*r^2)),
+      ! where the r is the radius of a crater. 
+      nflux(1,k) = crater%fcrat
+      nflux(2,k) = diffnum/(user%gridsize * user%pix)**2/user%interval
+      !a_crat = PI * (crater%frad)**2
+      !t    = user%interval 
+      !f(k) = (1.0_DP - exp(-2.0_DP * nflux * a_crat * t)) / (1.0_DP + exp(-2.0_DP * nflux * a_crat * t))
+      !write(*,*) 2.0 * crater%frad, nflux, f
    end do
+   end if
+
    !write(*,*) "hmean / hmeanbig = ",hmean/hmeanbig
    !domain%subpixel_ejecta_thickness = hmean * 2 * user%pix / domain%area
    !write(*,*) "Smallest impacts per unit area: ",(prod(2,1) - prod(2,2)) / domain%area
@@ -286,7 +269,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
    !domain%subpixel_ejecta_thickness = user%sf 
    !write(*,*) "User-supplied diffusion equivalent thickness:  ",domain%subpixel_ejecta_thickness
    !domain%subpixel_ejecta_thickness =  domain%subpixel_ejecta_thickness / prod(2,domain%smallest_impactor_index)
-1000 continue
+!1000 continue
    ! Find the lowest value for the distribution (pinned at 1 km)
    p=100 ! To be safe, we begin at a crater that is 7500 AU wide
    do 
