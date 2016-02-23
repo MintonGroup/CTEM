@@ -1,6 +1,6 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
-AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR
+#AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR
 #ifort debug flags
 #AM_FCFLAGS = -O0 -p -g -openmp -debug all -traceback -CB
 
