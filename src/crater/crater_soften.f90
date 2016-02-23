@@ -90,11 +90,7 @@ subroutine crater_soften(user,surf,crater,domain)
 
             ! interior of the crater should have a constant kappa*t, while the
             ! rim should fall away with the power law drop as the rim profile
-            if (lradsq < fradsq) then 
-               kappat(i,j) = kappatmax
-            else 
-               kappat(i,j) = kappatmax * util_area_intersection(crater%frad,xbar,ybar,user%pix)
-            end if
+            kappat(i,j) = kappatmax * util_area_intersection(crater%frad,xbar,ybar,user%pix)
 
          end if
 
