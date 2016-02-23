@@ -47,7 +47,7 @@ subroutine ejecta_subcrater_diffusion(user,surf,domain,finterval)
          indarray(2,i,j) = ypi
       end do
    end do
-   kdiff = user%diffusion_const * user%interval * finterval 
+   kdiff = domain%subpixel_diffusion_const * user%interval * finterval 
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
    do j = 1,user%gridsize
       do i = 1,user%gridsize
