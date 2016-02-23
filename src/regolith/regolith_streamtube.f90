@@ -66,8 +66,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    real(DP) :: compnohead,compmc,mceb
 
    ! Mixing 
-   logical :: turnover
-   real(DP) :: dmix
+   !logical :: turnover
+   !real(DP) :: dmix
 
    ! Executalbe code
 
@@ -202,8 +202,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    vst = (0.25_DP * PI * deltar**2 * a**2 * eradi / b *(tan(b)-b)) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
    totmare = 0._DP
    tots = 0._DP
-   turnover = .false. 
-   dmix = 0._DP
+   !turnover = .false. 
+   !dmix = 0._DP
 
    if (eradc <= user%pix) then
 
@@ -216,7 +216,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       vseg = 0.25_DP * PI * deltar**2 * a**2 * eradi / b * abs(tan(b) - b) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
       newlayer%thickness = vseg/(user%pix**2)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover,dmix)
+      call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb)!,turnover,dmix)
       !call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover)
       totmare = vmare
       tots = totseb
@@ -240,7 +240,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-              totseb,turnover,dmix)
+              totseb)!,turnover,dmix)
          !call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
          !      totseb,turnover)
          totmare = totmare + vmare
@@ -260,7 +260,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-                 totseb,turnover,dmix)
+                 totseb)!,turnover,dmix)
             !call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
             !     totseb,turnover)
             totmare = totmare + vmare
@@ -271,7 +271,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,turnover,dmix)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots)!,turnover,dmix)
       !call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,turnover)
       comp = totmare/tots
       !stop
