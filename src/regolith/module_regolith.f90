@@ -99,8 +99,7 @@ save
    end interface
 
    interface 
-      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,turnover,dmix)
-!      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,turnover)
+      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)!,turnover,dmix)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -108,14 +107,11 @@ save
       real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
       type(regolayertype),intent(inout) :: newlayer
       real(DP),intent(out) :: vmare,totseb
-      logical,intent(inout) :: turnover
-      real(DP),intent(inout) :: dmix 
       end subroutine regolith_traverse_streamtube
    end interface
 
    interface 
-      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover,dmix)
-!      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover)
+      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)!,turnover,dmix)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -123,16 +119,12 @@ save
       real(DP),intent(in)            :: deltar,ri,rip1,eradi
       type(regolayertype),intent(inout) :: newlayer
       real(DP),intent(out) :: vmare,totseb
-      logical, intent(inout) :: turnover
-      real(DP),intent(inout) :: dmix
       end subroutine regolith_subpixel_streamtube
    end interface
 
    interface 
       subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-      totseb,turnover,dmix)
-!      subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-!      totseb,turnover)
+      totseb)!,turnover,dmix)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -140,51 +132,20 @@ save
       real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
       type(regolayertype),intent(inout) :: newlayer
       real(DP),intent(inout) :: vmare,totseb
-      logical,intent(inout) :: turnover
-      real(DP),intent(inout) :: dmix 
       end subroutine regolith_streamtube_lineseg
    end interface 
 
-!   interface 
-!      subroutine regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,turnover,dmix)
-!      subroutine regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,turnover)
-!      use module_globals 
-!      implicit none
-!      type(usertype),intent(in) :: user
-!      type(surftype),intent(inout) :: surfi
-!      real(DP),intent(in) :: cosi,coso,ri,rip1,erad,eradi,deltar,thetast
-!      real(DP),intent(inout) :: vmare,totseb
-!      logical,intent(inout) :: turnover
-!      real(DP),intent(inout) :: dmix 
-!      end subroutine regolith_streamtube_cylinder
-!   end interface
-
    interface 
-      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover,dmix)
-!      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover)
+      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dmix)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
       real(DP),intent(in) :: deltar
       real(DP),intent(inout) :: totmare,tots
-      logical,intent(inout)  :: turnover
-      real(DP),intent(inout) :: dmix 
       end subroutine regolith_streamtube_head
    end interface
 
-   interface
-      subroutine regolith_rays(user,crater,domain,ejtble,ejb)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(cratertype),intent(in) :: crater
-      type(domaintype),intent(in) :: domain
-      integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(in)   :: ejb
-      end subroutine regolith_rays
-   end interface
-  
    interface
       function regolith_circle_sector_func(deltar,zstart,zend) result(vhead)
       use module_globals 
@@ -204,18 +165,6 @@ save
       end subroutine regolith_monte_carlo_layer
    end interface
 
-   interface 
-      subroutine regolith_streamtube_mc(surfi,ri,rip1,erad,deltar,totmc,cnt)
-      use module_globals 
-      implicit none
-      type(surftype),intent(in)      :: surfi
-      real(DP),intent(in)            :: ri,rip1,erad,deltar
-!      real(DP),intent(inout) :: totmc
-      real(DP),dimension(100),intent(out) :: totmc
-      integer,intent(out)            :: cnt
-      end subroutine regolith_streamtube_mc
-   end interface
- 
    interface 
       function regolith_quartic_func(rpj,r) result(z)
       use module_globals
@@ -268,12 +217,23 @@ save
    end interface
 
    interface
-      subroutine regolith_reworking_zone(user,surf,finterval)
+      subroutine regolith_mix(user,surf,domain,nflux,finterval)
       use module_globals
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
+      type(domaintype),intent(in) :: domain
+      real(DP),dimension(:,:),intent(in) :: nflux
       real(DP),intent(in) :: finterval
-      end subroutine regolith_reworking_zone
+      end subroutine regolith_mix
+   end interface
+
+   interface
+      subroutine regolith_mix_porous_regime(user,surfi,d)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(surftype),intent(inout) :: surfi
+      real(DP),intent(in) :: d
+      end subroutine regolith_mix_porous_regime
    end interface
 
 end module
