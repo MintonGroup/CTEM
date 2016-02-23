@@ -34,7 +34,7 @@ save
    end interface
 
    interface
-      subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl)
+      subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -42,6 +42,7 @@ save
       type(domaintype),intent(inout) :: domain
       real(DP),dimension(:,:),intent(inout) :: prod,vdist
       real(DP),dimension(:,:),intent(out) :: pdist,crtscl
+      real(DP),dimension(:,:),intent(inout),allocatable, optional :: nflux
       end subroutine init_domain
    end interface 
   
@@ -52,6 +53,15 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       end subroutine init_regolith_stack
+   end interface
+
+   interface 
+      subroutine init_regolith_parab(user,surf)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      end subroutine init_regolith_parab
    end interface
 
 end module module_init
