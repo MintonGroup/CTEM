@@ -39,13 +39,6 @@ subroutine regolith_traverse_pop(elchange,surfi)
 
    if (z < 0._DP) then
 
-      if (z < surfi%dexcav) surfi%dexcav = z
-      !   if (depth < abs(z)) surfi%nmix = surfi%nmix + 1   
-      !end if
-
-      ! Mixing excavation
-      surfi%dmix = surfi%dmix + z 
-
       do 
        if (.not. associated(current%next)) exit
 
