@@ -34,22 +34,12 @@ subroutine crater_soften(user,surf,crater,domain)
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,kappat
    integer(I4B),dimension(:,:,:),allocatable :: indarray
    integer(I4B),parameter :: MAXHITS = 1
-   integer(I4B),parameter :: DROPFAC = 20
-
-  ! Internal variables
-   !real(DP) :: SOFTEN_FACTOR = 2.00e-3_DP ! Constant in topographic diffusion term for crater softening
 
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
-   real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,xbar,ybar
+   real(DP) :: kappatextra,lrad,lradsq,xp,yp,fradsq,xbar,ybar,kappatintrinsic,areafrac
 
-   ! TESTING
-   !open(unit=55,file="SOFTEN_FACTOR.test",status="old")
-   !read(55,*) SOFTEN_FACTOR
-   !close(55)
-   !********
-
-
-   kappatmax = SOFTEN_FACTOR * crater%fcrat**SOFTEN_SLOPE
+   kappatextra = SOFTEN_FACTOR * crater%fcrat**SOFTEN_SLOPE
+   kappatintrinsic = PERCRATER_DIFF_A * crater%fcrat**PERCRATER_DIFF_P
    
    inc = max(min(crater%frimpx + 1,PBCLIM * user%gridsize),1) 
    crater%maxinc = max(crater%maxinc,inc)
@@ -90,7 +80,13 @@ subroutine crater_soften(user,surf,crater,domain)
 
             ! interior of the crater should have a constant kappa*t, while the
             ! rim should fall away with the power law drop as the rim profile
-            kappat(i,j) = kappatmax * util_area_intersection(crater%frad,xbar,ybar,user%pix)
+            areafrac = util_area_intersection(crater%frad,xbar,ybar,user%pix)
+            if (areafrac > 0.9999_DP) then 
+               kappat(i,j) = kappatextra * areafrac ! This is the extra per-crater diffusion required to match equilibrium
+            else
+               kappat(i,j) = (kappatextra + kappatintrinsic) * areafrac ! Capture the intrinsic diffusion of craters for those
+                                                                      ! parts of the grid where crater overlap is not 100%
+            end if
 
          end if
 
