@@ -42,7 +42,7 @@ save
       type(domaintype),intent(inout) :: domain
       real(DP),dimension(:,:),intent(inout) :: prod,vdist
       real(DP),dimension(:,:),intent(out) :: pdist,crtscl
-      real(DP),dimension(:,:),intent(inout),allocatable, optional :: nflux
+      real(DP),dimension(:,:),intent(out) :: nflux
       end subroutine init_domain
    end interface 
   
