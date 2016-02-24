@@ -55,7 +55,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    ntot = 1
    ! calculate the subpixel diffusion probability function
    do i = 1,domain%pnum
-      if (nflux(1,i) > 2 * domain%smallest_crater) exit
+      if (nflux(1,i) > domain%smallest_crater) exit
       ntot = i
       dN(i) = nflux(3,i) * user%interval * finterval
       lambda(i) = dN(i) * 0.25_DP * PI * nflux(1,i)**2 
