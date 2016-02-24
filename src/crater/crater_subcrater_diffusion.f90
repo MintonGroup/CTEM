@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
+subroutine crater_subcrater_diffusion(user,surf,prod,nflux,domain,finterval)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_subcrater_diffusion
@@ -28,7 +28,7 @@ subroutine crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   real(DP),dimension(:,:),intent(in) :: prod,crtscl
+   real(DP),dimension(:,:),intent(in) :: prod,nflux 
    type(domaintype),intent(in) :: domain
    real(DP),intent(in) :: finterval
 
@@ -55,11 +55,11 @@ subroutine crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
    ntot = 1
    ! calculate the subpixel diffusion probability function
    do i = 1,domain%pnum
-      if (crtscl(2,i) > domain%smallest_crater) exit
+      if (nflux(1,i) > domain%smallest_crater) exit
       ntot = i
-      dN(i) = (prod(2,i) - prod(2,i + 1)) / domain%area 
-      lambda(i) = dN(i) * 0.25_DP * PI * crtscl(2,i)**2 * finterval 
-      kappat(i) = PERCRATER_DIFF_A * crtscl(2,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * crtscl(2,i)**(SOFTEN_SLOPE)
+      dN(i) = nflux(3,i) * user%interval * finterval
+      lambda(i) = dN(i) * 0.25_DP * PI * nflux(1,i)**2 
+      kappat(i) = PERCRATER_DIFF_A * nflux(1,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * nflux(1,i)**(SOFTEN_SLOPE)
    end do
 
    kdiff = 0._DP
