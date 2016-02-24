@@ -194,7 +194,7 @@ end interface
 
 
    interface
-      subroutine crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
+      subroutine crater_subpixel_diffusion(user,surf,prod,crtscl,domain,finterval)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -202,7 +202,7 @@ end interface
       real(DP),dimension(:,:),intent(in) :: prod,crtscl
       type(domaintype),intent(in)    :: domain
       real(DP),intent(in) :: finterval
-      end subroutine crater_subcrater_diffusion
+      end subroutine crater_subpixel_diffusion
    end interface
 
 end module
