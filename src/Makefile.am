@@ -68,7 +68,7 @@ crater/crater_tally_observed.f90\
 crater/crater_tally_calibrated_count.f90\
 crater/crater_slope_collapse.f90\
 crater/crater_soften.f90\
-crater/crater_subcrater_diffusion.f90\
+crater/crater_subpixel_diffusion.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
