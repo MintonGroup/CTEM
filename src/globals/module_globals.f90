@@ -117,7 +117,6 @@ type domaintype
    real(DP)     :: smallest_crater ! Smallest crater that leaves a depression on the surface
    real(DP)     :: subcrater_limit ! Smallest crater that causes any effect on the surface
    real(DP)     :: subpixel_ejecta_thickness ! Average thickness of ejecta produced by subpixel craters
-   real(DP)     :: subpixel_diffusion_const ! Diffusion constant for sub-pixel topographic diffusion
    real(DP)     :: smallest_counted_crater ! Smallest countable crater
    integer(I4B) :: distl     ! Number of bins in the true crater distribution
    integer(I4B) :: pdistl    ! Number of bins in the production distribution
