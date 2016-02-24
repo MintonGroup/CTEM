@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
    use module_globals
    use module_seismic
    use module_io
@@ -33,14 +33,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistr
    type(surftype),dimension(:,:),intent(inout)     :: surf
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
-   real(DP),dimension(:,:),intent(in)              :: prod,crtscl,vdist
+   real(DP),dimension(:,:),intent(in)              :: prod,vdist
    integer(I4B),intent(out)                        :: ntrue
    integer(I4B),intent(out)                        :: vistrue
    integer(I4B),intent(out)                        :: ntotkilled
    real(DP),dimension(:,:),allocatable,intent(out) :: truelist
    real(DP),intent(out)                            :: mass
    real(DP),intent(out)                            :: fracdone
-   real(DP),dimension(:,:),intent(in),optional     :: nflux 
+   real(DP),dimension(:,:),intent(in)              :: nflux 
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -257,7 +257,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistr
          !write(*,*) 'Tally step'
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         call crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
+         call crater_subcrater_diffusion(user,surf,prod,nflux,domain,finterval)
          icrater_last_tally = icrater
          if (user%doregotrack) then
          call regolith_mix(user,surf,domain,nflux,finterval) 
@@ -273,7 +273,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistr
    craters_since_tally = icrater - icrater_last_tally
    finterval = craters_since_tally / real(ntotcrat,kind=DP)
    if (ntotcrat == 0) finterval = 1
-   if (.not.user%testflag) call crater_subcrater_diffusion(user,surf,prod,crtscl,domain,finterval)
+   if (.not.user%testflag) call crater_subcrater_diffusion(user,surf,prod,nflux,domain,finterval)
 
    ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats
