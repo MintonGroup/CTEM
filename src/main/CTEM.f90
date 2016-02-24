@@ -72,6 +72,7 @@ call io_input(infile,user)
 call init_dist(user,domain)
 
 allocate(prod(4,domain%pnum))
+allocate(nflux(3,domain%pnum))
 allocate(crtscl(2,domain%pnum))
 allocate(vdist(3,domain%vnum))
 allocate(surf(user%gridsize,user%gridsize))
@@ -110,7 +111,7 @@ if (.not.user%tallyonly) then
    else
       ntotcrat = nint(prod(2,domain%smallest_impactor_index))
    end if
-   call crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
@@ -145,7 +146,7 @@ call io_write_dist(pdist,crtscl,domain,mass)
 
 ! Deallocate all the allocatables
 deallocate(seedarr)
-deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist)
+deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux)
 deallocate(oposlist,current_depth,original_depth,p_score,deviation_sigma)
 
 !$ t2 = omp_get_wtime()
