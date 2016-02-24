@@ -18,21 +18,21 @@ public
 save
 
    interface
-      subroutine crater_populate(user,surf,crater,domain,prod,crtscl,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout)  :: surf
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain
-      real(DP),dimension(:,:),intent(in)           :: prod,crtscl,vdist
+      real(DP),dimension(:,:),intent(in)           :: prod,vdist
       integer(I4B),intent(out)                     :: ntrue
       integer(I4B),intent(out)                     :: vistrue
       integer(I4B),intent(out)                     :: ntotkilled
       real(DP),dimension(:,:),intent(out)          :: truelist
       real(DP),intent(out)                         :: mass
       real(DP),intent(out)                         :: fracdone
-      real(DP),dimension(:,:),intent(in),optional  :: nflux 
+      real(DP),dimension(:,:),intent(in)           :: nflux 
       end subroutine crater_populate
    end interface
 
