@@ -257,7 +257,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
          !write(*,*) 'Tally step'
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         call crater_subcrater_diffusion(user,surf,prod,nflux,domain,finterval)
+         call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          icrater_last_tally = icrater
          if (user%doregotrack) then
          call regolith_mix(user,surf,domain,nflux,finterval) 
@@ -273,7 +273,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    craters_since_tally = icrater - icrater_last_tally
    finterval = craters_since_tally / real(ntotcrat,kind=DP)
    if (ntotcrat == 0) finterval = 1
-   if (.not.user%testflag) call crater_subcrater_diffusion(user,surf,prod,nflux,domain,finterval)
+   if (.not.user%testflag) call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
 
    ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats
