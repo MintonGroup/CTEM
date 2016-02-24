@@ -49,7 +49,7 @@ subroutine regolith_mix(user,surf,domain,nflux,finterval)
    do i=1,domain%smallest_impactor_index
       r = nflux(1,i) / 2.0_DP
       a_crat = PI * r**2
-      t = nflux(2,i) * a_crat * telapsed
+      t = nflux(3,i) * a_crat * telapsed
       p(1,i) = r
       p(2,i) = 1.0_DP - exp(-1.0_DP * t)
    end do
