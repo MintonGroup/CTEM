@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux,ntotcrat)
    use module_globals
    use module_seismic
    use module_io
@@ -41,6 +41,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    real(DP),intent(out)                            :: mass
    real(DP),intent(out)                            :: fracdone
    real(DP),dimension(:,:),intent(in)              :: nflux 
+   integer(I8B),intent(in)                         :: ntotcrat  ! Total number of attempted impacts
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -62,7 +63,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    integer(I4B)            :: nkilled  ! Number of craters killed in a tally step
    integer(I4B)            :: onum     ! Number of craters observed in a tally step
    integer(I4B)            :: nsincetally ! number of loops since last tally
-   integer(I8B)            :: ntotcrat  ! Total number of attempted impacts
    real(DP),dimension(:,:),allocatable  :: tmptruelist
    integer(I4B),parameter  :: TRUECHUNK = 1000000 ! Size of truelist chunks to allocate 
    integer(I4B)            :: truesize
@@ -77,12 +77,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    ! doregotrack
    real(DP) :: melt, clock!, volume, r1, r2, h
 
-   ntotcrat = int(prod(2,domain%smallest_impactor_index),kind=I8B) 
-   !ntotcrat = int(prod(2,domain%smallest_ejecta_index),kind=I8B)
-
-
    if (user%testflag) then
-      ntotcrat = 1
       write(*,*) "Generating a test crater"
       write(*,*) "Dimp = ",user%testimp
       write(*,*) "Vimp = ",user%testvel
