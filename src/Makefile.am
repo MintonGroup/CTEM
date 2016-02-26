@@ -28,6 +28,7 @@ util/util_search.f90\
 util/util_rootbracketed.f90\
 util/util_diffusion_solver.f90\
 util/util_area_intersection.f90\
+util/util_poisson.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
