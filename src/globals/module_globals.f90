@@ -52,7 +52,7 @@ real(DP),parameter :: SMALLFAC = 1e-5_DP   ! Smallest unit of measurement propor
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
 real(DP),parameter :: TALLYTARGET = 1.0e-3_DP  ! The target number of crater kills per px**2 during a tally step
-real(DP),parameter :: TALLYCOVERAGE = 0.01_DP   ! The total area coverage to reach before a tally step is executed
+real(DP),parameter :: TALLYCOVERAGE = 0.05_DP   ! The total area coverage to reach before a tally step is executed
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 type regolayertype
@@ -256,7 +256,7 @@ integer(I4B),parameter :: SMALLESTCOUNTABLE = 10 ! Minimum number of pixels for 
 real(DP),parameter :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
 integer(I4B),parameter :: TRUECOLS = 6 ! Number of columns in the true crater count array
 integer(I4B)           :: NTHREADS = 1 ! Number of OpenMP threads (reset by OpenMP if a parallel environment is detected)
-integer(I4B),parameter :: INCPAR = 4   ! Minimum size of inc variables before parallelization kicks in
+integer(I4B),parameter :: INCPAR = 1   ! Minimum size of inc variables before parallelization kicks in
 
 ! Crater scaling parameters
 real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see Richardson 2009 eqs. 15 & 20)
