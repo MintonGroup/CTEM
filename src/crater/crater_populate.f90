@@ -17,7 +17,8 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux,ntotcrat)
+subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
+                           fracdone,nflux,ntotcrat)
    use module_globals
    use module_seismic
    use module_io
@@ -34,6 +35,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
    real(DP),dimension(:,:),intent(in)              :: prod,vdist
+   integer(I8B),dimension(:),intent(inout)            :: production_list
    integer(I4B),intent(out)                        :: ntrue
    integer(I4B),intent(out)                        :: vistrue
    integer(I4B),intent(out)                        :: ntotkilled
@@ -120,7 +122,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntot
       icrater = icrater + 1
       pbarpos = ceiling(real(icrater) / real(ntotcrat) * PBARRES)
       ! generate random crater
-      call crater_generate(user,crater,domain,prod,vdist,surf)
+      call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat
       if (user%testflag) write(*,*) 'Dtrans = ',crater%rad*2
       if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
