@@ -37,9 +37,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
    integer(I4B) :: i,j,k,xpi,ypi,n,ntot
    integer(I4B) :: maxhits = 1
-   real(DP) :: u,Pval,Prob,lamleft
-   real(DP),dimension(domain%pnum) :: dN,lambda,kappat
-   real(DP),parameter :: STEP = 500.0_DP
+   real(DP) :: lamleft,dburial,lambda,kappat,diam
+   real(DP),dimension(domain%pnum) :: dN,lambda_regolith,kappat_regolith,lambda_bedrock,kappat_bedrock
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    do j = 0,user%gridsize + 1
@@ -55,19 +54,34 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    ntot = 1
    ! calculate the subpixel diffusion probability function
    do i = 1,domain%pnum
-      if (nflux(1,i) > domain%smallest_crater) exit
+      if ((nflux(1,i) > domain%smallest_crater).and.(nflux(2,i) > domain%smallest_crater)) exit
       ntot = i
       dN(i) = nflux(3,i) * user%interval * finterval
-      lambda(i) = dN(i) * 0.25_DP * PI * nflux(1,i)**2 
-      kappat(i) = PERCRATER_DIFF_A * nflux(1,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * nflux(1,i)**(SOFTEN_SLOPE)
+
+      lambda_bedrock(i) = dN(i) * 0.25_DP * PI * nflux(1,i)**2 
+      kappat_bedrock(i) = PERCRATER_DIFF_A * nflux(1,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * nflux(1,i)**(SOFTEN_SLOPE)
+
+      lambda_regolith(i) = dN(i) * 0.25_DP * PI * nflux(2,i)**2 
+      kappat_regolith(i) = PERCRATER_DIFF_A * nflux(2,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * nflux(2,i)**(SOFTEN_SLOPE)
    end do
 
    kdiff = 0._DP
    do j = 1,user%gridsize
       do i = 1,user%gridsize
          do n = 1,ntot
-            k = util_poisson(lambda(n))
-            kdiff(i,j) = kdiff(i,j) + k * kappat(n) 
+            dburial = EXFAC * 0.5_DP * nflux(1,n)
+            if (surf(i,j)%ejcov > dburial) then
+               lambda = lambda_regolith(n)
+               kappat = kappat_regolith(n)
+               diam = nflux(2,n)
+            else
+               lambda = lambda_bedrock(n)
+               kappat = kappat_bedrock(n)
+               diam = nflux(1,n)
+            end if 
+            if (diam > domain%smallest_crater) exit
+            k = util_poisson(lambda)
+            kdiff(i,j) = kdiff(i,j) + k * kappat
          end do
       end do
    end do
