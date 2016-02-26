@@ -148,11 +148,11 @@ interface
 end interface
 
 interface
-   function util_poisson(mu,first) result(ival)
+   function util_poisson(mu,poisson_first) result(ival)
    use module_globals
    implicit none
    real(DP), intent(in)    :: mu
-   logical, intent(in) :: first
+   logical, intent(in),optional :: poisson_first
    integer(I8B)             :: ival
    end function util_poisson
 end interface
