@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_generate(user,crater,domain,prod,vdist,surf)
+subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_generate
@@ -28,14 +28,16 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
    real(DP),dimension(:,:),intent(in),optional :: prod,vdist
+   integer(I8B),dimension(:),intent(inout),optional :: production_list
    type(surftype),dimension(:,:),intent(in),optional :: surf
 
    ! Internal variables
-   real(DP),dimension(5)    :: rn  ! Random number
+   real(DP),dimension(6)    :: rn        
    real(DP)                 :: nmark,frac,limp
    real(DP)                 :: lnmark,lprod1,lprod1p,lprod2,lprod2p
    real(DP)                 :: dburial,trfin
    integer(I4B)             :: k,khi,klo,Nk
+   integer(I8B)             :: random_index,numremaining,nabove,nabovep1
 
    ! Get all six random numbers we need in one call
    if (.not.domain%initialize) call random_number(rn)
@@ -66,43 +68,49 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
       else 
          if (domain%pnum == 1) then
             crater%imp = prod(1,1)
-         else! Draw a random impactor from the production SFD
-      
-            ! generate random impactor 
-            nmark = prod(2,domain%smallest_impactor_index) * rn(3)
-            !nmark = prod(2,domain%smallest_ejecta_index) * rn(3)
-            ! Make a guess as to where in the SFD the impactor might be. 
-            ! This could speed up the searching if the SFD has a lot of elements in it.
-            Nk = 1 + domain%pnum - domain%smallest_impactor_index 
-            klo = domain%smallest_impactor_index
+         else ! Draw a random impactor from the production SFD
+            numremaining = sum(production_list)
+            random_index = max(int(numremaining * rn(3)),1)
             khi = domain%pnum
-            k = klo + int(Nk * log(rn(3)) / prod(4,khi) / prod(4,klo))
-            !Nk    = 1 + domain%pnum - domain%smallest_ejecta_index
-            !klo   = domain%smallest_ejecta_index
-            !khi   = domain%pnum
-            !k     = klo + int(Nk * log(rn(3)) / prod(4,khi) / prod(4,klo))
-            
-            ! Now search the table to find where the impactor actually is
-            call util_search(prod,2,domain%pnum-1,nmark,k)
-            if (k >= domain%pnum) then
-               crater%imp = prod(1,domain%pnum)
-            else
-               if (k <= domain%smallest_impactor_index) k = domain%smallest_impactor_index
-               !if (k <= domain%smallest_ejecta_index) k = domain%smallest_ejecta_index
-               lnmark = log(nmark)
-               lprod1 = prod(3,k) !log(prod(1,k))
-               lprod1p = prod(3,k + 1) !log(prod(1,k + 1))
-               lprod2 = prod(4,k) !log(prod(2,k))
-               lprod2p = prod(4,k + 1) !log(prod(2,k + 1))
-               frac = (lprod2 - lnmark) / (lprod2 - lprod2p)
-               limp = lprod1 + (frac*(lprod1p - lprod1))
-               crater%imp = exp(limp)
-            end if
+            klo = domain%smallest_impactor_index
+            k = klo + (khi - klo) / 2
+            do
+               nabove = sum(production_list(k:domain%pnum))
+               nabovep1 = sum(production_list(k+1:domain%pnum))
+               if ((random_index <= nabove).and.(random_index > nabovep1)) exit
+               if (random_index > nabove) then
+                  khi = k
+                  k = klo + (khi - klo) / 2
+               else  
+                  klo = k
+                  k = klo + (khi - klo) / 2
+               end if
+               if (klo == khi) then
+                  klo = klo - 1
+                  khi = khi + 1
+               end if 
+               if (k > khi) then
+                  write(*,*)
+                  write(*,*) 'Error in crater_generate: Went past the end of the SFD'
+                  write(*,*) random_index
+                  stop
+                  exit
+               end if
+            end do
+             
+            production_list(k) = production_list(k) - 1
+            frac = rn(4)
+            lprod1 = prod(3,k) 
+            lprod1p = prod(3,k + 1) 
+            lprod2 = prod(4,k) 
+            lprod2p = prod(4,k + 1) 
+            limp = lprod1 + (frac * (lprod1p - lprod1))
+            crater%imp = exp(limp)
          end if
       end if
       crater%imp = crater%imp * (1._DP + 1.0e-3_DP*rn(3)) ! Some user-input SFDs can result in many craters having identical 
-                                                         ! diameters. This random number prevents more than one crater from having 
-      !write(*,*) crater%imp                                                    ! exactly the same diameter, as diameter is used as identification.
+                                                          ! diameters. This random number prevents more than one crater from having 
+                                                          ! exactly the same diameter, as diameter is used as identification.
    end if
                                                        
 
@@ -117,7 +125,7 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
          crater%sinimpang = sin(user%testang * DEG2RAD)
       else
          if (user%doangle) then
-            crater%sinimpang = sqrt(rn(4))
+            crater%sinimpang = sqrt(rn(5))
          else
             crater%sinimpang = 1._DP ! Vertical impact only
          end if
@@ -132,13 +140,13 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
             crater%impvel = vdist(1,1)
          else 
             !  Draw impact velocity from the velocity distribution
-            nmark = vdist(3,domain%vlo) + (rn(5) * (vdist(3,domain%vhi) - vdist(3,domain%vlo)))
+            nmark = vdist(3,domain%vlo) + (rn(6) * (vdist(3,domain%vhi) - vdist(3,domain%vlo)))
             ! Make a guess as to where in the velocity distribution the impactor might be. 
             ! This could speed up the searching if the velocity distribution has a lot of elements in it.
             klo = domain%vlo
             khi = domain%vhi
             Nk = 1 + khi - klo
-            k = domain%vlo + int(Nk * rn(5) * (vdist(3,khi) - vdist(3,klo)))
+            k = domain%vlo + int(Nk * rn(6) * (vdist(3,khi) - vdist(3,klo)))
             call util_search(vdist,3,domain%vnum-1,nmark,k)
             if (k == 0) then
                crater%impvel = vdist(1,1)
@@ -150,21 +158,18 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
             end if
          end if
       end if
-      !crater%impvel = 18342.0_DP ! single crater size test: crater%impvel = root mean sqaure velocity
    end if
-
-   !crater%sinimpang = 0.5_DP * SQRT2 ! single crater size test: crater%sinimpang = PI/2.0_DP
 
    !  scale to crater size
    if (.not.domain%initialize) crater%strflag = 0 ! Begin with regolith strength
    call crater_scale(user,crater%imp,crater%rad,crater%grad,crater%strflag,crater%sinimpang,crater%impvel)
-   if (.not.domain%initialize) then ! single crater size test:
-      dburial = EXFAC * crater%rad  ! single crater size test:
-      if (dburial > surf(crater%xlpx,crater%ylpx)%ejcov) then ! single crater size test:
-         crater%strflag = 1 ! Use bedrock strength ! single crater size test:
-         call crater_scale(user,crater%imp,crater%rad,crater%grad,crater%strflag,crater%sinimpang,crater%impvel) ! single crater size test:
-      end if ! single crater size test:
-   end if ! single crater size test:
+   if (.not.domain%initialize) then 
+      dburial = EXFAC * crater%rad  
+      if (dburial > surf(crater%xlpx,crater%ylpx)%ejcov) then 
+         crater%strflag = 1 ! Use bedrock strength 
+         call crater_scale(user,crater%imp,crater%rad,crater%grad,crater%strflag,crater%sinimpang,crater%impvel) 
+      end if 
+   end if 
 
 
    trfin = 2 * TRSIM * crater%rad
@@ -185,7 +190,7 @@ subroutine crater_generate(user,crater,domain,prod,vdist,surf)
    end if
 
    crater%frad = 0.5_DP  * crater%fcrat
-   !write(*,*) crater%frad
+   
    ! Get pixel space values
    crater%fcratpx = nint(crater%fcrat / user%pix)
    return
