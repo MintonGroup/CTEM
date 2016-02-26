@@ -41,7 +41,7 @@ real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist
 real(DP),dimension(:),allocatable :: obslist
 real(SP),dimension(:),allocatable :: original_depth,current_depth,p_score,deviation_sigma
 real(SP),dimension(:,:),allocatable :: oposlist
-
+integer(I8B),dimension(:),allocatable :: production_list
 ! Miscellaneous variables
 character(STRMAX)       :: infile   ! Input file name
 logical                 :: restart  ! F = new run (start with a fresh surface)
@@ -59,7 +59,6 @@ integer(I4B)            :: nkilled
 integer(I4B)            :: ntotkilled 
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
-logical                 :: poisson_first
 real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
@@ -79,6 +78,7 @@ allocate(nflux(3,domain%pnum))
 allocate(crtscl(2,domain%pnum))
 allocate(vdist(3,domain%vnum))
 allocate(surf(user%gridsize,user%gridsize))
+allocate(production_list(domain%pnum))
 
 ! Read in production impactor population
 call io_read_prod(prod,user,domain)
@@ -112,11 +112,10 @@ if (.not.user%tallyonly) then
    if (user%testflag) then
       ntotcrat = 1
    else
-      poisson_first = .true.
-      lambda = prod(2,domain%smallest_impactor_index)
-      ntotcrat = util_poisson(lambda,poisson_first)
+      call crater_make_list(domain,prod,ntotcrat,production_list)
    end if
-   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux,ntotcrat)
+   call crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
+                        fracdone,nflux,ntotcrat)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
@@ -151,7 +150,7 @@ call io_write_dist(pdist,crtscl,domain,mass)
 
 ! Deallocate all the allocatables
 deallocate(seedarr)
-deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux)
+deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux,production_list)
 deallocate(oposlist,current_depth,original_depth,p_score,deviation_sigma)
 
 !$ t2 = omp_get_wtime()
