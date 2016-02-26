@@ -43,7 +43,7 @@
 ! Generates a single random deviate from a Poisson distribution with mean lambda.
 
 !**********************************************************************************************************************************
-function util_poisson(mu,first) result(ival)
+function util_poisson(mu,poisson_first) result(ival)
 use module_globals
 use module_util, EXCEPT_THIS_ONE => util_poisson
 implicit none
@@ -65,7 +65,7 @@ end interface
 
 !     .. Scalar Arguments ..
 real(DP), intent(in)    :: mu
-logical, intent(in) :: first
+logical, intent(in),optional :: poisson_first
 integer(I8B)             :: ival
 !     ..
 !     .. Local Scalars ..
@@ -87,10 +87,17 @@ real(DP), parameter :: a0 = -.5_DP, a1 = .3333333_DP, a2 = -.2500068_DP, a3 = .2
 real(DP), parameter :: fact(10) = (/ 1._DP, 1._DP, 2._DP, 6._DP, 24._DP, 120._DP, 720._DP, 5040._DP,  &
                                  40320._DP, 362880._DP /)
 real(DP), parameter  :: zero = 0.0_DP, half = 0.5_DP, one = 1.0_DP, two = 2.0_DP
+logical :: first
                       
 
 !     ..
 !     .. Executable Statements ..
+if (present(poisson_first)) then
+   first = poisson_first
+else
+   first = .true.
+end if
+
 if (mu > 10.0_DP) then
 !     C A S E  A. (RECALCULATION OF S, D, L if MU HAS CHANGED)
 
