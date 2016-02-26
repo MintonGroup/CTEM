@@ -20,6 +20,7 @@ use module_init
 use module_crater
 use module_seismic
 use module_ejecta
+use module_util
 !$ USE omp_lib
 implicit none
 
@@ -58,6 +59,8 @@ integer(I4B)            :: nkilled
 integer(I4B)            :: ntotkilled 
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
+logical                 :: poisson_first
+real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
 
@@ -109,9 +112,11 @@ if (.not.user%tallyonly) then
    if (user%testflag) then
       ntotcrat = 1
    else
-      ntotcrat = nint(prod(2,domain%smallest_impactor_index))
+      poisson_first = .true.
+      lambda = prod(2,domain%smallest_impactor_index)
+      ntotcrat = util_poisson(lambda,poisson_first)
    end if
-   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux)
+   call crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux,ntotcrat)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
