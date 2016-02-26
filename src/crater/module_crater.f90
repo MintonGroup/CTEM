@@ -18,7 +18,8 @@ public
 save
 
    interface
-      subroutine crater_populate(user,surf,crater,domain,prod,vdist,ntrue,vistrue,ntotkilled,truelist,mass,fracdone,nflux,ntotcrat)
+      subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
+                                 mass,fracdone,nflux,ntotcrat)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -26,6 +27,7 @@ save
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain
       real(DP),dimension(:,:),intent(in)           :: prod,vdist
+      integer(I8B),dimension(:),intent(inout)         :: production_list            
       integer(I4B),intent(out)                     :: ntrue
       integer(I4B),intent(out)                     :: vistrue
       integer(I4B),intent(out)                     :: ntotkilled
@@ -49,13 +51,14 @@ save
    end interface
 
    interface
-      subroutine crater_generate(user,crater,domain,prod,vdist,surf)
+      subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in)    :: domain
       real(DP),dimension(:,:),intent(in),optional :: prod,vdist
+      integer(I8B),dimension(:),intent(inout),optional  :: production_list            
       type(surftype),dimension(:,:),intent(in),optional :: surf
       end subroutine crater_generate
    end interface
@@ -204,6 +207,17 @@ end interface
       type(domaintype),intent(in)    :: domain
       real(DP),intent(in) :: finterval
       end subroutine crater_subpixel_diffusion
+   end interface
+
+   interface
+      subroutine crater_make_list(domain,prod,ntotcrat,production_list)
+      use module_globals
+      implicit none
+      type(domaintype),intent(in) :: domain
+      real(DP),dimension(:,:),intent(in) :: prod
+      integer(I8B),intent(out) :: ntotcrat
+      integer(I8B),dimension(:),intent(out) :: production_list 
+      end subroutine crater_make_list
    end interface
 
 end module
