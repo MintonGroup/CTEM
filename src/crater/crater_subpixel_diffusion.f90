@@ -40,6 +40,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    real(DP) :: u,Pval,Prob,lamleft
    real(DP),dimension(domain%pnum) :: dN,lambda,kappat
    real(DP),parameter :: STEP = 500.0_DP
+   logical :: poisson_first
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    do j = 0,user%gridsize + 1
@@ -66,25 +67,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    do j = 1,user%gridsize
       do i = 1,user%gridsize
          do n = 1,ntot
-            lamleft = lambda(n)
-            k = 0
-            Pval = 1.0_DP
-            do 
-               k = k + 1
-               call random_number(u)
-               Pval = Pval * u
-               if ((Pval < exp(1._DP)).and.(lamleft > 0._DP)) then
-                  if (lamleft > STEP) then
-                     Pval = Pval * exp(STEP)
-                     lamleft = lamleft - STEP
-                  else
-                     Pval = Pval * exp(lamleft)
-                     lamleft = -1._DP
-                  end if
-               end if
-               if (Pval <= 1._DP) exit
-            end do
-            k = k - 1
+            poisson_first = .true.
+            k = util_poisson(lambda(n),poisson_first)
             kdiff(i,j) = kdiff(i,j) + k * kappat(n) 
          end do
       end do
