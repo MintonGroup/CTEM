@@ -147,5 +147,15 @@ interface
    end function util_area_intersection
 end interface
 
+interface
+   function util_poisson(mu,first) result(ival)
+   use module_globals
+   implicit none
+   real(DP), intent(in)    :: mu
+   logical, intent(in) :: first
+   integer(I8B)             :: ival
+   end function util_poisson
+end interface
+
 end module
 
