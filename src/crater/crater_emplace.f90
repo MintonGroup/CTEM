@@ -33,8 +33,10 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
 
    ! Internal variables
    real(DP) :: lradsq,newelev
-   integer(I4B) :: xpi,ypi,i,j,k,inc,incsq,iradsq
+   integer(I4B) :: xpi,ypi,i,j,k,inc,incsq,iradsq,xpii,ypii
    real(DP) :: xp,yp,fradsq
+   integer(I4B),parameter :: NAVG = 5
+   type(surftype),dimension(NAVG) :: surfavg
 
    ! Test: porous regime mixing
    real(DP) :: comp_porous, thickness_porous_tot, thickness_porous_mare
@@ -67,20 +69,48 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
                
-            ! periodic boundary conditions
-            call util_periodic(xpi,ypi,user%gridsize)
 
             xp = xpi * user%pix
             yp = ypi * user%pix
-            lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+            
+            ! periodic boundary conditions
+            call util_periodic(xpi,ypi,user%gridsize)
+            surfavg = surf(xpi,ypi)
 
-            ! Form interior, rim, and ejecta blanket 
-            if (lradsq < fradsq) then 
-               call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,melev,&
-                  thickness_porous_tot,thickness_porous_mare)
-            else 
-               call crater_form_exterior(user,surf(xpi,ypi),crater,domain,lradsq,newelev) 
-            end if
+            xpii = crater%xlpx + i
+            ypii = crater%ylpx + j
+            do k = 1,NAVG
+               select case(k)
+               case(1) 
+                  xp = xpii * user%pix
+                  yp = ypii * user%pix
+               case(2)
+                  xp = (xpii + 0.5_DP) * user%pix
+                  yp = ypii * user%pix
+               case(3)
+                  xp = (xpii + 0.5_DP) * user%pix
+                  yp = (ypii + 0.5_DP) * user%pix
+               case(4)
+                  xp = (xpii - 0.5_DP) * user%pix
+                  yp = ypii * user%pix
+               case(5)
+                  xp = (xpii - 0.5_DP) * user%pix
+                  yp = (ypii - 0.5_DP) * user%pix
+               end select
+            
+               lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+
+               ! Form interior, rim, and ejecta blanket 
+               if (lradsq < fradsq) then 
+                  call crater_form_interior(user,surfavg(k),crater,lradsq,newelev,melev,&
+                     thickness_porous_tot,thickness_porous_mare)
+               else 
+                  call crater_form_exterior(user,surfavg(k),crater,domain,lradsq,newelev) 
+               end if
+            end do
+            surf(xpi,ypi) = surfavg(1)
+            surf(xpi,ypi)%dem = sum(surfavg%dem) / NAVG
+            surf(xpi,ypi)%ejcov = sum(surfavg%ejcov) / NAVG 
          end if
       end do
    end do !end area loopover 
