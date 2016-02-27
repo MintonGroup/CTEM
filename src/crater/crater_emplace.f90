@@ -85,17 +85,17 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
                   xp = xpii * user%pix
                   yp = ypii * user%pix
                case(2)
-                  xp = (xpii + 2 * THIRD) * user%pix
-                  yp = (ypii + 2 * THIRD) * user%pix
+                  xp = (xpii + THIRD) * user%pix
+                  yp = (ypii + THIRD) * user%pix
                case(3)
-                  xp = (xpii + 2 * THIRD) * user%pix
-                  yp = (ypii - 2 * THIRD) * user%pix
+                  xp = (xpii + THIRD) * user%pix
+                  yp = (ypii - THIRD) * user%pix
                case(4)
-                  xp = (xpii - 2 * THIRD) * user%pix
-                  yp = (ypii + 2 * THIRD) * user%pix
+                  xp = (xpii - THIRD) * user%pix
+                  yp = (ypii + THIRD) * user%pix
                case(5)
-                  xp = (xpii - 2 * THIRD) * user%pix
-                  yp = (ypii - 2 * THIRD) * user%pix
+                  xp = (xpii - THIRD) * user%pix
+                  yp = (ypii - THIRD) * user%pix
                end select
             
                lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
