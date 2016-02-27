@@ -33,8 +33,8 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
 
    ! Internal variables
    real(DP) :: lradsq,newelev
-   integer(I4B) :: xpi,ypi,i,j,k,inc,incsq,iradsq,xpii,ypii
-   real(DP) :: xp,yp,fradsq
+   integer(I4B) :: xpi,ypi,i,j,k,inc,incsq,iradsq
+   real(DP) :: xp,yp,fradsq,xpii,ypii
    integer(I4B),parameter :: NAVG = 5
    type(surftype),dimension(NAVG) :: surfavg
 
@@ -85,17 +85,17 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
                   xp = xpii * user%pix
                   yp = ypii * user%pix
                case(2)
-                  xp = (xpii + 0.5_DP) * user%pix
-                  yp = ypii * user%pix
+                  xp = (xpii + 2 * THIRD) * user%pix
+                  yp = (ypii + 2 * THIRD) * user%pix
                case(3)
-                  xp = (xpii + 0.5_DP) * user%pix
-                  yp = (ypii + 0.5_DP) * user%pix
+                  xp = (xpii + 2 * THIRD) * user%pix
+                  yp = (ypii - 2 * THIRD) * user%pix
                case(4)
-                  xp = (xpii - 0.5_DP) * user%pix
-                  yp = ypii * user%pix
+                  xp = (xpii - 2 * THIRD) * user%pix
+                  yp = (ypii + 2 * THIRD) * user%pix
                case(5)
-                  xp = (xpii - 0.5_DP) * user%pix
-                  yp = (ypii - 0.5_DP) * user%pix
+                  xp = (xpii - 2 * THIRD) * user%pix
+                  yp = (ypii - 2 * THIRD) * user%pix
                end select
             
                lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
