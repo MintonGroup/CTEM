@@ -136,18 +136,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
       end if 
 
+      if (crater%fcrat < domain%smallest_crater) cycle
+      
       ! Find the visible crater parameters
       call crater_find_visible(user,crater,domain)
-
-      call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
-                                                                     ! For very steep size distributions, only a fraction of the
-                                                                     ! craters are retained. The full ejecta_table_define function
-                                                                     ! is very computationally expensive. This function ball-parks
-                                                                     ! the total distance to determine if it is worth doing the 
-                                                                     ! full calculation later.
-
-
-      if (crater%fcrat < domain%smallest_crater) cycle
 
       ! Crater is big enough to keep, so record it into the true distribution 
       ntrue = ntrue + 1
@@ -177,6 +169,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       ! find the average height and slope at crater location
       call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
+      
+      call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
+                                                                     ! For very steep size distributions, only a fraction of the
+                                                                     ! craters are retained. The full ejecta_table_define function
+                                                                     ! is very computationally expensive. This function ball-parks
+                                                                     ! the total distance to determine if it is worth doing the 
+                                                                     ! full calculation later.
     
       ! Place ejecta onto the surface
       if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
