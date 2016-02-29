@@ -56,9 +56,9 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    thickness_porous_mare = 0._DP
 
    ! Loop over affected matrix area
-   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(inc,fradsq,incsq,melev,xslp,yslp,thickness_porous_tot,thickness_porous_mare) &
-   !$OMP SHARED(crater,user,surf) 
+   !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
+   !!$OMP SHARED(inc,fradsq,incsq,melev,xslp,yslp,thickness_porous_tot,thickness_porous_mare) &
+   !!$OMP SHARED(crater,user,surf) 
    do j=-inc,inc  ! Do the loop in pixel space
       do i=-inc,inc
          ! find distance from crater center
@@ -79,7 +79,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
 
             xpii = crater%xlpx + i
             ypii = crater%ylpx + j
-            do k = 1,NAVG
+            do k = 1,NAVG ! Average elevation and ejecta coverage over five points inside the grid
                select case(k)
                case(1) 
                   xp = xpii * user%pix
@@ -108,14 +108,15 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
                   call crater_form_exterior(user,surfavg(k),crater,domain,lradsq,newelev) 
                end if
             end do
-            surf(xpi,ypi) = surfavg(1)
+            surf(xpi,ypi) = surfavg(1) ! All properties other than elevation and ejecta coverage are evaluated at the center of the grid
             surf(xpi,ypi)%dem = sum(surfavg%dem) / NAVG
             surf(xpi,ypi)%ejcov = sum(surfavg%ejcov) / NAVG 
          end if
       end do
    end do !end area loopover 
-   !$OMP END PARALLEL DO
+   !!$OMP END PARALLEL DO
    domain%tallycoverage = domain%tallycoverage + int(fradsq * PI / user%pix**2)
+   domain%subpixelcoverage = domain%subpixelcoverage + int(fradsq * PI / user%pix**2)
 
    ! Test: Calculate the theoretical volume difference between transient crater and final crater
    ! dV = PI/4.0 * z_intersect**2 * (R_f/DDRATIO - R_TR/TRDDRATIO)
