@@ -68,7 +68,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),dimension(:,:),allocatable  :: tmptruelist
    integer(I4B),parameter  :: TRUECHUNK = 1000000 ! Size of truelist chunks to allocate 
    integer(I4B)            :: truesize
-   integer(I4B)            :: craters_since_tally,icrater_last_tally
+   integer(I4B)            :: craters_since_tally,icrater_last_tally,craters_since_subpixel,icrater_last_subpixel
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
@@ -117,6 +117,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    clock = 0.0_DP
    ! Reset coverage map
    domain%tallycoverage = 0
+   domain%subpixelcoverage = 0
 
    do while (icrater < ntotcrat)
       icrater = icrater + 1
@@ -232,20 +233,29 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
          call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
       end if
-      
+
+      ! Do periodic subpixel processes on the whole grid
+      if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+         domain%subpixelcoverage = 0
+         write(message,*) "Subpixel"
+         call io_updatePbar(message)
+         craters_since_subpixel = icrater - icrater_last_subpixel
+         finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
+         call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
+         if (user%doregotrack) then
+            call regolith_mix(user,surf,domain,nflux,finterval) 
+         end if
+         icrater_last_subpixel = icrater
+      end if
+     
+      ! Intermediate tally step 
       if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
          domain%tallycoverage = 0
          write(message,*) "Tally"
          call io_updatePbar(message)
-         !write(*,*)
-         !write(*,*) 'Tally step'
          craters_since_tally = icrater - icrater_last_tally
          finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          icrater_last_tally = icrater
-         if (user%doregotrack) then
-         call regolith_mix(user,surf,domain,nflux,finterval) 
-         end if
          call crater_tally_observed(user,surf,domain,nkilled,onum)
          write(message,*) "Tally killed ",nkilled
          call io_updatePbar(message)
@@ -254,11 +264,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if
    end do  ! end crater production loop 
  
-   craters_since_tally = icrater - icrater_last_tally
-   finterval = craters_since_tally / real(ntotcrat,kind=DP)
-   if (ntotcrat == 0) finterval = 1
-   if (.not.user%testflag) call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
-
    ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats
    ddmax = rmax / cmax
