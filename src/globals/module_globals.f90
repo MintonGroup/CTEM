@@ -51,8 +51,8 @@ real(DP),parameter :: VBIG    = huge(1._DP)    ! Very big number
 real(DP),parameter :: SMALLFAC = 1e-5_DP   ! Smallest unit of measurement proportional to pixel size
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
-real(DP),parameter :: TALLYTARGET = 1.0e-3_DP  ! The target number of crater kills per px**2 during a tally step
-real(DP),parameter :: TALLYCOVERAGE = 0.05_DP   ! The total area coverage to reach before a tally step is executed
+real(DP),parameter :: TALLYCOVERAGE = 0.01_DP   ! The total area coverage to reach before a tally step is executed
+real(DP),parameter :: SUBPIXELCOVERAGE = 0.05_DP ! The total area coverage to reach before a subpixel evaluate step is executed
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 type regolayertype
@@ -128,6 +128,7 @@ type domaintype
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
    integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
+   integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
 end type domaintype 
 
 ! Derived data type for user input variables
@@ -280,7 +281,7 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
-real(DP),parameter :: SOFTEN_FACTOR = 0.30_DP   ! Extra per crater diffusion constant
+real(DP),parameter :: SOFTEN_FACTOR = 0.25_DP   ! Extra per crater diffusion constant
 real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
 real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
 real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
