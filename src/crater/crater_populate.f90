@@ -171,26 +171,16 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       ! find the average height and slope at crater location
       call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
       
-      call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
-                                                                     ! For very steep size distributions, only a fraction of the
-                                                                     ! craters are retained. The full ejecta_table_define function
-                                                                     ! is very computationally expensive. This function ball-parks
-                                                                     ! the total distance to determine if it is worth doing the 
-                                                                     ! full calculation later.
     
       ! Place ejecta onto the surface
-      if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
-         if (user%doregotrack) then 
-            call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
-            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-         else 
-            call ejecta_table_define(user,crater,domain,ejb,ejtble)
-            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-         end if
-         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
-      else
-         ejtble = 0
+      if (user%doregotrack) then 
+         call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
+         call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+      else 
+         call ejecta_table_define(user,crater,domain,ejb,ejtble)
+         call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
       end if
+      call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
 
       ! Place crater onto the surface
       if (crater%fcrat > domain%smallest_crater) then
