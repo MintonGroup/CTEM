@@ -137,93 +137,94 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
       end if 
 
-      if (crater%fcrat < domain%smallest_crater) cycle
+      if (crater%fcrat > domain%smallest_crater) then
       
-      ! Find the visible crater parameters
-      call crater_find_visible(user,crater,domain)
+         ! Find the visible crater parameters
+         call crater_find_visible(user,crater,domain)
 
-      ! Crater is big enough to keep, so record it into the true distribution 
-      ntrue = ntrue + 1
-      if (ntrue > truesize) then  ! Resize the truelist array if necessary
-         allocate(tmptruelist(TRUECOLS,truesize))
-         tmptruelist = truelist
-         deallocate(truelist)
-         truesize = truesize + TRUECHUNK
-         allocate(truelist(TRUECOLS,truesize))
-         truelist(:,1:truesize - TRUECHUNK) = tmptruelist
-         deallocate(tmptruelist)
-      end if
-      truelist(1,ntrue) = crater%fcrat
-      truelist(2,ntrue) = crater%imp
-      truelist(3,ntrue) = crater%xl
-      truelist(4,ntrue) = crater%yl
-      truelist(5,ntrue) = crater%impvel
-      truelist(6,ntrue) = crater%sinimpang
-      mass = mass + crater%impmass
-
-      crater%maxinc = 0
-      ! Do seismic shaking
-      if (user%doseismic) call seismic_shake(user,surf,crater,domain)
-      
-      ! Generate dynamic diffusion
-      if (user%dosoftening) call crater_soften(user,surf,crater,domain)
-
-      ! find the average height and slope at crater location
-      call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
-      
-    
-      ! Place ejecta onto the surface
-      if (user%doregotrack) then 
-         call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
-         call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-      else 
-         call ejecta_table_define(user,crater,domain,ejb,ejtble)
-         call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-      end if
-      call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
-
-      ! Place crater onto the surface
-      call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
-
-      ! Record crater in an available layer as long as it is above the cutoff
-      call crater_record(user,surf,crater,melev,xslp,yslp)
-
-      call util_sort_layer(user,surf,crater)
-      vistrue = vistrue + 1
-      nsincetally = nsincetally + 1
-      if (.not.user%testflag) call io_updatePbar("")
-
-
-      ! Collapse any remaining unstable slopes
-      if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
-
-      !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
-
-
-      ! Find out if the current crater is the largest or smallest and if so record it
-      if (crater%fcrat > cmax ) then
-         imax = crater%imp
-         cmax = crater%fcrat
-         rhmax = crater%vrim
-         if (crater%vcorr <= user%deplimit) then
-            rmax = crater%vdepth
-         else
-            rmax = user%deplimit + crater%vrim 
+         ! Crater is big enough to keep, so record it into the true distribution 
+         ntrue = ntrue + 1
+         if (ntrue > truesize) then  ! Resize the truelist array if necessary
+            allocate(tmptruelist(TRUECOLS,truesize))
+            tmptruelist = truelist
+            deallocate(truelist)
+            truesize = truesize + TRUECHUNK
+            allocate(truelist(TRUECOLS,truesize))
+            truelist(:,1:truesize - TRUECHUNK) = tmptruelist
+            deallocate(tmptruelist)
          end if
-         call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_max.dat")
-      end if
-      if (crater%fcrat < cmin) then
-         imin = crater%imp
-         cmin = crater%fcrat
-         rhmin = crater%vrim
-         if (crater%vcorr <= user%deplimit) then
-            rmin = crater%vdepth
-         else
-            rmin = user%deplimit + crater%vrim
-         end if
-         call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
-      end if
+         truelist(1,ntrue) = crater%fcrat
+         truelist(2,ntrue) = crater%imp
+         truelist(3,ntrue) = crater%xl
+         truelist(4,ntrue) = crater%yl
+         truelist(5,ntrue) = crater%impvel
+         truelist(6,ntrue) = crater%sinimpang
+         mass = mass + crater%impmass
 
+         crater%maxinc = 0
+         ! Do seismic shaking
+         if (user%doseismic) call seismic_shake(user,surf,crater,domain)
+         
+         ! Generate dynamic diffusion
+         if (user%dosoftening) call crater_soften(user,surf,crater,domain)
+
+         ! find the average height and slope at crater location
+         call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
+         
+       
+         ! Place ejecta onto the surface
+         if (user%doregotrack) then 
+            call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
+            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+         else 
+            call ejecta_table_define(user,crater,domain,ejb,ejtble)
+            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+         end if
+         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
+
+         ! Place crater onto the surface
+         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+
+         ! Record crater in an available layer as long as it is above the cutoff
+         call crater_record(user,surf,crater,melev,xslp,yslp)
+
+         call util_sort_layer(user,surf,crater)
+         vistrue = vistrue + 1
+         nsincetally = nsincetally + 1
+         if (.not.user%testflag) call io_updatePbar("")
+
+
+         ! Collapse any remaining unstable slopes
+         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
+
+         !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
+
+
+         ! Find out if the current crater is the largest or smallest and if so record it
+         if (crater%fcrat > cmax ) then
+            imax = crater%imp
+            cmax = crater%fcrat
+            rhmax = crater%vrim
+            if (crater%vcorr <= user%deplimit) then
+               rmax = crater%vdepth
+            else
+               rmax = user%deplimit + crater%vrim 
+            end if
+            call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_max.dat")
+         end if
+         if (crater%fcrat < cmin) then
+            imin = crater%imp
+            cmin = crater%fcrat
+            rhmin = crater%vrim
+            if (crater%vcorr <= user%deplimit) then
+               rmin = crater%vdepth
+            else
+               rmin = user%deplimit + crater%vrim
+            end if
+            call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
+         end if
+
+      end if
       ! Do periodic subpixel processes on the whole grid
       if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
          domain%subpixelcoverage = 0
