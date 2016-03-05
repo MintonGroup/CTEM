@@ -113,6 +113,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       call io_resetPbar()
    end if
    icrater_last_tally = 0
+   icrater_last_subpixel = 0
    icrater = 0
    clock = 0.0_DP
    ! Reset coverage map
