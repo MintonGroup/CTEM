@@ -99,7 +99,7 @@ save
    end interface
 
    interface 
-      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)!,turnover,dmix)
+      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -111,7 +111,7 @@ save
    end interface
 
    interface 
-      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)!,turnover,dmix)
+      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -124,7 +124,7 @@ save
 
    interface 
       subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-      totseb)!,turnover,dmix)
+      totseb)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -136,7 +136,7 @@ save
    end interface 
 
    interface 
-      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dmix)
+      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -224,19 +224,8 @@ save
       type(domaintype),intent(in) :: domain
       real(DP),dimension(:,:),intent(in) :: nflux ! impact rate (number of craters per m^2 per year)
       real(DP),dimension(:,:),intent(in) :: p
-      !integer(I8B),intent(in) :: icrater
       end subroutine regolith_mix
    end interface
-
-!   interface
-!      subroutine regolith_comp_evol(user,comptop,a,icrater)
-!      use module_globals
-!      type(usertype),intent(in) :: user
-!      real(DP),dimension(:,:),intent(in) :: comptop
-!      character(len=1),intent(in) :: a
-!      integer(I8B),intent(in) :: icrater       
-!      end subroutine regolith_comp_evol
-!   end interface
 
    interface
       subroutine regolith_mix_porous_regime(user,surfi,d)
