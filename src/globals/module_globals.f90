@@ -72,6 +72,7 @@ type surftype
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
+   real(DP) :: demOrig              ! Temporary dem used in mass conservation equations
    integer(I4B) :: nmix             ! mixing frequency 
 !   integer(I4B) :: nmixf             ! mixing frequency
    real(DP) :: dexcav               ! the deepest excavation depth 
