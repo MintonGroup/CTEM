@@ -61,6 +61,7 @@ subroutine crater_mass_conservation(user,surf,crater)
          call util_periodic(xpi, ypi, user%gridsize)
          surf(xpi, ypi)%dem = surf(xpi, ypi)%dem - tdem
          surf(xpi, ypi)%ejcov = surf(xpi, ypi)%ejcov - tdem
+         surf(xpi, ypi)%demOrig = surf(xpi, ypi)%dem
       end do
    end do
 
