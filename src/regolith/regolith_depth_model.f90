@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_depth_model(user,domain,mixinterval,nflux,p)
+subroutine regolith_depth_model(user,domain,finterval,nflux,p)
    use module_globals
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_depth_model
@@ -25,7 +25,7 @@ subroutine regolith_depth_model(user,domain,mixinterval,nflux,p)
    ! Arguments
    type(usertype),intent(in) :: user
    type(domaintype),intent(in) :: domain
-   real(DP),intent(in) :: mixinterval  ! time elapsed ratio to the total time 
+   real(DP),intent(in) :: finterval  ! time elapsed ratio to the total time 
    real(DP),dimension(:,:),intent(in) :: nflux ! impact rate (number of craters per m^2 per year)
    real(DP),dimension(:,:),intent(out) :: p
 
@@ -44,14 +44,12 @@ subroutine regolith_depth_model(user,domain,mixinterval,nflux,p)
       ntotsubcrat = ntotsubcrat + nflux(3,i)
       nflux_pix(1,i) = nflux(1,i) / 2.0_DP / ( user%gridsize * user%pix )
       nflux_pix(2,i) = nflux(3,i) * domain%area * user%interval
-      !write(*,*) nflux(2,i), nflux(3,i) 
    end do
    ntotsubcrat = ntotsubcrat * domain%area * user%interval
    nflux_pix(2,:) = nflux_pix(2,:) / ntotsubcrat
   
    rmin = nflux_pix(1,1) 
-   t    = ntotsubcrat * mixinterval ! Time in unit of number of craters
-   !write(*,*) finterval, nflux(2,1), ntotsubcrat, domain%smallest_impactor_index
+   t    = ntotsubcrat * finterval ! Time in unit of number of craters
 
    do i = 1, domain%smallest_impactor_index
       p(1,i) = nflux(1,i) / 2.0_DP
@@ -77,9 +75,7 @@ subroutine regolith_depth_model(user,domain,mixinterval,nflux,p)
       end do
 
       p(2,i) = 1.0_DP - exp(psum * t)
-      !write(*,*) p(1,i), p(2,i), nflux_pix(2,i)
 
    end do
-   !stop
    return
 end subroutine regolith_depth_model
