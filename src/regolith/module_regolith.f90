@@ -217,15 +217,26 @@ save
    end interface
 
    interface
-      subroutine regolith_mix(user,surf,domain,nflux,finterval)
+      subroutine regolith_mix(user,surf,domain,nflux,p)
       use module_globals
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(domaintype),intent(in) :: domain
-      real(DP),dimension(:,:),intent(in) :: nflux
-      real(DP),intent(in) :: finterval
+      real(DP),dimension(:,:),intent(in) :: nflux ! impact rate (number of craters per m^2 per year)
+      real(DP),dimension(:,:),intent(in) :: p
+      !integer(I8B),intent(in) :: icrater
       end subroutine regolith_mix
    end interface
+
+!   interface
+!      subroutine regolith_comp_evol(user,comptop,a,icrater)
+!      use module_globals
+!      type(usertype),intent(in) :: user
+!      real(DP),dimension(:,:),intent(in) :: comptop
+!      character(len=1),intent(in) :: a
+!      integer(I8B),intent(in) :: icrater       
+!      end subroutine regolith_comp_evol
+!   end interface
 
    interface
       subroutine regolith_mix_porous_regime(user,surfi,d)
@@ -234,6 +245,17 @@ save
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in) :: d
       end subroutine regolith_mix_porous_regime
+   end interface
+
+   interface
+      subroutine regolith_depth_model(user,domain,mixinterval,nflux,p)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(domaintype),intent(in) :: domain
+      real(DP),intent(in) :: mixinterval
+      real(DP),dimension(:,:),intent(in) :: nflux
+      real(DP),dimension(:,:),intent(out) :: p
+      end subroutine regolith_depth_model
    end interface
 
 end module
