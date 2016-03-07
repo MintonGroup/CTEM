@@ -74,11 +74,11 @@ subroutine init_regolith_stack(user,surf)
    do yp = 1,user%gridsize
       do xp = 1,user%gridsize
          if (xp<=user%gridsize/2) then 
-            highland%thickness = 1000.0_DP
-            highland%meltfrac  = 0._DP 
-            highland%comp      = 0._DP
-            call regolith_push(surf(xp,yp),highland)
-            mare%thickness = 4000.0_DP
+            !highland%thickness = 1000.0_DP
+            !highland%meltfrac  = 0._DP 
+            !highland%comp      = 0._DP
+            !call regolith_push(surf(xp,yp),highland)
+            mare%thickness = 5000.0_DP
             mare%meltfrac  = 0._DP
             mare%comp      = 1.0_DP
             call regolith_push(surf(xp,yp),mare)
