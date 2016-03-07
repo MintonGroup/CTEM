@@ -262,6 +262,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       ! Intermediate tally step 
       if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
          crater%maxinc = user%gridsize / 2
+         crater%xlpx = user%gridsize / 2
+         crater%ylpx = user%gridsize / 2
          call crater_mass_conservation(user,surf,crater)
          domain%tallycoverage = 0
          write(message,*) "Tally"
