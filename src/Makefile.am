@@ -71,6 +71,7 @@ crater/crater_slope_collapse.f90\
 crater/crater_soften.f90\
 crater/crater_subpixel_diffusion.f90\
 crater/crater_make_list.f90\
+crater/crater_mass_conservation.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
