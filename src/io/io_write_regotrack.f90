@@ -43,7 +43,13 @@ subroutine io_write_regotrack(user,surf)
    ! Mixing 
    !real(DP),parameter :: zmix = 0.0_DP 
    !real(DP) :: z, zmare
-
+    
+   ! Output multiple "comphisto" files
+   character(len=255) :: fname
+   character(len=255), parameter :: clockfile = 'tic-toc.dat'
+   integer(I4B) :: tictoc
+   logical :: exist
+ 
    ! Executable code
    open(LUN,file=MELTFILE,status='replace',form='unformatted')
    open(LUM,file=REGOFILE,status='replace',form='unformatted')
@@ -78,8 +84,26 @@ subroutine io_write_regotrack(user,surf)
    write(LUN,rec=1) comptop
    close(LUN)
 
+   ! Output mulitple "comphisto" files
+   inquire(file=clockfile, exist=exist)
+   if (exist) then
+      open(LUN,file=clockfile,status='old')
+      read(LUN,*) tictoc
+   else
+      write(*,*) clockfile,' is missing!'
+   end if
+   tictoc = tictoc + 1
+   close(LUN)
+  
+   open(LUN,file=clockfile,status='replace')
+   write(LUN,*) tictoc
+   close(LUN)
+
    allocate(marehisto(user%gridsize))
-   open(LUN,file='comphisto',status='replace')
+   !open(LUN,file='comphisto',status='replace') ! Output comphisto one time
+   write(fname,'(a,i4.4)') 'comphisto',tictoc
+   open(LUN,file=fname,status='replace')
+
    do i=1,user%gridsize
       marehisto(i) = 0.0_DP
       mare = 0.0_DP
