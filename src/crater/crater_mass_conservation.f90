@@ -31,14 +31,17 @@ subroutine crater_mass_conservation(user,surf,crater)
    ! Internal variables
    integer(I4B) :: i,j,inc,xpi,ypi,startinc,endinc
    real(DP) :: tdem
+   logical :: resetflag
 
    ! Executable code
-   if (crater%maxinc >= user%gridsize / 2) then 
-      startinc = 1
-      endinc = user%gridsize
+   if (crater%maxinc > user%gridsize / 2) then 
+      startinc = -user%gridsize / 2 
+      endinc = user%gridsize / 2
+      resetflag = .true.
    else
       startinc = -crater%maxinc
       endinc = crater%maxinc
+      resetflag = .false.
    end if
 
    tdem = 0._DP
@@ -47,7 +50,11 @@ subroutine crater_mass_conservation(user,surf,crater)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
          call util_periodic(xpi, ypi, user%gridsize)
-         tdem = tdem + surf(xpi, ypi)%dem - surf(xpi, ypi)%demOrig
+         if (resetflag) then
+            tdem = tdem + surf(xpi, ypi)%dem 
+         else
+            tdem = tdem + surf(xpi, ypi)%dem  - surf(xpi, ypi)%demOrig
+         end if
       end do
    end do
 
@@ -61,10 +68,9 @@ subroutine crater_mass_conservation(user,surf,crater)
          call util_periodic(xpi, ypi, user%gridsize)
          surf(xpi, ypi)%dem = surf(xpi, ypi)%dem - tdem
          surf(xpi, ypi)%ejcov = surf(xpi, ypi)%ejcov - tdem
-         surf(xpi, ypi)%demOrig = surf(xpi, ypi)%dem
       end do
    end do
-
+   
    return
 end subroutine crater_mass_conservation
 
