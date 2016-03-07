@@ -185,14 +185,18 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
          end if
          call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
+         
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+         
 
          call crater_mass_conservation(user,surf,crater)
 
+
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater,melev,xslp,yslp)
+         
 
          call util_sort_layer(user,surf,crater)
          vistrue = vistrue + 1
@@ -202,6 +206,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          ! Collapse any remaining unstable slopes
          if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
+         
 
          !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
 
@@ -231,22 +236,24 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
 
       end if
+
+
       ! Do periodic subpixel processes on the whole grid
-      if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+      if (((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)).and.&
+          (.not.user%testflag)) then
          domain%subpixelcoverage = 0
          write(message,*) "Subpixel"
          call io_updatePbar(message)
          craters_since_subpixel = icrater - icrater_last_subpixel
          finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
          call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
-         if (user%doregotrack) then
-            call regolith_mix(user,surf,domain,nflux,finterval) 
-         end if
          icrater_last_subpixel = icrater
       end if
      
       ! Intermediate tally step 
       if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
+         crater%maxinc = user%gridsize / 2
+         call crater_mass_conservation(user,surf,crater)
          domain%tallycoverage = 0
          write(message,*) "Tally"
          call io_updatePbar(message)
