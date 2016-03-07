@@ -119,6 +119,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset coverage map
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
+   surf%demOrig = surf%dem
 
    do while (icrater < ntotcrat)
       icrater = icrater + 1
@@ -141,7 +142,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       if (crater%fcrat > domain%smallest_crater) then
          ! Set up original dem for later use in the mass conservation subroutine
-         surf%demOrig = surf%dem
 
          ! Find the visible crater parameters
          call crater_find_visible(user,crater,domain)
