@@ -84,21 +84,18 @@ subroutine regolith_mix(user,surf,domain,nflux,p)
                      call regolith_pop(surf(i,j))
                      z0    = z
                      z     = z + surf(i,j)%regolayer%thickness
-                     !if (i == 500 .and. j == 500) write(*,*) z0, z, surf(i,j)%regolayer%thickness, dd
                end do
 
                ztot  = ztot  + (dd - z0)
                zmare = zmare + (dd - z0) * surf(i,j)%regolayer%comp
                call regolith_traverse_pop(-1.0_DP * (dd - z0), surf(i,j))
-               !if (i == 500 .and. j == 500) write(*,*) '*', dd - z0, surf(i,j)%regolayer%thickness
                dnewlayer%thickness = ztot 
                dnewlayer%comp      = zmare / ztot
                dnewlayer%meltfrac  = 0._DP
                call regolith_push(surf(i,j), dnewlayer)
-               !if (i == 500 .and. j == 500) write(*,*) '#', dnewlayer%thickness, dd 
 
             end if
-
+            
           end do
       end do 
 
