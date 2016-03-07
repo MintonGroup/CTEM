@@ -76,8 +76,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
    integer(I4B) :: ejtble
-   ! doregotrack
+   ! melt
    real(DP) :: melt, clock!, volume, r1, r2, h
+   ! subpixel vertical mixing
+   real(DP) :: mixinterval
+   real(DP),dimension(2,domain%smallest_impactor_index) :: p
 
    if (user%testflag) then
       write(*,*) "Generating a test crater"
@@ -119,6 +122,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset coverage map
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
+   ! Set a time step for sub-pixel crater vertical mixing (every resolvable crater)
+   mixinterval = 1.0_DP / real(ntotcrat,kind=DP)
    surf%demOrig = surf%dem
 
    do while (icrater < ntotcrat)
@@ -138,7 +143,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             cycle ! Ignore this big crater
          end if
       end if 
-
 
       if (crater%fcrat > domain%smallest_crater) then
          ! Set up original dem for later use in the mass conservation subroutine
@@ -237,6 +241,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       end if
 
+      ! Do sub-pixel crater vertical mixing on the whole grid every resolvable crater
+      if (user%doregotrack) then
+         call regolith_depth_model(user,domain,mixinterval,nflux,p)
+         call regolith_mix(user,surf,domain,nflux,p)
+      end if 
 
       ! Do periodic subpixel processes on the whole grid
       if (((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)).and.&
