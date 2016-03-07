@@ -40,7 +40,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,thickness
 
    ! Test: internal variables of calculating transient crater's parabola shape
    real(DP) :: trdepth, trparab, trform, trvcorr
-   real(DP), parameter :: TRDDRATIO = (1.0_DP/3.0_DP + 1.0_DP/4.0_DP) / 2.0_DP 
+   real(DP), parameter :: TRDDRATIO = 0.5_DP !(1.0_DP/3.0_DP + 1.0_DP/4.0_DP) / 2.0_DP 
    real(DP) :: porous_thick
    real(DP) :: x_wall, z_wall, vdiff, cdepth, parabarea, parabside
 
