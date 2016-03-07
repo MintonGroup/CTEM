@@ -34,7 +34,7 @@ subroutine crater_mass_conservation(user,surf,crater)
    logical :: resetflag
 
    ! Executable code
-   if (crater%maxinc > user%gridsize / 2) then 
+   if (crater%maxinc >= user%gridsize / 2) then 
       startinc = -user%gridsize / 2 
       endinc = user%gridsize / 2
       resetflag = .true.
