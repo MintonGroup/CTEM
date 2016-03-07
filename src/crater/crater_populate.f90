@@ -73,13 +73,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: finterval ! fraction of interval so far completed
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
 
-	!Definition for the mass conservation:
-   integer(I4B)            :: ii, jj, dxii, dyii, halfdempx, status
-   integer(I4B)            :: hdxpx, dxpx
-   integer(I4B)            :: dnxpx, dnypx
-   real(DP)                :: tdem
-   real(kind = 8), allocatable, dimension(:,:) :: demOrig
-
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
    integer(I4B) :: ejtble
@@ -147,27 +140,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
 
       if (crater%fcrat > domain%smallest_crater) then
-			! Define the mass conservation part
-			! depends on where crater%xlpx and crater%ylpx are.
-			halfdempx = ceiling(1.3 * 25.0 * 2.3_DP * crater%frad**(1.006_DP)  / user%pix)
-			dxpx = max(min(2 * halfdempx + 1, user%gridsize),1)
-			hdxpx = ceiling(real(dxpx) / 2.)
-			dnxpx = crater%xlpx - hdxpx - 1
-			dnypx = crater%ylpx - hdxpx - 1
-	
-			! Allocate an array based on the definition above
-			allocate ( demOrig(dxpx, dxpx), STAT=status ) ! Allocate an array with the size of 2*ejecta distance + 1. 1 means the central pixel. 	
+         ! Set up original dem for later use in the mass conservation subroutine
+         surf%demOrig = surf%dem
 
-			do ii = 1, dxpx
-				do jj = 1, dxpx
-					dxii = dnxpx + ii 
-					dyii = dnypx + jj
-					call util_periodic(dxii, dyii, user%gridsize)
-					demOrig(ii,jj) = surf(dxii, dyii)%dem
-				end do
-			end do
-
- 
          ! Find the visible crater parameters
          call crater_find_visible(user,crater,domain)
 
@@ -214,36 +189,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
 
-
-
-			! Mass conservation scheme. 
-			tdem = 0._DP
-			do ii = 1, dxpx
-				do jj = 1, dxpx
-					dxii = dnxpx + ii 
-					dyii = dnypx + jj
-					call util_periodic(dxii, dyii, user%gridsize)
-					if (dxpx == user%gridsize) then
-						tdem = tdem + surf(dxii, dyii)%dem
-					else
-						tdem = tdem + surf(dxii, dyii)%dem - demOrig(ii,jj)				
-					end if
-				end do
-			end do
-			tdem = tdem / real(dxpx * dxpx)	
-			! Modify the surface elevation and ejcov			
-			do ii = 1, dxpx
-				do jj = 1, dxpx
-					dxii = dnxpx + ii 
-					dyii = dnypx + jj
-					call util_periodic(dxii,dyii,user%gridsize)
-					surf(dxii, dyii)%dem = surf(dxii, dyii)%dem - tdem
-					surf(dxii, dyii)%ejcov = surf(dxii, dyii)%ejcov - tdem
-				end do
-			end do
-			! Deallocate demOrig
-			deallocate (demOrig, STAT=status)
-
+         call crater_mass_conservation(user,surf,crater)
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater,melev,xslp,yslp)
