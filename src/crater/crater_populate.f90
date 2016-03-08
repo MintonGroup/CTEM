@@ -257,14 +257,16 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
          call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          icrater_last_subpixel = icrater
-      end if
-     
-      ! Intermediate tally step 
-      if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
+
+         ! Do mass conservation on whole grid
          crater%maxinc = user%gridsize / 2
          crater%xlpx = user%gridsize / 2
          crater%ylpx = user%gridsize / 2
          call crater_mass_conservation(user,surf,crater)
+      end if
+     
+      ! Intermediate tally step 
+      if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
          domain%tallycoverage = 0
          write(message,*) "Tally"
          call io_updatePbar(message)
