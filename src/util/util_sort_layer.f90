@@ -36,7 +36,7 @@ subroutine util_sort_layer(user,surf,crater)
    integer(I2B),dimension(user%numlayers) :: tempisrim
    integer(I4B) :: i,j,k,inc,incsq,mx,my,iradsq
 
-   inc = min(crater%maxinc,(user%gridsize - 1)/2)
+   inc = min(crater%rimdispx,(user%gridsize - 1)/2)
    incsq = inc*inc
 
 
