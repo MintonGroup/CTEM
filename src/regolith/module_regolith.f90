@@ -201,15 +201,6 @@ save
    end interface
 
    interface
-      subroutine regolith_mix_porous_regime(user,surfi,d)
-      use module_globals
-      type(usertype),intent(in) :: user
-      type(surftype),intent(inout) :: surfi
-      real(DP),intent(in) :: d
-      end subroutine regolith_mix_porous_regime
-   end interface
-
-   interface
       subroutine regolith_depth_model(user,domain,finterval,nflux,p)
       use module_globals
       type(usertype),intent(in) :: user
