@@ -18,7 +18,7 @@
 !
 !**********************************************************************************************************************************
 subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
-                           fracdone,nflux,ntotcrat,popflag)
+                           fracdone,nflux,ntotcrat)
    use module_globals
    use module_seismic
    use module_io
@@ -44,7 +44,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),intent(out)                            :: fracdone
    real(DP),dimension(:,:),intent(in)              :: nflux 
    integer(I8B),intent(in)                         :: ntotcrat  ! Total number of attempted impacts
-   INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT)       :: popflag
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -192,14 +191,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call ejecta_table_define(user,crater,domain,ejb,ejtble)
             call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
          end if
-         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,popflag)
+         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
       else
          ejtble = 0
       end if
 
       ! Place crater onto the surface
       if (crater%fcrat > domain%smallest_crater) then
-         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
+         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater,melev,xslp,yslp)
          call util_sort_layer(user,surf,crater)
