@@ -30,7 +30,7 @@ subroutine io_write_regotrack(user,surf)
    integer(I4B), parameter :: LUN=7
    integer(I4B), parameter :: LUM=8
    integer(I4B), parameter :: LUC=9
-   type(regolayertype),pointer :: current
+   type(regolisttype),pointer :: current => null()
    real(DP),dimension(user%gridsize,user%gridsize) :: regotop,comp,melt
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
    integer(kind=8) :: recsize
@@ -59,23 +59,21 @@ subroutine io_write_regotrack(user,surf)
       do i=1,user%gridsize
          stacks_num(i,j) = 0
          current => surf(i,j)%regolayer
-         comptop(i,j) = current%comp
+         comptop(i,j) = current%regodata%comp
          do 
-          if (.not. associated(current%next)) exit
+          if (.not. associated(current)) exit
           stacks_num(i,j) = stacks_num(i,j) + 1
-          regotop(i,j) = current%thickness
-          comp(i,j) = current%comp
-          melt(i,j) = current%meltfrac
+          regotop(i,j) = current%regodata%thickness
+          comp(i,j) = current%regodata%comp
+          melt(i,j) = current%regodata%meltfrac
           write(LUM) regotop(i,j)
           write(LUC) comp(i,j)
           write(LUN) melt(i,j) 
-          !if (regotop(i,j) == 0._DP) then
-          !write(*,*) i,j,stacks_num(i,j),regotop(i,j)!,comp(i,j)
-          !end if
           current => current%next
          end do
       end do 
    end do
+   close(LUN)
    close(LUM)
    close(LUC)
 

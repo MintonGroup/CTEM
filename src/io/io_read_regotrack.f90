@@ -34,7 +34,7 @@ subroutine io_read_regotrack(user,surf)
    real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp!, mixdep, excavdep
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num!, mix_num 
    real(DP), dimension(:),allocatable :: regotopi,melti,compi
-   type(regolayertype) :: newlayer
+   type(regodatatype) :: newsurfi
    integer(I4B) :: ioerr,i,j,k,itmp
    integer(kind=8) :: recsize
    real(DP) :: dtmp
@@ -97,10 +97,10 @@ subroutine io_read_regotrack(user,surf)
          nullify(surf(i,j)%regolayer%next)
 
          do k=stacks_num(i,j),1,-1
-            newlayer%thickness = regotopi(k)
-            newlayer%comp = compi(k)
-            newlayer%meltfrac  = melti(k)
-            call regolith_push(surf(i,j),newlayer)
+            newsurfi%thickness = regotopi(k)
+            newsurfi%comp = compi(k)
+            newsurfi%meltfrac  = melti(k)
+            call regolith_push(surf(i,j),newsurfi)
             !write(*,*) i,j,k,surf(i,j)%regolayer%thickness
          end do 
 
