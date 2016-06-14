@@ -151,13 +151,11 @@ write(*,*) 'Writing output files'
 
 call io_write_dist(pdist,crtscl,domain,mass)
 
-DO yp = 1, user%gridsize
-   DO xp = 1, user%gridsize
-      DO WHILE (ASSOCIATED(surf(xp,yp)%regolayer))
-         CALL regolith_pop(surf(xp,yp))
-      END DO
-   END DO
-END DO
+do yp = 1, user%gridsize
+   do xp = 1, user%gridsize
+      call util_destroy_list(surf(xp,yp)%regolayer)
+   end do
+end do
 
 ! Deallocate all the allocatables
 deallocate(seedarr)
