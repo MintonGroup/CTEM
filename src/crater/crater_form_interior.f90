@@ -44,6 +44,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
    real(DP), parameter :: TRDDRATIO = 0.5_DP !(1.0_DP/3.0_DP + 1.0_DP/4.0_DP) / 2.0_DP 
    real(DP) :: porous_thick
    real(DP) :: x_wall, z_wall, vdiff, cdepth, parabarea, parabside
+   type(regodatatype) :: mixedregodata
 
    ! Executable code
 
@@ -79,23 +80,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
    ! trparab:  it is similar to crater%parab, which is the coefficient that determines the shape of a parabola, depending on
    !           the distance of a point on the wall of a crater to the center of a parabola. 
    if (user%doregotrack) then
-      if (ALPHA > 0.125_DP) then
-      !   call regolith_traverse_pop(elchange,surfi)
-      !   cdepth = DDRATIO * crater%fcrat
-      !   trdepth = TRDDRATIO * crater%rad * 2.0_DP
-      !   trparab = trdepth / ((crater%rad)**2)
-      !   trvcorr = trdepth 
-      !   trform  = trparab * lradsq - trvcorr
-      !   if (trform<(-cform) .and. trform < 0._DP) then
-      !      porous_thick = abs(abs(trform) - abs(cform))
-      !      call regolith_mix_porous_regime(user,surfi,porous_thick)
-      !      thickness_porous_tot = thickness_porous_tot + surfi%regolayer%regodata%thickness
-      !      thickness_porous_mare = thickness_porous_mare + surfi%regolayer%regodata%thickness &
-      !                              * surfi%regolayer%regodata%comp
-      !   end if
-      else 
-         call regolith_traverse_pop(elchange,surfi)
-      end if
+      call regolith_traverse_pop(elchange,surfi,mixedregodata)
    end if
 
    !do regotrack: pop stuff out

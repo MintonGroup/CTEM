@@ -137,7 +137,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
                   lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
                   call util_periodic(xpi,ypi,user%gridsize)
                   if (lradsq < fradsq) then
-                     porouslayer%thickness = surf(xpi,ypi)%regolayer%regodata%thickness
+                     porouslayer = surf(xpi,ypi)%regolayer%regodata
                      porouslayer%comp      = comp_porous
                      porouslayer%meltfrac  = 0._DP
                   end if
