@@ -61,12 +61,13 @@ TYPE regodatatype
    real(DP) :: thickness
    real(DP) :: meltfrac 
    real(DP) :: comp 
-END TYPE regodatatype 
-
-TYPE regolisttype
-   TYPE(regodatatype) :: regodata
-   TYPE(regolisttype),POINTER :: next => NULL()
-END TYPE
+   real(DP) :: porosity
+end type regodatatype
+   
+type regolisttype
+   type(regodatatype) :: regodata
+   type(regolisttype),pointer :: next => NULL()
+end type
 
 ! Derived data type for simulated surface
 type surftype
@@ -79,8 +80,6 @@ type surftype
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
    type(regolisttype),pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
-   !contains
-   !FINAL :: nodePtrFinalizer
 end type surftype
 
 ! Derived data type for crater information
@@ -289,12 +288,5 @@ real(DP),parameter :: SOFTEN_FACTOR = 0.25_DP   ! Extra per crater diffusion con
 real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
 real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
 real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
-
-!contains 
-         
-!subroutine nodePtrFinalizer(x)
-!     type (surftype) :: x
-!     if (associated(x%regolayer)) deallocate(x%regolayer)
-!end subroutine nodePtrFinalizer
 
 end module module_globals
