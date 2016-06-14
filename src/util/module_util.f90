@@ -16,6 +16,25 @@ implicit none
 public
 save
 
+   interface
+      subroutine util_push(surf,newlayer,popflagi)
+      use module_globals
+      implicit none
+      type(surftype),intent(inout) :: surf
+      type(regodatatype),intent(in) :: newlayer
+      integer(I4B),intent(inout)  :: popflagi
+      end subroutine util_push
+   end interface
+
+   interface
+      subroutine util_pop(surfi,popflagi)
+      use module_globals
+      implicit none
+      type(surftype),intent(inout):: surfi
+      integer(I4B),intent(inout)  :: popflagi
+      end subroutine util_pop
+   end interface
+
 interface
    subroutine util_add_to_layer(user,surfi,isrim,fcrat,xl,yl,depth,baseline)
    use module_globals
