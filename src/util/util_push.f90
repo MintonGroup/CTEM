@@ -43,11 +43,13 @@ subroutine util_push(surfi,newregodata)
       if (allocstat == 0) then
          nullify(newsurfi%next)
          newsurfi%next => surfi%regolayer
-         surfi%regolayer => newsurfi
          newsurfi%regodata = newregodata
+         surfi%regolayer => newsurfi
       else
-         write(*,*) 'Exhausted memory!'
+         write(*,*) 'util_push error: Exhausted memory!'
       end if
+   else
+      write(*,*) "util_push error: surfi%regolayer is not associated!"
    end if
    return
 end subroutine util_push
