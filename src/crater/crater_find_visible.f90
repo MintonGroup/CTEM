@@ -57,7 +57,7 @@ subroutine crater_find_visible(user,crater,domain)
       lrad = lrad + (user%pix * SUBPIXFAC)
    end do
    ! Get pixel space values
-   crater%frimpx = int(crater%frim/user%pix) + 1
+   crater%fradpx = int(crater%frad/user%pix) + 1
    crater%rimdispx = int(crater%rimdis/user%pix)  + 1
 
    return
