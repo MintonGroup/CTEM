@@ -5,11 +5,11 @@
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
-!  Description : Pop crater by traversing the linked list 
+!  Description : Removes all layers down to a given depth. Cuts a layer if the depth ends in the middle of an old layer.
 !  
 !
 !  Input
-!    Arguments : cdepth :: a depth at a certain distance after emplacing a crater 
+!    Arguments : 
 !
 !  Output
 !    Arguments : surf  
@@ -18,16 +18,15 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_pop(elchange,surfi,mixedregodata)
+subroutine util_traverse_pop(elchange,surfi,poppedlist)
    use module_globals
-   use module_util
-   use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_pop
+   use module_util, EXCEPT_THIS_ONE => util_traverse_pop
    implicit none
 
    ! Arguments
    real(DP),intent(in)            :: elchange
    type(surftype),intent(inout)   :: surfi
-   type(regodatatype),intent(out) :: mixedregodata
+   type(regolisttype),pointer :: poppedlist => null()
 
    ! Internal variables
    real(DP)                    :: z,depth,dz
@@ -54,12 +53,14 @@ subroutine regolith_traverse_pop(elchange,surfi,mixedregodata)
             dz = depth - abs(z)
             surfi%regolayer%regodata%thickness = dz
             mixedregodata%comp = mixedregodata%comp + dz * surfi%regolayer%regodata%comp
+            mixedregodata%meltfrac = mixedregodata%meltfrac + dz * surfi%regolayer%regodata%meltfrac
             mixedregodata%thickness = mixedregodata%thickness + dz
             exit
          else
             z = abs(z) - surfi%regolayer%regodata%thickness
             call util_pop(surfi,oldregodata)
             mixedregodata%comp = mixedregodata%comp + oldregodata%thickness * oldregodata%comp
+            mixedregodata%meltfrac = mixedregodata%meltfrac + oldregodata%thickness * oldregodata%meltfrac
             mixedregodata%thickness = mixedregodata%thickness + oldregodata%thickness
             depth = surfi%regolayer%regodata%thickness
          end if

@@ -17,16 +17,6 @@ public
 save
 
    interface
-      subroutine regolith_traverse_pop(elchange,surfi,mixedregodata)
-      use module_globals
-      implicit none
-      real(DP),intent(in)         :: elchange
-      type(surftype),intent(inout):: surfi   
-      type(regodatatype),intent(out) :: mixedregodata
-      end subroutine 
-   end interface
-
-   interface
       subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
       use module_globals
       type(usertype),intent(in) :: user

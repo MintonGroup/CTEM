@@ -16,41 +16,22 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_mix(surf,d)
+subroutine regolith_mix(surfi,mixing_depth)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_mix
    implicit none
 
    ! Arguments
-   type(surftype),intent(inout) :: surf
-   real(DP), intent(in) :: d
+   type(surftype),intent(inout) :: surfi
+   real(DP), intent(in) :: mixing_depth
 
    ! Internal variables
-   real(DP) :: z, zmare, ztot, z0
    type(regolayertype) :: newlayer
-
-   z = surf%regolayer%thickness 
-   zmare = 0._DP
-   ztot  = 0._DP
-   z0    = 0._DP
 
    !===============================================
    ! Add up all layers' info until a desired depth
    !===============================================          
-   do while ( (associated(surf%regolayer%next)) .and. (z<d) ) 
-            ztot  = ztot  + (z - z0)
-            zmare = zmare + (z - z0) * surf%regolayer%comp
-            call regolith_pop(surf)
-            z0    = z
-            z     = z + surf%regolayer%thickness
-   end do
-
-   ztot  = ztot  + (d - z0)
-   zmare = zmare + (d - z0) * surf%regolayer%comp
-   call regolith_traverse_pop(-1.0_DP * (d - z0), surf)
-   newlayer%thickness = ztot 
-   newlayer%comp      = zmare / ztot
-   newlayer%meltfrac  = surf%regolayer%meltfrac
+   call regolith_traverse_pop(mixing_depth, surfi,newlayer)
    call regolith_push(surf, newlayer)
 
 end subroutine regolith_mix
