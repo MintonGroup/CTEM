@@ -52,15 +52,21 @@ real(DP),parameter :: SMALLFAC = 1e-5_DP   ! Smallest unit of measurement propor
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
 real(DP),parameter :: TALLYCOVERAGE = 0.01_DP   ! The total area coverage to reach before a tally step is executed
-real(DP),parameter :: SUBPIXELCOVERAGE = 0.05_DP ! The total area coverage to reach before a subpixel evaluate step is executed
+real(DP),parameter :: SUBPIXELCOVERAGE = 0.000005_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
-type regolayertype
+real(DP),parameter :: ALPHA = 0.125_DP
+
+TYPE regodatatype 
    real(DP) :: thickness
    real(DP) :: meltfrac 
    real(DP) :: comp 
-   type(regolayertype),pointer :: next
-end type
+END TYPE regodatatype 
+
+TYPE regolisttype
+   TYPE(regodatatype) :: regodata
+   TYPE(regolisttype),POINTER :: next => NULL()
+END TYPE
 
 ! Derived data type for simulated surface
 type surftype
@@ -72,12 +78,9 @@ type surftype
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
-   real(DP) :: demOrig              ! Temporary dem used in mass conservation equations
-   integer(I4B) :: nmix             ! mixing frequency 
-!   integer(I4B) :: nmixf             ! mixing frequency
-   real(DP) :: dexcav               ! the deepest excavation depth 
-   real(DP) :: dmix                 ! the thickness of mixed stream tubes  
-   type(regolayertype),pointer :: regolayer ! Pointer to the top of the regolith layer stack
+   type(regolisttype),pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+   !contains
+   !FINAL :: nodePtrFinalizer
 end type surftype
 
 ! Derived data type for crater information
@@ -287,6 +290,11 @@ real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion powe
 real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
 real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
 
-
+!contains 
+         
+!subroutine nodePtrFinalizer(x)
+!     type (surftype) :: x
+!     if (associated(x%regolayer)) deallocate(x%regolayer)
+!end subroutine nodePtrFinalizer
 
 end module module_globals
