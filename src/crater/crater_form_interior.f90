@@ -22,7 +22,6 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
            thickness_porous_tot,thickness_porous_mare)
    use module_globals
    use module_util
-   use module_regolith
    use module_porosity
    use module_crater, EXCEPT_THIS_ONE => crater_form_interior
    implicit none
@@ -44,7 +43,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
    real(DP), parameter :: TRDDRATIO = 0.5_DP !(1.0_DP/3.0_DP + 1.0_DP/4.0_DP) / 2.0_DP 
    real(DP) :: porous_thick
    real(DP) :: x_wall, z_wall, vdiff, cdepth, parabarea, parabside
-   type(regodatatype) :: mixedregodata
+   type(regolisttype),pointer :: poppedlist => null()
 
    ! Executable code
 
@@ -80,7 +79,8 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
    ! trparab:  it is similar to crater%parab, which is the coefficient that determines the shape of a parabola, depending on
    !           the distance of a point on the wall of a crater to the center of a parabola. 
    if (user%doregotrack) then
-      call regolith_traverse_pop(elchange,surfi,mixedregodata)
+      call util_traverse_pop(surfi%regolayer,abs(elchange),poppedlist)
+      call util_destroy_list(poppedlist)
    end if
 
    !do regotrack: pop stuff out
