@@ -29,6 +29,8 @@ util/util_rootbracketed.f90\
 util/util_diffusion_solver.f90\
 util/util_area_intersection.f90\
 util/util_poisson.f90\
+util/util_pop.f90\
+util/util_push.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -85,8 +87,6 @@ regolith/regolith_cubic_func.f90\
 regolith/regolith_melt_func.f90\
 regolith/regolith_melt_fraction.f90\
 regolith/regolith_melt_zone.f90\
-regolith/regolith_pop.f90\
-regolith/regolith_push.f90\
 regolith/regolith_quadratic_func.f90\
 regolith/regolith_quartic_func.f90\
 regolith/regolith_mix.f90\
