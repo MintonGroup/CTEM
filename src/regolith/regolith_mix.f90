@@ -27,7 +27,7 @@ subroutine regolith_mix(surfi,mixing_depth)
    real(DP), intent(in) :: mixing_depth
 
    ! Internal variables
-   type(regolayertype) :: newlayer
+   type(regodatatype) :: newlayer
    type(regolisttype),pointer :: poppedlist => null()
 
    !===============================================
@@ -48,9 +48,9 @@ subroutine regolith_mix(surfi,mixing_depth)
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
-   newlayer%meltfac = newlayer%meltfrac / newlayer%thickness 
+   newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
    
-   call util_push(surf, newlayer)
+   call util_push(surfi%regolayer, newlayer)
    call util_destroy_list(poppedlist)
 
    return
