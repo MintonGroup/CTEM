@@ -17,25 +17,6 @@ public
 save
 
    interface
-      subroutine regolith_push(surf,newlayer,popflagi)
-      use module_globals
-      implicit none
-      type(surftype),intent(inout) :: surf
-      type(regodatatype),intent(in) :: newlayer
-      INTEGER(I4B),intent(inout)  :: popflagi
-      end subroutine regolith_push
-   end interface
-
-   interface
-      subroutine regolith_pop(surfi,popflagi)
-      use module_globals
-      implicit none
-      type(surftype),intent(inout):: surfi
-      INTEGER(I4B),intent(inout)  :: popflagi
-      end subroutine regolith_pop
-   end interface
-
-   interface
       subroutine regolith_traverse_pop(elchange,surfi,popflagi)
       use module_globals
       implicit none
