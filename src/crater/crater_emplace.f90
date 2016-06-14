@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
+subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_emplace
@@ -30,7 +30,6 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout) :: domain
    real(DP),intent(in) :: melev,xslp,yslp
-   INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT),optional :: popflag
 
    ! Internal variables
    real(DP) :: lradsq,newelev
@@ -104,7 +103,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
                ! Form interior, rim, and ejecta blanket 
                if (lradsq < fradsq) then 
                   call crater_form_interior(user,surfavg(k),crater,lradsq,newelev,melev,&
-                     thickness_porous_tot,thickness_porous_mare,popflag(xpi,ypi))
+                     thickness_porous_tot,thickness_porous_mare)
                else 
                   call crater_form_exterior(user,surfavg(k),crater,domain,lradsq,newelev) 
                end if

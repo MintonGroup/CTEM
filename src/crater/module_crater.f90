@@ -19,7 +19,7 @@ save
 
    interface
       subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
-                                 mass,fracdone,nflux,ntotcrat,popflag)
+                                 mass,fracdone,nflux,ntotcrat)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -36,7 +36,6 @@ save
       real(DP),intent(out)                         :: fracdone
       real(DP),dimension(:,:),intent(in)           :: nflux 
       integer(I8B),intent(in)                      :: ntotcrat
-      INTEGER(I4B),dimension(:,:),intent(inout) :: popflag
       end subroutine crater_populate
    end interface
 
@@ -86,7 +85,7 @@ save
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
+      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
       use module_globals
       implicit none
       ! Arguments
@@ -95,7 +94,6 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
       real(DP),intent(in) :: melev,xslp,yslp
-      INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT),optional :: popflag
       end subroutine crater_emplace
    end interface
 
