@@ -38,10 +38,18 @@ interface
    subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    use module_globals
    implicit none
-   type(regolayertype),pointer :: regolayer
+   type(regolisttype),pointer :: regolayer
    real(DP),intent(in)         :: traverse_depth
-   type(regolistype),pointer :: poppedlist
+   type(regolisttype),pointer :: poppedlist
    end subroutine 
+end interface
+
+interface
+   subroutine util_destroy_list(regolayer)
+   use module_globals
+   implicit none
+   type(regolisttype),pointer :: regolayer
+   end subroutine util_destroy_list
 end interface
 
 interface

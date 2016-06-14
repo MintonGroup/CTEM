@@ -34,7 +34,7 @@ subroutine util_destroy_list(regolayer)
 
    do while(associated(regolayer))
       call util_pop(regolayer,oldregodata)
-   end if
+   end do
 
    return
 end subroutine util_destroy_list

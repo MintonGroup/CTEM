@@ -26,7 +26,7 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    ! Arguments
    type(regolisttype),pointer   :: regolayer
    real(DP),intent(in)          :: traverse_depth
-   type(regolisttype),pointer   :: poppedlist => null()
+   type(regolisttype),pointer   :: poppedlist 
 
    ! Internal variables
    real(DP)                    :: z,depth,dz
