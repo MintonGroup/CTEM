@@ -199,6 +199,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       ! Place crater onto the surface
       if (crater%fcrat > domain%smallest_crater) then
          call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+
+         !call crater_mass_conservation(user,surf,crater)
+
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater,melev,xslp,yslp)
          call util_sort_layer(user,surf,crater)
