@@ -29,7 +29,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,popflag)
    use module_globals
    use module_util
    use module_io
@@ -45,6 +45,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)    :: ejb
+   INTEGER(I4B),DIMENSION(:,:),intent(inout)  :: popflag
 
    ! Internal variables
    real(DP) :: lrad,lradsq,cdepth
@@ -68,7 +69,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    !real(DP) :: thinnest, lrad_thinnest, v_thinnest, theta_thinnest, rad_sec, vsq
 
    ! Streamtube
-   real(DP) :: comp
+   real(DP) :: comp, eradc
 
    ! Enhanced factor test
    real(DP)     :: xef, yef, thetamax
@@ -79,8 +80,17 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    ! Flowery ray variables
    integer(I4B)  :: nfrays
    real(DP)      :: n1f, n2f, magf, lradf, rayf
-   !real(DP)      :: massray, massrayef, massej
-
+   ! Ray mixing model parameters:
+   real(DP)      :: h_raymix ! Ray mixing depth: l = 0.5755 * (D_sc)^-0.3136 * R_p^1.25, D_sc = 8 * h
+                             !                   h = 0.021 * l^-3.188 * R_p^3.985 in unit of kilometers
+   real(DP)      :: h_raymixratio ! Ray mixing ratio: h / L = h / (0.1 R_p^0.74 * (l/R_p)^-4.37
+                                  ! h/L = 0.2137 * R_p^0.052 * (l/R_p)^1.182
+   real(DP), parameter :: k_raymixratio = 0.171726_DP !1.7172_DP 
+   real(DP), parameter :: b_lrad1  = -3.188_DP !1.181_DP
+   real(DP), parameter :: b_frad1  =  0.79719_DP !0.057_DP
+   real(DP), parameter :: SCD = 0.125_DP
+   real(DP) :: vsq, ejtheta, melt, vol_sc, dsc
+   
    ! Executable code
 
    cdepth = DDRATIO * crater%fcrat
@@ -112,12 +122,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    indarray = inc ! initialize this array to point to a corner (this should have 0 elevation change since we're only doing work
                 ! within a circle of radius irad
 
-   !Mixing
-   !surf(crater%xlpx,crater%ylpx)%nmix = 0
-
-   !TESTING
-   !continuous = 23_DP * crater%frad**(1.006_DP)
-   
    ! *************************** Continuous Ejecta Formula  *****************************!
    continuous = 2.3_DP * crater%frad**(1.006_DP)
 
@@ -139,8 +143,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    !     The smaller the ratio, the skinnier a ray.
 
    nrays      = nint(8 * rn(15)) + 6
-   !#mvrld      = a * (crater%frad/1000.0)**(b)
-   !#mvrldsc    = mvrld / (continuous/crater%frad)
    mvrld      = crater%ejdis
    mvrldsc    = mvrld / continuous
    n2         = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
@@ -150,7 +152,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    n1f  = 1.0_DP
    n2f  = 0.5_DP
    rayf = 7.5_DP
-   !n2f  = 2.0_DP * n1f * ( log10(magf) / log10(2.0_DP) ) + 2.0_DP
  
    ! Enhanced factor test: Build a enhanced factor quick lookup table
    ! Use a circular sector with an angle containning a half ray, which is pi/nrays. First, we determine the looping area for 
@@ -161,7 +162,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    yef        = mvrld * sin(thetamax)
    xefpi      = nint(xef / user%pix)
    yefpi      = nint(yef / user%pix)
-   !nef        = ceiling((mvrld - continuous) / user%pix)
    nef        = ceiling( (mvrld - crater%frad) / user%pix)
    allocate(sf(nef))
    allocate(tot(nef))
@@ -185,7 +185,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
          lradp  = max(lradp, lradf)
          !if ( lrad > continuous .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
          if (lrad >= crater%frad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
-            !ray_pix = ceiling((lrad - continuous) / user%pix)
             ray_pix  = ceiling( (lrad - crater%frad) / user%pix)
             tot(ray_pix) = tot(ray_pix) + 1
             if (lrad < lradp) sf(ray_pix) = sf(ray_pix) + 1
@@ -207,14 +206,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    deallocate(sf)
    deallocate(tot)
    
-   !do i=1,nef
-   !write(*,*) (dble(i) - 0.5_DP) * user%pix + crater%frad, ef(i) 
-   !end do
-   ! Testing if ray's mass with enhanced factor is conserved:
-   !massray = 0._DP
-   !massrayef = 0._DP
-   !massej  = 0._DP
-
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
 !   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
 !   !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous) 
@@ -252,22 +243,31 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
             lradp = max(lradp, lradf) 
 
             if (lrad < lradp) then
-               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
+               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,ejtheta,melt)
                ray_pix = ceiling((lrad - crater%frad) / user%pix)
-               !if (i>0 .and. j>0) write(*,*) lrad/crater%frad, ef(ray_pix), ebh, ebh * ef(ray_pix)
-               !massray   = massray + ebh * user%pix**2
-               !massej    = massej + ebh * user%pix**2
-               !massrayef = massrayef + ebh * ef(ray_pix) * user%pix**2
                ebh       = ebh * ef(ray_pix)
 
                if (user%doregotrack .and. ebh>1.0e-8) then
-                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
-                  call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)  
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
+                  call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp,popflag(xpi,ypi))
+                  !print *, lrad / crater%frad, comp 
+                  !dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
+                  !if (dsc - ebh > 1.0e-08) then
+                  !call regolith_mix(surf(xpi,ypi), dsc)
+                  !end if
+                  !vol_sc = PI / 48.0 * dsc**3
+                  !h_raymixratio = dsc / ebh
+                  !if (i > 0 .and. j > 0 .and. lrad > continuous) write(*,*) lrad/crater%frad, ebh, sqrt(vsq), &
+                  !dsc, h_raymixratio  
+                  ! Check out: Ray_Mixing_Model.dox
+                  !h_raymixratio = ALPHA * k_raymixratio * (lrad/crater%frad)**(b_lrad1) * (crater%frad/1000.0_DP)**(b_frad1)
+                  !h_raymix = h_raymixratio * ebh 
+                  !if (h_raymix > ebh) then
+                  !   call regolith_mix(surf(xpi,ypi), h_raymix)
+                  !end if
                end if
 
             else
-            !call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh)
-            !massej = massej + ebh * user%pix**2
             ebh = 0._DP
             end if
 
@@ -280,7 +280,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 
    deallocate(ef)
 
-   !write(*,*) massej, massray, massrayef, massray/massej, massrayef/massej
 
    if (user%dosoftening) then 
       ! Create box for soften calculation (will be no bigger than the grid itself)
