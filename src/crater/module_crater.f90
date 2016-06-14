@@ -19,7 +19,7 @@ save
 
    interface
       subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
-                                 mass,fracdone,nflux,ntotcrat)
+                                 mass,fracdone,nflux,ntotcrat,popflag)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -36,6 +36,7 @@ save
       real(DP),intent(out)                         :: fracdone
       real(DP),dimension(:,:),intent(in)           :: nflux 
       integer(I8B),intent(in)                      :: ntotcrat
+      INTEGER(I4B),dimension(:,:),intent(inout) :: popflag
       end subroutine crater_populate
    end interface
 
@@ -85,7 +86,7 @@ save
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
       use module_globals
       implicit none
       ! Arguments
@@ -94,12 +95,13 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
       real(DP),intent(in) :: melev,xslp,yslp
+      INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT),optional :: popflag
       end subroutine crater_emplace
    end interface
 
    interface
       subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
-          thickness_porous_tot,thickness_porous_mare)
+          thickness_porous_tot,thickness_porous_mare,popflagi)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -108,6 +110,7 @@ save
       real(DP),intent(in) :: lradsq
       real(DP),intent(in) :: newelev,melev
       real(DP),intent(inout),optional :: thickness_porous_tot, thickness_porous_mare
+      INTEGER(I4B),intent(inout),optional :: popflagi
       end subroutine crater_form_interior
    end interface
 
@@ -218,16 +221,6 @@ end interface
       integer(I8B),intent(out) :: ntotcrat
       integer(I8B),dimension(:),intent(out) :: production_list 
       end subroutine crater_make_list
-   end interface
-
-   interface
-      subroutine crater_mass_conservation(user,surf,crater)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(inout) :: surf
-      type(cratertype),intent(in)  :: crater
-      end subroutine crater_mass_conservation
    end interface
 
 end module
