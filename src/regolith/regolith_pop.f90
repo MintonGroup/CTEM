@@ -19,32 +19,41 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_pop(surf)
+subroutine regolith_pop(surfi,popflagi)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_pop
    implicit none
 
    ! Arguments
-   type(surftype),intent(inout):: surf
+   type(surftype),intent(inout):: surfi
+   INTEGER(I4B),intent(inout)  :: popflagi
 
    ! Internal variables
-   type(regolayertype),pointer :: current
+   type(regolisttype),pointer :: current  => null()
 
    ! Executable code
-!   if (.not. associated(surf%regolayer%next)) then
-!      write(*,*) "Error: Dug too deep. Beware of balrog."
-!   else
-!      deallocate (surf%regolayer%next)
-!      surf%regolayer => surf%regolayer%next
-!   end if
+   !===========================================
+   ! Check if the head is associated
+   !===========================================
+   !IF (.NOT. ASSOCIATED(surfi%regolayer)) RETURN
+   !current  => surfi%regolayer
+   !previous => current%next 
+   !IF (ASSOCIATED(previous%next)) THEN 
+   !PRINT *, current%regodata%thickness, previous%next%regodata%thickness, surfi%regolayer%regodata%thickness
+   !previous => previous%next
+   !surfi%regolayer => previous
+   !PRINT *, previous%regodata%thickness, surfi%regolayer%regodata%thickness
+   !DEALLOCATE(current)
+   !END IF
 
-   current => surf%regolayer
-   if (.not. associated(surf%regolayer%next)) then
-      write(*,*) "Error: Dug too deep. Beware of balrog."
-   else
-      surf%regolayer => surf%regolayer%next
-      !deallocate (current)
-   end if
-   return
+   IF (ASSOCIATED(surfi%regolayer)) THEN
+      current  => surfi%regolayer 
+      IF (ASSOCIATED(current%next)) THEN
+         surfi%regolayer => surfi%regolayer%next
+         DEALLOCATE(current)
+      END IF
+   END IF
+
+   RETURN
 end subroutine regolith_pop
 

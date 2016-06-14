@@ -18,7 +18,7 @@
 !  Notes       :  The stream tube's head is always attached to the surface. 
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dmix)
+subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)
 !subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,turnover)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_head
@@ -30,7 +30,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dm
    real(DP),intent(inout) :: totmare,tots
 
    ! internal variables
-   type(regolayertype),pointer :: current
+   type(regolisttype),pointer :: current
    real(DP),parameter :: vratio = sqrt(2.0_DP)/2.0_DP ! Unfortunately, the approximate function that is used to get the size of a stream
                                                       ! tube with a constraint of CTEM's ejecta blanket thickness is slightly different
                                                       ! from the analytical function that we use here to approximate the stream tube's 
@@ -42,7 +42,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dm
    real(DP) :: zmix
 
    current => surfi%regolayer
-   z = current%thickness
+   z = current%regodata%thickness
    zmix = z
    vsgly = vratio * PI * deltar**3
    tothead = 0._DP
@@ -56,7 +56,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dm
 
    if (zend >= zmax) then ! Stream tube's head is inside the 1st layer.
       tots = tots + vsgly
-      totmare = totmare + vsgly * current%comp
+      totmare = totmare + vsgly * current%regodata%comp
       !write(*,*) '0',zstart,zend,zmin,zmax,current%comp,totmare/2500.0,tots/2500.0
    else ! head is not intersected with layers. 
 
@@ -66,14 +66,14 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)!,turnover,dm
       if (zend < zmax) then 
          vhead = regolith_circle_sector_func(deltar,zstart,zend)
          tothead = tothead + vhead * vratio 
-         totmarehead = totmarehead + vhead * vratio * current%comp
+         totmarehead = totmarehead + vhead * vratio * current%regodata%comp
          !write(*,*) '1',zstart,zend,current%comp,vhead*vratio/2500.0,totmarehead/2500.0,tothead/2500.0
          current => current%next
-         z = z + current%thickness
+         z = z + current%regodata%thickness
          zstart = zend
          zend = z
       else 
-         totmarehead = totmarehead + (vsgly-tothead) * current%comp
+         totmarehead = totmarehead + (vsgly-tothead) * current%regodata%comp
          tothead = vsgly
          !write(*,*) '2',zstart,zend,current%comp,(vsgly-tothead)/2500.0,totmarehead/2500.0,tothead/2500.0
          exit

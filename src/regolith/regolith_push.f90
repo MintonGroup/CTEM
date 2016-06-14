@@ -19,38 +19,38 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_push(surf,newlayer)
+subroutine regolith_push(surfi,newregodata,popflagi)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_push
    implicit none
 
    ! Arguments
-   type(surftype),intent(inout) :: surf
-   type(regolayertype),intent(in) :: newlayer
+   type(surftype),intent(inout) :: surfi
+   type(regodatatype),intent(in) :: newregodata
+   INTEGER(I4B),intent(inout) :: popflagi
 
    ! Internal variables
-   type(regolayertype),pointer :: current
-   integer(I4B):: err
+   type(regolisttype),POINTER :: newsurfi => null()
+   integer(I4B):: allocstat
 
    ! Executable code
-   ! make sure if available memory for a new node
-   allocate(current, stat = err) 
-
-!   if (newlayer%thickness = 0._DP) then 
-!      surf%regolayer%thickness = surf%regolayer%thickness
-!   end if
-
-   if (err == 0) then
-      nullify(current%next)                     ! initialize the pointer of a new node
-      current%thickness = newlayer%thickness
-      current%meltfrac  = newlayer%meltfrac
-      current%comp = newlayer%comp
-      current%next   => surf%regolayer
-      surf%regolayer => current
-   else
-      write(*,*) 'exhausted memory.'
-   end if
-
+   !=======================================
+   ! Initilize the linked list 
+   !=======================================
+   ! No value in the list 
+   !=======================================
+   IF (ASSOCIATED(surfi%regolayer)) THEN
+      ALLOCATE(newsurfi, STAT=allocstat)
+      IF (allocstat == 0) THEN
+         NULLIFY(newsurfi%next)
+         newsurfi%next => surfi%regolayer
+         surfi%regolayer => newsurfi
+         newsurfi%regodata = newregodata
+         !IF (popflagi == 1) popflagi = 2
+      ELSE
+         PRINT *, 'Exhausted memory!'
+      END IF
+   END IF
    return
 end subroutine regolith_push
 

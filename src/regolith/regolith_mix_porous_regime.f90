@@ -29,7 +29,7 @@ subroutine regolith_mix_porous_regime(user,surfi,d)
    real(DP),intent(in) :: d
 
    ! Regotrack Internals
-   type(regolayertype) :: porouslayer
+   type(regodatartype) :: porouslayer
    real(DP) :: z, z0, ztot, zmare
          
    z = surfi%regolayer%thickness

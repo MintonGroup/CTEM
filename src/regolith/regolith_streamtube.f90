@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
+subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube
@@ -32,7 +32,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
    real(DP),intent(in)          :: xp,yp,lrad,ebh
-   real(DP),intent(out)         :: comp 
+   real(DP),intent(out)         :: comp,eradc 
    integer(I4B),intent(in)      :: xpi,ypi
 
    ! Traversing a linked list 
@@ -41,7 +41,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    !real(DP),parameter :: dz = 20.0
    real(DP)     :: frac,logtablerad,loglrad,logdelta,outeredge,inneredge
    real(DP)     :: deltar
-   real(DP)     :: erado,eradi,eradc,xl,yl
+   real(DP)     :: erado,eradi,xl,yl!,eradc
    real(DP)     :: theta_eradi,length,vhead
    real(DP)     :: dy,ry,zo,zi
    real(DP),dimension(2) :: y   
@@ -50,7 +50,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
-   type(regolayertype) :: newlayer
+   type(regodatatype) :: newlayer
 
    ! Constrain the tangital tube's volume with CTEM result
    real(DP)     :: k1,k2,k3,k4,c1,c2
@@ -99,9 +99,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    xl = xp - crater%xl
    yl = yp - crater%yl
    phi = atan(yl/xl) 
-   toti = ceiling((eradc * abs(xl)/lrad - 0.5_DP * user%pix) / user%pix) ! Refer to the definition of CTEM in ejecta_emplace.f90
-   totj = ceiling((eradc * abs(yl)/lrad - 0.5_DP * user%pix) / user%pix) !
-
+   !toti = ceiling((eradc * abs(xl)/lrad - 0.5_DP * user%pix) / user%pix) ! Refer to the definition of CTEM in ejecta_emplace.f90
+   !totj = ceiling((eradc * abs(yl)/lrad - 0.5_DP * user%pix) / user%pix) !
+   toti = floor((eradc * abs(xl)/lrad) / user%pix)
+   totj = floor((eradc * abs(yl)/lrad) / user%pix)
    ! *************************** Intersection points with grid lines ************************************************
    ! Allocate a space for total interection points with horizontal and vertical grid lines
    ! Finding intersection points starts from the the emerging point to the origin, so once we find all the intersection
@@ -123,7 +124,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    !    a crater in pixel space. 
 
    do j=totj,1,-1
-      yj = sign(1.0_DP,yl) * (real(j-1) * user%pix + 0.5_DP * user%pix) 
+      !yj = sign(1.0_DP,yl) * (real(j-1) * user%pix + 0.5_DP * user%pix) 
+      yj = sign(1.0_DP,yl) * (real(j) * user%pix)
       cnt = cnt + 1
       xints(cnt) = yj/tan(phi)
       yints(cnt) = yj 
@@ -134,7 +136,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    end do
 
    do i=toti,1,-1
-      xi = sign(1.0_DP,xl) * (real(i-1) * user%pix + 0.5_DP * user%pix)
+      !xi = sign(1.0_DP,xl) * (real(i-1) * user%pix + 0.5_DP * user%pix)
+      xi = sign(1.0_DP,xl) * (real(i) * user%pix)
       cnt = cnt + 1
       xints(cnt) = xi
       yints(cnt) = tan(phi) * xi
@@ -202,33 +205,23 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    vst = (0.25_DP * PI * deltar**2 * a**2 * eradi / b *(tan(b)-b)) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
    totmare = 0._DP
    tots = 0._DP
-   !turnover = .false. 
-   !dmix = 0._DP
-
+   
    if (eradc <= user%pix) then
 
       xc = (xints(2) + xints(1))/2.0_DP
       yc = (yints(2) + yints(1))/2.0_DP
-      xstpi = crater%xlpx + nint(xc/user%pix)
-      ystpi = crater%ylpx + nint(yc/user%pix)
+      xstpi = crater%xlpx + nint(xc/user%pix) 
+      ystpi = crater%ylpx + nint(yc/user%pix) 
       ri = sqrt(xints(2)**2 + yints(2)**2)
       rip1 = sqrt(xints(1)**2 + yints(1)**2)
       vseg = 0.25_DP * PI * deltar**2 * a**2 * eradi / b * abs(tan(b) - b) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
       newlayer%thickness = vseg/(user%pix**2)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb)!,turnover,dmix)
-      !call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,turnover)
+      call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb)
       totmare = vmare
       tots = totseb
       comp = totmare/tots
-      !write(*,*) 'subpixel', lrad/crater%frad, comp, cnt, eradc
-   else 
-!      if (lrad/crater%frad < 4.468 .and. lrad/crater%frad > 4.45 .and. phi/PI*180.0 > 30.0 .and. &
-!         phi/PI*180.0 < 79.0) then 
-      !!if (lrad/crater%frad < 4.468 .and. lrad/crater%frad > 4.45 .and. phi/PI*180.0 > 79.0) then
-
-      !if (lrad/crater%frad > 12.987 .and. lrad/crater%frad <= 12.988 .and. phi/PI*180.0 < 89.0 .and. phi/PI*180.0 > 0._DP) then
-
+   else
       rbody = sqrt(xints(2)**2 + yints(2)**2)
       if (rbody<eradi) then
          xc = (xints(2) + eradi*xl/lrad)/2.0
@@ -240,9 +233,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-              totseb)!,turnover,dmix)
-         !call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-         !      totseb,turnover)
+              totseb)
          totmare = totmare + vmare
          tots = tots + totseb
       end if           
@@ -260,9 +251,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-                 totseb)!,turnover,dmix)
-            !call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-            !     totseb,turnover)
+                 totseb)
             totmare = totmare + vmare
             tots = tots + totseb 
          end if
@@ -271,76 +260,11 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots)!,turnover,dmix)
-      !call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,turnover)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots)
       comp = totmare/tots
-      !stop
-      !end if
-      !!write(*,*) 'head:  ',totmare/user%pix**2,tots/user%pix**2,ebh
-        !!call regolith_monte_carlo_layer(surf(xstpi,ystpi),eradc,deltar,mceb,compmc)
-      !!write(*,*) '2',xints(2),yints(2),xints(1),yints(1)
-      !if (comp>1.00001) then 
-      !write(*,*) cnt,deltar,lrad/crater%frad,eradc/4.0,comp,tots/user%pix**2,ebh
-      !end if 
-      !!write(*,*) cnt, lrad/crater%frad, phi/PI*180.0, eradc/4.0, comp, vst/(user%pix**2), totmare/(user%pix**2),&
-      !!tots/(user%pix**2)!xints(1:cnt), yints(1:cnt)
-      !!stop
-      !!end if
   end if
 
-  !if (turnover) surf(xpi,ypi)%nmix = surf(xpi,ypi)%nmix + 1
-  !surf(xpi,ypi)%dmix = surf(xpi,ypi)%dmix + dmix 
-  !if (turnover) surf(crater%xlpx,crater%ylpx)%nmix = surf(crater%xlpx,crater%ylpx)%nmix + 1 
-  !if (turnover) write(19,*) dmix
-  
-  !if (cnt==2 .and. nint(xints(1)/user%pix) == nint(yints(1)/user%pix)) then
-  !xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
-  !ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
-  !call util_periodic(xstpi,ystpi,user%gridsize)
-  !call regolith_streamtube_head(surf(xstpi,ystpi),deltar,totmare,tots)
-  !comp = totmare/tots
-  !call regolith_monte_carlo_layer(surf(xstpi,ystpi),eradc,deltar,mceb,compmc)
-  !write(*,*) cnt,deltar,lrad/crater%frad,eradc/4.0,comp,compmc,tots/user%pix**2,mceb/user%pix**2,ebh
-  !end if
- 
-  !if (xpi>user%gridsize/2 .and. ypi>user%gridsize/2 .and. (xpi == ypi)) then
-  !   write(*,*) cnt,lrad/crater%frad,eradc/4.0,comp,tots/user%pix**2,ebh
-  !end if
-      
-   ! Add stream tube's head back to stream tube for any cases 
-   ! Separately do calculation of a stream tube's head, because its geometry is different from the rest of the stream tube
-   ! The body of a stream tube can be described by a scaled tangetial function, but this relationship does not work for the
-   ! head of a stream tube. The head of a stream tube is approximated as the cylinder with the same length of the diameter of
-   ! the circle of cylinder but intersected with a plane inclined 45 degrees. 
-   !if (comp > 0.9) then
-   !write(*,*) lrad/crater%frad,cnt,eradi,deltar
-   !do i=cnt,1
-   !write(*,*) xints(i),yints(i)
-   !end do
-   !end if
-   !end if
-   !if (xpi>user%gridsize/2 .and. ypi>user%gridsize/2) then
-   !write(*,*) lrad/crater%frad,compnohead,comp,totmare/user%pix**2,tots/user%pix**2,ebh
-   !end if
-  
-   ! Monte Carlo method by layers
-   !call regolith_monte_carlo_layer(surf(xpi,ypi)%regolayer%thickness,eradc,deltar,mceb,compmc) 
-   !write(*,*) lrad/crater%frad,eradc/4.0,comp,compmc,vst/user%pix**2,mceb/user%pix**2,ebh
-   !if (xpi>user%gridsize/2 .and. ypi>user%gridsize/2) then
-   !if (lrad/crater%frad >=4.554 .and. lrad/crater%frad<=4.556) then 
-   !   call regolith_monte_carlo_layer(surf(xpi,ypi)%regolayer%thickness,eradc,deltar,mceb,compmc)
-   !   write(*,*) 'MC',lrad/crater%frad,rbody,eradi,cnt,comp,compmc,totmare/user%pix**2,tots/user%pix**2,ebh
-   !   write(*,*) cnt,lrad/crater%frad,eradc/4.0,comp,totmare/user%pix**2,tots/user%pix**2,ebh
-   !end if
-   !if (xpi == crater%xlpx .and. ypi /= crater%ylpx) then
-   !   write(*,*) surf(xpi,ypi)%nmix, phi
-   !   do i=1,cnt
-   !   write(*,*) i,xints(i),yints(i)
-   !   end do
-   !   stop
-   !end if
+  deallocate(xints,yints)
 
-   deallocate(xints,yints)
-
-   return
+  return
 end subroutine regolith_streamtube

@@ -30,11 +30,10 @@ subroutine regolith_depth_model(user,domain,finterval,nflux,p)
    real(DP),dimension(:,:),intent(out) :: p
 
    ! Internal variables
-   real(DP), parameter :: a = 0.125
    real(DP) :: a1, a2, rmax, rmin, dbin, psum, t
    real(DP),dimension(2,domain%pnum) :: nflux_pix
    integer(I4B) :: i, j
-   real(DP)     :: h, dr
+   real(DP)     :: h, dr, f, fmin, fmax
    real(DP)     :: ntotsubcrat
 
    ! Smallest crater size in sub-pixel crater regime (regolith scaling column in "nflux")
@@ -48,34 +47,54 @@ subroutine regolith_depth_model(user,domain,finterval,nflux,p)
    ntotsubcrat = ntotsubcrat * domain%area * user%interval
    nflux_pix(2,:) = nflux_pix(2,:) / ntotsubcrat
   
-   rmin = nflux_pix(1,1) 
    t    = ntotsubcrat * finterval ! Time in unit of number of craters
 
+   !do i = 1, domain%smallest_impactor_index
+      !p(1,i) = nflux(1,i) * a 
+      !h = nflux_pix(1,i) * 2.0 * a
+      !psum = 0._DP
+      !do j = i+1, domain%smallest_impactor_index-1
+      !   rmax = nflux_pix(1,j)
+      !   f    = nflux_pix(2,j) * (rmax**2 - h / (2.0 * a) * rmax)
+      !   psum = psum + f 
+      !end do
+      !rmax = nflux_pix(1,domain%smallest_impactor_index)
+      !f = 0.5 * nflux_pix(2,domain%smallest_impactor_index) * (rmax**2 - h / (2.0 * a) * rmax)
+      !psum = psum + f
+      !p(2,i) = 1.0_DP - exp(-1.0 * PI * psum * t)
+   !end do
+   !stop
+
    do i = 1, domain%smallest_impactor_index
-      p(1,i) = nflux(1,i) / 2.0_DP
-      h = nflux_pix(1,i)
-      psum = 0._DP
-      do j = 1, domain%smallest_impactor_index
-         if (nflux_pix(1,j) >= h / (2.0_DP * a)) then
-            if (j==domain%smallest_impactor_index) then
-               dr = ( ( log( nflux_pix(1,j) - nflux_pix(1,j-1) ) )**2 ) / &
-                    ( log( nflux_pix(1,j-1) - nflux_pix(1,j-2) ) )
-               rmax = nflux_pix(1,j) + exp(dr)            
-               rmin = nflux_pix(1,j)
-               dbin = exp(dr)
-            else
-               rmax = nflux_pix(1,j+1) 
-               rmin = nflux_pix(1,j)
-               dbin = rmax - rmin
-            end if
-            a1   = 1.0_DP/3.0_DP * rmax**3 - h / (4.0_DP * a) * rmax**2
-            a2   = 1.0_DP/3.0_DP * rmin**3 - h / (4.0_DP * a) * rmin**2
-            psum = psum + (-1.0_DP * PI * (a1 - a2) * nflux_pix(2,j) / dbin)
-         end if
+      ! Loop over a wanted mixing depth
+      p(1,i) = nflux(1,i) * ALPHA
+      h      = nflux_pix(1,i) * 2.0_DP * ALPHA
+      psum   = 0._DP
+      do j = i, domain%smallest_impactor_index! Only craters 1/alpha times larger than mixing depth will be considered.
+         ! Trapzoidal numerical integration of f(x) in [a, b]
+         ! Non-uniform grid: sum up 0.5 * (r_i+1 - r_i) * (f(ri) + f(r_i+1)), where i in [a, b]
+         ! f(x) here is dN(r)/dr * (r^2 - h/2a * r)
+         ! f(ri) = dN(ri)/dri * (ri^2 - h/2a * ri)
+         ! dN(ri) / dri, where dN(ri) is differential number of a crater's size, ri's bin in CTEM
+         ! ri's bin in cumulative SFD (Nc) is | Nc(>r_i+1) - Nc(>ri) | * A * t with the bin 
+         ! from ri to r_i+1. 
+         ! So, dN(ri)/dri = (Nc(>ri) - Nc(>r_i+1)) * A * t / (r_i+1 - ri) 
+         ! dN(r_i+1)/dr_i+1 = (Nc(>ri+1) -Nc(>r_i+2)) * A * t / (r_i+2 - ri) 
+         ! So, f(r_i+1) can be calculated. 
+
+         ! i-th bin of crater SFD
+         rmax = nflux_pix(1,j+1)
+         rmin = nflux_pix(1,j)
+         dr   = rmax - rmin
+         fmin = nflux_pix(2,j) / (nflux_pix(1,j+1) - nflux_pix(1,j)) * &
+                ( rmin**2 - h / (2.0_DP * ALPHA) * rmin )
+         fmax = nflux_pix(2,j+1) / (nflux_pix(1,j+2) - nflux_pix(1,j+1)) * &
+                ( rmax**2 - h / (2.0_DP * ALPHA) * rmax )
+         f    = 0.5_DP * dr * ( fmin + fmax )
+         psum = psum + f   
       end do
-
-      p(2,i) = 1.0_DP - exp(psum * t)
-
+      p(2,i) = 1.0_DP - exp(-1.0_DP * PI * psum * t)
    end do
+
    return
 end subroutine regolith_depth_model

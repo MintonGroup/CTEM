@@ -17,28 +17,31 @@ public
 save
 
    interface
-      subroutine regolith_push(surf,newlayer)
+      subroutine regolith_push(surf,newlayer,popflagi)
       use module_globals
       implicit none
       type(surftype),intent(inout) :: surf
-      type(regolayertype),intent(in) :: newlayer
+      type(regodatatype),intent(in) :: newlayer
+      INTEGER(I4B),intent(inout)  :: popflagi
       end subroutine regolith_push
    end interface
 
    interface
-      subroutine regolith_pop(surfi)
+      subroutine regolith_pop(surfi,popflagi)
       use module_globals
       implicit none
       type(surftype),intent(inout):: surfi
+      INTEGER(I4B),intent(inout)  :: popflagi
       end subroutine regolith_pop
    end interface
 
    interface
-      subroutine regolith_traverse_pop(elchange,surfi)
+      subroutine regolith_traverse_pop(elchange,surfi,popflagi)
       use module_globals
       implicit none
       real(DP),intent(in)         :: elchange
-      type(surftype),intent(inout):: surfi      
+      type(surftype),intent(inout):: surfi   
+      INTEGER(I4B),intent(inout)  :: popflagi   
       end subroutine 
    end interface
 
@@ -69,7 +72,7 @@ save
    end interface
 
    interface 
-      subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
+      subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp,popflagi)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -79,11 +82,12 @@ save
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
       real(DP),intent(in)          :: lrad,ebh,comp
+      INTEGER(I4B),intent(inout),optional  :: popflagi
       end subroutine regolith_transport
    end interface
 
    interface 
-      subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
+      subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -93,7 +97,7 @@ save
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
       real(DP),intent(in)          :: xp,yp,lrad,ebh
-      real(DP),intent(out)         :: comp 
+      real(DP),intent(out)         :: comp, eradc
       integer(I4B),intent(in)      :: xpi,ypi
       end subroutine regolith_streamtube
    end interface
@@ -105,19 +109,19 @@ save
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
-      type(regolayertype),intent(inout) :: newlayer
+      type(regodatatype),intent(inout) :: newlayer
       real(DP),intent(out) :: vmare,totseb
       end subroutine regolith_traverse_streamtube
    end interface
 
    interface 
-      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)
+      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)      
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in)            :: deltar,ri,rip1,eradi
-      type(regolayertype),intent(inout) :: newlayer
+      type(regodatatype),intent(inout) :: newlayer
       real(DP),intent(out) :: vmare,totseb
       end subroutine regolith_subpixel_streamtube
    end interface
@@ -130,7 +134,7 @@ save
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
       real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
-      type(regolayertype),intent(inout) :: newlayer
+      type(regodatatype),intent(inout) :: newlayer
       real(DP),intent(inout) :: vmare,totseb
       end subroutine regolith_streamtube_lineseg
    end interface 
@@ -153,16 +157,6 @@ save
       real(DP),intent(in) :: deltar,zstart,zend
       real(DP)            :: vhead
       end function regolith_circle_sector_func
-   end interface
-
-   interface 
-      subroutine regolith_monte_carlo_layer(surfi,erad,deltar,mceb,compmc)
-      use module_globals 
-      implicit none
-      type(surftype),intent(in)    :: surfi
-      real(DP),intent(in)          :: erad,deltar
-      real(DP),intent(out)         :: mceb,compmc
-      end subroutine regolith_monte_carlo_layer
    end interface
 
    interface 
@@ -216,35 +210,44 @@ save
       end subroutine regolith_subcrater_diffusion
    end interface
 
-   interface
-      subroutine regolith_mix(user,surf,domain,nflux,p)
-      use module_globals
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(inout) :: surf
-      type(domaintype),intent(in) :: domain
-      real(DP),dimension(:,:),intent(in) :: nflux ! impact rate (number of craters per m^2 per year)
-      real(DP),dimension(:,:),intent(in) :: p
-      end subroutine regolith_mix
-   end interface
+!   interface
+!      subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
+!      use module_globals
+!      type(usertype),intent(in) :: user
+!      type(surftype),dimension(:,:),intent(inout) :: surf
+!      type(domaintype),intent(in) :: domain
+!      real(DP),dimension(:,:),intent(in) :: nflux ! impact rate (number of craters per m^2 per year)
+!      real(DP),intent(in) :: finterval  ! time elapsed ratio to the total time 
+!      real(DP),dimension(:,:),intent(in) :: p
+!      end subroutine regolith_subcrater_mix
+!   end interface
 
-   interface
-      subroutine regolith_mix_porous_regime(user,surfi,d)
-      use module_globals
-      type(usertype),intent(in) :: user
-      type(surftype),intent(inout) :: surfi
-      real(DP),intent(in) :: d
-      end subroutine regolith_mix_porous_regime
-   end interface
+!   interface
+!      subroutine regolith_mix(surf,d)
+!      use module_globals
+!      type(surftype),intent(inout) :: surf
+!      real(DP),intent(in) :: d
+!      end subroutine regolith_mix
+!   end interface
 
-   interface
-      subroutine regolith_depth_model(user,domain,mixinterval,nflux,p)
-      use module_globals
-      type(usertype),intent(in) :: user
-      type(domaintype),intent(in) :: domain
-      real(DP),intent(in) :: mixinterval
-      real(DP),dimension(:,:),intent(in) :: nflux
-      real(DP),dimension(:,:),intent(out) :: p
-      end subroutine regolith_depth_model
-   end interface
+!   interface
+!      subroutine regolith_mix_porous_regime(user,surfi,d)
+!      use module_globals
+!      type(usertype),intent(in) :: user
+!      type(surftype),intent(inout) :: surfi
+!      real(DP),intent(in) :: d
+!      end subroutine regolith_mix_porous_regime
+!   end interface
+
+!   interface
+!      subroutine regolith_depth_model(user,domain,finterval,nflux,p)
+!      use module_globals
+!      type(usertype),intent(in) :: user
+!      type(domaintype),intent(in) :: domain
+!      real(DP),intent(in) :: finterval
+!      real(DP),dimension(:,:),intent(in) :: nflux
+!      real(DP),dimension(:,:),intent(out) :: p
+!      end subroutine regolith_depth_model
+!   end interface
 
 end module

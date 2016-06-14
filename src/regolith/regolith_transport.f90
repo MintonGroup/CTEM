@@ -21,7 +21,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
+subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp,popflagi)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_transport
    implicit none
@@ -34,12 +34,11 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
    real(DP),intent(in)          :: lrad,ebh,comp
-   !integer(I4B),intent(in)      :: xpi,ypi
+   INTEGER(I4B),intent(inout) :: popflagi
 
    ! Internal varialbes
    real(DP) :: melt 
-   type(regolayertype) :: regotop 
-   !real(DP) :: minimum_deposition !5.0d-04 average size of impact glass: 500 micronmeter
+   type(regodatatype) :: newsurfi 
 
    ! Melt interpolation variables 
    real(DP)     :: frac,logtablerad,loglrad,logdelta,outeredge,inneredge
@@ -64,26 +63,12 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
       frac = (loglrad - logtablerad) / logdelta 
       melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac)
    end if 
-   regotop%thickness = ebh
-   regotop%meltfrac = melt
-   regotop%comp = comp
 
-   !minimum_deposition = domain%small * user%gridsize
-   !write(*,*) minimum_deposition, domain%small
-   !minimum_deposition = 1.0d-03
-   !if (ebh >= minimum_deposition) then 
-   call regolith_push(surfi,regotop)
-   !else if (ebh < minimum_deposition .and. surfi%regolayer%thickness < minimum_deposition) then 
-   !        if ( .not. associated(surfi%regolayer%next) ) then 
-   !           call regolith_push(surfi,regotop)
-   !        else 
-   !           surfi%regolayer%meltfrac = ( surfi%regolayer%thickness * surfi%regolayer%meltfrac &
-   !                                      + ebh*melt )/(surfi%regolayer%thickness + ebh) 
-   !           surfi%regolayer%thickness = surfi%regolayer%thickness + ebh 
-   !        end if
-   !else if (ebh < minimum_deposition .and. surfi%regolayer%thickness >= minimum_deposition) then
-   !        call regolith_push(surfi,regotop)
-   !end if
+   newsurfi%thickness = ebh
+   newsurfi%meltfrac = melt
+   newsurfi%comp = comp
+
+   call regolith_push(surfi,newsurfi,popflagi)
 
    return
 end subroutine regolith_transport

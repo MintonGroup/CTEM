@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)!,turnover,dmix)
+subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_streamtube
    implicit none
@@ -27,11 +27,8 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
    real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
-   type(regolayertype),intent(inout) :: newlayer
+   type(regodatatype),intent(inout) :: newlayer
    real(DP),intent(out)            :: vmare,totseb
-   !real(DP),dimension(200),intent(out) :: tots
-   !real(DP),intent(out) :: thetast
-   !integer(I4B),intent(out) :: cnt
 
    ! Traversing a linked list 
    real(DP) :: zri,zrip1,cosi,coso,rzmax
@@ -53,12 +50,12 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
       zmax = max(zmax,erad/4.0)
    end if
 
-   z = surfi%regolayer%thickness
+   z = surfi%regolayer%regodata%thickness
    vmare = 0._DP
    totseb = 0._DP
 
    if (z>=zmax) then 
-      vmare = newlayer%thickness * user%pix**2 * surfi%regolayer%comp
+      vmare = newlayer%thickness * user%pix**2 * surfi%regolayer%regodata%comp
       totseb = newlayer%thickness * user%pix**2 
       !write(*,*) 'z>zmax',ri,rip1,erad/4.0,zmax,vmare/(user%pix**2),totseb/(user%pix**2)
    else 

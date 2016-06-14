@@ -18,65 +18,45 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_pop(elchange,surfi)
+subroutine regolith_traverse_pop(elchange,surfi,popflagi)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_pop
    implicit none
 
    ! Arguments
-   real(DP),intent(in)         :: elchange
-   type(surftype),intent(inout):: surfi
+   real(DP),intent(in)          :: elchange
+   type(surftype),intent(inout) :: surfi
+   INTEGER(I4B),intent(inout)  :: popflagi
 
    ! Internal variables
-   !type(regolayertype),pointer :: current
    real(DP)                    :: z,depth,dz
 
-   ! Executable code
-
-   depth = surfi%regolayer%thickness
+   !=======================================
+   ! Get initial layer's info and the 
+   ! desired info that we want to modify! 
+   !=======================================
+   depth = surfi%regolayer%regodata%thickness
    dz = 0._DP
    z = elchange
 
    if (z < 0._DP) then
 
       do 
-       if (.not. associated(surfi%regolayer%next)) exit
+       if (.not. associated(surfi%regolayer)) exit
 
        if (abs(z)<=depth) then
           dz = depth - abs(z)
-          surfi%regolayer%thickness = dz
+          surfi%regolayer%regodata%thickness = dz
           exit
        else
-          z = abs(z) - surfi%regolayer%thickness
-          call regolith_pop(surfi)
-          depth = surfi%regolayer%thickness
+          z = abs(z) - surfi%regolayer%regodata%thickness
+          call regolith_pop(surfi,popflagi)
+          depth = surfi%regolayer%regodata%thickness
+          popflagi = 1 
        end if
 
       end do
       
    end if
-
-!   current => surfi%regolayer
-!   depth = current%thickness
-!   dz = 0._DP
-!   z = elchange
-!   if (z < 0._DP) then
-!      do 
-!       if (.not. associated(current%next)) exit
-!
-!       if (abs(z)<=depth) then
-!          dz = depth - abs(z)
-!          surfi%regolayer%thickness = dz
-!          exit
-!       else
-!          z = abs(z) - surfi%regolayer%thickness
-!          call regolith_pop(surfi)
-!          depth = surfi%regolayer%thickness
-!       end if
-!
-!      end do
-!      
-!   end if
-      
    return
 end subroutine regolith_traverse_pop
