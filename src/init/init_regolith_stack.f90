@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_regolith_stack(user,surf)
+subroutine init_regolith_stack(user,surf,popflag)
    use module_globals
    use module_regolith
    use module_init, EXCEPT_THIS_ONE => init_regolith_stack
@@ -27,134 +27,77 @@ subroutine init_regolith_stack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   type(regolayertype) :: mare,highland
-   integer(I4B) :: i,xp,yp,maresize
+   INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT)   :: popflag
+   type(regodatatype) :: mare,highland
+   integer(I4B) :: k,xp,yp,maresize
 
-!   cleanrego%thickness = 1500.0_DP !5000.0_DP
-!   cleanrego%meltfrac = 0._DP
-!   cleanrego%comp = 0._DP
-!   do xp = 1,user%gridsize
-!      do yp = 1,user%gridsize
-!         call regolith_push(surf(xp,yp),cleanrego)
-!      end do
-!   end do
-      
-!   cleanrego%thickness = 10.0_DP !5000.0_DP
-!   cleanrego%meltfrac = 0._DP
-!   cleanrego%comp = 0._DP
-!   do yp = 1,user%gridsize
-!      do xp = 1,user%gridsize
-!         call regolith_push(surf(xp,yp),cleanrego)
-!      end do
-!   end do
+   ! Internal variables
+   INTEGER(I4B) :: allocstat
 
-   !type(regolayertype) :: cleanrego
-   !integer(I4B),parameter :: nlayers = 200
-!   cleanrego%thickness = 20.0_DP !5000.0_DP
-!   cleanrego%meltfrac = 0._DP
-!   cleanrego%comp = 0._DP
-!   do yp = 1,user%gridsize
-!      do xp = 1,user%gridsize
-!         do i=1,nlayers
-!            call regolith_push(surf(xp,yp),cleanrego)
-!         end do
-!      end do
-!   end do
+   !call init_regolith_parab(user,surf)
+   !=======================================
+   ! Initialize the grid space  
+   !=======================================
+   DO yp = 1, user%gridsize
+      DO xp = 1, user%gridsize
 
-! Mare/highlands contact 
-   do yp = 1,user%gridsize
-      do xp = 1,user%gridsize
-         allocate(surf(xp,yp)%regolayer)
-         nullify(surf(xp,yp)%regolayer%next)
-      end do
-   end do
- 
-!   call init_regolith_parab(user,surf)
+         IF (.NOT. ASSOCIATED(surf(xp,yp)%regolayer)) THEN
+            ALLOCATE(surf(xp,yp)%regolayer, STAT=allocstat)
+            IF (allocstat == 0) THEN
+               NULLIFY(surf(xp,yp)%regolayer%next)
 
-   do yp = 1,user%gridsize
-      do xp = 1,user%gridsize
-         if (xp<=user%gridsize/2) then 
-            !highland%thickness = 1000.0_DP
-            !highland%meltfrac  = 0._DP 
-            !highland%comp      = 0._DP
-            !call regolith_push(surf(xp,yp),highland)
-            mare%thickness = 5000.0_DP
+               IF (xp <= user%gridsize/2) THEN
+                  highland%thickness = 1000.0_DP
+                  highland%meltfrac  = 0._DP 
+                  highland%comp      = 0._DP
+               ELSE
+                  highland%thickness = 5000.0_DP
+                  highland%meltfrac  = 0._DP
+                  highland%comp      = 0.0_DP
+               END IF 
+
+               surf(xp,yp)%regolayer%regodata = highland
+            ELSE
+               WRITE(*,*) 'Exhausted memory.'
+            END IF
+         ELSE
+            WRITE(*,*) 'Initialization went wrong ...'
+         END IF
+
+      END DO
+   END DO
+
+   DO yp = 1,user%gridsize
+      DO xp = 1,user%gridsize
+         IF (xp <= user%gridsize/2) THEN
+            mare%thickness = 4000.0_DP
             mare%meltfrac  = 0._DP
             mare%comp      = 1.0_DP
-            call regolith_push(surf(xp,yp),mare)
-         else  
-            highland%thickness = 5000.0_DP
-            highland%meltfrac  = 0._DP
-            highland%comp      = 0.0_DP
-            call regolith_push(surf(xp,yp),highland)
-         end if
-      end do
-   end do
+            call regolith_push(surf(xp,yp),mare,popflag(xp,yp))
+         END IF
+      END DO
+   END DO
 
-! Square in the center
-!  maresize = 300
-!  do yp = 1,user%gridsize
-!     do xp = 1,user%gridsize
-!        if (xp>=user%gridsize/2-maresize .and. xp<=user%gridsize/2+maresize .and. &
-!            yp>=user%gridsize/2-maresize .and. yp<=user%gridsize/2+maresize) then
-!            highland%thickness = 4000.0_DP
-!            highland%meltfrac  = 0._DP 
-!            highland%comp      = 0._DP
-!            call regolith_push(surf(xp,yp),highland)
-!            mare%thickness = 1000.0_DP
-!            mare%meltfrac  = 0._DP
-!            mare%comp      = 1.0_DP
-!            call regolith_push(surf(xp,yp),mare)
-!        else
-!            highland%thickness = 5000.0_DP
-!            highland%meltfrac  = 0._DP
-!            highland%comp      = 0._DP
-!            call regolith_push(surf(xp,yp),highland)
-!        end if
-!     end do
-!  end do
-
-! Testing subcrater diffusion or subpixel regolith accumulation
-!!   do yp=1,user%gridsize
-!!      do xp=1,user%gridsize
-!!            surf(xp,yp)%nmix = 0
-            !surf(xp,yp)%dexcav = 0._DP
-            !surf(xp,yp)%dmix = 0._DP
-!!            highland%thickness = 200.0_DP
-!!            highland%meltfrac  = 0.0_DP 
-!!            highland%comp      = 0.0_DP
-!!            call regolith_push(surf(xp,yp),highland)
-            !mare%thickness = 40.0_DP
-            !mare%meltfrac  = 0.0_DP
-            !mare%comp      = 1.0_DP
-            !call regolith_push(surf(xp,yp),mare)
-!!      end do
-!!   end do
-
-! Testing subpixel mare  and highland contact
-!   do yp=1,user%gridsize
-!      do xp=1,user%gridsize
-!         surf(xp,yp)%nmix = 0
-!         surf(xp,yp)%dexcav = 0._DP
-!         surf(xp,yp)%dmix = 0._DP
-!         if (xp<=user%gridsize/2) then
-!            highland%thickness = 2000.0_DP
-!            highland%meltfrac  = 0.0_DP
-!            highland%comp      = 0.0_DP
-!            call regolith_push(surf(xp,yp),highland)
-!            mare%thickness = 5.0_DP
-!            mare%meltfrac  = 0.0_DP
-!            mare%comp      = 1.0_DP
-!            call regolith_push(surf(xp,yp),mare)
-!         else
-!            highland%thickness = 2005.0_DP
-!            highland%meltfrac  = 0.0_DP
-!            highland%comp      = 0.0_DP
-!            call regolith_push(surf(xp,yp),highland)
-!         end if 
-!      end do
-!   end do
-
+   !do yp = 1,user%gridsize
+   !   do xp = 1,user%gridsize
+   !         highland%thickness = 1000.0_DP
+   !         highland%meltfrac  = 0._DP 
+   !         highland%comp      = 0._DP
+   !         call regolith_push(surf(xp,yp),highland)
+   !         do k = 1, 5
+   !         highland%thickness = 10.0_DP
+   !         highland%meltfrac  = 0._DP
+   !         highland%comp      = 0.0_DP
+   !         call regolith_push(surf(xp,yp),highland)
+   !         end do
+   !         do k = 1, 10
+   !         mare%thickness = 1.0_DP
+   !         mare%meltfrac  = 0._DP
+   !         mare%comp      = 1.0_DP
+   !         call regolith_push(surf(xp,yp),mare)
+   !         end do
+   !   end do
+   !end do
 
    return
 end subroutine init_regolith_stack

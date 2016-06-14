@@ -16,11 +16,12 @@ public
 save
 
    interface
-      subroutine init_surf(user,surf)
+      subroutine init_surf(user,surf,popflag)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(out) :: surf
+      INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT)   :: popflag
       end subroutine init_surf
    end interface
 
@@ -47,11 +48,12 @@ save
    end interface 
   
    interface
-      subroutine init_regolith_stack(user,surf)
+      subroutine init_regolith_stack(user,surf,popflag)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
+      INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT)   :: popflag
       end subroutine init_regolith_stack
    end interface
 
