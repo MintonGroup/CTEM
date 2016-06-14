@@ -280,51 +280,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    deallocate(ef)
 
 
-   if (user%dosoftening) then 
-      ! Create box for soften calculation (will be no bigger than the grid itself)
-      if (2 * inc + 1 < user%gridsize) then
-         call ejecta_soften(user,surf,2 * inc + 1,indarray,cumulative_elchange)
-         ! Add the ejecta back to the DEM
-         do j = -inc,inc
-            do i = -inc,inc
-               xpi = indarray(1,i,j)
-               ypi = indarray(2,i,j)
-               surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cumulative_elchange(i,j) 
-               surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j), 0.0_DP)
-            end do
-         end do
-      else ! Ejecta wraps around the grid. 
-           ! We will therefore send in the whole grid with the total ejecta thickness added to each pixel
-         allocate(big_cumulative_elchange(0:user%gridsize+1,0:user%gridsize+1))
-         allocate(big_indarray(2,0:user%gridsize+1,0:user%gridsize+1))
-         do bigj = 0,user%gridsize + 1
-            do bigi = 0,user%gridsize + 1
-               xpi = bigi
-               ypi = bigj
-               call util_periodic(xpi,ypi,user%gridsize)
-               big_indarray(1,bigi,bigj) = xpi
-               big_indarray(2,bigi,bigj) = ypi
-               big_cumulative_elchange(bigi,bigj) = 0.0_DP
-            end do
-         end do
-
-         do j = -inc,inc
-            do i = -inc,inc
-               xpi = indarray(1,i,j) 
-               ypi = indarray(2,i,j)
-               big_cumulative_elchange(xpi,ypi) = big_cumulative_elchange(xpi,ypi) + cumulative_elchange(i,j)
-            end do
-         end do
-         call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
-         do i = 1,user%gridsize
-            do j = 1,user%gridsize
-               surf(i,j)%dem = surf(i,j)%dem + big_cumulative_elchange(i,j) 
-               surf(i,j)%ejcov = max(surf(i,j)%ejcov + big_cumulative_elchange(i,j),0.0_DP)
-            end do
-         end do
-         deallocate(big_cumulative_elchange,big_indarray)
-      end if
-   else
+   ! Create box for soften calculation (will be no bigger than the grid itself)
+   if (2 * inc + 1 < user%gridsize) then
+      call ejecta_soften(user,surf,2 * inc + 1,indarray,cumulative_elchange)
       ! Add the ejecta back to the DEM
       do j = -inc,inc
          do i = -inc,inc
@@ -334,6 +292,36 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
             surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j), 0.0_DP)
          end do
       end do
+   else ! Ejecta wraps around the grid. 
+        ! We will therefore send in the whole grid with the total ejecta thickness added to each pixel
+      allocate(big_cumulative_elchange(0:user%gridsize+1,0:user%gridsize+1))
+      allocate(big_indarray(2,0:user%gridsize+1,0:user%gridsize+1))
+      do bigj = 0,user%gridsize + 1
+         do bigi = 0,user%gridsize + 1
+            xpi = bigi
+            ypi = bigj
+            call util_periodic(xpi,ypi,user%gridsize)
+            big_indarray(1,bigi,bigj) = xpi
+            big_indarray(2,bigi,bigj) = ypi
+            big_cumulative_elchange(bigi,bigj) = 0.0_DP
+         end do
+      end do
+
+      do j = -inc,inc
+         do i = -inc,inc
+            xpi = indarray(1,i,j) 
+            ypi = indarray(2,i,j)
+            big_cumulative_elchange(xpi,ypi) = big_cumulative_elchange(xpi,ypi) + cumulative_elchange(i,j)
+         end do
+      end do
+      call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
+      do i = 1,user%gridsize
+         do j = 1,user%gridsize
+            surf(i,j)%dem = surf(i,j)%dem + big_cumulative_elchange(i,j) 
+            surf(i,j)%ejcov = max(surf(i,j)%ejcov + big_cumulative_elchange(i,j),0.0_DP)
+         end do
+      end do
+      deallocate(big_cumulative_elchange,big_indarray)
    end if
 
    !if (user%doregotrack) call regolith_rays(user,crater,domain,ejtble,ejb)
