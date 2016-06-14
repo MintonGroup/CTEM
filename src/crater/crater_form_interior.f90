@@ -50,6 +50,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    newdem = newelev - cform
 
    pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
+   !write(*,*) melev,pikeD
    if ((crater%fcrat > crater%cxtran * 2) .and. newdem < (melev - pikeD)) then
       newdem = melev - pikeD ! Flatten out the bottom of the crater
    end if
@@ -61,7 +62,8 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    end if
    elchange  = newdem - surfi%dem
    surfi%dem = newdem
-
+   !write(*,*) newdem
+   !read(*,*)
    if (user%doporosity) then
       call porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
    else
