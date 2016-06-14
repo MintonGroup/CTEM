@@ -257,7 +257,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (user%doregotrack) then
             write(*,*) finterval * user%interval / 1.0e6
             call regolith_depth_model(user,domain,finterval,nflux,p)
-            call regolith_mix(user,surf,domain,nflux,finterval,p)
+            call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
          end if
       end if
       ! Intermediate tally step 
