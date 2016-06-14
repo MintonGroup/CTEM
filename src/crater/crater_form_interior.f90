@@ -19,7 +19,7 @@
 !
 !**********************************************************************************************************************************
 subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
-           thickness_porous_tot,thickness_porous_mare,popflagi)
+           thickness_porous_tot,thickness_porous_mare)
    use module_globals
    use module_util
    use module_regolith
@@ -34,7 +34,6 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
    real(DP),intent(in) :: lradsq
    real(DP),intent(in) :: newelev,melev
    real(DP),intent(inout),optional :: thickness_porous_tot, thickness_porous_mare
-   INTEGER(I4B),intent(inout),optional :: popflagi
 
    ! Internal variables
    real(DP) :: cform,newdem,elchange,pikeD
@@ -95,7 +94,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
       !                              * surfi%regolayer%regodata%comp
       !   end if
       else 
-         call regolith_traverse_pop(elchange,surfi,popflagi)
+         call regolith_traverse_pop(elchange,surfi)
       end if
    end if
 

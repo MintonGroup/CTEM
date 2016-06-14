@@ -101,7 +101,7 @@ save
 
    interface
       subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
-          thickness_porous_tot,thickness_porous_mare,popflagi)
+          thickness_porous_tot,thickness_porous_mare)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -110,7 +110,6 @@ save
       real(DP),intent(in) :: lradsq
       real(DP),intent(in) :: newelev,melev
       real(DP),intent(inout),optional :: thickness_porous_tot, thickness_porous_mare
-      INTEGER(I4B),intent(inout),optional :: popflagi
       end subroutine crater_form_interior
    end interface
 
