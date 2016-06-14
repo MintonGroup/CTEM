@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_pop(elchange,surfi,popflagi)
+subroutine regolith_traverse_pop(elchange,surfi)
    use module_globals
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_pop
@@ -27,7 +27,6 @@ subroutine regolith_traverse_pop(elchange,surfi,popflagi)
    ! Arguments
    real(DP),intent(in)          :: elchange
    type(surftype),intent(inout) :: surfi
-   INTEGER(I4B),intent(inout)  :: popflagi
 
    ! Internal variables
    real(DP)                    :: z,depth,dz
@@ -51,9 +50,8 @@ subroutine regolith_traverse_pop(elchange,surfi,popflagi)
           exit
        else
           z = abs(z) - surfi%regolayer%regodata%thickness
-          call util_pop(surfi,popflagi)
+          call util_pop(surfi)
           depth = surfi%regolayer%regodata%thickness
-          popflagi = 1 
        end if
 
       end do

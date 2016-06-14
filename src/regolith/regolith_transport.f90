@@ -21,7 +21,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp,popflagi)
+subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_transport
@@ -35,7 +35,6 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp,
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
    real(DP),intent(in)          :: lrad,ebh,comp
-   INTEGER(I4B),intent(inout) :: popflagi
 
    ! Internal varialbes
    real(DP) :: melt 
@@ -69,7 +68,7 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp,
    newsurfi%meltfrac = melt
    newsurfi%comp = comp
 
-   call util_push(surfi,newsurfi,popflagi)
+   call util_push(surfi,newsurfi)
 
    return
 end subroutine regolith_transport

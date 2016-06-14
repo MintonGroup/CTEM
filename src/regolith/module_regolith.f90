@@ -17,12 +17,11 @@ public
 save
 
    interface
-      subroutine regolith_traverse_pop(elchange,surfi,popflagi)
+      subroutine regolith_traverse_pop(elchange,surfi)
       use module_globals
       implicit none
       real(DP),intent(in)         :: elchange
       type(surftype),intent(inout):: surfi   
-      INTEGER(I4B),intent(inout)  :: popflagi   
       end subroutine 
    end interface
 
@@ -53,7 +52,7 @@ save
    end interface
 
    interface 
-      subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp,popflagi)
+      subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -63,7 +62,6 @@ save
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
       real(DP),intent(in)          :: lrad,ebh,comp
-      INTEGER(I4B),intent(inout),optional  :: popflagi
       end subroutine regolith_transport
    end interface
 
