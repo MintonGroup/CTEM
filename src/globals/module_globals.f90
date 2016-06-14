@@ -57,7 +57,7 @@ real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to 
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 real(DP),parameter :: ALPHA = 0.125_DP
 
-TYPE regodatatype 
+type regodatatype 
    real(DP) :: thickness
    real(DP) :: meltfrac 
    real(DP) :: comp 
