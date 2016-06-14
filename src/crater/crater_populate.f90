@@ -18,7 +18,7 @@
 !
 !**********************************************************************************************************************************
 subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
-                           fracdone,nflux,ntotcrat)
+                           fracdone,nflux,ntotcrat,popflag)
    use module_globals
    use module_seismic
    use module_io
@@ -44,6 +44,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),intent(out)                            :: fracdone
    real(DP),dimension(:,:),intent(in)              :: nflux 
    integer(I8B),intent(in)                         :: ntotcrat  ! Total number of attempted impacts
+   INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT)       :: popflag
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -72,15 +73,15 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   TARGET :: surf
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
    integer(I4B) :: ejtble
-   ! melt
+   ! doregotrack
    real(DP) :: melt, clock!, volume, r1, r2, h
-   ! subpixel vertical mixing
-   real(DP) :: mixinterval
-   real(DP),dimension(2,domain%smallest_impactor_index) :: p
+   real(DP),dimension(2,domain%pnum) :: p
+   integer(I4B)            :: craters_since_subpixel_mix, icrater_last_subpixel_mix
 
    if (user%testflag) then
       write(*,*) "Generating a test crater"
@@ -115,6 +116,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       pbarival = floor(real(ntrue)/real(PBARRES))
       call io_resetPbar()
    end if
+
    icrater_last_tally = 0
    icrater_last_subpixel = 0
    icrater = 0
@@ -122,9 +124,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset coverage map
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
-   ! Set a time step for sub-pixel crater vertical mixing (every resolvable crater)
-   mixinterval = 1.0_DP / real(ntotcrat,kind=DP)
-   surf%demOrig = surf%dem
 
    do while (icrater < ntotcrat)
       icrater = icrater + 1
@@ -144,43 +143,48 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
       end if 
 
-      if (crater%fcrat > domain%smallest_crater) then
-         ! Set up original dem for later use in the mass conservation subroutine
+      if (crater%fcrat < domain%smallest_crater) cycle
+      
+      ! Find the visible crater parameters
+      call crater_find_visible(user,crater,domain)
 
-         ! Find the visible crater parameters
-         call crater_find_visible(user,crater,domain)
+      ! Crater is big enough to keep, so record it into the true distribution 
+      ntrue = ntrue + 1
+      if (ntrue > truesize) then  ! Resize the truelist array if necessary
+         allocate(tmptruelist(TRUECOLS,truesize))
+         tmptruelist = truelist
+         deallocate(truelist)
+         truesize = truesize + TRUECHUNK
+         allocate(truelist(TRUECOLS,truesize))
+         truelist(:,1:truesize - TRUECHUNK) = tmptruelist
+         deallocate(tmptruelist)
+      end if
+      truelist(1,ntrue) = crater%fcrat
+      truelist(2,ntrue) = crater%imp
+      truelist(3,ntrue) = crater%xl
+      truelist(4,ntrue) = crater%yl
+      truelist(5,ntrue) = crater%impvel
+      truelist(6,ntrue) = crater%sinimpang
+      mass = mass + crater%impmass
 
-         ! Crater is big enough to keep, so record it into the true distribution 
-         ntrue = ntrue + 1
-         if (ntrue > truesize) then  ! Resize the truelist array if necessary
-            allocate(tmptruelist(TRUECOLS,truesize))
-            tmptruelist = truelist
-            deallocate(truelist)
-            truesize = truesize + TRUECHUNK
-            allocate(truelist(TRUECOLS,truesize))
-            truelist(:,1:truesize - TRUECHUNK) = tmptruelist
-            deallocate(tmptruelist)
-         end if
-         truelist(1,ntrue) = crater%fcrat
-         truelist(2,ntrue) = crater%imp
-         truelist(3,ntrue) = crater%xl
-         truelist(4,ntrue) = crater%yl
-         truelist(5,ntrue) = crater%impvel
-         truelist(6,ntrue) = crater%sinimpang
-         mass = mass + crater%impmass
+      crater%maxinc = 0
+      ! Do seismic shaking
+      if (user%doseismic) call seismic_shake(user,surf,crater,domain)
+      
+      ! Generate dynamic diffusion
+      if (user%dosoftening) call crater_soften(user,surf,crater,domain)
 
-         crater%maxinc = 0
-         ! Do seismic shaking
-         if (user%doseismic) call seismic_shake(user,surf,crater,domain)
-         
-         ! Generate dynamic diffusion
-         if (user%dosoftening) call crater_soften(user,surf,crater,domain)
-
-         ! find the average height and slope at crater location
-         call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
-         
-       
-         ! Place ejecta onto the surface
+      ! find the average height and slope at crater location
+      call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
+      
+      call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
+                                                                     ! For very steep size distributions, only a fraction of the
+                                                                     ! craters are retained. The full ejecta_table_define function
+                                                                     ! is very computationally expensive. This function ball-parks
+                                                                     ! the total distance to determine if it is worth doing the 
+                                                                     ! full calculation later.
+      ! Place ejecta onto the surface
+      if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
          if (user%doregotrack) then 
             call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
             call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
@@ -188,68 +192,62 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call ejecta_table_define(user,crater,domain,ejb,ejtble)
             call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
          end if
-         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
-         
+         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,popflag)
+      else
+         ejtble = 0
+      end if
 
-         ! Place crater onto the surface
-         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
-         
-
-         call crater_mass_conservation(user,surf,crater)
-
-
+      ! Place crater onto the surface
+      if (crater%fcrat > domain%smallest_crater) then
+         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater,melev,xslp,yslp)
-         
-
          call util_sort_layer(user,surf,crater)
          vistrue = vistrue + 1
          nsincetally = nsincetally + 1
          if (.not.user%testflag) call io_updatePbar("")
-
-
-         ! Collapse any remaining unstable slopes
-         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
-         
-
-         !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
-
-
-         ! Find out if the current crater is the largest or smallest and if so record it
-         if (crater%fcrat > cmax ) then
-            imax = crater%imp
-            cmax = crater%fcrat
-            rhmax = crater%vrim
-            if (crater%vcorr <= user%deplimit) then
-               rmax = crater%vdepth
-            else
-               rmax = user%deplimit + crater%vrim 
-            end if
-            call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_max.dat")
-         end if
-         if (crater%fcrat < cmin) then
-            imin = crater%imp
-            cmin = crater%fcrat
-            rhmin = crater%vrim
-            if (crater%vcorr <= user%deplimit) then
-               rmin = crater%vdepth
-            else
-               rmin = user%deplimit + crater%vrim
-            end if
-            call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
-         end if
-
       end if
 
-      ! Do sub-pixel crater vertical mixing on the whole grid every resolvable crater
+
+      ! Collapse any remaining unstable slopes
+      if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
+
+      !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
+
+
+      ! Find out if the current crater is the largest or smallest and if so record it
+      if (crater%fcrat > cmax ) then
+         imax = crater%imp
+         cmax = crater%fcrat
+         rhmax = crater%vrim
+         if (crater%vcorr <= user%deplimit) then
+            rmax = crater%vdepth
+         else
+            rmax = user%deplimit + crater%vrim 
+         end if
+         call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_max.dat")
+      end if
+      if (crater%fcrat < cmin) then
+         imin = crater%imp
+         cmin = crater%fcrat
+         rhmin = crater%vrim
+         if (crater%vcorr <= user%deplimit) then
+            rmin = crater%vdepth
+         else
+            rmin = user%deplimit + crater%vrim
+         end if
+         call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
+      end if
+
+      ! Do sub-pixel craters vertical mixing
       if (user%doregotrack) then
-         call regolith_depth_model(user,domain,mixinterval,nflux,p)
-         call regolith_mix(user,surf,domain,nflux,p)
+         finterval = 1.0_DP / real(ntotcrat,kind=DP)
+         call regolith_depth_model(user,domain,finterval,nflux,p)
+         call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
       end if 
 
       ! Do periodic subpixel processes on the whole grid
-      if (((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)).and.&
-          (.not.user%testflag)) then
+      if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
          domain%subpixelcoverage = 0
          write(message,*) "Subpixel"
          call io_updatePbar(message)
@@ -257,14 +255,12 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
          call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          icrater_last_subpixel = icrater
-
-         ! Do mass conservation on whole grid
-         crater%maxinc = user%gridsize / 2
-         crater%xlpx = user%gridsize / 2
-         crater%ylpx = user%gridsize / 2
-         call crater_mass_conservation(user,surf,crater)
+         if (user%doregotrack) then
+            write(*,*) finterval * user%interval / 1.0e6
+            call regolith_depth_model(user,domain,finterval,nflux,p)
+            call regolith_mix(user,surf,domain,nflux,finterval,p)
+         end if
       end if
-     
       ! Intermediate tally step 
       if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
          domain%tallycoverage = 0
@@ -279,7 +275,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ntotkilled = ntotkilled + nkilled
          nsincetally = 0
       end if
-
    end do  ! end crater production loop 
  
    ! Resize the true crater size array to the actual number of craters produced   
@@ -293,6 +288,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    write(*,*) 'Maximum impactor diameter = ',imax
    write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
    write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
-
+   
    return
 end subroutine crater_populate
