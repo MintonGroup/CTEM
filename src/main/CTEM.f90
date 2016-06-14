@@ -63,7 +63,6 @@ integer(I4B)            :: onum
 real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
-INTEGER(I4B),dimension(:,:),allocatable :: popflag
 
 !$ t1 = omp_get_wtime()
 call io_splash()
@@ -83,8 +82,6 @@ allocate(crtscl(2,domain%pnum))
 allocate(vdist(3,domain%vnum))
 allocate(surf(user%gridsize,user%gridsize))
 allocate(production_list(domain%pnum))
-ALLOCATE(popflag(user%gridsize, user%gridsize))
-popflag = 0
 
 ! Read in production impactor population
 call io_read_prod(prod,user,domain)
@@ -109,7 +106,7 @@ call random_seed(put=seedarr)
 if (restart .or. user%tallyonly) then
    call io_read_surf(user,surf)
 else
-   call init_surf(user,surf,popflag)
+   call init_surf(user,surf)
 end if
 
 if (.not.user%tallyonly) then
@@ -121,7 +118,7 @@ if (.not.user%tallyonly) then
       call crater_make_list(domain,prod,ntotcrat,production_list)
    end if
    call crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
-                        fracdone,nflux,ntotcrat,popflag)
+                        fracdone,nflux,ntotcrat)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
@@ -157,7 +154,7 @@ call io_write_dist(pdist,crtscl,domain,mass)
 DO yp = 1, user%gridsize
    DO xp = 1, user%gridsize
       DO WHILE (ASSOCIATED(surf(xp,yp)%regolayer))
-         CALL regolith_pop(surf(xp,yp),popflag(xp,yp)) 
+         CALL regolith_pop(surf(xp,yp))
       END DO
    END DO
 END DO
