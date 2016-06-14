@@ -18,8 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
-           thickness_porous_tot,thickness_porous_mare)
+subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    use module_globals
    use module_util
    use module_porosity
@@ -32,7 +31,6 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
    type(cratertype),intent(in) :: crater
    real(DP),intent(in) :: lradsq
    real(DP),intent(in) :: newelev,melev
-   real(DP),intent(inout),optional :: thickness_porous_tot, thickness_porous_mare
 
    ! Internal variables
    real(DP) :: cform,newdem,elchange,pikeD

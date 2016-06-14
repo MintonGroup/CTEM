@@ -99,7 +99,6 @@ end interface
       subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
       use module_globals
       implicit none
-      ! Arguments
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
@@ -109,8 +108,7 @@ end interface
    end interface
 
    interface
-      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,&
-          thickness_porous_tot,thickness_porous_mare)
+      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -118,7 +116,6 @@ end interface
       type(cratertype),intent(in) :: crater
       real(DP),intent(in) :: lradsq
       real(DP),intent(in) :: newelev,melev
-      real(DP),intent(inout),optional :: thickness_porous_tot, thickness_porous_mare
       end subroutine crater_form_interior
    end interface
 

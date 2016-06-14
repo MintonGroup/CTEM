@@ -38,10 +38,6 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    integer(I4B),parameter :: NAVG = 5
    type(surftype),dimension(NAVG) :: surfavg
 
-   ! Test: porous regime mixing
-   real(DP) :: comp_porous, thickness_porous_tot, thickness_porous_mare
-   type(regodatatype) :: porouslayer
-
    ! Executable code
 
    ! determine area to effect
@@ -51,9 +47,6 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
-
-   thickness_porous_tot = 0._DP
-   thickness_porous_mare = 0._DP
 
    ! Loop over affected matrix area
    !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
@@ -102,8 +95,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
 
                ! Form interior, rim, and ejecta blanket 
                if (lradsq < fradsq) then 
-                  call crater_form_interior(user,surfavg(k),crater,lradsq,newelev,melev,&
-                     thickness_porous_tot,thickness_porous_mare)
+                  call crater_form_interior(user,surfavg(k),crater,lradsq,newelev,melev)
                else 
                   call crater_form_exterior(user,surfavg(k),crater,domain,lradsq,newelev) 
                end if
@@ -117,38 +109,6 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    !!$OMP END PARALLEL DO
    domain%tallycoverage = domain%tallycoverage + int(fradsq * PI / user%pix**2)
    domain%subpixelcoverage = domain%subpixelcoverage + int(fradsq * PI / user%pix**2)
-
-   ! Test: Calculate the theoretical volume difference between transient crater and final crater
-   ! dV = PI/4.0 * z_intersect**2 * (R_f/DDRATIO - R_TR/TRDDRATIO)
-   ! , where z_intersect is the depth of intersection between transient crater wall
-   ! and final crater wall. 
-   if (user%doregotrack .and. ALPHA > 0.125_DP) then
-         comp_porous = thickness_porous_mare / thickness_porous_tot
-         if (comp_porous == comp_porous) then
-
-         do j=-inc,inc
-            do i=-inc,inc
-               iradsq = i*i + j*j
-               if (iradsq <= incsq) then
-                  xpi = crater%xlpx + i
-                  ypi = crater%ylpx + j
-                  xp = xpi * user%pix
-                  yp = ypi * user%pix
-                  lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-                  call util_periodic(xpi,ypi,user%gridsize)
-                  if (lradsq < fradsq) then
-                     porouslayer = surf(xpi,ypi)%regolayer%regodata
-                     porouslayer%comp      = comp_porous
-                     porouslayer%meltfrac  = 0._DP
-                  end if
-                  call util_pop(surf(xpi,ypi))
-                  call util_push(surf(xpi,ypi),porouslayer)
-               end if
-            end do
-         end do
-
-         end if
-   end if
 
    return
 end subroutine crater_emplace
