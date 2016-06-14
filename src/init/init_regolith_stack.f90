@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_regolith_stack(user,surf,popflag)
+subroutine init_regolith_stack(user,surf)
    use module_globals
    use module_util
    use module_init, EXCEPT_THIS_ONE => init_regolith_stack
@@ -27,7 +27,6 @@ subroutine init_regolith_stack(user,surf,popflag)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   integer(I4B),dimension(:,:),intent(inout)   :: popflag
    type(regodatatype) :: mare,highland
    integer(I4B) :: k,xp,yp,maresize
 
@@ -73,7 +72,7 @@ subroutine init_regolith_stack(user,surf,popflag)
             mare%thickness = 4000.0_DP
             mare%meltfrac  = 0._DP
             mare%comp      = 1.0_DP
-            call util_push(surf(xp,yp),mare,popflag(xp,yp))
+            call util_push(surf(xp,yp),mare)
          END IF
       END DO
    END DO
