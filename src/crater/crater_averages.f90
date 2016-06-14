@@ -42,7 +42,7 @@ subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
    mdepth = 0.0_DP
 
    ! determine area to effect
-   inc = max(min(crater%fcratpx,user%gridsize),1)
+   inc = max(min(crater%fradpx,user%gridsize),1)
    incsq=inc**2
 
    ! loop over crater area
