@@ -77,7 +77,6 @@ init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
 init/init_regolith_stack.f90\
-init/init_regolith_parab.f90\
 seismic/seismic_shake.f90\
 seismic/seismic_distance.f90\
 seismic/seismic_table_define.f90\
