@@ -21,6 +21,7 @@ use module_crater
 use module_seismic
 use module_ejecta
 use module_util
+use module_regolith
 !$ USE omp_lib
 implicit none
 
@@ -47,7 +48,7 @@ character(STRMAX)       :: infile   ! Input file name
 logical                 :: restart  ! F = new run (start with a fresh surface)
 integer(I8B)            :: totalimpacts ! Total number of impacts ever produced 
 integer(I4B)            :: ncount   ! Current count in ctem_driver IDL run
-integer(I4B)            :: n        ! Size of random number generator seed array
+integer(I4B)            :: n, xp, yp, i        ! Size of random number generator seed array
 integer(I4B),dimension(:),allocatable :: seedarr ! Random number generator seed array
 real(DP)                :: curyear
 real(DP)                :: mass
@@ -62,12 +63,15 @@ integer(I4B)            :: onum
 real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
+INTEGER(I4B),dimension(:,:),allocatable :: popflag
 
 !$ t1 = omp_get_wtime()
 call io_splash()
 !write(*,*) 'Reading input files'
 infile="ctem.in"
 call io_input(infile,user)
+
+user%interval = 1.0e5
 
 ! Initialize distribution arrays (crater size, number)
 !write(*,*) 'Initializing arrays'
@@ -79,6 +83,8 @@ allocate(crtscl(2,domain%pnum))
 allocate(vdist(3,domain%vnum))
 allocate(surf(user%gridsize,user%gridsize))
 allocate(production_list(domain%pnum))
+ALLOCATE(popflag(user%gridsize, user%gridsize))
+popflag = 0
 
 ! Read in production impactor population
 call io_read_prod(prod,user,domain)
@@ -103,7 +109,7 @@ call random_seed(put=seedarr)
 if (restart .or. user%tallyonly) then
    call io_read_surf(user,surf)
 else
-   call init_surf(user,surf)
+   call init_surf(user,surf,popflag)
 end if
 
 if (.not.user%tallyonly) then
@@ -115,7 +121,7 @@ if (.not.user%tallyonly) then
       call crater_make_list(domain,prod,ntotcrat,production_list)
    end if
    call crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
-                        fracdone,nflux,ntotcrat)
+                        fracdone,nflux,ntotcrat,popflag)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
@@ -147,6 +153,14 @@ end if
 write(*,*) 'Writing output files'
 
 call io_write_dist(pdist,crtscl,domain,mass)
+
+DO yp = 1, user%gridsize
+   DO xp = 1, user%gridsize
+      DO WHILE (ASSOCIATED(surf(xp,yp)%regolayer))
+         CALL regolith_pop(surf(xp,yp),popflag(xp,yp)) 
+      END DO
+   END DO
+END DO
 
 ! Deallocate all the allocatables
 deallocate(seedarr)
