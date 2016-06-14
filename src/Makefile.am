@@ -92,7 +92,6 @@ regolith/regolith_quadratic_func.f90\
 regolith/regolith_quartic_func.f90\
 regolith/regolith_mix.f90\
 regolith/regolith_depth_model.f90\
-regolith/regolith_mix_porous_regime.f90\
 regolith/regolith_streamtube.f90\
 regolith/regolith_streamtube_head.f90\
 regolith/regolith_streamtube_lineseg.f90\
