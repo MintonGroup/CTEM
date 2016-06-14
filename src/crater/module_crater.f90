@@ -17,6 +17,17 @@ implicit none
 public 
 save
 
+interface
+   subroutine crater_mass_conservation(user,surf,crater)
+   use module_globals
+   implicit none
+   type(usertype),intent(in) :: user
+   type(surftype),dimension(:,:),intent(inout) :: surf
+   type(cratertype),intent(in)  :: crater
+   end subroutine crater_mass_conservation
+end interface
+
+
    interface
       subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
                                  mass,fracdone,nflux,ntotcrat)
