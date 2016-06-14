@@ -142,8 +142,8 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
                      porouslayer%comp      = comp_porous
                      porouslayer%meltfrac  = 0._DP
                   end if
-                  call regolith_pop(surf(xpi,ypi))
-                  call regolith_push(surf(xpi,ypi),porouslayer)
+                  call util_pop(surf(xpi,ypi))
+                  call util_push(surf(xpi,ypi),porouslayer)
                end if
             end do
          end do
