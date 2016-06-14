@@ -59,10 +59,16 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
       dN(i) = nflux(3,i) * user%interval * finterval
 
       lambda_bedrock(i) = dN(i) * 0.25_DP * PI * nflux(1,i)**2 
-      kappat_bedrock(i) = PERCRATER_DIFF_A * nflux(1,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * nflux(1,i)**(SOFTEN_SLOPE)
-
       lambda_regolith(i) = dN(i) * 0.25_DP * PI * nflux(2,i)**2 
-      kappat_regolith(i) = PERCRATER_DIFF_A * nflux(2,i)**(PERCRATER_DIFF_P) + SOFTEN_FACTOR * nflux(2,i)**(SOFTEN_SLOPE)
+
+      kappat_bedrock(i) = PERCRATER_DIFF_A * nflux(1,i)**(PERCRATER_DIFF_P) 
+      kappat_regolith(i) = PERCRATER_DIFF_A * nflux(2,i)**(PERCRATER_DIFF_P) 
+
+      if (user%dosoftening) then
+         kappat_bedrock(i) = kappat_bedrock(i) + SOFTEN_FACTOR * nflux(1,i)**(SOFTEN_SLOPE)
+         kappat_regolith(i) = kappat_regolith(i) + SOFTEN_FACTOR * nflux(2,i)**(SOFTEN_SLOPE)
+      end if
+
    end do
 
    kdiff = 0._DP
