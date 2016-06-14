@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,popflag)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_emplace
@@ -30,6 +30,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout) :: domain
    real(DP),intent(in) :: melev,xslp,yslp
+   INTEGER(I4B),DIMENSION(:,:),INTENT(INOUT),optional :: popflag
 
    ! Internal variables
    real(DP) :: lradsq,newelev
@@ -40,7 +41,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
 
    ! Test: porous regime mixing
    real(DP) :: comp_porous, thickness_porous_tot, thickness_porous_mare
-   type(regolayertype) :: porouslayer
+   type(regodatatype) :: porouslayer
 
    ! Executable code
 
@@ -103,7 +104,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
                ! Form interior, rim, and ejecta blanket 
                if (lradsq < fradsq) then 
                   call crater_form_interior(user,surfavg(k),crater,lradsq,newelev,melev,&
-                     thickness_porous_tot,thickness_porous_mare)
+                     thickness_porous_tot,thickness_porous_mare,popflag(xpi,ypi))
                else 
                   call crater_form_exterior(user,surfavg(k),crater,domain,lradsq,newelev) 
                end if
@@ -122,29 +123,33 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    ! dV = PI/4.0 * z_intersect**2 * (R_f/DDRATIO - R_TR/TRDDRATIO)
    ! , where z_intersect is the depth of intersection between transient crater wall
    ! and final crater wall. 
-   !comp_porous = thickness_porous_mare / thickness_porous_tot
-   !if (user%doregotrack .and. comp_porous == comp_porous .and. thickness_porous_tot > 1.0e-8) then
-   !   do j=-inc,inc
-   !      do i=-inc,inc
-   !         iradsq = i*i + j*j
-   !         if (iradsq <= incsq) then
-   !            xpi = crater%xlpx + i
-   !            ypi = crater%ylpx + j
-   !            xp = xpi * user%pix
-   !            yp = ypi * user%pix
-   !            lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-   !            call util_periodic(xpi,ypi,user%gridsize)
-   !            if (lradsq < fradsq) then
-   !                porouslayer%thickness = surf(xpi,ypi)%regolayer%thickness
-   !                porouslayer%comp      = comp_porous
-   !                porouslayer%meltfrac  = 0._DP
-   !                call regolith_pop(surf(xpi,ypi))
-   !                call regolith_push(surf(xpi,ypi),porouslayer)
-   !            end if
-   !         end if   
-   !      end do
-   !   end do
-   !end if
+   if (user%doregotrack .and. ALPHA > 0.125_DP) then
+         comp_porous = thickness_porous_mare / thickness_porous_tot
+         if (comp_porous == comp_porous) then
+
+         do j=-inc,inc
+            do i=-inc,inc
+               iradsq = i*i + j*j
+               if (iradsq <= incsq) then
+                  xpi = crater%xlpx + i
+                  ypi = crater%ylpx + j
+                  xp = xpi * user%pix
+                  yp = ypi * user%pix
+                  lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+                  call util_periodic(xpi,ypi,user%gridsize)
+                  if (lradsq < fradsq) then
+                     porouslayer%thickness = surf(xpi,ypi)%regolayer%regodata%thickness
+                     porouslayer%comp      = comp_porous
+                     porouslayer%meltfrac  = 0._DP
+                  end if
+                  call regolith_pop(surf(xpi,ypi))
+                  call regolith_push(surf(xpi,ypi),porouslayer)
+               end if
+            end do
+         end do
+
+         end if
+   end if
 
    return
 end subroutine crater_emplace
