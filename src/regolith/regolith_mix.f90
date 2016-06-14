@@ -18,7 +18,6 @@
 !**********************************************************************************************************************************
 subroutine regolith_mix(surf,d)
    use module_globals
-   use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_mix
    implicit none
 
@@ -41,7 +40,7 @@ subroutine regolith_mix(surf,d)
    do while ( (associated(surf%regolayer%next)) .and. (z<d) ) 
             ztot  = ztot  + (z - z0)
             zmare = zmare + (z - z0) * surf%regolayer%comp
-            call util_pop(surf)
+            call regolith_pop(surf)
             z0    = z
             z     = z + surf%regolayer%thickness
    end do
@@ -52,6 +51,6 @@ subroutine regolith_mix(surf,d)
    newlayer%thickness = ztot 
    newlayer%comp      = zmare / ztot
    newlayer%meltfrac  = surf%regolayer%meltfrac
-   call util_push(surf, newlayer)
+   call regolith_push(surf, newlayer)
 
 end subroutine regolith_mix

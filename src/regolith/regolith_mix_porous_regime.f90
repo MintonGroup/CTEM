@@ -42,7 +42,7 @@ subroutine regolith_mix_porous_regime(user,surfi,d)
     if (z <= d) then
        ztot  = ztot  + surfi%regolayer%thickness
        zmare = zmare + surfi%regolayer%thickness * surfi%regolayer%comp
-       call util_pop(surfi)
+       call regolith_pop(surfi)
        z0 = z
        z = z + surfi%regolayer%thickness
     else
@@ -56,7 +56,7 @@ subroutine regolith_mix_porous_regime(user,surfi,d)
    porouslayer%thickness  = ztot
    porouslayer%comp       = zmare / ztot
    porouslayer%meltfrac   = 0.0_DP
-   call util_push(surfi, porouslayer)
+   call regolith_push(surfi, porouslayer)
 
    return
 end subroutine regolith_mix_porous_regime
