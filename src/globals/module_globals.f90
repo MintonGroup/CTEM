@@ -100,7 +100,7 @@ type cratertype
    real(DP) :: cxexp,cxtran        ! simple to complex scaling parameters
    ! Pixel domain properties
    integer(I4B) :: xlpx,ylpx       ! Crater center in pixels
-   integer(I4B) :: fcratpx,frimpx,rimdispx,ejdispx
+   integer(I4B) :: fcratpx,fradpx,rimdispx,ejdispx
    integer(I4B) :: maxinc          ! Maximum area affected 
    integer(I4B) :: strflag         ! 0 for regolith, 1 for bedrock
 end type cratertype
@@ -175,7 +175,7 @@ type usertype
    real(DP) :: regcoh  ! target surface regolith layer cohesion
    
    ! Ejecta softening variables
-   logical           :: dosoftening  ! Set T to use the ejecta terrain softening model
+   logical           :: dosoftening  ! Set T to use the extra crater softening model
    real(DP)          :: diffusion_const 
 
    ! Regolith tracking variables
@@ -285,8 +285,8 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
-real(DP),parameter :: SOFTEN_FACTOR = 0.25_DP   ! Extra per crater diffusion constant
-real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
+real(DP),parameter :: SOFTEN_FACTOR = 0.30_DP   ! Extra per crater diffusion constant
+real(DP),parameter :: SOFTEN_SLOPE = 2.0_DP    ! Extra per crater diffusion power law slope
 real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
 real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
 
