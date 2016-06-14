@@ -29,7 +29,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,popflag)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    use module_globals
    use module_util
    use module_io
@@ -45,7 +45,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,popflag)
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)    :: ejb
-   INTEGER(I4B),DIMENSION(:,:),intent(inout)  :: popflag
 
    ! Internal variables
    real(DP) :: lrad,lradsq,cdepth
@@ -249,7 +248,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,popflag)
 
                if (user%doregotrack .and. ebh>1.0e-8) then
                   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
-                  call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp,popflag(xpi,ypi))
+                  call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
                   !print *, lrad / crater%frad, comp 
                   !dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
                   !if (dsc - ebh > 1.0e-08) then
