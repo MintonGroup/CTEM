@@ -78,6 +78,7 @@ type surftype
    integer(I2B),dimension(MAXLAYER)  :: isrim ! 1 if the pixel was part of the original rim and 0 if part of the bowl
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
+   real(DP) :: demOrig              ! Original digital elevation model used for mass conservation calculation
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
    type(regolisttype),pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
 end type surftype
