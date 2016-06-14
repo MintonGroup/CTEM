@@ -39,10 +39,10 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
    integer(I4B) :: klo, khi
 
    ! Regolith layers mixing internals
-   type(regolayertype),pointer :: current
+   type(regolisttype),pointer :: current
    logical  :: MIX, DMIX
    real(DP) :: z, z0, zmare, ztot
-   type(regolayertype) :: snewlayer, dnewlayer
+   type(regolisttype) :: snewlayer, dnewlayer
 
    ! Find the deepest depth for 100% true saturation
    if (p(2,1) < 1.0) then
@@ -69,7 +69,7 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
                     dd = p(1,domain%smallest_impactor_index)
             end if
 
-            if (surf(i,j)%regolayer%thickness < dd) then             
+            if (surf(i,j)%regolayer%regodata%thickness < dd) then             
                call regolith_mix(surf(i,j),dd)
             end if
             
