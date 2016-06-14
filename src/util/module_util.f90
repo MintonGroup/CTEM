@@ -17,19 +17,20 @@ public
 save
 
    interface
-      subroutine util_push(surf,newlayer)
+      subroutine util_push(surf,newregodata)
       use module_globals
       implicit none
       type(surftype),intent(inout) :: surf
-      type(regodatatype),intent(in) :: newlayer
+      type(regodatatype),intent(in) :: newregodata
       end subroutine util_push
    end interface
 
    interface
-      subroutine util_pop(surfi)
+      subroutine util_pop(surfi,oldregodata)
       use module_globals
       implicit none
       type(surftype),intent(inout):: surfi
+      type(regodatatype),intent(out) :: oldregodata
       end subroutine util_pop
    end interface
 
