@@ -98,7 +98,6 @@ regolith/regolith_streamtube_lineseg.f90\
 regolith/regolith_subpixel_streamtube.f90\
 regolith/regolith_transport.f90\
 regolith/regolith_traverse_streamtube.f90\
-regolith/regolith_depth_model.f90\
 regolith/regolith_subcrater_mix.f90\
 porosity/porosity_form_interior.f90\
 main/CTEM.f90
