@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_push(surfi,newregodata,popflagi)
+subroutine util_push(surfi,newregodata)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_push
    implicit none
@@ -27,10 +27,9 @@ subroutine util_push(surfi,newregodata,popflagi)
    ! Arguments
    type(surftype),intent(inout) :: surfi
    type(regodatatype),intent(in) :: newregodata
-   integer(I4B),intent(inout) :: popflagi
 
    ! Internal variables
-   type(regolisttype),POINTER :: newsurfi => null()
+   type(regolisttype),pointer :: newsurfi => null()
    integer(I4B):: allocstat
 
    ! Executable code
@@ -46,7 +45,6 @@ subroutine util_push(surfi,newregodata,popflagi)
          newsurfi%next => surfi%regolayer
          surfi%regolayer => newsurfi
          newsurfi%regodata = newregodata
-         !IF (popflagi == 1) popflagi = 2
       else
          write(*,*) 'Exhausted memory!'
       end if

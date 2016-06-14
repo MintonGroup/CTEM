@@ -17,21 +17,19 @@ public
 save
 
    interface
-      subroutine util_push(surf,newlayer,popflagi)
+      subroutine util_push(surf,newlayer)
       use module_globals
       implicit none
       type(surftype),intent(inout) :: surf
       type(regodatatype),intent(in) :: newlayer
-      integer(I4B),intent(inout)  :: popflagi
       end subroutine util_push
    end interface
 
    interface
-      subroutine util_pop(surfi,popflagi)
+      subroutine util_pop(surfi)
       use module_globals
       implicit none
       type(surftype),intent(inout):: surfi
-      integer(I4B),intent(inout)  :: popflagi
       end subroutine util_pop
    end interface
 

@@ -19,14 +19,13 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_pop(surfi,popflagi)
+subroutine util_pop(surfi)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_pop
    implicit none
 
    ! Arguments
    type(surftype),intent(inout):: surfi
-   integer(I4B),intent(inout)  :: popflagi
 
    ! Internal variables
    type(regolisttype),pointer :: current  => null()
