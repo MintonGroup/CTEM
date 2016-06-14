@@ -18,7 +18,7 @@
 !**********************************************************************************************************************************
 subroutine regolith_mix(surfi,mixing_depth)
    use module_globals
-   use modele_util
+   use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_mix
    implicit none
 
