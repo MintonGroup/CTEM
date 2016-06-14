@@ -31,6 +31,8 @@ util/util_area_intersection.f90\
 util/util_poisson.f90\
 util/util_pop.f90\
 util/util_push.f90\
+util/util_traverse_pop.f90\
+util/util_destroy_list.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -96,7 +98,6 @@ regolith/regolith_streamtube_head.f90\
 regolith/regolith_streamtube_lineseg.f90\
 regolith/regolith_subpixel_streamtube.f90\
 regolith/regolith_transport.f90\
-regolith/regolith_traverse_pop.f90\
 regolith/regolith_traverse_streamtube.f90\
 regolith/regolith_depth_model.f90\
 porosity/porosity_form_interior.f90\
