@@ -37,66 +37,45 @@ subroutine init_regolith_stack(user,surf)
    !=======================================
    ! Initialize the grid space  
    !=======================================
-   DO yp = 1, user%gridsize
-      DO xp = 1, user%gridsize
+   do yp = 1, user%gridsize
+      do xp = 1, user%gridsize
 
-         IF (.NOT. ASSOCIATED(surf(xp,yp)%regolayer)) THEN
-            ALLOCATE(surf(xp,yp)%regolayer, STAT=allocstat)
-            IF (allocstat == 0) THEN
-               NULLIFY(surf(xp,yp)%regolayer%next)
+         if (.not. associated(surf(xp,yp)%regolayer)) then
+            allocate(surf(xp,yp)%regolayer, STAT=allocstat)
+            if (allocstat == 0) then
+               nullify(surf(xp,yp)%regolayer%next)
 
-               IF (xp <= user%gridsize/2) THEN
+               if (xp <= user%gridsize/2) then
                   highland%thickness = 1000.0_DP
                   highland%meltfrac  = 0._DP 
                   highland%comp      = 0._DP
-               ELSE
+               else
                   highland%thickness = 5000.0_DP
                   highland%meltfrac  = 0._DP
                   highland%comp      = 0.0_DP
-               END IF 
+               end if 
 
                surf(xp,yp)%regolayer%regodata = highland
-            ELSE
-               WRITE(*,*) 'Exhausted memory.'
-            END IF
-         ELSE
-            WRITE(*,*) 'Initialization went wrong ...'
-         END IF
+            else
+               write(*,*) 'Exhausted memory.'
+            end if
+         else
+            write(*,*) 'Initialization went wrong ...'
+         end if
 
-      END DO
-   END DO
+      end do
+   end do
 
-   DO yp = 1,user%gridsize
-      DO xp = 1,user%gridsize
-         IF (xp <= user%gridsize/2) THEN
+   do yp = 1,user%gridsize
+      do xp = 1,user%gridsize
+         if (xp <= user%gridsize/2) then
             mare%thickness = 4000.0_DP
             mare%meltfrac  = 0._DP
             mare%comp      = 1.0_DP
-            call util_push(surf(xp,yp),mare)
-         END IF
-      END DO
-   END DO
-
-   !do yp = 1,user%gridsize
-   !   do xp = 1,user%gridsize
-   !         highland%thickness = 1000.0_DP
-   !         highland%meltfrac  = 0._DP 
-   !         highland%comp      = 0._DP
-   !         call regolith_push(surf(xp,yp),highland)
-   !         do k = 1, 5
-   !         highland%thickness = 10.0_DP
-   !         highland%meltfrac  = 0._DP
-   !         highland%comp      = 0.0_DP
-   !         call regolith_push(surf(xp,yp),highland)
-   !         end do
-   !         do k = 1, 10
-   !         mare%thickness = 1.0_DP
-   !         mare%meltfrac  = 0._DP
-   !         mare%comp      = 1.0_DP
-   !         call regolith_push(surf(xp,yp),mare)
-   !         end do
-   !   end do
-   !end do
+            call util_push(surf(xp,yp)%regolayer,mare)
+         end if
+      end do
+   end do
 
    return
 end subroutine init_regolith_stack
