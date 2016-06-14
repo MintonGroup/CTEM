@@ -19,17 +19,17 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_push(surfi,newregodata)
+subroutine util_push(regolayer,newregodata)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_push
    implicit none
 
    ! Arguments
-   type(surftype),intent(inout) :: surfi
+   type(regolisttype),pointer :: regolayer
    type(regodatatype),intent(in) :: newregodata
 
    ! Internal variables
-   type(regolisttype),pointer :: newsurfi => null()
+   type(regolisttype),pointer :: newlayer => null()
    integer(I4B):: allocstat
 
    ! Executable code
@@ -38,18 +38,18 @@ subroutine util_push(surfi,newregodata)
    !=======================================
    ! No value in the list 
    !=======================================
-   if (associated(surfi%regolayer)) then
-      allocate(newsurfi, stat=allocstat)
+   if (associated(regolayer)) then
+      allocate(newlayer, stat=allocstat)
       if (allocstat == 0) then
-         nullify(newsurfi%next)
-         newsurfi%next => surfi%regolayer
-         newsurfi%regodata = newregodata
-         surfi%regolayer => newsurfi
+         nullify(newlayer%next)
+         newlayer%next => regolayer
+         newlayer%regodata = newregodata
+         regolayer => newlayer
       else
          write(*,*) 'util_push error: Exhausted memory!'
       end if
    else
-      write(*,*) "util_push error: surfi%regolayer is not associated!"
+      write(*,*) "util_push error: regolayer is not associated!"
    end if
    return
 end subroutine util_push

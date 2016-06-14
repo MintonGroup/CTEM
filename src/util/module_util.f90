@@ -16,23 +16,33 @@ implicit none
 public
 save
 
-   interface
-      subroutine util_push(surf,newregodata)
-      use module_globals
-      implicit none
-      type(surftype),intent(inout) :: surf
-      type(regodatatype),intent(in) :: newregodata
-      end subroutine util_push
-   end interface
+interface
+   subroutine util_push(regolayer,newregodata)
+   use module_globals
+   implicit none
+   type(regolisttype),pointer :: regolayer
+   type(regodatatype),intent(in) :: newregodata
+   end subroutine util_push
+end interface
 
-   interface
-      subroutine util_pop(surfi,oldregodata)
-      use module_globals
-      implicit none
-      type(surftype),intent(inout):: surfi
-      type(regodatatype),intent(out) :: oldregodata
-      end subroutine util_pop
-   end interface
+interface
+   subroutine util_pop(regolayer,oldregodata)
+   use module_globals
+   implicit none
+   type(regolisttype),pointer :: regolayer
+   type(regodatatype),intent(out) :: oldregodata
+   end subroutine util_pop
+end interface
+
+interface
+   subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
+   use module_globals
+   implicit none
+   type(regolayertype),pointer :: regolayer
+   real(DP),intent(in)         :: traverse_depth
+   type(regolistype),pointer :: poppedlist
+   end subroutine 
+end interface
 
 interface
    subroutine util_add_to_layer(user,surfi,isrim,fcrat,xl,yl,depth,baseline)

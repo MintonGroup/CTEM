@@ -19,13 +19,13 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_pop(surfi,oldregodata)
+subroutine util_pop(regolayer,oldregodata)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_pop
    implicit none
 
    ! Arguments
-   type(surftype),intent(inout):: surfi
+   type(regolisttype),pointer :: regolayer
    type(regodatatype),intent(out) :: oldregodata
 
    ! Internal variables
@@ -33,14 +33,14 @@ subroutine util_pop(surfi,oldregodata)
 
    ! Executable code
 
-   if (associated(surfi%regolayer)) then
-      current  => surfi%regolayer 
+   if (associated(regolayer)) then
+      current  => regolayer 
       oldregodata = current%regodata
       if (associated(current%next)) then
-         surfi%regolayer => surfi%regolayer%next
+         regolayer => regolayer%next
          deallocate(current)
       else
-         surfi%regolayer => null()
+         regolayer => null()
          write(*,*) "util_pop error: We've reached the bottom of the regolith list!"
       end if
    else
