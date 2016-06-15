@@ -257,11 +257,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
          call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          icrater_last_subpixel = icrater
-         if (user%doregotrack) then
-            write(*,*) finterval * user%interval / 1.0e6
-            call regolith_depth_model(user,domain,finterval,nflux,p)
-            call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
-         end if
       end if
       ! Intermediate tally step 
       if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
