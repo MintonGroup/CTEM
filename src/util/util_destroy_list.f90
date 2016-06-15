@@ -29,12 +29,18 @@ subroutine util_destroy_list(regolayer)
 
    ! Internal variables
    type(regodatatype) :: oldregodata
-
+   type(regolisttype),pointer :: current => null()
    ! Executable code
 
-   do while(associated(regolayer))
+   do while (associated(regolayer%next))
       call util_pop(regolayer,oldregodata)
    end do
+
+   if (associated(regolayer)) then
+      deallocate(regolayer)
+   else
+      write(*,*) 'util_destroy_list: the head not associated.'
+   end if
 
    return
 end subroutine util_destroy_list
