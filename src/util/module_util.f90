@@ -53,6 +53,15 @@ interface
 end interface
 
 interface
+   subroutine util_init_list(regolayer,initstat)
+   use module_globals
+   implicit none
+   type(regolisttype),pointer :: regolayer
+   logical, intent(out)     :: initstat
+   end subroutine util_init_list
+end interface
+
+interface
    subroutine util_add_to_layer(user,surfi,isrim,fcrat,xl,yl,depth,baseline)
    use module_globals
    implicit none
