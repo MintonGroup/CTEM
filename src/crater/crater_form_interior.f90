@@ -36,11 +36,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    real(DP) :: cform,newdem,elchange,pikeD
    integer(I4B) :: layer
 
-   ! Test: internal variables of calculating transient crater's parabola shape
-   real(DP) :: trdepth, trparab, trform, trvcorr
-   real(DP), parameter :: TRDDRATIO = 0.5_DP !(1.0_DP/3.0_DP + 1.0_DP/4.0_DP) / 2.0_DP 
-   real(DP) :: porous_thick
-   real(DP) :: x_wall, z_wall, vdiff, cdepth, parabarea, parabside
+   ! A list for poped data 
    type(regolisttype),pointer :: poppedlist => null()
 
    ! Executable code
@@ -71,20 +67,11 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
       surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
    end if    
      
-   ! Test the parabola shape of a transient crater 
-   ! TRDDRATIO: it is similar to DDRATIO, which is the ratio of transient crater's depth to the transient crater diameter
-   !            in Jay's cratering book, it is between 1/4 and 1/3. 
-   ! trdepth:  it is similar to cdepth, which is the depth of a trasient crater
-   !           trdepth = TRDDRATIO * crater%rad * 2.0
-   ! trparab:  it is similar to crater%parab, which is the coefficient that determines the shape of a parabola, depending on
-   !           the distance of a point on the wall of a crater to the center of a parabola. 
    if (user%doregotrack) then
       call util_traverse_pop(surfi%regolayer,abs(elchange),poppedlist)
       call util_destroy_list(poppedlist)
    end if
 
-   !do regotrack: pop stuff out
-   !if (user%doregotrack) call regolith_traverse_pop(elchange,surfi)
 
    return
 end subroutine crater_form_interior
