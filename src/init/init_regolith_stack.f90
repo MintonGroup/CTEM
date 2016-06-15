@@ -31,7 +31,7 @@ subroutine init_regolith_stack(user,surf)
    integer(I4B) :: k,xp,yp,maresize
 
    ! Internal variables
-   integer(I4B) :: allocstat
+   logical :: initstat
 
    !call init_regolith_parab(user,surf)
    !=======================================
@@ -40,19 +40,15 @@ subroutine init_regolith_stack(user,surf)
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
 
-         if (.not. associated(surf(xp,yp)%regolayer)) then
-            allocate(surf(xp,yp)%regolayer, STAT=allocstat)
-            if (allocstat == 0) then
-               nullify(surf(xp,yp)%regolayer%next)
-               bedrock%thickness = VBIG
-               bedrock%meltfrac  = 0._DP 
-               bedrock%comp      = 0._DP
-               surf(xp,yp)%regolayer%regodata = bedrock
-            else
-               write(*,*) 'Exhausted memory.'
-            end if
+         call util_init_list(surf(xp,yp)%regolayer,initstat)
+
+         if (initstat) then
+             bedrock%thickness = VBIG
+             bedrock%meltfrac  = 0._DP 
+             bedrock%comp      = 0._DP
+             surf(xp,yp)%regolayer%regodata = bedrock
          else
-            write(*,*) 'Initialization went wrong ...'
+            write(*,*) 'init_regolith_stack: Initialization of regolayer failed.'
          end if
 
       end do
