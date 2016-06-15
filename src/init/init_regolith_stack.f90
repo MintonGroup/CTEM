@@ -27,7 +27,7 @@ subroutine init_regolith_stack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   type(regodatatype) :: mare,highland
+   type(regodatatype) :: bedrock 
    integer(I4B) :: k,xp,yp,maresize
 
    ! Internal variables
@@ -44,18 +44,10 @@ subroutine init_regolith_stack(user,surf)
             allocate(surf(xp,yp)%regolayer, STAT=allocstat)
             if (allocstat == 0) then
                nullify(surf(xp,yp)%regolayer%next)
-
-               if (xp <= user%gridsize/2) then
-                  highland%thickness = 1000.0_DP
-                  highland%meltfrac  = 0._DP 
-                  highland%comp      = 0._DP
-               else
-                  highland%thickness = 5000.0_DP
-                  highland%meltfrac  = 0._DP
-                  highland%comp      = 0.0_DP
-               end if 
-
-               surf(xp,yp)%regolayer%regodata = highland
+               bedrock%thickness = VBIG
+               bedrock%meltfrac  = 0._DP 
+               bedrock%comp      = 0._DP
+               surf(xp,yp)%regolayer%regodata = bedrock
             else
                write(*,*) 'Exhausted memory.'
             end if
@@ -63,17 +55,6 @@ subroutine init_regolith_stack(user,surf)
             write(*,*) 'Initialization went wrong ...'
          end if
 
-      end do
-   end do
-
-   do yp = 1,user%gridsize
-      do xp = 1,user%gridsize
-         if (xp <= user%gridsize/2) then
-            mare%thickness = 4000.0_DP
-            mare%meltfrac  = 0._DP
-            mare%comp      = 1.0_DP
-            call util_push(surf(xp,yp)%regolayer,mare)
-         end if
       end do
    end do
 
