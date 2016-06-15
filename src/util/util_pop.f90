@@ -29,16 +29,17 @@ subroutine util_pop(regolayer,oldregodata)
    type(regodatatype),intent(out) :: oldregodata
 
    ! Internal variables
-   type(regolisttype),pointer :: current  => null()
+   type(regolisttype),pointer :: oldhead
 
    ! Executable code
 
    if (associated(regolayer)) then
-      current  => regolayer 
-      oldregodata = current%regodata
-      if (associated(current%next)) then
-         regolayer => regolayer%next
-         deallocate(current)
+      oldhead  => regolayer 
+      oldregodata = oldhead%regodata
+      if (associated(oldhead%next)) then
+         regolayer => oldhead%next
+         nullify(oldhead)
+         deallocate(oldhead)
       else
          regolayer => null()
          write(*,*) "util_pop error: We've reached the bottom of the regolith list!"
