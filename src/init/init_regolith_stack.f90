@@ -28,7 +28,7 @@ subroutine init_regolith_stack(user,surf)
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(regodatatype) :: bedrock 
-   integer(I4B) :: k,xp,yp,maresize
+   integer(I4B) :: xp,yp
 
    ! Internal variables
    logical :: initstat
