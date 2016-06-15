@@ -38,7 +38,7 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
 
    ! Internal varialbes
    real(DP) :: melt 
-   type(regodatatype) :: newsurfi 
+   type(regodatatype) :: newlayer 
 
    ! Melt interpolation variables 
    real(DP)     :: frac,logtablerad,loglrad,logdelta,outeredge,inneredge
@@ -64,11 +64,11 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
       melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac)
    end if 
 
-   newsurfi%thickness = ebh
-   newsurfi%meltfrac = melt
-   newsurfi%comp = comp
-
-   call util_push(surfi%regolayer,newsurfi)
+   newlayer%thickness = ebh
+   newlayer%meltfrac = melt
+   newlayer%comp = comp
+   
+   call util_push(surfi%regolayer,newlayer)
 
    return
 end subroutine regolith_transport
