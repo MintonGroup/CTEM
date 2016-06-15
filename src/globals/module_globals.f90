@@ -286,7 +286,7 @@ real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside fin
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
 real(DP),parameter :: SOFTEN_FACTOR = 0.30_DP   ! Extra per crater diffusion constant
-real(DP),parameter :: SOFTEN_SLOPE = 2.0_DP    ! Extra per crater diffusion power law slope
+real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
 real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
 real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
 
