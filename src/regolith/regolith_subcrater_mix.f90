@@ -45,37 +45,33 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
    type(regolisttype) :: snewlayer, dnewlayer
 
    ! Find the deepest depth for 100% true saturation
-   if (p(2,1) < 1.0) then
-      write(*,*) 'Error: The smallest sub-pixel craters has not covered one pixel-sized surface!'
-   else
-      klo = 1
-      ds = p(1,1) 
-      do i=2,domain%smallest_impactor_index
-         if (p(2,i)<1.0_DP) exit
-         klo = i
-         ds = p(1,klo)
-      end do
+   klo = 1
+   ds = p(1,1) 
+   do i=2,domain%smallest_impactor_index
+      if (p(2,i)<1.0_DP) exit
+      klo = i
+      ds = p(1,klo)
+   end do
 
-      do j=1,user%gridsize
-         do i=1,user%gridsize
+   do j=1,user%gridsize
+      do i=1,user%gridsize
 
-            call random_number(rn)
-            if (rn < p(2,1) .and. rn > p(2,domain%smallest_impactor_index)) then
-               call util_search_double(p,2,domain%smallest_impactor_index,rn,klo)
-               dd = p(1,klo)
-            else if (rn >= p(2,1)) then
-                    dd = ds
-            else
-                    dd = p(1,domain%smallest_impactor_index)
-            end if
+         call random_number(rn)
+         if (rn < p(2,1) .and. rn > p(2,domain%smallest_impactor_index)) then
+            call util_search_double(p,2,domain%smallest_impactor_index,rn,klo)
+            dd = p(1,klo)
+         else if (rn >= p(2,1)) then
+                 dd = ds
+         else
+                 dd = p(1,domain%smallest_impactor_index)
+         end if
 
-            if (surf(i,j)%regolayer%regodata%thickness < dd) then             
-               call regolith_mix(surf(i,j),dd)
-            end if
-            
-          end do
-      end do 
+         if (surf(i,j)%regolayer%regodata%thickness < dd) then             
+            call regolith_mix(surf(i,j),dd)
+         end if
+         
+       end do
+   end do 
 
-   end if
    return
 end subroutine regolith_subcrater_mix
