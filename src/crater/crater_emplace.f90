@@ -35,7 +35,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
    real(DP) :: lradsq,newelev
    integer(I4B) :: xpi,ypi,i,j,k,inc,incsq,iradsq
    real(DP) :: xp,yp,fradsq,xpii,ypii
-   integer(I4B),parameter :: NAVG = 5
+   integer(I4B),parameter :: NAVG = 1
    type(surftype),dimension(NAVG) :: surfavg
 
    ! Executable code
