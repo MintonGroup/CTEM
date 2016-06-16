@@ -38,14 +38,16 @@ subroutine util_init_list(regolayer,initstat)
       if (allocstat == 0) then
          initstat = .true.
          nullify(regolayer%next)
+         regolayer%regodata%thickness = VBIG ! This generates a buffer layer that the model should never reach if the run is structured properly
+         regolayer%regodata%comp = 0.0_DP
+         regolayer%regodata%meltfrac = 0.0_DP
+         regolayer%regodata%porosity = 0.0_DP
       else
-         write(*,*) 'util_init_list: exhausted memory.'
+         write(*,*) 'util_init_list: Initialization failed. Exhausted memory.'
       end if
    else
-      write(*,*) 'util_init_list: Initialization went wrong. regolayer already associated.'
+      write(*,*) 'util_init_list: Initialization failed. Regolayer already associated.'
    end if
-   regolayer%regodata%thickness = VBIG ! This generates a buffer layer that the model should never reach if the run is structured properly
-   regolayer%regodata%comp = 0.0_DP
 
    return
 end subroutine util_init_list
