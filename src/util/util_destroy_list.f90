@@ -29,7 +29,6 @@ subroutine util_destroy_list(regolayer)
 
    ! Internal variables
    type(regodatatype) :: oldregodata
-   type(regolisttype),pointer :: current => null()
    ! Executable code
 
    do while (associated(regolayer%next))

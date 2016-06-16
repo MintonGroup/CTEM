@@ -44,6 +44,8 @@ subroutine util_init_list(regolayer,initstat)
    else
       write(*,*) 'util_init_list: Initialization went wrong. regolayer already associated.'
    end if
+   regolayer%regodata%thickness = VBIG ! This generates a buffer layer that the model should never reach if the run is structured properly
+   regolayer%regodata%comp = 0.0_DP
 
    return
 end subroutine util_init_list

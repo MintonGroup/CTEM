@@ -38,10 +38,11 @@ subroutine util_pop(regolayer,oldregodata)
       oldregodata = oldhead%regodata
       if (associated(oldhead%next)) then
          regolayer => oldhead%next
-         nullify(oldhead)
+         !nullify(oldhead)
          deallocate(oldhead)
       else
-         regolayer => null()
+         deallocate(regolayer)
+         !regolayer => null()
          write(*,*) "util_pop error: We've reached the bottom of the regolith list!"
       end if
    else

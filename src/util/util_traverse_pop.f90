@@ -15,7 +15,7 @@
 !    Arguments : surf  
 !           
 ! 
-!  Notes       :  
+!  Notes       :  Popped list will be in reversed order from the original list
 !
 !**********************************************************************************************************************************
 subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
@@ -31,12 +31,12 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    ! Internal variables
    real(DP)                    :: z,depth,dz
    type(regodatatype)          :: oldregodata
-   type(regolisttype),pointer  :: current => null()
    logical :: initstat
 
    depth = regolayer%regodata%thickness
    dz = 0._DP
    z = traverse_depth
+   poppedlist => null()
  
    ! Initialize popped list
    call util_init_list(poppedlist,initstat)
