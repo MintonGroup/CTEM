@@ -37,9 +37,11 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    dz = 0._DP
    z = traverse_depth
    poppedlist => null()
+
  
    ! Initialize popped list
    call util_init_list(poppedlist,initstat)
+
    
    if (initstat) then
       do 
@@ -66,6 +68,5 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    else
       write(*,*) 'util_traverse_pop: Initialization of poppedlist failed.'
    end if
-
    return
 end subroutine util_traverse_pop
