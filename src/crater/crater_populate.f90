@@ -249,28 +249,31 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if 
 
       ! Do periodic subpixel processes on the whole grid
-      if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
-         domain%subpixelcoverage = 0
-         write(message,*) "Subpixel"
-         call io_updatePbar(message)
-         craters_since_subpixel = icrater - icrater_last_subpixel
-         finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
-         call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
-         icrater_last_subpixel = icrater
-      end if
-      ! Intermediate tally step 
-      if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
-         domain%tallycoverage = 0
-         write(message,*) "Tally"
-         call io_updatePbar(message)
-         craters_since_tally = icrater - icrater_last_tally
-         finterval = craters_since_tally / real(ntotcrat,kind=DP)
-         icrater_last_tally = icrater
-         call crater_tally_observed(user,surf,domain,nkilled,onum)
-         write(message,*) "Tally killed ",nkilled
-         call io_updatePbar(message)
-         ntotkilled = ntotkilled + nkilled
-         nsincetally = 0
+      if (.not.user%testflag) then
+         if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+            domain%subpixelcoverage = 0
+            write(message,*) "Subpixel"
+            call io_updatePbar(message)
+            craters_since_subpixel = icrater - icrater_last_subpixel
+            finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
+            call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
+            icrater_last_subpixel = icrater
+         end if
+         ! Intermediate tally step 
+         if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
+            domain%tallycoverage = 0
+            write(message,*) "Tally"
+            call io_updatePbar(message)
+            craters_since_tally = icrater - icrater_last_tally
+            finterval = craters_since_tally / real(ntotcrat,kind=DP)
+            icrater_last_tally = icrater
+            call crater_tally_observed(user,surf,domain,nkilled,onum)
+            write(message,*) "Tally killed ",nkilled
+            call io_updatePbar(message)
+            ntotkilled = ntotkilled + nkilled
+            nsincetally = 0
+         end if
+
       end if
    end do  ! end crater production loop 
  
