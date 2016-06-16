@@ -37,16 +37,17 @@ subroutine init_regolith_stack(user,surf)
    !=======================================
    ! Initialize the grid space  
    !=======================================
+   bedrock%thickness = user%trad
+   bedrock%meltfrac  = 0._DP 
+   bedrock%comp      = 0._DP
+
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
 
          call util_init_list(surf(xp,yp)%regolayer,initstat)
 
          if (initstat) then
-             bedrock%thickness = VBIG
-             bedrock%meltfrac  = 0._DP 
-             bedrock%comp      = 0._DP
-             surf(xp,yp)%regolayer%regodata = bedrock
+             call util_push(surf(xp,yp)%regolayer,bedrock)
          else
             write(*,*) 'init_regolith_stack: Initialization of regolayer failed.'
          end if
