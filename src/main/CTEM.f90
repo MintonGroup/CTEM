@@ -151,11 +151,13 @@ write(*,*) 'Writing output files'
 
 call io_write_dist(pdist,crtscl,domain,mass)
 
-do yp = 1, user%gridsize
-   do xp = 1, user%gridsize
-      call util_destroy_list(surf(xp,yp)%regolayer)
+if (user%doregotrack) then
+   do yp = 1, user%gridsize
+      do xp = 1, user%gridsize
+         call util_destroy_list(surf(xp,yp)%regolayer)
+      end do
    end do
-end do
+end if
 
 ! Deallocate all the allocatables
 deallocate(seedarr)
