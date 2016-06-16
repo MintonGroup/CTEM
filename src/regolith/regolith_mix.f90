@@ -28,17 +28,18 @@ subroutine regolith_mix(surfi,mixing_depth)
 
    ! Internal variables
    type(regodatatype) :: newlayer
-   type(regolisttype),pointer :: poppedlist => null()
+   type(regolisttype),pointer :: poppedlist,poppedlist_top
 
    !===============================================
    ! Add up all layers' info until a desired depth
    !===============================================          
-   call util_traverse_pop(surfi%regolayer,mixing_depth,poppedlist)
+   call util_traverse_pop(surfi%regolayer,mixing_depth,poppedlist_top)
 
    newlayer%thickness = 0.0_DP
    newlayer%comp = 0.0_DP
    newlayer%meltfrac = 0.0_DP
 
+   poppedlist => poppedlist_top
    do while(associated(poppedlist))
       newlayer%thickness = newlayer%thickness + poppedlist%regodata%thickness
       newlayer%comp = newlayer%comp + poppedlist%regodata%thickness * poppedlist%regodata%comp       
@@ -51,7 +52,7 @@ subroutine regolith_mix(surfi,mixing_depth)
    newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
    
    call util_push(surfi%regolayer, newlayer)
-   call util_destroy_list(poppedlist)
+   call util_destroy_list(poppedlist_top)
 
    return
 end subroutine regolith_mix
