@@ -18,7 +18,6 @@
 !**********************************************************************************************************************************
 subroutine io_read_regotrack(user,surf)
    use module_globals
-   use module_regolith
    use module_util
    use module_io, EXCEPT_THIS_ONE => io_read_regotrack
    implicit none
@@ -101,7 +100,7 @@ subroutine io_read_regotrack(user,surf)
             newsurfi%thickness = regotopi(k)
             newsurfi%comp = compi(k)
             newsurfi%meltfrac  = melti(k)
-            call util_push(surf(i,j),newsurfi)
+            call util_push(surf(i,j)%regolayer,newsurfi)
             !write(*,*) i,j,k,surf(i,j)%regolayer%thickness
          end do 
 
