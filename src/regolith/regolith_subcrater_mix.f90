@@ -29,20 +29,12 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
    real(DP),dimension(:,:),intent(in) :: nflux ! impact rate (number of craters per m^2 per year)
    real(DP),intent(in) :: finterval  ! time elapsed ratio to the total time 
    real(DP),dimension(:,:),intent(in) :: p
-   !real(DP),intent(out) :: ds
 
    ! Probability function builtup Internals
    integer(I4B) :: i, j
-   real(DP) :: telapsed, r, a_crat, t ! calculating nflux 
    real(DP) :: rn ! random number 
    real(DP) :: dd, ds !mixing depth for shallow and deep
    integer(I4B) :: klo, khi
-
-   ! Regolith layers mixing internals
-   type(regolisttype),pointer :: current
-   logical  :: MIX, DMIX
-   real(DP) :: z, z0, zmare, ztot
-   type(regolisttype) :: snewlayer, dnewlayer
 
    ! Find the deepest depth for 100% true saturation
    klo = 1
