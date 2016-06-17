@@ -250,10 +250,10 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
                   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
                   call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
                   !print *, lrad / crater%frad, comp 
-                  !dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
-                  !if (dsc - ebh > 1.0e-08) then
-                  !call regolith_mix(surf(xpi,ypi), dsc)
-                  !end if
+                  dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
+                  if (dsc - ebh > 1.0e-08) then
+                     call regolith_mix(surf(xpi,ypi), dsc)
+                  end if
                   !vol_sc = PI / 48.0 * dsc**3
                   !h_raymixratio = dsc / ebh
                   !if (i > 0 .and. j > 0 .and. lrad > continuous) write(*,*) lrad/crater%frad, ebh, sqrt(vsq), &
