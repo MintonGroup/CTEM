@@ -16,7 +16,9 @@
 !    Arguments :
 !           
 ! 
-!  Notes       :  
+!  Notes       : This subroutine suggests that a popped list has this value at the last layer. Any calculation involving popped list
+!                or using olddata that is popped and gets collected by popped list should avoid using the value of the last
+!                layer. 
 !
 !**********************************************************************************************************************************
 subroutine util_init_list(regolayer,initstat)
