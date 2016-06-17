@@ -41,7 +41,6 @@ subroutine regolith_mix(surfi,mixing_depth)
 
    poppedlist => poppedlist_top
    do while(associated(poppedlist%next))
-      write(*,*) poppedlist%regodata%thickness
       newlayer%thickness = newlayer%thickness + poppedlist%regodata%thickness
       newlayer%comp = newlayer%comp + poppedlist%regodata%thickness * poppedlist%regodata%comp       
       newlayer%meltfrac = newlayer%meltfrac + poppedlist%regodata%thickness * poppedlist%regodata%meltfrac
