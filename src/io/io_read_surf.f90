@@ -111,7 +111,7 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-   !if (user%doregotrack) call io_read_regotrack(user,surf)
+   if (user%doregotrack) call io_read_regotrack(user,surf)
 
    !if (user%docrustal_thinning) then
    !   recsize=sizeof(itmp)*user%gridsize*user%gridsize
