@@ -38,10 +38,6 @@ subroutine io_read_regotrack(user,surf)
    integer(I4B) :: ioerr,i,j,k,itmp
    integer(kind=8) :: recsize
    real(DP) :: dtmp
-   ! Checking if it reads a pre-existing terrain right
-   !integer(kind=8) :: recsize
-   !real(DP) :: dtmp
-   !real(DP),dimension(:,:),allocatable :: surface
       
    ! Executable code
 
