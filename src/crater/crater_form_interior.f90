@@ -37,7 +37,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    integer(I4B) :: layer
 
    ! A list for poped data 
-   type(regolisttype),pointer :: poppedlist 
+   type(regolisttype),pointer :: poppedlist
 
    ! Executable code
 
