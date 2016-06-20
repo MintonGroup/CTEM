@@ -31,13 +31,13 @@ subroutine io_read_regotrack(user,surf)
    integer(I4B), parameter :: LUM=8
    integer(I4B), parameter :: LUP=9
    integer(I4B), parameter :: LUC=10
-   real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp!, mixdep, excavdep
-   integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num!, mix_num 
+   real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp
+   integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
    real(DP), dimension(:),allocatable :: regotopi,melti,compi
    type(regodatatype) :: newsurfi
    integer(I4B) :: ioerr,i,j,k,itmp
    integer(kind=8) :: recsize
-   real(DP) :: dtmp
+   logical :: initstat 
       
    ! Executable code
 
@@ -72,8 +72,11 @@ subroutine io_read_regotrack(user,surf)
    end if   
 
    ! Start pushing regolith thickness and melt fraction of each layer in FILO manner
+
    do j=1,user%gridsize
       do i=1,user%gridsize
+
+         call util_init_list(surf(i,j)%regolayer,initstat)
 
          allocate(regotopi(stacks_num(i,j)))
          allocate(compi(stacks_num(i,j)))
@@ -86,18 +89,15 @@ subroutine io_read_regotrack(user,surf)
             compi(k) = comp(i,j)
             read(LUM) melt(i,j) 
             melti(k) = melt(i,j)
-            !write(*,*) i,j,k,regotopi(k)
+            !if (i==889 .and. j==1460) write(*,*) i,j,k,regotopi(k)
          end do
 
-         allocate(surf(i,j)%regolayer)
-         nullify(surf(i,j)%regolayer%next)
-
-         do k=stacks_num(i,j),1,-1
+         do k=max(stacks_num(i,j)-1,1),1,-1
             newsurfi%thickness = regotopi(k)
             newsurfi%comp = compi(k)
             newsurfi%meltfrac  = melti(k)
             call util_push(surf(i,j)%regolayer,newsurfi)
-            !write(*,*) i,j,k,surf(i,j)%regolayer%thickness
+            !write(*,*) i,j,k,surf(i,j)%regolayer%regodata%thickness
          end do 
 
          deallocate(regotopi,compi,melti)
