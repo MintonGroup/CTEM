@@ -38,6 +38,7 @@ io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
 io/io_read_prod.f90\
+io/io_read_regotrack.f90\
 io/io_read_vdist.f90\
 io/io_read_surf.f90\
 io/io_ejecta_table.f90\
