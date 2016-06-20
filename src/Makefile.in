@@ -110,15 +110,17 @@ am_CTEM_OBJECTS = globals/module_globals.$(OBJEXT) \
 	util/util_sort_layer.$(OBJEXT) util/util_periodic.$(OBJEXT) \
 	util/util_search.$(OBJEXT) util/util_rootbracketed.$(OBJEXT) \
 	util/util_diffusion_solver.$(OBJEXT) \
-	io/io_read_const.$(OBJEXT) io/io_get_token.$(OBJEXT) \
-	io/io_input.$(OBJEXT) io/io_read_prod.$(OBJEXT) \
-	io/io_read_vdist.$(OBJEXT) io/io_read_surf.$(OBJEXT) \
-	io/io_read_regotrack.$(OBJEXT) io/io_ejecta_table.$(OBJEXT) \
-	io/io_write_dist.$(OBJEXT) io/io_write_tally.$(OBJEXT) \
-	io/io_write_surf.$(OBJEXT) io/io_write_const.$(OBJEXT) \
-	io/io_write_regotrack.$(OBJEXT) io/io_crater_profile.$(OBJEXT) \
-	io/io_updatePbar.$(OBJEXT) io/io_resetPbar.$(OBJEXT) \
-	io/io_splash.$(OBJEXT) ejecta/ejecta_emplace.$(OBJEXT) \
+	util/util_area_intersection.$(OBJEXT) \
+	util/util_poisson.$(OBJEXT) io/io_read_const.$(OBJEXT) \
+	io/io_get_token.$(OBJEXT) io/io_input.$(OBJEXT) \
+	io/io_read_prod.$(OBJEXT) io/io_read_vdist.$(OBJEXT) \
+	io/io_read_surf.$(OBJEXT) io/io_read_regotrack.$(OBJEXT) \
+	io/io_ejecta_table.$(OBJEXT) io/io_write_dist.$(OBJEXT) \
+	io/io_write_tally.$(OBJEXT) io/io_write_surf.$(OBJEXT) \
+	io/io_write_const.$(OBJEXT) io/io_write_regotrack.$(OBJEXT) \
+	io/io_crater_profile.$(OBJEXT) io/io_updatePbar.$(OBJEXT) \
+	io/io_resetPbar.$(OBJEXT) io/io_splash.$(OBJEXT) \
+	ejecta/ejecta_emplace.$(OBJEXT) \
 	ejecta/ejecta_blanket.$(OBJEXT) \
 	ejecta/ejecta_blanket_func.$(OBJEXT) \
 	ejecta/ejecta_thickness.$(OBJEXT) \
@@ -127,7 +129,6 @@ am_CTEM_OBJECTS = globals/module_globals.$(OBJEXT) \
 	ejecta/ejecta_rootfind.$(OBJEXT) \
 	ejecta/ejecta_soften.$(OBJEXT) \
 	ejecta/ejecta_distance_estimate.$(OBJEXT) \
-	ejecta/ejecta_subcrater_diffusion.$(OBJEXT) \
 	crater/crater_populate.$(OBJEXT) crater/crater_scale.$(OBJEXT) \
 	crater/crater_generate.$(OBJEXT) \
 	crater/crater_find_visible.$(OBJEXT) \
@@ -141,9 +142,10 @@ am_CTEM_OBJECTS = globals/module_globals.$(OBJEXT) \
 	crater/crater_tally_calibrated_count.$(OBJEXT) \
 	crater/crater_slope_collapse.$(OBJEXT) \
 	crater/crater_soften.$(OBJEXT) \
-	crater/crater_soften_accumulate.$(OBJEXT) \
-	init/init_domain.$(OBJEXT) init/init_dist.$(OBJEXT) \
-	init/init_surf.$(OBJEXT) init/init_regolith_stack.$(OBJEXT) \
+	crater/crater_subpixel_diffusion.$(OBJEXT) \
+	crater/crater_make_list.$(OBJEXT) init/init_domain.$(OBJEXT) \
+	init/init_dist.$(OBJEXT) init/init_surf.$(OBJEXT) \
+	init/init_regolith_stack.$(OBJEXT) \
 	init/init_regolith_parab.$(OBJEXT) \
 	seismic/seismic_shake.$(OBJEXT) \
 	seismic/seismic_distance.$(OBJEXT) \
@@ -308,7 +310,7 @@ top_srcdir = @top_srcdir@
 #AM_FCFLAGS = -O0 -p -g -openmp -debug all -traceback -CB
 
 #gfortran optimized flags
-AM_FCFLAGS = -O3 -fopenmp -ffree-form -g -fbounds-check -fbacktrace
+AM_FCFLAGS = -O3 -fopenmp -ffree-form
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 CTEM_SOURCES = globals/module_globals.f90\
@@ -329,6 +331,8 @@ util/util_periodic.f90\
 util/util_search.f90\
 util/util_rootbracketed.f90\
 util/util_diffusion_solver.f90\
+util/util_area_intersection.f90\
+util/util_poisson.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -355,7 +359,6 @@ ejecta/ejecta_interpolate.f90\
 ejecta/ejecta_rootfind.f90\
 ejecta/ejecta_soften.f90\
 ejecta/ejecta_distance_estimate.f90\
-ejecta/ejecta_subcrater_diffusion.f90\
 crater/crater_populate.f90\
 crater/crater_scale.f90\
 crater/crater_generate.f90\
@@ -370,7 +373,8 @@ crater/crater_tally_observed.f90\
 crater/crater_tally_calibrated_count.f90\
 crater/crater_slope_collapse.f90\
 crater/crater_soften.f90\
-crater/crater_soften_accumulate.f90\
+crater/crater_subpixel_diffusion.f90\
+crater/crater_make_list.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
@@ -567,6 +571,10 @@ util/util_rootbracketed.$(OBJEXT): util/$(am__dirstamp) \
 	util/$(DEPDIR)/$(am__dirstamp)
 util/util_diffusion_solver.$(OBJEXT): util/$(am__dirstamp) \
 	util/$(DEPDIR)/$(am__dirstamp)
+util/util_area_intersection.$(OBJEXT): util/$(am__dirstamp) \
+	util/$(DEPDIR)/$(am__dirstamp)
+util/util_poisson.$(OBJEXT): util/$(am__dirstamp) \
+	util/$(DEPDIR)/$(am__dirstamp)
 io/io_read_const.$(OBJEXT): io/$(am__dirstamp) \
 	io/$(DEPDIR)/$(am__dirstamp)
 io/io_get_token.$(OBJEXT): io/$(am__dirstamp) \
@@ -618,8 +626,6 @@ ejecta/ejecta_soften.$(OBJEXT): ejecta/$(am__dirstamp) \
 	ejecta/$(DEPDIR)/$(am__dirstamp)
 ejecta/ejecta_distance_estimate.$(OBJEXT): ejecta/$(am__dirstamp) \
 	ejecta/$(DEPDIR)/$(am__dirstamp)
-ejecta/ejecta_subcrater_diffusion.$(OBJEXT): ejecta/$(am__dirstamp) \
-	ejecta/$(DEPDIR)/$(am__dirstamp)
 crater/crater_populate.$(OBJEXT): crater/$(am__dirstamp) \
 	crater/$(DEPDIR)/$(am__dirstamp)
 crater/crater_scale.$(OBJEXT): crater/$(am__dirstamp) \
@@ -648,7 +654,9 @@ crater/crater_slope_collapse.$(OBJEXT): crater/$(am__dirstamp) \
 	crater/$(DEPDIR)/$(am__dirstamp)
 crater/crater_soften.$(OBJEXT): crater/$(am__dirstamp) \
 	crater/$(DEPDIR)/$(am__dirstamp)
-crater/crater_soften_accumulate.$(OBJEXT): crater/$(am__dirstamp) \
+crater/crater_subpixel_diffusion.$(OBJEXT): crater/$(am__dirstamp) \
+	crater/$(DEPDIR)/$(am__dirstamp)
+crater/crater_make_list.$(OBJEXT): crater/$(am__dirstamp) \
 	crater/$(DEPDIR)/$(am__dirstamp)
 init/init_domain.$(OBJEXT): init/$(am__dirstamp) \
 	init/$(DEPDIR)/$(am__dirstamp)
