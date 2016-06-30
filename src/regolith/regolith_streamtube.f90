@@ -1,3 +1,40 @@
+!****f* regolith/regolith_streamtube
+! Name
+!   regolith_streamtube -- Calculate stream tube's volume during excavation stage.
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   * module_regolith
+!   
+!   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
+!
+! DESCRIPTION
+!    
+!   The stream tube is based on Maxwell Z-model, and we were able to derive an analytical function 
+!   for a three dimensional stream tube. As a result, we can analyze segments' properties that is 
+!   included in a stream tube during excavation stage.
+!
+! ARGUMENTS
+!   Input
+!   * user     -- The user-defined variables from the input file
+!   * surf     -- Surface grid
+!   * crater   -- Crater dimension container
+!   * domain   -- Simulation domain variable container
+!   * ejb      -- Ejecta blanket lookup table
+!   * ejtble   -- Ejecta blanket lookup table length
+!   * xp,yp    -- Current landing pixel to crater center in real space
+!   * xpi, ypi -- Current landing pixel to crater center in pixel space
+!   * ebh      -- ejecta thickness
+!   
+!   Output
+!   * comp     -- Output composition of a stream tube 
+! 
+! NOTES
+!   In future, multicomponent output may be needed. 
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : regolith_streamtube
@@ -18,7 +55,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
+subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube
@@ -27,12 +64,12 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   type(cratertype),intent(inout) :: crater
+   type(cratertype),intent(in) :: crater
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
    real(DP),intent(in)          :: xp,yp,lrad,ebh
-   real(DP),intent(out)         :: comp,eradc 
+   real(DP),intent(out)         :: comp
    integer(I4B),intent(in)      :: xpi,ypi
 
    ! Traversing a linked list 
@@ -41,7 +78,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    !real(DP),parameter :: dz = 20.0
    real(DP)     :: frac,logtablerad,loglrad,logdelta,outeredge,inneredge
    real(DP)     :: deltar
-   real(DP)     :: erado,eradi,xl,yl!,eradc
+   real(DP)     :: erado,eradi,xl,yl,eradc
    real(DP)     :: theta_eradi,length,vhead
    real(DP)     :: dy,ry,zo,zi
    real(DP),dimension(2) :: y   
