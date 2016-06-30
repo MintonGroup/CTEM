@@ -1,3 +1,48 @@
+!****f* ejecta/ejecta_emplace
+! Name
+!   ejecta_emplace -- Calculate ejecta mass during excavation stage.
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   * module_io
+!   * module_crater
+!   * module_regolith
+!   * module_ejecta
+!   
+!   call ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
+!
+! DESCRIPTION
+!    
+!   The estimation of ejecta mass is to treat a crater cavity as parabola shell (Richardson 2009). 
+!   At a given landing distance of an ejecta block, one can always find its origin within a transient
+!   crater, and as a result, one can know the shape of its parabola shell. 
+!
+!   It also includes stream tube's calculation. Yet, we use ejecta mass that is obtained from 
+!   parabola shell approximation as a constraint of the stream tube's shape. 
+! 
+!   Besides, we improved ejecta mass distribution by adopting a ray model based on Superformula. 
+!   Citation: Gielis, J. "A Generic Geometric Transformation that Unifies a Wide Range of Natural 
+!   and Abstract Shapes." Amer. J. Botany 90, 333-338, 2003. 
+! 
+! ARGUMENTS
+!   Input
+!   * user   -- User input parameters
+!   * surf   -- Surface ggrid
+!   * crater -- Crater dimension container
+!   * domain -- Simulation domain variable container
+!   * ejb    -- Ejecta blanket lookup table
+!   * ejtble -- Ejecta blanket lookup table length 
+!
+!   Output
+!   * surf   -- Outputs the new ejecta blanket onto the grid
+!   * crater -- May affects the value of the maximum affected distance
+! 
+! Notes
+!   The cutoff value of ejecta mass for the stream tube volume's calculation is hard coded. 
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : ejecta_emplace
@@ -68,7 +113,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    !real(DP) :: thinnest, lrad_thinnest, v_thinnest, theta_thinnest, rad_sec, vsq
 
    ! Streamtube
-   real(DP) :: comp, eradc
+   real(DP) :: comp!, eradc
 
    ! Enhanced factor test
    real(DP)     :: xef, yef, thetamax
@@ -247,7 +292,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
                ebh       = ebh * ef(ray_pix)
 
                if (user%doregotrack .and. ebh>1.0e-8) then
-                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
                   call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
                   !print *, lrad / crater%frad, comp 
                   dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
