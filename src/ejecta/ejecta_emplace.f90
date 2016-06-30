@@ -74,7 +74,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    use module_globals
    use module_util
    use module_io
@@ -90,6 +90,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)    :: ejb
+   real(DP),intent(out) :: ejbmass
 
    ! Internal variables
    real(DP) :: lrad,lradsq,cdepth
@@ -249,7 +250,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
    
    deallocate(sf)
    deallocate(tot)
-   
+  
+   ejbmass = 0.0_DP
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
 !   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
 !   !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous) 
@@ -275,7 +277,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
 
-
          if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
             mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
@@ -285,6 +286,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
             lradp = continuous * mag
             lradf = continuous * magf
             lradp = max(lradp, lradf) 
+               
 
             if (lrad < lradp) then
                call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,ejtheta,melt)
@@ -312,10 +314,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
                end if
 
             else
-            ebh = 0._DP
+               ebh = 0._DP
             end if
 
             cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
+            ejbmass = ejbmass + ebh
          end if
          
       end do
@@ -323,7 +326,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble)
 !   !$OMP END PARALLEL DO
 
    deallocate(ef)
-
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
