@@ -133,6 +133,8 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,ejbmass)
       if (lastloop) exit
       if (abs(1.0_DP - abs(deltaMp / deltaMtot)) < TOL) lastloop = .true.
       rd = 2.0_DP - (2.0_DP - rd) * abs(deltaMp / deltaMtot) ! adust the rim drop exponent until volume convergence is reached
+      !rd = rd * abs(deltaMp / deltaMtot) ! adust the rim drop exponent until volume convergence is reached
+      !write(*,'(I4,2F17.12)') k,rd,abs(deltaMp / deltaMtot)
       if (rd /= rd) then 
          rd = RIMDROP
          lastloop = .true.
