@@ -1,3 +1,10 @@
+!****h* ejecta/module_ejecta
+! Name
+!   module_ejecta -- Module for ejecta
+! Notes
+!   It includes crater ray model based on Superformula. 
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : module_crater
