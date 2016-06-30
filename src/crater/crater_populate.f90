@@ -72,6 +72,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)            :: i,j
    real(DP)                :: finterval ! fraction of interval so far completed
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   real(DP)                :: ejbmass
    TARGET :: surf
 
    ! ejecta blanket array
@@ -183,6 +184,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                                                                      ! the total distance to determine if it is worth doing the 
                                                                      ! full calculation later.
       ! Place ejecta onto the surface
+      ejbmass = 0.0_DP
       if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
          if (user%doregotrack) then 
             call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
@@ -191,16 +193,17 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call ejecta_table_define(user,crater,domain,ejb,ejtble)
             call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
          end if
-         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble)
+         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
       else
          ejtble = 0
       end if
 
+
       ! Place crater onto the surface
       if (crater%fcrat > domain%smallest_crater) then
-         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp,ejbmass)
 
-         !call crater_mass_conservation(user,surf,crater)
+         !call crater_mass_conservation(user,surf,crater) ! mass conservation is now done in crater_emplace
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater,melev,xslp,yslp)
@@ -247,6 +250,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call regolith_depth_model(user,domain,finterval,nflux,p)
          call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
       end if 
+
 
       ! Do periodic subpixel processes on the whole grid
       if (.not.user%testflag) then
