@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
+subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
    use module_globals
    use module_util
    use module_porosity
@@ -31,6 +31,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
    type(cratertype),intent(in) :: crater
    real(DP),intent(in) :: lradsq
    real(DP),intent(in) :: newelev,melev
+   real(DP),intent(out) :: deltaMi
 
    ! Internal variables
    real(DP) :: cform,newdem,elchange,pikeD
@@ -57,6 +58,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
       end do
    end if
    elchange  = newdem - surfi%dem
+   deltaMi = elchange
    surfi%dem = newdem
    !write(*,*) newdem
    !read(*,*)
