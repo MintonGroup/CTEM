@@ -1,3 +1,10 @@
+!****h* regolith/module_regolith
+! Name
+!   module_regolith -- Module for regolith
+! NOTES
+!   You will need to turn on "doregotrack"!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : module_crater
@@ -57,17 +64,17 @@ save
    end interface
 
    interface 
-      subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
+      subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
-      type(cratertype),intent(inout) :: crater
+      type(cratertype),intent(in) :: crater
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
       real(DP),intent(in)          :: xp,yp,lrad,ebh
-      real(DP),intent(out)         :: comp, eradc
+      real(DP),intent(out)         :: comp 
       integer(I4B),intent(in)      :: xpi,ypi
       end subroutine regolith_streamtube
    end interface
