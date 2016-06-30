@@ -269,8 +269,8 @@ real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see R
 !real(DP),parameter :: CT = KT * 1.0077158813689795507466256218613060723322903283648264_DP ! KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: DDRATIO = 0.19_DP        ! ?
-real(DP),parameter :: RDRATIO = 0.0450_DP      ! ?
-real(DP),parameter :: RIMDROP = 4.10_DP        ! Power law index for rim profile 
+real(DP),parameter :: RDRATIO = 0.050_DP      ! Rim height to diameter ratio
+real(DP),parameter :: RIMDROP = 4.22_DP        ! Power law index for rim profile 
 real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
@@ -290,5 +290,6 @@ real(DP),parameter :: SOFTEN_FACTOR = 0.40_DP   ! Extra per crater diffusion con
 real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
 real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
 real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
+
 
 end module module_globals
