@@ -96,19 +96,19 @@ end interface
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp)
+      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,ejbmass)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
-      real(DP),intent(in) :: melev,xslp,yslp
+      real(DP),intent(in) :: melev,xslp,yslp,ejbmass
       end subroutine crater_emplace
    end interface
 
    interface
-      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev)
+      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -116,19 +116,20 @@ end interface
       type(cratertype),intent(in) :: crater
       real(DP),intent(in) :: lradsq
       real(DP),intent(in) :: newelev,melev
+      real(DP),intent(out) :: deltaMi
       end subroutine crater_form_interior
    end interface
 
    interface
-      subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev)
+      subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev,rd,deltaMi)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       type(cratertype),intent(in) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),intent(in) :: newelev
-      real(DP),intent(in) :: lradsq
+      real(DP),intent(in) :: newelev,lradsq,rd
+      real(DP),intent(out) :: deltaMi
       end subroutine crater_form_exterior
    end interface
 
