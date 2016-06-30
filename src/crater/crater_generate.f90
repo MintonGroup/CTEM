@@ -54,11 +54,8 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       crater%yl = real(domain%side * rn(2), kind=SP)
    end if
 
-   crater%xlpx = nint(crater%xl / user%pix)
-   crater%ylpx = nint(crater%yl / user%pix) 
-
-   ! Make sure it's on the domain
-   call util_periodic(crater%xlpx,crater%ylpx,user%gridsize)
+   crater%xlpx = min(max(nint(crater%xl / user%pix),1),user%gridsize)
+   crater%ylpx = min(max(nint(crater%yl / user%pix),1),user%gridsize)
 
    ! Get impactor size from the distribution
    ! Reverted back to old code because the new one was way too slow
