@@ -36,7 +36,7 @@ subroutine crater_find_visible(user,crater,domain)
    if (crater%fcrat <= crater%cxtran) then
       crater%rheight = RDRATIO * crater%fcrat
    else
-      crater%rheight = (RDRATIO*crater%cxtran)+(RDRATIO*((crater%fcrat-crater%cxtran)**(0.35_DP)))
+      crater%rheight = (RDRATIO*crater%cxtran)+(RDRATIO*((crater%fcrat-crater%cxtran)**(0.399_DP)))
    endif
 
    crater%vcorr  = cdepth - crater%rheight
