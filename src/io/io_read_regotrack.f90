@@ -89,7 +89,6 @@ subroutine io_read_regotrack(user,surf)
             compi(k) = comp(i,j)
             read(LUM) melt(i,j) 
             melti(k) = melt(i,j)
-            !if (i==889 .and. j==1460) write(*,*) i,j,k,regotopi(k)
          end do
 
          do k=max(stacks_num(i,j)-1,1),1,-1
@@ -97,7 +96,6 @@ subroutine io_read_regotrack(user,surf)
             newsurfi%comp = compi(k)
             newsurfi%meltfrac  = melti(k)
             call util_push(surf(i,j)%regolayer,newsurfi)
-            !write(*,*) i,j,k,surf(i,j)%regolayer%regodata%thickness
          end do 
 
          deallocate(regotopi,compi,melti)
