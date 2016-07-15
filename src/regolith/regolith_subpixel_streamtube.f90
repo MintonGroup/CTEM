@@ -1,6 +1,38 @@
+!****f* regolith/regolith_subpixel_streamtube
+! Name
+!   regolith_subpixel_streamtube -- Calculate a segment of a stream tube under resolution. 
+! SYNOPSIS
+!   This uses
+!   * module_globals
+!   * module_regolith
+!
+!   call regolith_subpixel_streamtube()
+!
+! DESCRIPTION
+!   
+!   A stream tube that is under resolution means that the origin and the emerging place of 
+!   a stream tube is in the same pixel. Therefore, the total volume of a stream tube can be 
+!   calculated with no need of calculation of a segment. Yet, a stream tube within a pixel 
+!   may occupy several layers, and the stream tube will contain different components from 
+!   different layers at the pixel. This subroutine is to estimate the slices of a stream tube.
+!  
+! ARGUMENTS
+!   Input
+!   * user      -- The user-defined variables from the input file 
+!   * surfi     -- A given pixel from surface grid
+!   * deltar    -- The size of a stream tube
+!   * ri        -- A point of a stream tube's projection on surface grid
+!   * rip1      -- A point of a stream tube's projection on surface grid
+!   * eradi     -- The inner radial distance of a stream tube
+!
+!   Output
+!   * newlayer  -- 
+! 
+!***
+
 !**********************************************************************************************************************************
 !
-!  Unit Name   : regolith_streamtube_volume
+!  Unit Name   : regolith_subpixel_streamtube
 !  Unit Type   : subroutine
 !  Project     : CTEM
 !  Language    : Fortran 2003
