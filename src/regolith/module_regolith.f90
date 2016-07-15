@@ -50,7 +50,7 @@ save
    end interface
 
    interface 
-      subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
+      subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newlayer)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -59,12 +59,13 @@ save
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
-      real(DP),intent(in)          :: lrad,ebh,comp
+      real(DP),intent(in)          :: lrad,ebh
+      type(regodatatype), intent(inout) :: newlayer
       end subroutine regolith_transport
    end interface
 
    interface 
-      subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
+      subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -74,8 +75,8 @@ save
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
       real(DP),intent(in)          :: xp,yp,lrad,ebh
-      real(DP),intent(out)         :: comp 
       integer(I4B),intent(in)      :: xpi,ypi
+      real(DP),intent(in)          :: rm 
       end subroutine regolith_streamtube
    end interface
 
