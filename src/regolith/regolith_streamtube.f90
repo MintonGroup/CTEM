@@ -7,7 +7,7 @@
 !   * module_util
 !   * module_regolith
 !   
-!   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp,eradc)
+!   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
 !
 ! DESCRIPTION
 !    
@@ -26,12 +26,13 @@
 !   * xp,yp    -- Current landing pixel to crater center in real space
 !   * xpi, ypi -- Current landing pixel to crater center in pixel space
 !   * ebh      -- ejecta thickness
+!   * rm       -- radius of melt zone
 !   
 !   Output
-!   * comp     -- Output composition of a stream tube 
+!   * surf     -- Output composition on a grid space 
 ! 
 ! NOTES
-!   In future, multicomponent output may be needed. 
+!   In future, a segment may contain multicomponent, and as a result the advanced analysis is needed. 
 !
 !***
 
@@ -55,7 +56,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
+subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube
@@ -69,8 +70,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
    real(DP),intent(in)          :: xp,yp,lrad,ebh
-   real(DP),intent(out)         :: comp
    integer(I4B),intent(in)      :: xpi,ypi
+   real(DP),intent(in)          :: rm 
 
    ! Traversing a linked list 
    real(DP),parameter :: a = 0.936457 ! Fitting parameters for the relation between height difference and a radial position of a stream tube
@@ -100,11 +101,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    real(DP) :: x,xc1,xc2,yc1,yc2,xstpi1,xstpi2,ystpi1,ystpi2
 
    ! Monte Carlo method for two layers system
-   real(DP) :: compnohead,compmc,mceb
-
-   ! Mixing 
-   !logical :: turnover
-   !real(DP) :: dmix
+   !real(DP) :: compnohead,compmc,mceb
+   real(DP) :: meltfrac
 
    ! Executalbe code
 
@@ -232,6 +230,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    eradi = eradc - deltar
    !if (deltar <= VSMALL) write(*,*) crater%frad,lrad/crater%frad,eradc,deltar,ebh,k1,k2,k3,k4,c1,c2
    
+   ! Comparison with melt zone's radius
+   !write(*,*) lrad / crater%frad, eradi, erado, deltar
+
+
    ! ******************************* Start to estimate STREAM TUBE'S volume in layering systerm ***************************
    ! Purpose: How much layer material are contained in a stream tube? 
    ! Intro: There are two volume approximation with regarding to discretized stream tubes. First, the subpixel approximation 
@@ -257,8 +259,11 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb)
       totmare = vmare
       tots = totseb
-      comp = totmare/tots
+      newlayer%thickness = ebh
+      newlayer%comp = totmare/tots
+
    else
+
       rbody = sqrt(xints(2)**2 + yints(2)**2)
       if (rbody<eradi) then
          xc = (xints(2) + eradi*xl/lrad)/2.0
@@ -298,8 +303,16 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
       call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots)
-      comp = totmare/tots
+      newlayer%thickness = ebh
+      newlayer%comp = totmare/tots
+
   end if
+
+  call util_push(surf(xpi,ypi)%regolayer,newlayer)
+
+  ! Calculate total melts inside the stream tube
+  !call regolith_melt_fraction(crater%imp, crater%imprad, eradi, erado, rm, meltfrac) 
+  !write(*,*) lrad / crater%frad, eradc/rm, meltfrac
 
   deallocate(xints,yints)
 
