@@ -111,10 +111,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    real(DP), parameter :: b = 0.120621 !0.143   ! based on Jake's crater rays mapping studies! 
    real(DP) :: mvrld                  ! median value of ray length distribution
    real(DP) :: mvrldsc                ! median value of ray length distribution scaled by continuous ejecta extent
-   !real(DP) :: thinnest, lrad_thinnest, v_thinnest, theta_thinnest, rad_sec, vsq
-
-   ! Streamtube
-   real(DP) :: comp!, eradc
 
    ! Enhanced factor test
    real(DP)     :: xef, yef, thetamax
@@ -135,6 +131,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    real(DP), parameter :: b_frad1  =  0.79719_DP !0.057_DP
    real(DP), parameter :: SCD = 0.125_DP
    real(DP) :: vsq, ejtheta, melt, vol_sc, dsc
+
+   ! Melt zone's radius
+   real(DP) :: rm, dm
+   !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
+   !write(*,*) crater%imp, crater%frad, rm
    
    ! Executable code
 
@@ -294,8 +295,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
                ebh       = ebh * ef(ray_pix)
 
                if (user%doregotrack .and. ebh>1.0e-8) then
-                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,comp)
-                  call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,comp)
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
+                  !call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,newlayer)
                   !print *, lrad / crater%frad, comp 
                   dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
                   if (dsc - ebh > 1.0e-08) then
