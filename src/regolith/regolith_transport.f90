@@ -21,7 +21,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
+subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newlayer)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_transport
@@ -34,11 +34,11 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
-   real(DP),intent(in)          :: lrad,ebh,comp
+   real(DP),intent(in)          :: lrad,ebh
+   type(regodatatype), intent(inout) :: newlayer
 
    ! Internal varialbes
    real(DP) :: melt 
-   type(regodatatype) :: newlayer 
 
    ! Melt interpolation variables 
    real(DP)     :: frac,logtablerad,loglrad,logdelta,outeredge,inneredge
@@ -64,9 +64,7 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,comp)
       melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac)
    end if 
 
-   newlayer%thickness = ebh
    newlayer%meltfrac = melt
-   newlayer%comp = comp
    
    call util_push(surfi%regolayer,newlayer)
 
