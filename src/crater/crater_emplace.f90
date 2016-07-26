@@ -37,7 +37,7 @@ subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,ejbmass)
    real(DP) :: xp,yp,fradsq,xpii,ypii
    real(DP) :: deltaMtot,deltaMi,deltaMp,rd
    type(surftype) :: surfi
-   real(DP),parameter :: KMAX = 100 ! Number of iteratios of the external calculation to converge on a mass-conserving rim profile
+   integer(I4B),parameter :: KMAX = 100 ! Number of iteratios of the external cal to converge on a mass-conserving rim profile
    real(DP),parameter :: TOL = 1.0e-10_DP ! Tolerance on the ratio of displaced volume prior to and after crater_form_exterior call
    logical :: lastloop 
 
