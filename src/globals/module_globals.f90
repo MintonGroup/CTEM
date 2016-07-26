@@ -56,7 +56,7 @@ real(DP),parameter :: SUBPIXELCOVERAGE = 0.05_DP ! The total area coverage to re
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 real(DP),parameter :: ALPHA = 0.125_DP
-real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
+real(DP),parameter  :: DISEJB = 1.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 
 type regodatatype 
    real(DP) :: thickness
@@ -287,9 +287,7 @@ real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside fin
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
 real(DP),parameter :: SOFTEN_FACTOR = 0.40_DP   ! Extra per crater diffusion constant
-real(DP),parameter :: SOFTEN_SLOPE = 1.8_DP    ! Extra per crater diffusion power law slope
-real(DP),parameter :: PERCRATER_DIFF_A = 0.20_DP   ! Baseline per crater diffusion constant
-real(DP),parameter :: PERCRATER_DIFF_P = 1.8_DP    ! Baseline per crater diffusion power law slope
+real(DP),parameter :: SOFTEN_SLOPE = 2.0_DP    ! Extra per crater diffusion power law slope
 
 
 end module module_globals
