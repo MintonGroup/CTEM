@@ -56,7 +56,7 @@ real(DP),parameter :: SUBPIXELCOVERAGE = 0.05_DP ! The total area coverage to re
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 real(DP),parameter :: ALPHA = 0.125_DP
-real(DP),parameter  :: DISEJB = 1.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
+real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 
 type regodatatype 
    real(DP) :: thickness
