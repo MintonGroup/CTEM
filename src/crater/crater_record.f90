@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_record(user,surf,crater,melev,xslp,yslp)
+subroutine crater_record(user,surf,crater)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_record
@@ -28,7 +28,6 @@ subroutine crater_record(user,surf,crater,melev,xslp,yslp)
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
-   real(DP),intent(in) :: melev,xslp,yslp
 
    ! Internal variables
    real(DP) :: rimdis,rimdissq,avgrim,baseline
@@ -61,7 +60,7 @@ subroutine crater_record(user,surf,crater,melev,xslp,yslp)
          if (iradsq <= incsq) then
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
-            baseline = melev + ((i * xslp) + (j * yslp)) * user%pix
+            baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
@@ -94,7 +93,7 @@ subroutine crater_record(user,surf,crater,melev,xslp,yslp)
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
 
-            baseline = melev + ((i * xslp) + (j * yslp)) * user%pix
+            baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
