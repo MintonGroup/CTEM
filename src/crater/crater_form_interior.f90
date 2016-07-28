@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
+subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    use module_globals
    use module_util
    use module_porosity
@@ -30,7 +30,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
    type(surftype),intent(inout) :: surfi
    type(cratertype),intent(in) :: crater
    real(DP),intent(in) :: lradsq
-   real(DP),intent(in) :: newelev,melev
+   real(DP),intent(in) :: newelev
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
@@ -48,11 +48,11 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
 
    pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
    !write(*,*) melev,pikeD
-   if ((crater%fcrat > crater%cxtran * 2) .and. newdem < (melev - pikeD)) then
-      newdem = melev - pikeD ! Flatten out the bottom of the crater
+   if ((crater%fcrat > crater%cxtran * 2) .and. newdem < (crater%melev - pikeD)) then
+      newdem = crater%melev - pikeD ! Flatten out the bottom of the crater
    end if
-   if (newdem < (melev - user%deplimit)) then
-      newdem = melev - user%deplimit ! Flatten out the bottom of the crater
+   if (newdem < (crater%melev - user%deplimit)) then
+      newdem = crater%melev - user%deplimit ! Flatten out the bottom of the crater
       do layer = 1,user%numlayers ! Remove all pre-existing craters from this current pixel
          call util_remove_from_layer(surfi,layer)
       end do
@@ -60,9 +60,8 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
    elchange  = newdem - surfi%dem
    deltaMi = elchange
    surfi%dem = newdem
-   !write(*,*) newdem
-   !read(*,*)
-   if (user%doporosity) then
+   
+  if (user%doporosity) then
       call porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
    else
       !change ejecta coverage
