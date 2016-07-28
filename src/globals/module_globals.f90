@@ -104,6 +104,7 @@ type cratertype
    integer(I4B) :: fcratpx,fradpx,rimdispx,ejdispx
    integer(I4B) :: maxinc          ! Maximum area affected 
    integer(I4B) :: strflag         ! 0 for regolith, 1 for bedrock
+   real(DP) :: melev,xslp,yslp     ! Mean elevation and slopes at pre-existing impact site
 end type cratertype
 
 ! Derived data type for domain variables (sizes and dimensions)
