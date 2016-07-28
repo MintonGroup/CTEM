@@ -85,37 +85,36 @@ end interface
    end interface
 
    interface
-      subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
+      subroutine crater_averages(user,surf,crater)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf
-      type(cratertype),intent(in) :: crater
-      real(DP),intent(out) :: melev,xslp,yslp,mdepth
+      type(cratertype),intent(inout) :: crater
       end subroutine crater_averages
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,melev,xslp,yslp,ejbmass)
+      subroutine crater_emplace(user,surf,crater,domain,ejbmass)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
-      real(DP),intent(in) :: melev,xslp,yslp,ejbmass
+      real(DP),intent(in) :: ejbmass
       end subroutine crater_emplace
    end interface
 
    interface
-      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,melev,deltaMi)
+      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       type(cratertype),intent(in) :: crater
       real(DP),intent(in) :: lradsq
-      real(DP),intent(in) :: newelev,melev
+      real(DP),intent(in) :: newelev
       real(DP),intent(out) :: deltaMi
       end subroutine crater_form_interior
    end interface
@@ -134,13 +133,37 @@ end interface
    end interface
 
    interface
-      subroutine crater_record(user,surf,crater,melev,xslp,yslp)
+      function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop) result(ans)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      type(domaintype),intent(in) :: domain
+      real(DP),intent(in) :: rd,deltaMtot
+      logical,intent(in) :: lastloop
+      real(DP) :: ans
+      end function crater_form_exterior_func
+   end interface
+
+   interface
+      subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
-      real(DP),intent(in) :: melev,xslp,yslp
+      type(domaintype),intent(in) :: domain
+      real(DP),intent(in) ::   deltaMtot
+      end subroutine crater_form_exterior_rootfind
+   end interface
+
+   interface
+      subroutine crater_record(user,surf,crater)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
       end subroutine crater_record
    end interface
 
