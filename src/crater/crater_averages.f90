@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
+subroutine crater_averages(user,surf,crater)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_averages
@@ -26,8 +26,7 @@ subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(in) :: surf
-   type(cratertype),intent(in)  :: crater
-   real(DP),intent(out) :: melev,xslp,yslp,mdepth
+   type(cratertype),intent(inout)  :: crater
 
    ! Internal variables
    integer(I4B) :: mcnt,mx1,mx2,my1,my2
@@ -36,10 +35,9 @@ subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
    ! Executable code
 
    mcnt = 0
-   melev = 0.0_DP
-   xslp = 0.0_DP
-   yslp = 0.0_DP
-   mdepth = 0.0_DP
+   crater%melev = 0.0_DP
+   crater%xslp = 0.0_DP
+   crater%yslp = 0.0_DP
 
    ! determine area to effect
    inc = max(min(crater%fradpx,user%gridsize),1)
@@ -64,10 +62,9 @@ subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
             call util_periodic(mx2,my2,user%gridsize)
 
             ! add pixel element to the total
-            melev = melev + surf(mx1,my1)%dem
-            mdepth = mdepth + surf(mx1,my1)%dem - surf(mx1,my1)%mantle
-            xslp = xslp + ((surf(mx2,my1)%dem - surf(mx1,my1)%dem) / user%pix)
-            yslp = yslp + ((surf(mx1,my2)%dem - surf(mx1,my1)%dem) / user%pix)
+            crater%melev = crater%melev + surf(mx1,my1)%dem
+            crater%xslp = crater%xslp + ((surf(mx2,my1)%dem - surf(mx1,my1)%dem) / user%pix)
+            crater%yslp = crater%yslp + ((surf(mx1,my2)%dem - surf(mx1,my1)%dem) / user%pix)
             mcnt = mcnt + 1
          end if
       end do
@@ -75,10 +72,9 @@ subroutine crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
 
    ! compute working values
    if (mcnt > 1) then 
-      melev = melev / real(mcnt,kind=DP)
-      xslp = xslp / real(mcnt,kind=DP)
-      yslp = yslp / real(mcnt,kind=DP)
-      mdepth = mdepth / real(mcnt,kind=DP)
+      crater%melev = crater%melev / real(mcnt,kind=DP)
+      crater%xslp = crater%xslp / real(mcnt,kind=DP)
+      crater%yslp = crater%yslp / real(mcnt,kind=DP)
    end if
 
    return
