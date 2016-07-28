@@ -58,10 +58,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: rhpmin = -1.0_DP  ! Smallest rim height to diameter ratio
    real(DP)                :: ddmax    ! Maximum depth/diameter 
    real(DP)                :: ddmin    ! Maximum depth/diameter 
-   real(DP)                :: melev    ! Mean elevation (m)
-   real(DP)                :: xslp,yslp ! Mean slopes
    integer(I8B)            :: icrater  ! Loop counters
-   real(DP)                :: mdepth   ! Mean mantle depth below impact site (m)
    integer(I4B)            :: nkilled  ! Number of craters killed in a tally step
    integer(I4B)            :: onum     ! Number of craters observed in a tally step
    integer(I4B)            :: nsincetally ! number of loops since last tally
@@ -175,7 +172,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%dosoftening) call crater_soften(user,surf,crater,domain)
 
       ! find the average height and slope at crater location
-      call crater_averages(user,surf,crater,melev,xslp,yslp,mdepth)
+      call crater_averages(user,surf,crater)
       
       call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                      ! For very steep size distributions, only a fraction of the
@@ -201,12 +198,12 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       ! Place crater onto the surface
       if (crater%fcrat > domain%smallest_crater) then
-         call crater_emplace(user,surf,crater,domain,melev,xslp,yslp,ejbmass)
+         call crater_emplace(user,surf,crater,domain,ejbmass)
 
          !call crater_mass_conservation(user,surf,crater) ! mass conservation is now done in crater_emplace
 
          ! Record crater in an available layer as long as it is above the cutoff
-         call crater_record(user,surf,crater,melev,xslp,yslp)
+         call crater_record(user,surf,crater)
          call util_sort_layer(user,surf,crater)
          vistrue = vistrue + 1
          nsincetally = nsincetally + 1
@@ -218,8 +215,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
 
       !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
-
-
+      
       ! Find out if the current crater is the largest or smallest and if so record it
       if (crater%fcrat > cmax ) then
          imax = crater%imp
