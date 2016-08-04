@@ -1,3 +1,34 @@
+!****f* crater/crater_emplace
+! Name
+!   crater_emplace -- 
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   * module_crater
+!   
+!   call crater_emplace(user,surf,crater,domain,ejbmass)
+!
+! DESCRIPTION
+!    
+! 
+! ARGUMENTS
+!   Input
+!   * user    -- User input parameters
+!   * surf    -- Surface grid
+!   * crater  -- Crater dimension container
+!   * domain  -- Simulation domain variable container
+!   * ejbmass -- Total ejecta blanket thickness for a given cratering event
+!
+!   Output
+!   * surf   -- Outputs the new ejecta blanket onto the grid
+!   * crater -- May affects the value of the maximum affected distance
+!   * domain -- 
+! 
+! Notes
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : crater_emplace
