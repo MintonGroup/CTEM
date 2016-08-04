@@ -27,16 +27,17 @@
 ! 
 ! ARGUMENTS
 !   Input
-!   * user   -- User input parameters
-!   * surf   -- Surface ggrid
-!   * crater -- Crater dimension container
-!   * domain -- Simulation domain variable container
-!   * ejb    -- Ejecta blanket lookup table
-!   * ejtble -- Ejecta blanket lookup table length 
+!   * user    -- User input parameters
+!   * surf    -- Surface ggrid
+!   * crater  -- Crater dimension container
+!   * domain  -- Simulation domain variable container
+!   * ejb     -- Ejecta blanket lookup table
+!   * ejtble  -- Ejecta blanket lookup table length 
 !
 !   Output
-!   * surf   -- Outputs the new ejecta blanket onto the grid
-!   * crater -- May affects the value of the maximum affected distance
+!   * surf    -- Outputs the new ejecta blanket onto the grid
+!   * crater  -- May affects the value of the maximum affected distance
+!   * ejbmass -- Outputs total ejecta thickness for mass conservation in crater_emplace
 ! 
 ! Notes
 !   The cutoff value of ejecta mass for the stream tube volume's calculation is hard coded. 
