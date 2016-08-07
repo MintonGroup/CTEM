@@ -1,8 +1,19 @@
 !****h* regolith/module_regolith
 ! Name
-!   module_regolith -- Module for regolith
+!   module_regolith -- Module for regolith subroutines
+! SYNOPSIS
+!   This uses
+!    module_globals
+! 
+!   use module_regolith
+!
+! DESCRIPTION
+! 
+!   A module that contains regolith/streamtube related subroutines
+!
 ! NOTES
-!   You will need to turn on "doregotrack"!
+!   You will need to turn on "doregotrack" in user-defined file (ctem.in)!
+!
 !***
 
 !**********************************************************************************************************************************
