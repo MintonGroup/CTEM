@@ -1,3 +1,27 @@
+!****f* util/util_destroy_list
+! Name
+!   util_destroy_list -- Destroy a linked list (see DESCRIPTION).
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   
+!   call util_destroy_list(regolayer)
+!
+! DESCRIPTION
+!    
+!   This subroutine takes an old linked list (layer) and poppes off all available tops that are stored in
+!   this old layer. At the end, it releases the memory of this old linked list. 
+!
+! ARGUMENTS
+!   Input
+!   * regolayer -- pointer to the top of the regolith stack
+!   
+! NOTES
+!   The association state of an output regolayer is not associated.
+! 
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : util_destroy_list
