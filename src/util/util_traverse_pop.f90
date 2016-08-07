@@ -1,3 +1,39 @@
+!****f* util/util_traverse_pop
+! Name
+!   util_traverse_pop -- Traversely pop off layers based on traverse depth (see DESCRIPTION). 
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   
+!   call util_traverse_pop(regolayer,traverse_depth,poppedlist)
+!
+! DESCRIPTION
+!    
+!   In CTEM's linked list structure, a linked list has a physical depth. 
+!   This subroutine takes a dpeth that will be popped off as long as the depth is above this depth.
+!   Not only popping layers above a certain depth, but alaso reserving all popped layers. 
+!   To do so, this subroutine will be:
+!   * initializing a new linked list for popped layers,
+!   * as long as the input layer's head is associated and above the traverse depth, popping a layer,
+!   * and then pushing this popped layer to the popped list.
+!
+! ARGUMENTS
+!   Input
+!   * regolayer      -- pointer to the top of the regolith stack
+!   * traverse_depth -- a depth relative the top of a layer
+!   
+!   Output
+!   * regolayer      -- pointer to the top of the modified regolith stack 
+!   * poppedlist     -- pointer to all popped layers.
+! 
+! NOTES
+!   If the traverse depth is smaller than the current layer's thickness, the layer's thickness will 
+!   be just modified. The other properties such as porosity or melt fraction should not be changed.
+!   
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : util_traverse_pop
