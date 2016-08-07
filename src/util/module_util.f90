@@ -1,3 +1,20 @@
+!****h* util/module_util
+! Name
+!   module_util -- Module for utility subroutines
+! SYNOPSIS
+!   This uses
+!    NONE
+!
+!   use module_util
+!
+! DESCRIPTION
+!
+!   Miscellaneous utilities
+!
+! NOTES
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : util_toupper
