@@ -1,3 +1,35 @@
+!****f* util/util_pop
+! Name
+!   util_pop -- Pop off a top layer. 
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   
+!   call util_pop(regolayer,oldregodata)
+!
+! DESCRIPTION
+!    
+!   Pop subroutine is to pop off the top head from an input old linked list.
+!   This subroutine will be: 
+!   * having a new pointer to point to the top of an old input layer. 
+!   * if the second top is associated, linking the second top to be the new top.
+!   * deallocating the pointer that inherits the original input layer. 
+!
+! ARGUMENTS
+!   Input
+!   * regolayer   -- pointer to the top of the regolith stack
+!   
+!   Output
+!   * regolayer   -- pointer to the second top of the regolith stack
+!   * oldregodata -- old regodta that was popped from the top of an input old layer
+! 
+! NOTES
+!   If we reach the bottom of a layer, the layer that has a huge thickness is deallocated.
+!   But this is considered a bug in the linked list related operation.
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : util_pop
