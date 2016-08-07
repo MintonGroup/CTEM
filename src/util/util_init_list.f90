@@ -1,3 +1,36 @@
+!****f* util/util_init_list
+! Name
+!   util_init_list -- Initialize an new linked list (see DESCRIPTION).
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_util
+!   
+!   call util_init_list(regolayer,initstat)
+!
+! DESCRIPTION
+!    
+!   This initialization process to a new linked list is to
+!   * Check the associated state of a new linked list. Idealiy, it should not be associated. 
+!   * Nullify the head of this new linked list.
+!   * Allocate a space (container) for regodata-typed data to the head.
+!   * Assign corresponding values to each regodata type.
+!
+! ARGUMENTS
+!   Input
+!   * regolayer -- pointer to the top of the regolith stack
+!   
+!   Output
+!   * initstat  -- return logical, T or F, about the success of initializing a list. 
+! 
+! NOTES
+!   The initial thickness is a very huge number that makes sure the "pop" never gets to it.
+!   This subroutine suggests that an initialized "popped" list has the huge number at the last layer, 
+!   so please be cautious about any calculations involving popped list or using olddata that is popped
+!   and gets collected by popped list should avoid using the value of this last layer. 
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : util_init_list
