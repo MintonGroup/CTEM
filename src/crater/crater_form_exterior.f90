@@ -45,11 +45,10 @@ subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev,rd,delta
    ! change digital elevation map
    !cform = (crater%rheight * ((crater%frad / lrad)**RIMDROP))
    cform = (crater%rheight * ((crater%frad / lrad)**rd))
-   belchng = newelev - surfi%dem
 
    ! elevation changes
    if (lrad <= crater%frim) then
-      hcorr = belchng * ((crater%frim - lrad) / (crater%frim - crater%frad))**2
+      hcorr = belchng * ((crater%frim - lrad) / (crater%frim - crater%frad))**20
       elchange = hcorr + cform 
    else 
       elchange = cform 
