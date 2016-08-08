@@ -49,6 +49,8 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
    real(DP) :: f1,f2
 
    ! Executable code
+   if (abs(deltaMtot) < VSMALL) return
+   if (deltaMtot > 0._DP) return
    lastloop = .false.
    factor=FIRSTFACTOR
    startrd = RIMDROP
@@ -58,7 +60,7 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
    ! First bracket the root
    f1 = crater_form_exterior_func(user,surf,crater,domain,x1,deltaMtot,lastloop)
    f2 = crater_form_exterior_func(user,surf,crater,domain,x2,deltaMtot,lastloop)
-   do j=1,NTRY
+   do j = 1, NTRY
       if (f1 * f2 < 0._DP) exit
       if (abs(f1) < abs(f2)) then
          x1 = x1 + factor * (x1 - x2)
@@ -67,7 +69,13 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
          x2 = x2 + factor * (x2 - x1)
          f2 = crater_form_exterior_func(user,surf,crater,domain,x2,deltaMtot,lastloop)
       end if
+      
    end do
+   !!if (f1 * f2 >= 0._DP) then
+   !   write(*,*) crater%fcrat
+   !   write(*,*) deltaMtot
+   !   read(*,*)
+   !end if
 
    ! Now do a Brent's method to find the root
    error = 0
