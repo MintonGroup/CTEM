@@ -36,13 +36,12 @@ subroutine crater_soften(user,surf,crater,domain)
    integer(I4B),parameter :: MAXHITS = 1
 
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
-   real(DP) :: lrad,lradsq,xp,yp,fradsq,xbar,ybar,areafrac,kappatdropoff,kappatmax
+   real(DP) :: xp,yp,fradsq,xbar,ybar,areafrac,kappatmax
 
    kappatmax = SOFTEN_FACTOR * crater%fcrat**SOFTEN_SLOPE
    
    inc = max(min(int(crater%fradpx + 2),PBCLIM * user%gridsize),2) 
    crater%maxinc = max(crater%maxinc,inc)
-   fradsq = crater%frad**2
    incsq = inc**2
 
    allocate(kappat(-inc:inc,-inc:inc))
@@ -68,7 +67,6 @@ subroutine crater_soften(user,surf,crater,domain)
             
             xbar = xp - crater%xl 
             ybar = yp - crater%yl
-            lradsq = xbar**2 + ybar**2
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
@@ -78,12 +76,12 @@ subroutine crater_soften(user,surf,crater,domain)
 
             ! We set the diffusion constant to be proportional to the fraction of pixel area covered by the interior of the crater
             areafrac = util_area_intersection(crater%frad,xbar,ybar,user%pix)
-            kappat(i,j) = kappatmax * areafrac ! This is the extra per-crater diffusion required to match equilibrium
-
+             
+            kappat(i,j) = kappatmax * areafrac  ! This is the extra per-crater diffusion required to match equilibrium
          end if
-
       end do
    end do !end area loopover 
+   !read(*,*)
 
 
    call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kappat,cumulative_elchange,maxhits)
