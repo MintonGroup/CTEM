@@ -32,6 +32,7 @@ subroutine regolith_melt_fraction(dimp,depthb,erad1,erad2,rmelt,meltfrac)
    real(DP)                :: volm1,volm2,volm
    real(DP)                :: volst,volv1,volv2
    real(DP)                :: maxerad,minerad,rvapor,rints
+   real(DP)                :: volv, volmi, volmo
    
    maxerad = max(erad1,erad2)
    minerad = min(erad1,erad2)
@@ -41,13 +42,26 @@ subroutine regolith_melt_fraction(dimp,depthb,erad1,erad2,rmelt,meltfrac)
    if (maxerad<=rints) then 
            meltfrac   = 1.0
    else if (minerad >= rints) then 
-           volv1  = regolith_melt_func(rvapor,depthb,erad1)
-           volv2  = regolith_melt_func(rvapor,depthb,erad2)           
-           volm1  = regolith_melt_func(rmelt,depthb,erad1) - volv1
-           volm2  = regolith_melt_func(rmelt,depthb,erad2) - volv2
+           volv1  = regolith_melt_func(rvapor,depthb,minerad)
+           volv2  = regolith_melt_func(rvapor,depthb,maxerad)           
+           volm1  = regolith_melt_func(rmelt,depthb,minerad) - volv1
+           volm2  = regolith_melt_func(rmelt,depthb,maxerad) - volv2
            volm   = abs(volm2 - volm1)
-           volst  = ( PI/6.0_DP * abs(erad1**3 - erad2**3) - abs(volv1 - volv2) ) 
+           volst  = ( PI/6.0_DP * abs(maxerad**3 - minerad**3) - abs(volv1 - volv2) ) 
            meltfrac = volm/volst
+   else if (maxerad > rints .and. minerad < rints) then
+           ! Vapor part inside a stream tube
+           volv1  = regolith_melt_func(rvapor,depthb,minerad)
+           volv2  = regolith_melt_func(rvapor,depthb,maxerad)
+           volv   = abs(volv2 - volv1)
+           ! Inside melt zone part
+           volmi  = PI/6.0 * (rints**3 - minerad**3)
+           volmo  = regolith_melt_func(rmelt,depthb,maxerad) - PI/6.0 * (rints)**3
+           volm   = volmo + volmi - volv
+           volst  = ( PI/6.0_DP * abs(maxerad**3 - minerad**3) - volv )
+           meltfrac = volm/volst
+   else
+     write(*,*) 'regolith_melt_fraction: this is a bug!'
    end if
 
    return
