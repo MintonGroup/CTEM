@@ -1,3 +1,33 @@
+!****f* regolith/regolith_melt_function
+! Name
+!   regolith_melt_function -- Calculate an intersection volume between a shifted circle and a streamline 
+! SYNOPSIS
+!   This uses 
+!   * module_globals
+!   * module_regolith
+!   
+!   result = regolith_melt_function(r,depthb,erad)
+!
+! DESCRIPTION
+!    
+!   This function takes an input of a streamline (its radial distance) and a shifted circle (the radius of a circle and 
+!   its burial depth relative to the ground). It is to calculate the revolution volume of an overlapped area between the 
+!   streamline and the shifted circle. The shifted circle represents either a vapor zone or a melt zone. It may be shifted 
+!   up or down along the y-axis due to the burial depth of a vapor or melt zone. 
+! 
+! ARGUMENTS
+!   Input
+!   * r      -- The radius of a shifted circle
+!   * depthb -- The burial depth of a shifted circle
+!   * erad   -- The radial distance of a streamline from an impact site
+!
+!   Output
+!   * vol    -- Output the revolution volume of the overlapped area 
+! 
+! Notes 
+!
+!***
+
 !**********************************************************************************************************************************
 !
 !  Unit Name   : regolith_melt_func
