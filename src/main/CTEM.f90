@@ -70,8 +70,6 @@ call io_splash()
 infile="ctem.in"
 call io_input(infile,user)
 
-user%interval = 1.0e5
-
 ! Initialize distribution arrays (crater size, number)
 !write(*,*) 'Initializing arrays'
 call init_dist(user,domain)
