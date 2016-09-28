@@ -71,6 +71,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP)                :: ejbmass
    TARGET :: surf
+   logical :: makecrater
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -123,6 +124,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    domain%subpixelcoverage = 0
 
    do while (icrater < ntotcrat)
+      makecrater = .true.
       icrater = icrater + 1
       pbarpos = ceiling(real(icrater) / real(ntotcrat) * PBARRES)
       ! generate random crater
@@ -136,108 +138,112 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             write(*,'("Ended run at ",F7.2,"% due to crater of size: ",ES13.4)') fracdone * 100,crater%fcrat
             exit
          else
-            cycle ! Ignore this big crater
+            makecrater = .false. ! Ignore this big crater
          end if
       end if 
 
-      if (crater%fcrat < domain%smallest_crater) cycle
-      
-      ! Find the visible crater parameters
-      call crater_find_visible(user,crater,domain)
+      if (crater%fcrat < domain%smallest_crater) makecrater = .false.
 
-      ! Crater is big enough to keep, so record it into the true distribution 
-      ntrue = ntrue + 1
-      if (ntrue > truesize) then  ! Resize the truelist array if necessary
-         allocate(tmptruelist(TRUECOLS,truesize))
-         tmptruelist = truelist
-         deallocate(truelist)
-         truesize = truesize + TRUECHUNK
-         allocate(truelist(TRUECOLS,truesize))
-         truelist(:,1:truesize - TRUECHUNK) = tmptruelist
-         deallocate(tmptruelist)
-      end if
-      truelist(1,ntrue) = crater%fcrat
-      truelist(2,ntrue) = crater%imp
-      truelist(3,ntrue) = crater%xl
-      truelist(4,ntrue) = crater%yl
-      truelist(5,ntrue) = crater%impvel
-      truelist(6,ntrue) = crater%sinimpang
-      mass = mass + crater%impmass
+      if (makecrater) then
+         
+         ! Find the visible crater parameters
+         call crater_find_visible(user,crater,domain)
 
-      crater%maxinc = 0
-      ! Do seismic shaking
-      if (user%doseismic) call seismic_shake(user,surf,crater,domain)
-      
-      ! Generate dynamic diffusion
-      if (user%dosoftening) call crater_soften(user,surf,crater,domain)
-
-      ! find the average height and slope at crater location
-      call crater_averages(user,surf,crater)
-      
-      call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
-                                                                     ! For very steep size distributions, only a fraction of the
-                                                                     ! craters are retained. The full ejecta_table_define function
-                                                                     ! is very computationally expensive. This function ball-parks
-                                                                     ! the total distance to determine if it is worth doing the 
-                                                                     ! full calculation later.
-      ! Place ejecta onto the surface
-      ejbmass = 0.0_DP
-      if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
-         if (user%doregotrack) then 
-            call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
-            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
-         else 
-            call ejecta_table_define(user,crater,domain,ejb,ejtble)
-            call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+         ! Crater is big enough to keep, so record it into the true distribution 
+         ntrue = ntrue + 1
+         if (ntrue > truesize) then  ! Resize the truelist array if necessary
+            allocate(tmptruelist(TRUECOLS,truesize))
+            tmptruelist = truelist
+            deallocate(truelist)
+            truesize = truesize + TRUECHUNK
+            allocate(truelist(TRUECOLS,truesize))
+            truelist(:,1:truesize - TRUECHUNK) = tmptruelist
+            deallocate(tmptruelist)
          end if
-         call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
-      else
-         ejtble = 0
-      end if
+         truelist(1,ntrue) = crater%fcrat
+         truelist(2,ntrue) = crater%imp
+         truelist(3,ntrue) = crater%xl
+         truelist(4,ntrue) = crater%yl
+         truelist(5,ntrue) = crater%impvel
+         truelist(6,ntrue) = crater%sinimpang
+         mass = mass + crater%impmass
 
+         crater%maxinc = 0
+         ! Do seismic shaking
+         if (user%doseismic) call seismic_shake(user,surf,crater,domain)
+         
+         ! Generate dynamic diffusion
+         if (user%dosoftening) call crater_soften(user,surf,crater,domain)
 
-      ! Place crater onto the surface
-      if (crater%fcrat > domain%smallest_crater) then
-         call crater_emplace(user,surf,crater,domain,ejbmass)
-
-         !call crater_mass_conservation(user,surf,crater) ! mass conservation is now done in crater_emplace
-
-         ! Record crater in an available layer as long as it is above the cutoff
-         call crater_record(user,surf,crater)
-         call util_sort_layer(user,surf,crater)
-         vistrue = vistrue + 1
-         nsincetally = nsincetally + 1
-         if (.not.user%testflag) call io_updatePbar("")
-      end if
-
-
-      ! Collapse any remaining unstable slopes
-      if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
-
-      !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
-      
-      ! Find out if the current crater is the largest or smallest and if so record it
-      if (crater%fcrat > cmax ) then
-         imax = crater%imp
-         cmax = crater%fcrat
-         rhmax = crater%vrim
-         if (crater%vcorr <= user%deplimit) then
-            rmax = crater%vdepth
+         ! find the average height and slope at crater location
+         call crater_averages(user,surf,crater)
+         
+         call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
+                                                                        ! For very steep size distributions, only a fraction of the
+                                                                        ! craters are retained. The full ejecta_table_define function
+                                                                        ! is very computationally expensive. This function ball-parks
+                                                                        ! the total distance to determine if it is worth doing the 
+                                                                        ! full calculation later.
+         ! Place ejecta onto the surface
+         ejbmass = 0.0_DP
+         if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
+            if (user%doregotrack) then 
+               call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
+               call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+            else 
+               call ejecta_table_define(user,crater,domain,ejb,ejtble)
+               call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+            end if
+            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
          else
-            rmax = user%deplimit + crater%vrim 
+            ejtble = 0
          end if
-         call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_max.dat")
-      end if
-      if (crater%fcrat < cmin) then
-         imin = crater%imp
-         cmin = crater%fcrat
-         rhmin = crater%vrim
-         if (crater%vcorr <= user%deplimit) then
-            rmin = crater%vdepth
-         else
-            rmin = user%deplimit + crater%vrim
+
+
+         ! Place crater onto the surface
+         if (crater%fcrat > domain%smallest_crater) then
+            call crater_emplace(user,surf,crater,domain,ejbmass)
+
+            !call crater_mass_conservation(user,surf,crater) ! mass conservation is now done in crater_emplace
+
+            ! Record crater in an available layer as long as it is above the cutoff
+            call crater_record(user,surf,crater)
+            call util_sort_layer(user,surf,crater)
+            vistrue = vistrue + 1
+            nsincetally = nsincetally + 1
+            if (.not.user%testflag) call io_updatePbar("")
          end if
-         call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
+
+
+         ! Collapse any remaining unstable slopes
+         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
+
+         !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
+         
+         ! Find out if the current crater is the largest or smallest and if so record it
+         if (crater%fcrat > cmax ) then
+            imax = crater%imp
+            cmax = crater%fcrat
+            rhmax = crater%vrim
+            if (crater%vcorr <= user%deplimit) then
+               rmax = crater%vdepth
+            else
+               rmax = user%deplimit + crater%vrim 
+            end if
+            call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_max.dat")
+         end if
+         if (crater%fcrat < cmin) then
+            imin = crater%imp
+            cmin = crater%fcrat
+            rhmin = crater%vrim
+            if (crater%vcorr <= user%deplimit) then
+               rmin = crater%vdepth
+            else
+               rmin = user%deplimit + crater%vrim
+            end if
+            call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
+         end if
+
       end if
 
       ! Do sub-pixel craters vertical mixing
