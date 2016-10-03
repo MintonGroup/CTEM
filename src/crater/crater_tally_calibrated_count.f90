@@ -18,8 +18,10 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_depth,deviation_sigma,countable,killable,p)
+subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_depth,deviation_sigma,&
+                                         countable,killable,p)
    use module_globals
+   use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_tally_calibrated_count
    implicit none
 
@@ -31,7 +33,7 @@ subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_de
    real(SP),intent(out) :: p
 
    ! Internal variables
-   real(DP)               :: Rd,Rsig,pd,psig,a,b,c,Dtran,complex_correction
+   real(DP)               :: Rd,Rsig,pd,psig,a,b,c,d,Dtran,complex_correction
 
    Rd = current_depth/original_depth
    Rsig = log10(deviation_sigma/current_depth)
@@ -58,6 +60,12 @@ subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_de
 
       p = real(min(pd,psig),kind = SP)
       p = min(max(p, 0.0_SP), 1._SP)
+   case("HOWL")
+         a = -0.48_DP
+         b = -0.55_DP
+         c = 8.0_DP 
+         d = -4.5_DP
+         p = (Rsig - a * log(Rd)) / b - c * (diameter / user%pix)**d - 0.5_DP
    end select
 
    select case (user%mat)
