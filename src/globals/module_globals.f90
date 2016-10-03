@@ -259,7 +259,7 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 3             ! periodic boundary condition limit
-integer(I4B),parameter :: SMALLESTCOUNTABLE = 10 ! Minimum number of pixels for a crater to be considered countable
+integer(I4B),parameter :: SMALLESTCOUNTABLE = 20 ! Minimum number of pixels for a crater to be considered countable
 real(DP),parameter :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
 integer(I4B),parameter :: TRUECOLS = 6 ! Number of columns in the true crater count array
 integer(I4B)           :: NTHREADS = 1 ! Number of OpenMP threads (reset by OpenMP if a parallel environment is detected)
@@ -287,8 +287,8 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
-real(DP),parameter :: SOFTEN_FACTOR = 0.40_DP   ! Extra per crater diffusion constant
-real(DP),parameter :: SOFTEN_SLOPE = 2.0_DP    ! Extra per crater diffusion power law slope
+real(DP),parameter :: SOFTEN_FACTOR = 5.0_DP   ! Extra per crater diffusion constant
+real(DP),parameter :: SOFTEN_SLOPE = 1.83_DP    ! Extra per crater diffusion power law slope
 
 
 end module module_globals
