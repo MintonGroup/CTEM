@@ -195,7 +195,8 @@ end interface
    end interface
 
 interface
-   subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_depth,deviation_sigma,countable,killable,p)
+   subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_depth,&
+                                            deviation_sigma,countable,killable,p)
    use module_globals
    implicit none
    type(usertype),intent(in) :: user
