@@ -70,8 +70,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: finterval ! fraction of interval so far completed
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP)                :: ejbmass
+   logical                 :: makecrater
    TARGET :: surf
-   logical :: makecrater
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -145,7 +145,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (crater%fcrat < domain%smallest_crater) makecrater = .false.
 
       if (makecrater) then
-         
+      
          ! Find the visible crater parameters
          call crater_find_visible(user,crater,domain)
 
@@ -194,7 +194,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
                call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
-            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
+            !call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
          else
             ejtble = 0
          end if
@@ -243,7 +243,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             end if
             call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
          end if
-
       end if
 
       ! Do sub-pixel craters vertical mixing
@@ -252,7 +251,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call regolith_depth_model(user,domain,finterval,nflux,p)
          call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
       end if 
-
 
       ! Do periodic subpixel processes on the whole grid
       if (.not.user%testflag) then
