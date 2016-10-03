@@ -37,7 +37,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(SP),dimension(:),intent(out),allocatable,optional :: original_depth,current_depth,p,deviation_sigma
 
    ! Internal variables
-   integer(I4B)                               :: i,layer,n,m,craternum,obstot
+   integer(I4B)                               :: i,j,layer,n,m,craternum,obstot
 
    ! master list arrays (these contain information on every pixel that is considered a crater)
    integer(I4B),dimension(user%numlayers*(user%gridsize)**2) :: mlistind
@@ -58,12 +58,14 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(DP),dimension(:),allocatable :: rimelevation,bowlelevation,bowldepth_orig
    integer(I4B),dimension(:),allocatable :: elevind,totpix,istart,iend
    integer(I4B) :: tnum ! True number and observed number
+   integer(I4B) :: inc,xpi,ypi
    real(DP) :: avgrim,avgbowldepth,avgbowldepth_orig,xk,Mkm1,xkdd,Mkm1dd
    real(DP) :: xkdev,Mkm1dev,deviation,sigma
    logical :: killable
    integer(I4B) :: nrim,nbowl
 
    ! Executable code
+
 
    ! First build up a master table of every crater for which a pixel still exists on the surface
    mnum=0
@@ -237,8 +239,9 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
 
       ! Use the calibrated crater count subroutine to determine if this is a countable crater or not
       if (totpix(craternum) > SMALLESTCOUNTABLE) then 
-         call crater_tally_calibrated_count(user,tlist(craternum),tmp_current_depth(craternum),tmp_original_depth(craternum),&
-                                            tmp_deviation_sigma(craternum),countable(craternum),killable,tmp_p(craternum))
+         call crater_tally_calibrated_count(user,tlist(craternum),tmp_current_depth(craternum),&
+                                            tmp_original_depth(craternum),tmp_deviation_sigma(craternum),& 
+                                            countable(craternum),killable,tmp_p(craternum))
       else  
          countable(craternum) = .false.
          killable = .true.
@@ -250,6 +253,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
          nkilled = nkilled + 1
       end if
       if (countable(craternum)) onum = onum + 1
+      !deallocate(csurf)
   end do
   !$OMP END DO
   deallocate(rimelevation)
