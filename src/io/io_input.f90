@@ -525,6 +525,7 @@ subroutine io_input(infile,user)
 
    select case(user%countingmodel)
    case("FASSETT")
+   case("HOWL")
    case default
       write(*,*) 'Unknown counting model ',trim(adjustl(user%countingmodel)),' specified. Using FASSETT instead.'
       user%countingmodel = "FASSETT"
