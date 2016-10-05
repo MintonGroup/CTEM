@@ -66,6 +66,7 @@ subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_de
          c = 8.0_DP 
          d = -4.5_DP
          p = (Rsig - a * log(Rd)) / b - c * (diameter / user%pix)**d - 0.5_DP
+         if (Rd < 0.2_DP) p = 0.0_DP
    end select
 
    select case (user%mat)
