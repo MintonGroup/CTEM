@@ -253,4 +253,14 @@ end interface
       end subroutine crater_make_list
    end interface
 
+   interface
+      function crater_critical_slope(user,crater,iradsq) result(critical)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(cratertype),intent(in) :: crater
+      integer(I4B),intent(in) :: iradsq
+      real(DP) :: critical
+      end function crater_critical_slope
+   end interface
+
 end module
