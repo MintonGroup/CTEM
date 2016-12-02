@@ -173,7 +173,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (user%doseismic) call seismic_shake(user,surf,crater,domain)
          
          ! Generate dynamic diffusion
-         if (user%dosoftening) call crater_soften(user,surf,crater,domain)
+         !if (user%dosoftening) call crater_soften(user,surf,crater,domain)
 
          ! find the average height and slope at crater location
          call crater_averages(user,surf,crater)
@@ -194,11 +194,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
                call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
-            !call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
+            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
          else
             ejtble = 0
          end if
-
 
          ! Place crater onto the surface
          if (crater%fcrat > domain%smallest_crater) then
@@ -213,6 +212,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             nsincetally = nsincetally + 1
             if (.not.user%testflag) call io_updatePbar("")
          end if
+
 
 
          ! Collapse any remaining unstable slopes
