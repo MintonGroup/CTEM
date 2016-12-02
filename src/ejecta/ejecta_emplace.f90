@@ -94,8 +94,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    real(DP),intent(out) :: ejbmass
 
    ! Internal variables
-   real(DP) :: lrad,lradsq,cdepth
-   integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
+   real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,baseline,inneredge,outeredge
+   integer(I4B),parameter :: MAXLOOP = 10 ! Maximum number of times to loop the ejecta angle correction calculation
+   integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
    real(DP) :: xp,yp,fradsq,ebh,ejdissq,continuous
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
@@ -252,6 +253,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    
    deallocate(sf)
    deallocate(tot)
+   outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
+   inneredge = crater%frad + 0.5_DP * domain%ejbres 
   
    ejbmass = 0.0_DP
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
@@ -270,14 +273,32 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
          xp = xpi * user%pix
          yp = ypi * user%pix
          
-         lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-         lrad = sqrt(lradsq)
+         !lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+         !lrad = sqrt(lradsq)
+
+            
 
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
 
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
+
+         ! Find angle-corrected landing distance
+         distance = sqrt((crater%xl - xp)**2 + (crater%yl - yp)**2)
+         baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix - surf(xpi,ypi)%dem
+         craterslope = atan(baseline / distance)
+         lrad = distance
+         lrad0 = lrad
+         do n = 1,MAXLOOP
+            k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
+            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad)
+            lrad =  distance * (erad + sqrt(vsq) * sin(2*ejtheta)) / (erad + sqrt(vsq) * (sin(2 * (ejtheta + craterslope))))
+            if (abs(lrad - lrad0) < domain%small) exit
+            lrad0 = lrad
+         end do
+         lradsq = lrad**2
+
 
          if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
@@ -291,7 +312,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
                
 
             if (lrad < lradp) then
-               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,ejtheta,melt)
+               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,melt=melt)
                ray_pix = ceiling((lrad - crater%frad) / user%pix)
                ebh       = ebh * ef(ray_pix)
 
