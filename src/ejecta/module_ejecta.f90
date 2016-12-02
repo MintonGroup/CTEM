@@ -104,7 +104,7 @@ save
    end interface
 
    interface
-      subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,melt)
+      subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,melt)
       use module_globals
       implicit none
       type(cratertype),intent(in) :: crater
@@ -114,7 +114,7 @@ save
       type(ejbtype),dimension(ejtble),intent(in) :: ejb
       real(DP),intent(out) :: ebh
       real(DP),intent(out),optional :: vsq,theta
-      real(DP),intent(out),optional :: melt
+      real(DP),intent(out),optional :: erad,melt
       end subroutine ejecta_interpolate
    end interface
 
