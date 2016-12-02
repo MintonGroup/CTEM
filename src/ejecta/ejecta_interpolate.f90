@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,melt)
+subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,melt)
    use module_globals
    use module_util
    use module_ejecta, EXCEPT_THIS_ONE => ejecta_interpolate
@@ -29,7 +29,7 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,melt)
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in) :: ejb
    real(DP),intent(out) :: ebh
-   real(DP),intent(out),optional :: vsq,theta
+   real(DP),intent(out),optional :: vsq,theta,erad
    real(DP),intent(out),optional :: melt
 
    ! Internals
@@ -53,6 +53,7 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,melt)
       if (present(vsq)) vsq = ejb(k)%vesq - ((ejb(k)%vesq - LOGVSMALL) * frac)
       if (present(theta)) theta = ejb(k)%angle - ((ejb(k)%angle - LOGVSMALL) * frac)
       if (present(melt)) melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - LOGVSMALL) * frac)
+      if (present(erad)) erad = ejb(k)%erad - ((ejb(k)%erad - LOGVSMALL) * frac)
    else
       logdelta = ejb(k + 1)%lrad - logtablerad 
       frac = (loglrad - logtablerad) / logdelta
@@ -60,6 +61,7 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,melt)
       if (present(vsq)) vsq = ejb(k)%vesq - ((ejb(k)%vesq - ejb(k + 1)%vesq) * frac)
       if (present(theta)) theta= ejb(k)%angle - ((ejb(k)%angle - ejb(k + 1)%angle) * frac)
       if (present(melt)) melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac) 
+      if (present(erad)) erad = ejb(k)%erad - ((ejb(k)%erad - ejb(k+1)%erad) * frac) 
    end if
    ebh = exp(ebh) 
    if (lrad > crater%ejdis) ebh = 0._DP
