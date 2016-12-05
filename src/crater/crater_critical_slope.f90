@@ -19,7 +19,7 @@
 function crater_critical_slope(user,crater,iradsq) result(critical)
    use module_globals
    use module_util
-   use module_crater, EXCEPT_THIS_ONE => crater_form_exterior_func
+   use module_crater, EXCEPT_THIS_ONE => crater_critical_slope
    implicit none
 
   ! Arguments
