@@ -175,10 +175,14 @@ type usertype
    real(DP) :: tvel    ! target P-wave (body wave) speed (m/s)
    real(DP) :: tfrac     ! mean free path for seismic wave scattering in medium
    real(DP) :: regcoh  ! target surface regolith layer cohesion
+
+   ! Crater diffusion input parameters
+   real(DP) :: soften_factor ! K_{c,0} from Minton et al. (2017)
+   real(DP) :: soften_slope  ! power law index of diffusion model K_{c,i}
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model
-   real(DP)          :: diffusion_const 
+   logical           :: discontinuous 
 
    ! Regolith tracking variables
    logical           :: doregotrack ! Set T to use the regolith tracking model (EXPERIMENTAL)
@@ -287,8 +291,9 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
-real(DP),parameter :: SOFTEN_FACTOR = 5.0_DP   ! Extra per crater diffusion constant
-real(DP),parameter :: SOFTEN_SLOPE = 1.83_DP    ! Extra per crater diffusion power law slope
+!real(DP),parameter :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
+!#real(DP) :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
+!real(DP),parameter :: SOFTEN_SLOPE = 1.3_DP    ! Extra per crater diffusion power law slope
 
 
 end module module_globals
