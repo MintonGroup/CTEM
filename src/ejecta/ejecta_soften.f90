@@ -47,6 +47,11 @@ subroutine ejecta_soften(user,surf,N,indarray,cumulative_elchange)
 
    ! Diffusion constant for 1 time unit was found to be proportional to ejecta thickness times the pixel size
    kdiff = EJECTA_SOFTEN_FACTOR * user%pix * ebharr 
+   kdiff(1,:) = 0.0_DP
+   kdiff(:,1) = 0.0_DP
+   kdiff(N,:) = 0.0_DP
+   kdiff(:,N) = 0.0_DP
+
    !TESTING
    !kdiff = user%sf * user%pix**user%k * ebharr**user%p !**0.900
 
