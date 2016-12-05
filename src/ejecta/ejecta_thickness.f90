@@ -45,7 +45,7 @@ subroutine ejecta_thickness(user,crater,erad1,erad2,lrad1,lrad2,thick)
    if (crater%imp < user%basinimp) then
       !  compute ejecta thickness 
       ce1sq = (2._DP / (CT * CT)) * mu**2 / (1._DP + 2 * mu + mu**2)
-      excav = abs(0.5_DP * ce1sq * PI * (erad2**3 - erad1**3))
+      excav = 7.43_DP * (crater%fcrat)**(-0.26_DP) * abs(0.5_DP * ce1sq * PI * (erad2**3 - erad1**3))
    else
       edDt = 1.150_DP ! Calibrated to Orientale using Fasset et al. 2011
       excav = abs(0.5_DP * edDt * PI * (erad2**3 - erad1**3))
