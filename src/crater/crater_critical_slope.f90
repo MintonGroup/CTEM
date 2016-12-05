@@ -29,8 +29,18 @@ function crater_critical_slope(user,crater,iradsq) result(critical)
    real(DP) :: critical
 
    ! Internal variables
+   real(DP) :: r
 
-   critical = CRITSLP
+   r = sqrt(iradsq * 1.0_DP) / (crater%fradpx * 1.0_DP)
+   if (r < 0.2_DP) then
+      critical = 0.0_DP
+   else if (r < 0.98_DP) then
+      critical =  0.228_DP + 2 * 0.083_DP * r - 3 * 0.039_DP * r**2
+   else if (r < 1.5_DP) then
+      critical =  0.187_DP - 2 * 0.018_DP * r - 3 * 0.015_DP * r**2
+   else 
+      critical = CRITSLP
+   end if
 
 end function crater_critical_slope
 
