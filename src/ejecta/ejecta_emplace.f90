@@ -97,7 +97,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,baseline,inneredge,outeredge
    integer(I4B),parameter :: MAXLOOP = 10 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,ebh,ejdissq,continuous
+   real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    integer(I4B) :: bigi,bigj
@@ -145,12 +145,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    crater%vdepth = crater%ejrim + cdepth
    crater%vrim   = crater%ejrim + crater%rheight
    
-   if (crater%ejdis <= crater%frad) return
+   if (crater%ejdis <= crater%rad) return
 
    ! determine area to effect
    inc = max(min(crater%ejdispx + 1,PBCLIM*user%gridsize),1)
    crater%maxinc = max(crater%maxinc,inc)
-   fradsq = crater%frad**2
+   radsq = crater%rad**2
    incsq = inc**2
    ejdissq = crater%ejdis**2
 
@@ -202,7 +202,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    rayf = 7.5_DP
  
    ! Enhanced factor test: Build a enhanced factor quick lookup table
-   ! Use a circular sector with an angle containning a half ray, which is pi/nrays. First, we determine the looping area for 
+   ! Use a circular sector with an angle containing a half ray, which is pi/nrays. First, we determine the looping area for 
    ! this sector, then the look-up table will be built while looping over each pixel and then making it to go to the right bin. 
    ! The size of bin is one pixel. 
    xef        = mvrld   
@@ -210,7 +210,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    yef        = mvrld * sin(thetamax)
    xefpi      = nint(xef / user%pix)
    yefpi      = nint(yef / user%pix)
-   nef        = ceiling( (mvrld - crater%frad) / user%pix)
+   nef        = ceiling( (mvrld - crater%rad) / user%pix)
    allocate(sf(nef))
    allocate(tot(nef))
    allocate(ef(nef))
@@ -232,8 +232,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
          lradf  = continuous * magf 
          lradp  = max(lradp, lradf)
          !if ( lrad > continuous .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
-         if (lrad >= crater%frad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
-            ray_pix  = ceiling( (lrad - crater%frad) / user%pix)
+         if (lrad >= crater%rad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
+            ray_pix  = ceiling( (lrad - crater%rad) / user%pix)
             tot(ray_pix) = tot(ray_pix) + 1
             if (lrad < lradp) sf(ray_pix) = sf(ray_pix) + 1
          end if
@@ -259,7 +259,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    ejbmass = 0.0_DP
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
 !   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
-!   !$OMP SHARED(inc,incsq,ejdissq,fradsq,indarray,cumulative_elchange,rn,continuous) 
+!   !$OMP SHARED(inc,incsq,ejdissq,fradsq,radsq,indarray,cumulative_elchange,rn,continuous) 
 !   !$OMP REDUCTION(+:massray,massej,massrayef)
    do j = -inc,inc
       do i = -inc,inc
@@ -300,7 +300,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
          lradsq = lrad**2
 
 
-         if ((lradsq <= ejdissq) .and. (lradsq >= fradsq)) then
+         if ((lradsq <= ejdissq) .and. (lradsq >= radsq)) then
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
             mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
                     (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
@@ -313,7 +313,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
 
             if (lrad < lradp) then
                call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,melt=melt)
-               ray_pix = ceiling((lrad - crater%frad) / user%pix)
+               ray_pix = ceiling((lrad - crater%rad) / user%pix)
                ebh       = ebh * ef(ray_pix)
 
                if (user%doregotrack .and. ebh>1.0e-8) then
