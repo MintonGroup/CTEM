@@ -75,6 +75,7 @@ subroutine crater_emplace(user,surf,crater,domain,ejbmass)
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    deltaMtot = ejbmass
+   incsq = inc**2
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space
       do i=-inc,inc
@@ -93,7 +94,7 @@ subroutine crater_emplace(user,surf,crater,domain,ejbmass)
          call util_periodic(xpi,ypi,user%gridsize)
 
          lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-         if (lradsq <= fradsq) then
+         if (lradsq <= crater%rad**2) then
             call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,deltaMi)
             deltaMtot = deltaMtot + deltaMi
          end if
