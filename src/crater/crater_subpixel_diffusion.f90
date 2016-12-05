@@ -37,7 +37,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
    integer(I4B) :: i,j,k,xpi,ypi,n,ntot
    integer(I4B) :: maxhits = 1
-   real(DP) :: lamleft,dburial,lambda,kappat,diam
+   real(DP) :: lamleft,dburial,lambda,kappat,diam,rad,Abar
    real(DP),dimension(domain%pnum) :: dN,lambda_regolith,kappat_regolith,lambda_bedrock,kappat_bedrock
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
@@ -50,7 +50,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          indarray(2,i,j) = ypi
       end do
    end do
-  
+   !goto 100 
    ntot = 1
    ! calculate the subpixel diffusion probability function
    do i = 1,domain%pnum
@@ -58,12 +58,12 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
       ntot = i
       dN(i) = nflux(3,i) * user%interval * finterval
 
-      lambda_bedrock(i) = dN(i) * 0.25_DP * PI * nflux(1,i)**2 
-      lambda_regolith(i) = dN(i) * 0.25_DP * PI * nflux(2,i)**2 
-
+      lambda_bedrock(i) = dN(i) * 0.25_DP * PI * (nflux(1,i) + SQRT2 * user%pix)**2 
+      lambda_regolith(i) = dN(i) * 0.25_DP * PI * (nflux(2,i) + SQRT2 * user%pix)**2 
+       
       if (user%dosoftening) then
-         kappat_bedrock(i) = SOFTEN_FACTOR * nflux(1,i)**(SOFTEN_SLOPE)
-         kappat_regolith(i) = SOFTEN_FACTOR * nflux(2,i)**(SOFTEN_SLOPE)
+         kappat_bedrock(i) = user%soften_factor * nflux(1,i)**(user%soften_slope)
+         kappat_regolith(i) = user%soften_factor * nflux(2,i)**(user%soften_slope)
       end if
 
    end do
@@ -84,11 +84,15 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
             end if 
             if (diam > domain%smallest_crater) exit
             k = util_poisson(lambda)
-            kdiff(i,j) = kdiff(i,j) + k * kappat
+            rad = 0.5_DP * diam / user%pix
+            Abar = 2 * sqrt(0.5_DP * PI) * rad**2 / (rad + 1.0_DP / SQRT2)**2 - 0.024_DP * rad**0.682_DP
+            kdiff(i,j) = kdiff(i,j) + k * Abar * kappat
          end do
       end do
    end do
-         
+   !100 continue     
+   !kdiff = 1.0 * finterval * user%interval
+   !write(*,*) 'kdiff = ',kdiff(1,1)
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
    do j = 1,user%gridsize
       do i = 1,user%gridsize
