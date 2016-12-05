@@ -45,6 +45,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
    integer(I4B),dimension(:,:,:),allocatable :: indarray
    logical  :: failflag,oldfail
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   real(DP) :: rfac
 
    ! testing
    !character(STRMAX) :: filename
@@ -54,8 +55,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
 
    ! Some preliminary setup
    diffmax = 0.25_DP
-   looplim = 10*crater%fcratpx
-   critical = (CRITSLP*user%pix)**2
+   looplim = 1000*crater%fcratpx
 
    !     determine area to effect
    inc = max(min(crater%fcratpx,ceiling(SQRT2*user%gridsize)),1)
@@ -89,21 +89,23 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
    !  begin downslope motion loop
    failflag=.true.
    oldslpmax = huge(oldslpmax)
+   slparray = 0._DP
 
    do loopcnt=1,looplim
       !     reset slope failure flag
+      !if (mod(loopcnt,100)==0) write(*,*) loopcnt,looplim
       oldfail = failflag
       failflag = .false.
 
       ! loop over affected matrix area
       !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-      !$OMP SHARED(inc,loopcnt,incsq,critical,difflim,failflag,elevarray,gradarray,slparray,cumulative_elchange,indarray) &
+      !$OMP SHARED(inc,loopcnt,incsq,difflim,failflag,elevarray,gradarray,slparray,cumulative_elchange,indarray) &
       !$OMP SHARED(crater,user,surf) 
       do j=-inc,inc 
          do i=-inc,inc
-            elevarray(i,j)=0._DP
-            gradarray(i,j)=0._DP
-            slparray(i,j)=0._DP
+            elevarray(i,j) = 0._DP
+            gradarray(i,j) = 0._DP
+            slparray(i,j) = 0._DP
             if (loopcnt==1) then
                mx1 = crater%xlpx+i
                my1 = crater%ylpx+j
@@ -116,20 +118,20 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                call util_periodic(mx1,my1,user%gridsize)
                call util_periodic(mx2,my2,user%gridsize)
                call util_periodic(mx3,my3,user%gridsize)
-               indarray(1,i,j)=mx1
-               indarray(2,i,j)=my1
-               indarray(3,i,j)=mx2
-               indarray(4,i,j)=my2
-               indarray(5,i,j)=mx3
-               indarray(6,i,j)=my3
+               indarray(1,i,j) = mx1
+               indarray(2,i,j) = my1
+               indarray(3,i,j) = mx2
+               indarray(4,i,j) = my2
+               indarray(5,i,j) = mx3
+               indarray(6,i,j) = my3
 
             else
-               mx1=indarray(1,i,j)
-               my1=indarray(2,i,j)
-               mx2=indarray(3,i,j)
-               my2=indarray(4,i,j)
-               mx3=indarray(5,i,j)
-               my3=indarray(6,i,j)
+               mx1 = indarray(1,i,j)
+               my1 = indarray(2,i,j)
+               mx2 = indarray(3,i,j)
+               my2 = indarray(4,i,j)
+               mx3 = indarray(5,i,j)
+               my3 = indarray(6,i,j)
             end if
             iradsq = i*i+j*j
             if (iradsq <= incsq) then ! round corners
@@ -146,8 +148,9 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                tslp2sq = (xslp1*xslp1 + yslp2*yslp2)
                tslp3sq = (xslp2*xslp2 + yslp1*yslp1)
                tslp4sq = (xslp2*xslp2 + yslp2*yslp2)
-               slpsq=max(tslp1sq,tslp2sq,tslp3sq,tslp4sq)
-
+               slpsq = max(tslp1sq,tslp2sq,tslp3sq,tslp4sq)
+               slparray(i,j) = slpsq
+               critical = crater_critical_slope(user,crater,iradsq) * user%pix**2
                if (slpsq > critical) then
                   failflag = .true.
                   ! find elevation change
@@ -157,10 +160,9 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                   elchange = difflim * tgrad
 
                   ! change digital elevation map
-                  elevarray(i,j)=elchange
-                  gradarray(i,j)=tgrad
-                  slparray(i,j)=slpsq
-                  cumulative_elchange(i,j)=cumulative_elchange(i,J) + elchange
+                  elevarray(i,j) = elchange
+                  gradarray(i,j) = tgrad
+                  cumulative_elchange(i,j) = cumulative_elchange(i,j) + elchange
                end if
             end if  
          end do
@@ -168,9 +170,9 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
       !$OMP END PARALLEL DO
 
      ! See if we have reached maximums
-      elchgmax=maxval(elevarray)
-      slpmax=sqrt(maxval(slparray))/user%pix
-      gradmax=maxval(gradarray)
+      elchgmax = maxval(elevarray)
+      slpmax = sqrt(maxval(slparray))/user%pix
+      gradmax = maxval(gradarray)
 
       ! Add the elevation changes back to the dem
       do j=-inc,inc
@@ -204,14 +206,21 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
       !***************************************************
 
       !     if stuck, get out
-      if (failflag.and.(abs(elchgmax) < domain%small)) exit
+      if (failflag.and.(abs(elchgmax) < 1.0e-8*domain%small)) exit
 
-      if (slpmax >= oldslpmax) exit
-      oldslpmax = slpmax
+      !if (slpmax >= oldslpmax) exit
+      !oldslpmax = slpmax
 
       
       if (.not.failflag) exit
    end do  ! end downslope motion loops
+   !j = 0
+   !do i = -inc,inc
+   !   iradsq = i**2 + j**2
+   !   critical = crater_critical_slope(user,crater,iradsq)
+   !   write(25,*) i*user%pix/crater%frad,slparray(i,j),critical*user%pix**2
+   !end do
+   
 
    deallocate(elevarray,gradarray,slparray,cumulative_elchange,indarray)
    
