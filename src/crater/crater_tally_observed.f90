@@ -55,7 +55,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    ! tallying arrays (these contain only the number of craters on the grid)
    real(SP),dimension(:,:),allocatable :: poslist
    real(DP),dimension(:),allocatable :: tlist
-   real(DP),dimension(:),allocatable :: rimelevation,bowlelevation,bowldepth_orig
+   real(DP),dimension(:),allocatable :: dis,elev
    integer(I4B),dimension(:),allocatable :: elevind,totpix,istart,iend
    integer(I4B) :: tnum ! True number and observed number
    integer(I4B) :: inc,xpi,ypi
@@ -63,9 +63,13 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(DP) :: xkdev,Mkm1dev,deviation,sigma
    logical :: killable
    integer(I4B) :: nrim,nbowl
+   integer(I4B) :: nprof,Ni
+   real(DP) :: totavg,avgelev,profres,avgdis,rim,bowl,rad
 
    ! Executable code
 
+
+   profres = 0.5_DP * user%pix
 
    ! First build up a master table of every crater for which a pixel still exists on the surface
    mnum=0
@@ -84,17 +88,18 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       end do
    end do
 
-   allocate(mlist(mnum))
-   allocate(misrim(mnum))
-   allocate(melevation(mnum))
-   allocate(mbaseline(mnum))
-   allocate(mposlist(2,mnum))
-   allocate(mpxlist(2,mnum))
-   allocate(moriginal_depth_list(mnum))
-   allocate(mlayerlist(mnum))
-   allocate(ind(mnum))
-   allocate(istart(mnum))
-   allocate(iend(mnum))
+
+   allocate(mlist(max(mnum,1)))
+   allocate(misrim(max(mnum,1)))
+   allocate(melevation(max(mnum,1)))
+   allocate(mbaseline(max(mnum,1)))
+   allocate(mposlist(2,max(mnum,1)))
+   allocate(mpxlist(2,max(mnum,1)))
+   allocate(moriginal_depth_list(max(mnum,1)))
+   allocate(mlayerlist(max(mnum,1)))
+   allocate(ind(max(mnum,1)))
+   allocate(istart(max(mnum,1)))
+   allocate(iend(max(mnum,1)))
 
    mlist = 0._DP
    ind = 0
@@ -165,10 +170,9 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    !$OMP SHARED(tnum,totpix,poslist,tlist,tmp_original_depth,tmp_current_depth,tmp_p,tmp_deviation_sigma,countable) &
    !$OMP REDUCTION(+:nkilled) &
    !$OMP REDUCTION(+:onum) 
-   allocate(rimelevation(maxpix))
-   allocate(bowlelevation(maxpix))
-   allocate(bowldepth_orig(maxpix))
-   allocate(elevind(maxpix))
+   !allocate(dis(4*user%gridsize**2))
+   !allocate(elev(4*user%gridsize**2))
+   !allocate(elevind(4*user%gridsize**2))
    ! Here we go through the list of craters and take the measures of each one to
    ! be used by the tally subroutine in the next pass
    !$OMP DO 
@@ -176,76 +180,104 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       ! This is the first pixel of this crater, so record the appropriate values
       tlist(craternum) = mlist(ind(istart(craternum)))
       poslist(:,craternum) = mposlist(:,ind(istart(craternum)))
-      tmp_original_depth(craternum) = 0._SP
-      tmp_current_depth(craternum) = 0._SP
       totpix(craternum) = 1 + iend(craternum) - istart(craternum)
-
-      ! Get the average and std. dev. of rim and bowl elevations for this crater
-      rimelevation = 0._DP
-      bowlelevation = 0._DP
-      nrim = 0
-      nbowl = 0
-      do i = istart(craternum),iend(craternum)
-         ! Find out if this pixel is a rim or a bowl, and add the appropriate tally
-         if (misrim(ind(i)) == 1) then
-            nrim = nrim + 1
-            rimelevation(nrim) =  melevation(ind(i)) - mbaseline(ind(i))
-         else
-            nbowl = nbowl + 1
-            bowlelevation(nbowl) =  melevation(ind(i)) - mbaseline(ind(i))
-            bowldepth_orig(nbowl) = moriginal_depth_list(ind(i))
-         end if
-      end do
-
-      ! Count up all the rim and bowl pixels and calculate the current average rim-bowl height and shape deviation 
-      if ((nbowl > 1) .and. (nrim > 0)) then
-         ! Calculate mean 
-         avgrim = sum(rimelevation(1:nrim)) / real(nrim, kind = DP)
-
-         ! Sort the bowl pixels and only count the lowest (original) of the set by a fraction set by the user
-         call util_mrgrnk(bowldepth_orig(1:nbowl),elevind(1:nbowl))
-         ntot = min(ceiling(BOWLFRAC * nbowl),nbowl)
-         avgbowldepth = avgrim - bowlelevation(elevind(nbowl))
-         avgbowldepth_orig = bowldepth_orig(elevind(nbowl))
-         deviation = avgbowldepth - avgbowldepth_orig
-         sigma = 0.0_DP
-         do i = 2,nbowl
-            xk = avgrim - bowlelevation(elevind(nbowl + 1 - i))
-            Mkm1 = avgbowldepth
-            avgbowldepth = Mkm1 + (xk - Mkm1) /  real(i,kind = DP)
-
-            xkdd = bowldepth_orig(elevind(nbowl + 1 - i))
-            Mkm1dd = avgbowldepth_orig
-            avgbowldepth_orig = Mkm1dd + (xkdd - Mkm1dd) /  real(i,kind = DP)
-
-            if (i == ntot) then ! Save the values for the bottom of the bowl
-               tmp_current_depth(craternum) = real(avgbowldepth,kind = SP)
-               tmp_original_depth(craternum) = real(avgbowldepth_orig,kind = SP)
-            end if
-
-            xkdev = xk - xkdd 
-            Mkm1dev = deviation
-            deviation = Mkm1dev + (xkdev - Mkm1dev) / real(i,kind = DP)
-            sigma = sigma + (xkdev - Mkm1dev) * (xkdev - deviation) ! Method for computing running std. dev from 
-                                                                    ! Knuth _Art of Computer Programming_, Vol. 2 pg. 232 3rd ed
-         end do
-         sigma = sqrt(sigma / (nbowl - 1))
-         tmp_deviation_sigma(craternum) = real(sigma,kind = SP)
-      else ! This crater is uncountable
-         tmp_current_depth(craternum) = 1._SP
-         tmp_original_depth(craternum) = huge(tmp_original_depth(craternum))
-         tmp_deviation_sigma(craternum) = huge(tmp_deviation_sigma(craternum))
-      end if
-
-      ! Use the calibrated crater count subroutine to determine if this is a countable crater or not
-      if (totpix(craternum) > SMALLESTCOUNTABLE) then 
-         call crater_tally_calibrated_count(user,tlist(craternum),tmp_current_depth(craternum),&
-                                            tmp_original_depth(craternum),tmp_deviation_sigma(craternum),& 
-                                            countable(craternum),killable,tmp_p(craternum))
-      else  
+      if (totpix(craternum) < int(0.1_DP * 0.25_DP * PI * tlist(craternum) / user%pix)) then
          countable(craternum) = .false.
          killable = .true.
-      end if   
+         tmp_p(craternum) = 0.0_DP
+      else
+         nrim = 0
+         nbowl = 0
+         nprof = 0
+         bowl = 0.0_DP
+         rim = 0.0_DP
+         inc = ceiling(0.5_DP * tlist(craternum) / user%pix * 1.25_DP)  
+         do j = -inc, inc
+            do i = -inc, inc
+               rad = sqrt((i**2 + j**2)*1._DP) * user%pix / tlist(craternum)
+               if (rad < 0.1_DP) then
+                  xpi = int(poslist(1,craternum) / user%pix) + i
+                  ypi = int(poslist(2,craternum) / user%pix) + j
+                  call util_periodic(xpi,ypi,user%gridsize)
+                  bowl = bowl + surf(xpi,ypi)%dem
+                  nbowl = nbowl + 1 
+               else if (rad > 0.4_DP) then
+                  xpi = int(poslist(1,craternum) / user%pix) + i
+                  ypi = int(poslist(2,craternum) / user%pix) + j
+                  call util_periodic(xpi,ypi,user%gridsize)
+                  rim = rim + surf(xpi,ypi)%dem
+                  nrim = nrim + 1 
+               end if
+            end do
+         end do
+         rim = rim / nrim 
+         bowl = bowl / nbowl 
+         tmp_p(craternum) = (rim - bowl) / tlist(craternum)
+
+!               if ((i**2 + j**2) < inc**2) then
+!                  xpi = int(poslist(1,craternum) / user%pix) + i
+!                  ypi = int(poslist(2,craternum) / user%pix) + j
+!                  call util_periodic(xpi,ypi,user%gridsize)
+!                  nprof = nprof + 1
+!                  elev(nprof) = surf(xpi,ypi)%dem
+!                  dis(nprof) = sqrt((i**2 + j**2)*1.d0) * user%pix
+!                  totavg = totavg + elev(nprof)
+!               end if
+!            end do
+!         end do
+!         totavg = totavg / nprof
+!         elev = elev - totavg
+!         call util_mrgrnk(dis(1:nprof),elevind(1:nprof))
+!         avgelev = 0.0_DP
+!         avgdis = 0.0_DP
+!         Ni = 1
+!         ntot = 0
+!         i = 0
+!         rim = 0.0_DP
+!         bowl = 0.0_DP
+!         nrim = 0
+!         nbowl = 0
+!         outer: do 
+!            do 
+!               i = i + 1
+!               if (i > nprof) exit outer
+!               if (dis(elevind(i)) > profres * Ni) then
+!                  avgdis = avgdis / ntot / tlist(craternum)
+!                  avgelev = avgelev / ntot / tlist(craternum)
+!                  if (avgdis >= 0.4_DP) then
+!                     rim = rim + avgelev
+!                     nrim = nrim+ 1
+!                  else if (avgdis <= 0.1_DP) then
+!                     bowl = bowl + avgelev
+!                     nbowl = nbowl + 1
+!                  end if
+!                  avgelev = elev(elevind(i))
+!                  avgdis = dis(elevind(i))
+!                  ntot = 1
+!                  exit
+!               else
+!                  avgelev = avgelev + elev(elevind(i))
+!                  avgdis = avgdis + dis(elevind(i))
+!                  ntot = ntot + 1
+!               end if
+!            end do
+!            Ni = Ni + 1
+!         end do  outer
+
+
+         if (tmp_p(craternum) > 0.05_DP) then
+            countable(craternum) = .true.
+            killable = .false.
+         else  
+            countable(craternum) = .false.
+            killable = .true.
+         end if   
+      end if
+      ! TESTING
+      if (user%testtally) then
+         countable = .true.
+         killable = .false.
+      end if
       if (killable) then ! Obliterate the crater from the record
          do i=istart(craternum),iend(craternum)
             call util_remove_from_layer(surf(mpxlist(1,ind(i)),mpxlist(2,ind(i))),mlayerlist(ind(i)))
@@ -254,13 +286,11 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       end if
       if (countable(craternum)) onum = onum + 1
       !deallocate(csurf)
-  end do
-  !$OMP END DO
-  deallocate(rimelevation)
-  deallocate(bowlelevation)
-  deallocate(bowldepth_orig)
-  deallocate(elevind)
-  !$OMP END PARALLEL
+   end do
+   !$OMP END DO
+   !deallocate(dis)
+   !deallocate(elev)
+   !$OMP END PARALLEL
 
    ! Bin the observed craters if required 
    if (present(obsdist)) then
