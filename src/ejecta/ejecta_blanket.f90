@@ -65,7 +65,7 @@ subroutine ejecta_blanket(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       ytrans2 = PItwo * (PIfour**(-THIRD))
       ytrans = ytrans1 * (ytrans2**(2._DP / (mu + 2._DP)))
       ce2asq = ce1sq * abs((user%gaccel * crater%grad * trho) / (tstr + ytrans + vsmall))
-      p = 2.0_DP / mu
+      p = 6.0_DP / mu
       ce2sq = ce2asq * (crater%grad / crater%rad)**p
       yterm = ce2sq * (tstr / trho)
       firstrun = .false.
