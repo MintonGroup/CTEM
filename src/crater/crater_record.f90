@@ -30,7 +30,7 @@ subroutine crater_record(user,surf,crater)
    type(cratertype),intent(inout) :: crater
 
    ! Internal variables
-   real(DP) :: rimdis,rimdissq,avgrim,baseline
+   real(DP) :: rimdis,rimdissq,avgrim,baseline,r,hideal
    real(SP) :: depth
    integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq,nrim,nbowl
    integer(I2B) :: isrim
@@ -64,14 +64,26 @@ subroutine crater_record(user,surf,crater)
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
+            r = sqrt(iradsq * 1._DP) / crater%frad
+
+            if (r < 0.2_DP) then
+               hideal = -0.181_DP
+            else if (r < 0.98_DP) then
+               hideal = -0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3
+            else if (r < 1.5_DP) then
+               hideal =  0.188_DP - 0.187_DP * r + 0.018_DP * r**2 - 0.015_DP * r**3
+            else
+               hideal = 0.0_DP
+            end if
+            hideal = hideal * crater%fcrat
 
             ! find out if we're part of the counting rim or not
             if ((iradsq * 1._DP) >= rimdissq) then
                nrim = nrim + 1
-               rimelevation(nrim) = surf(xpi,ypi)%dem - baseline
+               rimelevation(nrim) = hideal !surf(xpi,ypi)%dem - baseline
             else
                nbowl = nbowl + 1
-               bowlelevation(nbowl) = surf(xpi,ypi)%dem - baseline
+               bowlelevation(nbowl) = hideal !surf(xpi,ypi)%dem - baseline
             end if
          end if
 
@@ -98,6 +110,20 @@ subroutine crater_record(user,surf,crater)
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
 
+            r = sqrt(iradsq * user%pix**2) / crater%frad
+
+            if (r < 0.2_DP) then
+               hideal = -0.181_DP
+            else if (r < 0.98_DP) then
+               hideal = -0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3
+            else if (r < 1.5_DP) then
+               hideal =  0.188_DP - 0.187_DP * r + 0.018_DP * r**2 - 0.015_DP * r**3
+            else
+               hideal = 0.0_DP
+            end if
+            hideal = hideal * crater%fcrat
+
+
             ! find out if we're part of the counting rim or not
             if ((iradsq*1._DP) >= rimdissq) then
                isrim = 1
@@ -105,7 +131,8 @@ subroutine crater_record(user,surf,crater)
                isrim = 0
             end if
             ! Calculate the current depth below the average rim height
-            depth = real(avgrim - (surf(xpi,ypi)%dem - baseline), kind = SP)
+            !depth = real(avgrim - (surf(xpi,ypi)%dem - baseline), kind = SP)
+            depth = real(avgrim - hideal, kind = SP)
 
             ! record crater in available layer
             call util_add_to_layer(user,surf(xpi,ypi),isrim,crater%fcrat,crater%xl,crater%yl,depth,real(baseline, kind = SP))
