@@ -34,7 +34,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
-   real(DP) :: cform,newdem,elchange,pikeD
+   real(DP) :: cform,newdem,elchange,pikeD,r,h,circrad,polymodel,f,HH
    integer(I4B) :: layer
 
    ! A list for poped data 
@@ -43,7 +43,13 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    ! Executable code
 
    !change digital elevation map
-   cform = crater%vcorr - (crater%parab * lradsq)
+   !cform = crater%vcorr - (crater%parab * lradsq)
+   !if (lradsq < crater%rad**2) then
+   r = sqrt(lradsq) / crater%frad
+   h = 2.5_DP*crater%rad !0.5_DP*crater%fcrat
+   circrad = 0.5_DP * h + (2*crater%rad)**2 / (8 * h)
+   cform = sqrt(circrad**2 - lradsq) + (circrad - h) + 0.15_DP*crater%frad
+                  
    newdem = newelev - cform
 
    pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
