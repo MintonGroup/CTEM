@@ -47,6 +47,8 @@ subroutine ejecta_soften(user,surf,N,indarray,cumulative_elchange)
 
    ! Diffusion constant for 1 time unit was found to be proportional to ejecta thickness times the pixel size
    kdiff = EJECTA_SOFTEN_FACTOR * user%pix * ebharr 
+   ! This prevents an infinite hole bug by making a 0 value buffer along the
+   ! edges of the diffusion constant matrix
    kdiff(1,:) = 0.0_DP
    kdiff(:,1) = 0.0_DP
    kdiff(N,:) = 0.0_DP
