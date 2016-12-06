@@ -40,7 +40,7 @@ type(cratertype) :: crater
 ! Distribution arrays
 real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist
 real(DP),dimension(:),allocatable :: obslist
-real(SP),dimension(:),allocatable :: original_depth,current_depth,p_score,deviation_sigma
+real(SP),dimension(:),allocatable :: depthdiam
 real(SP),dimension(:,:),allocatable :: oposlist
 integer(I8B),dimension(:),allocatable :: production_list
 ! Miscellaneous variables
@@ -131,12 +131,10 @@ if (.not.user%tallyonly) then
    write(*,*) "Surface-affecting craters generated:   ",ntrue
    write(*,*) "Visible craters generated:             ",vistrue
 end if
-call crater_tally_observed(user,surf,domain,nkilled,onum,&
-                           obsdist,obslist,oposlist,original_depth,current_depth,deviation_sigma,p_score)
+call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam)
 ntotkilled = ntotkilled + nkilled
 write(*,*) 'Craters killed during tally: ',ntotkilled
-call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,&
-                    original_depth,current_depth,deviation_sigma,p_score)
+call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam)
 if (.not.user%tallyonly) then
    write(*,*) "Writing surface files"
    call io_write_surf(user,surf)
@@ -160,7 +158,7 @@ end if
 ! Deallocate all the allocatables
 deallocate(seedarr)
 deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux,production_list)
-deallocate(oposlist,current_depth,original_depth,p_score,deviation_sigma)
+deallocate(oposlist,depthdiam)
 
 !$ t2 = omp_get_wtime()
 !$ write(*,*) 'Timing information'
