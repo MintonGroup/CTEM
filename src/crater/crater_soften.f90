@@ -36,9 +36,9 @@ subroutine crater_soften(user,surf,crater,domain)
    integer(I4B),parameter :: MAXHITS = 1
 
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
-   real(DP) :: xp,yp,fradsq,xbar,ybar,areafrac,kappatmax
+   real(DP) :: xp,yp,fradsq,xbar,ybar,areafrac,kappatmax,ss,sf
 
-   kappatmax = SOFTEN_FACTOR * crater%fcrat**SOFTEN_SLOPE
+   kappatmax = user%soften_factor * crater%fcrat**user%soften_slope
    
    inc = max(min(int(crater%fradpx + 2),PBCLIM * user%gridsize),2) 
    crater%maxinc = max(crater%maxinc,inc)
@@ -81,7 +81,6 @@ subroutine crater_soften(user,surf,crater,domain)
          end if
       end do
    end do !end area loopover 
-   !read(*,*)
 
 
    call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kappat,cumulative_elchange,maxhits)
