@@ -179,8 +179,7 @@ end interface
    end interface
 
    interface
-      subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,&
-                                       original_depth,current_depth,deviation_sigma,p)
+      subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -190,22 +189,9 @@ end interface
       real(DP),dimension(:,:),intent(out),optional  :: obsdist
       real(DP),dimension(:),intent(out),allocatable,optional :: obslist
       real(SP),dimension(:,:),intent(out),allocatable,optional :: oposlist
-      real(SP),dimension(:),intent(out),allocatable,optional :: original_depth,current_depth,deviation_sigma,p
+      real(SP),dimension(:),intent(out),allocatable,optional :: depthdiam
       end subroutine crater_tally_observed
    end interface
-
-interface
-   subroutine crater_tally_calibrated_count(user,diameter,current_depth,original_depth,&
-                                            deviation_sigma,countable,killable,p)
-   use module_globals
-   implicit none
-   type(usertype),intent(in) :: user
-   real(DP),intent(in) :: diameter
-   real(SP),intent(in) :: current_depth,original_depth,deviation_sigma
-   logical,intent(out) :: countable,killable
-   real(SP),intent(out) :: p
-   end subroutine crater_tally_calibrated_count
-end interface
 
    interface
       subroutine crater_slope_collapse(user,surf,crater,domain)
