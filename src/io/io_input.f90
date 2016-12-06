@@ -83,7 +83,6 @@ subroutine io_input(infile,user)
    user%doangle = .true.
    user%testtally = .false.
    user%killatmaxcrater = .false.
-   user%countingmodel = "FASSETT"
    user%doporosity = .false.
    user%soften_factor = 0.9_DP
    user%soften_slope = 1.8_DP
@@ -214,12 +213,6 @@ subroutine io_input(infile,user)
             token = line(ifirst:ilast)
             read(token,*) user%velfile
             ismissing(18)=.false.
-         case ("COUNTINGMODEL")
-            ifirst = ilast + 1
-            call io_get_token(line, ilength, ifirst, ilast, ierr)
-            token = line(ifirst:ilast)
-            read(token, *) user%countingmodel
-            call util_toupper(user%countingmodel)
          case ("DEPLIMIT")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
@@ -535,14 +528,6 @@ subroutine io_input(infile,user)
       user%mat = "ICE"
    end select
    !**************************************************************************
-
-   select case(user%countingmodel)
-   case("FASSETT")
-   case("HOWL")
-   case default
-      write(*,*) 'Unknown counting model ',trim(adjustl(user%countingmodel)),' specified. Using FASSETT instead.'
-      user%countingmodel = "FASSETT"
-   end select
 
    if (user%numlayers > MAXLAYER) then
       write(*,*) 'NUMLAYERS is too high. Must not exceed ',MAXLAYER
