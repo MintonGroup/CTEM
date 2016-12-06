@@ -55,7 +55,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
 
    ! Some preliminary setup
    diffmax = 0.25_DP
-   looplim = 1000*crater%fcratpx
+   looplim = 1000 * crater%fcratpx
 
    !     determine area to effect
    inc = max(min(crater%fcratpx,ceiling(SQRT2*user%gridsize)),1)
