@@ -8,11 +8,11 @@ impfile      MintonLunarProduction.dat          ! Impactor SFD rate file (col 1:
 popupconsole F                                  ! Pop up console window every output interval 
 saveshaded   T                                  ! Output shaded relief images  
 saverego     T                                  ! Output regolith map images 
-savepres     T                                  ! Output simplified console display images (presentation-compatible images)
-savetruelist T                                  ! Save the true cumulative crater distribution for each interval (large file size)
+savepres     F                                  ! Output simplified console display images (presentation-compatible images)
+savetruelist F                                  ! Save the true cumulative crater distribution for each interval (large file size)
 sfdcompare   Robbins2014-A15-FassettCounts-binned.dat         ! File name for the SFD comparison file used in the console display
-shadedminh   -85.0                              ! Minimum height for shaded relief map (m) (Default - automatic)
-shadedmaxh   85.0                               ! Maximum height for shaded relief map (m) (Default - automatic)
+!shadedminh   -85.0                              ! Minimum height for shaded relief map (m) (Default - automatic)
+!shadedmaxh   85.0                               ! Maximum height for shaded relief map (m) (Default - automatic)
 runtype      single                             ! Run type: options are normal / statistical
                                                 !    single:      craters accumulate in successive intervals
                                                 !    statistical: surface is reset between intervals
