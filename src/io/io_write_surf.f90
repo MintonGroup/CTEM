@@ -53,32 +53,11 @@ subroutine io_write_surf(user,surf)
    end do
    close(LUN)
 
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
-   open(LUN,file=RIMFILE,status='replace',form='unformatted',recl=recsize,access='direct')
-   do i=1,user%numlayers 
-      write(LUN,rec=i) surf%isrim(i)
-   end do
-   close(LUN)
-
    recsize = sizeof(stmp) * user%gridsize * user%gridsize
    open(LUN,file=POSFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    do i=1,user%numlayers 
       write(LUN,rec=2*i-1) surf%xl(i)
       write(LUN,rec=2*i) surf%yl(i)
-   end do
-   close(LUN)
-
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
-   open(LUN,file=ELEVFILE,status='replace',form='unformatted',recl=recsize,access='direct')
-   do i=1,user%numlayers 
-      write(LUN,rec=i) surf%original_depth(i)
-   end do
-   close(LUN)
-
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
-   open(LUN,file=BASEFILE,status='replace',form='unformatted',recl=recsize,access='direct')
-   do i=1,user%numlayers 
-      write(LUN,rec=i) surf%baseline(i)
    end do
    close(LUN)
 

@@ -18,7 +18,7 @@
 !**********************************************************************************************************************************
 
 
-subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,original_depth,current_depth,deviation_sigma,p_score)
+subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_write_tally
    implicit none
@@ -27,7 +27,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,original_depth,curren
    real(DP),dimension(:,:),intent(in) :: tdist,tlist,odist
    real(DP),dimension(:),intent(in) :: olist
    real(SP),dimension(:,:),intent(in) :: oposlist
-   real(SP),dimension(:),intent(in) :: original_depth,current_depth,deviation_sigma,p_score
+   real(SP),dimension(:),intent(in) :: depthdiam
 
    ! Internals
    integer(I4B)  :: i,distl,distc,ioerr,onum
@@ -74,10 +74,10 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,original_depth,curren
    close(LUN)
 
    open(LUN, FILE=OLISTFILE, status='REPLACE')
-   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        origdepth(m)   currdepth(m)   devsigma       pscore")'  )
+   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        depth/diam")'  )
    do i=1,onum
 
-      write(LUN,2000) olist(i),oposlist(:,i),original_depth(i),current_depth(i),deviation_sigma(i),p_score(i)
+      write(LUN,2000) olist(i),oposlist(:,i),depthdiam(i)
    end do
    close(LUN)
 

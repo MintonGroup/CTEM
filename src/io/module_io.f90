@@ -124,13 +124,13 @@ save
    end interface
 
    interface
-      subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,original_depth,current_depth,deviation_sigma,p)
+      subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
       use module_globals
       implicit none
       real(DP),dimension(:,:),intent(in) :: tdist,tlist,odist
       real(DP),dimension(:),intent(in) :: olist
       real(SP),dimension(:,:),intent(in) :: oposlist
-      real(SP),dimension(:),intent(in) :: original_depth,current_depth,deviation_sigma,p
+      real(SP),dimension(:),intent(in) :: depthdiam
       end subroutine io_write_tally
    end interface
 

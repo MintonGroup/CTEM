@@ -66,17 +66,6 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
-   open(LUN,file=RIMFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
-   if (ioerr/=0) then
-      write(*,*) 'Error! Cannot read file ',trim(adjustl(RIMFILE))
-      stop
-   end if
-   do i=1,user%numlayers 
-      read(LUN,rec=i) surf%isrim(i)
-   end do
-   close(LUN)
-
    recsize = sizeof(stmp) * user%gridsize * user%gridsize
    open(LUN,file=POSFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
@@ -86,28 +75,6 @@ subroutine io_read_surf(user,surf)
    do i=1,user%numlayers 
       read(LUN,rec=2*i-1) surf%xl(i)
       read(LUN,rec=2*i) surf%yl(i)
-   end do
-   close(LUN)
-
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
-   open(LUN,file=ELEVFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
-   if (ioerr/=0) then
-      write(*,*) 'Error! Cannot read file ',trim(adjustl(ELEVFILE))
-      stop
-   end if
-   do i=1,user%numlayers 
-      read(LUN,rec=i) surf%original_depth(i)
-   end do
-   close(LUN)
-
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
-   open(LUN,file=BASEFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
-   if (ioerr/=0) then
-      write(*,*) 'Error! Cannot read file ',trim(adjustl(BASEFILE))
-      stop
-   end if
-   do i=1,user%numlayers 
-      read(LUN,rec=i) surf%baseline(i)
    end do
    close(LUN)
 
