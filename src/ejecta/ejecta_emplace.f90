@@ -300,7 +300,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
          lradsq = lrad**2
 
 
-         if ((lradsq <= ejdissq) .and. (lradsq >= radsq)) then
+         if ((lradsq <= ejdissq) .and. (lradsq >= radsq) .and. (lrad > 0.0_DP)) then
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
             mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
                     (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
