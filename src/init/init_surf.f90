@@ -32,11 +32,8 @@ subroutine init_surf(user,surf)
    surf%dem    = 0.0_DP
    do layer = 1,user%numlayers
       surf%diam(layer)   = 0.0_DP
-      surf%isrim(layer)  = 0
       surf%xl(layer)     = 0.0_SP
       surf%yl(layer)     = 0.0_SP
-      surf%original_depth(layer) = 0.0_SP
-      surf%baseline(layer) = 0.0_SP
    end do
    !if (user%docrustal_thinning) surf%mantle = 0._DP
 
