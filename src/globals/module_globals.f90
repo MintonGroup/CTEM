@@ -162,7 +162,6 @@ type usertype
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
    real(DP)          :: deplimit  ! complex crater depth limit
-   character(STRMAX) :: countingmodel ! Crater counter model
 
    ! Seismic input variables 
    logical ::  doseismic ! Set to T if you want to do the seismic shaking model
