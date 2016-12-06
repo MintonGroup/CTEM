@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_add_to_layer(user,surfi,isrim,fcrat,xl,yl,depth,baseline)
+subroutine util_add_to_layer(user,surfi,fcrat,xl,yl)
 use module_globals
 use module_util, EXCEPT_THIS_ONE => util_add_to_layer
 implicit none
@@ -26,10 +26,8 @@ implicit none
 ! Arguments
 type(usertype),intent(in) :: user
 type(surftype),intent(inout) :: surfi
-integer(I2B),intent(in) :: isrim
 real(DP),intent(in) :: fcrat
 real(SP),intent(in) :: xl,yl
-real(SP),intent(in) :: depth,baseline
 
 ! Internals
 integer(I4B) :: layer,l
@@ -48,11 +46,8 @@ end do
 ! Emplace a new crater if requested and a spot is available
 if (layer>0) then
    surfi%diam(layer) = fcrat
-   surfi%isrim(layer) = isrim
    surfi%xl(layer) = xl
    surfi%yl(layer) = yl
-   surfi%original_depth(layer) = depth
-   surfi%baseline(layer) = baseline
 else
    write(*,*)
    write(*,*) 'WARNING! No free layer to add crater pixel. Consider increasing NUMLAYERS'

@@ -32,8 +32,6 @@ subroutine util_sort_layer(user,surf,crater)
    integer(I4B),dimension(user%numlayers) :: ind
    real(DP),dimension(user%numlayers) :: tempdiam
    real(SP),dimension(user%numlayers) :: tempxpos,tempypos
-   real(SP),dimension(user%numlayers) :: tempdepth,tempbaseline
-   integer(I2B),dimension(user%numlayers) :: tempisrim
    integer(I4B) :: i,j,k,inc,incsq,mx,my,iradsq
 
    inc = min(crater%rimdispx,(user%gridsize - 1)/2)
@@ -54,22 +52,16 @@ subroutine util_sort_layer(user,surf,crater)
            
             ! Temporarily store layer data
             tempdiam = surf(mx,my)%diam(1:user%numlayers)
-            tempisrim = surf(mx,my)%isrim(1:user%numlayers)
             tempxpos = surf(mx,my)%xl(1:user%numlayers)
             tempypos = surf(mx,my)%yl(1:user%numlayers)
-            tempdepth = surf(mx,my)%original_depth(1:user%numlayers)
-            tempbaseline = surf(mx,my)%baseline(1:user%numlayers)
 
             ! Sort the layers by crater diameter
             call util_mrgrnk(surf(mx,my)%diam(1:user%numlayers),ind)
 
             do k=1,user%numlayers
                surf(mx,my)%diam(k)=tempdiam(ind(k))
-               surf(mx,my)%isrim(k)=tempisrim(ind(k))
                surf(mx,my)%xl(k)=tempxpos(ind(k))
                surf(mx,my)%yl(k)=tempypos(ind(k))
-               surf(mx,my)%original_depth(k)=tempdepth(ind(k))
-               surf(mx,my)%baseline(k)=tempbaseline(ind(k))
             end do
          end if
       end do

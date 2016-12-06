@@ -30,10 +30,7 @@ integer(I4B),intent(in) :: layer
 ! Internals
 
 surfi%diam(layer) = 0.0_DP
-surfi%isrim(layer) = 0
 surfi%xl(layer) = 0.0_SP
 surfi%yl(layer) = 0.0_SP
-surfi%original_depth(layer) = 0.0_SP
-surfi%baseline(layer) = 0.0_SP
 
 end subroutine util_remove_from_layer

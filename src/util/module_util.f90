@@ -79,15 +79,13 @@ interface
 end interface
 
 interface
-   subroutine util_add_to_layer(user,surfi,isrim,fcrat,xl,yl,depth,baseline)
+   subroutine util_add_to_layer(user,surfi,fcrat,xl,yl)
    use module_globals
    implicit none
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
-   integer(I2B),intent(in) :: isrim
    real(DP),intent(in) :: fcrat
    real(SP),intent(in) :: xl,yl
-   real(SP),intent(in) :: depth,baseline
    end subroutine util_add_to_layer
 end interface
 
