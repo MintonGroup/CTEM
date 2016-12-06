@@ -35,7 +35,7 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
 
    real(DP) :: lradsq,newelev,deltaMp
    integer(I4B) :: xpi,ypi,i,j,k,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,deltaMi
+   real(DP) :: xp,yp,radsq,deltaMi
    type(surftype) :: surfi
 
    ! Now make the exterior of the crater
@@ -45,13 +45,13 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
    crater%maxinc = max(crater%maxinc,inc)
    incsq = inc**2
 
-   fradsq = crater%rad**2
+   radsq = crater%rad**2
 
    deltaMp = 0.0_DP
 
    ! Loop over affected matrix area
    !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(inc,fradsq,incsq,rd,lastloop) &
+   !$OMP SHARED(inc,radsq,incsq,rd,lastloop) &
    !$OMP SHARED(crater,user,surf) &
    !$OMP REDUCTION(+:deltaMP)
    do j=-inc,inc  ! Do the loop in pixel space
@@ -73,7 +73,7 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
             lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
 
             ! Form interior, rim, and ejecta blanket 
-            if (lradsq > fradsq) then
+            if (lradsq > radsq) then
                if (lastloop) then
                   call crater_form_exterior(user,surf(xpi,ypi),crater,domain,lradsq,newelev,rd,deltaMi) 
                else
