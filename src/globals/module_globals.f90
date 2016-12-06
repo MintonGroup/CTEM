@@ -74,12 +74,8 @@ end type
 type surftype
    real(DP),dimension(MAXLAYER) :: diam
    real(SP),dimension(MAXLAYER) :: xl,yl ! Crater center 
-   real(SP),dimension(MAXLAYER) :: original_depth ! Original crater depth (used for crater counting)
-   real(SP),dimension(MAXLAYER) :: baseline ! Slope-corrected baseline of measurement for crater elevations
-   integer(I2B),dimension(MAXLAYER)  :: isrim ! 1 if the pixel was part of the original rim and 0 if part of the bowl
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
-   real(DP) :: demOrig              ! Original digital elevation model used for mass conservation calculation
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
    type(regolisttype),pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
 end type surftype
@@ -249,9 +245,6 @@ character(*),parameter :: COMPFILE   = 'surface_comp.dat'
 character(*),parameter :: STACKNUMFILE = 'surface_stacknum.dat'
 !character(*),parameter :: THICKFILE  = 'surface_crustal_thickness.dat'
 character(*),parameter :: POSFILE    = 'surface_pos.dat'
-character(*),parameter :: ELEVFILE   = 'surface_original_crater_depth.dat'
-character(*),parameter :: BASEFILE   = 'surface_baseline.dat'
-character(*),parameter :: RIMFILE    = 'surface_isrim.dat'
 character(*),parameter :: TDISTFILE  = 'tdistribution.dat'
 character(*),parameter :: TLISTFILE  = 'tcumulative.dat'
 character(*),parameter :: ODISTFILE  = 'odistribution.dat'
