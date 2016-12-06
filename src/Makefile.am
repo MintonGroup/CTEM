@@ -1,12 +1,12 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
 #AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR 
-AM_FCFLAGS =  -O3 -openmp -parallel -assume byterecl -m64 -heap-arrays -FR 
+#AM_FCFLAGS =  -O3 -openmp -parallel -assume byterecl -m64 -heap-arrays -FR 
 #ifort debug flags
 #AM_FCFLAGS = -O3 -p -g -openmp -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
 
 #gfortran optimized flags
-#AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
+AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
@@ -74,12 +74,10 @@ crater/crater_form_exterior_rootfind.f90\
 crater/crater_record.f90\
 crater/crater_tally_true.f90\
 crater/crater_tally_observed.f90\
-crater/crater_tally_calibrated_count.f90\
 crater/crater_slope_collapse.f90\
 crater/crater_soften.f90\
 crater/crater_subpixel_diffusion.f90\
 crater/crater_make_list.f90\
-crater/crater_mass_conservation.f90\
 crater/crater_critical_slope.f90\
 init/init_domain.f90\
 init/init_dist.f90\
