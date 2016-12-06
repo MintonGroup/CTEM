@@ -30,12 +30,9 @@ subroutine crater_record(user,surf,crater)
    type(cratertype),intent(inout) :: crater
 
    ! Internal variables
-   real(DP) :: rimdis,rimdissq,avgrim,baseline,r,hideal
-   real(SP) :: depth
-   integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq,nrim,nbowl
+   integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
    integer(I2B) :: isrim
-   real(DP),dimension(:),allocatable :: rimelevation,bowlelevation
-   integer(I4B),dimension(:),allocatable :: elevind
+   real(DP) :: rimdis
    
 
    ! Executable code
@@ -44,58 +41,6 @@ subroutine crater_record(user,surf,crater)
    rimdis = (crater%frad / user%pix)
    inc  = max(int(rimdis) + 1, 1)
    incsq = inc**2
-   allocate(rimelevation(4 * incsq))
-   allocate(bowlelevation(4 * incsq))
-   allocate(elevind(4 * incsq))
-
-   rimdissq = rimdis**2
-
-   ! Loop over affected matrix area
-   nrim = 0
-   nbowl = 0
-   do j = -inc,inc
-      do i = -inc,inc
-         ! find distance from crater center
-         iradsq = i*i + j*j
-         if (iradsq <= incsq) then
-            xpi = crater%xlpx + i
-            ypi = crater%ylpx + j
-            baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix
-
-            ! periodic boundary conditions
-            call util_periodic(xpi,ypi,user%gridsize)
-            r = sqrt(iradsq * 1._DP) / crater%frad
-
-            if (r < 0.2_DP) then
-               hideal = -0.181_DP
-            else if (r < 0.98_DP) then
-               hideal = -0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3
-            else if (r < 1.5_DP) then
-               hideal =  0.188_DP - 0.187_DP * r + 0.018_DP * r**2 - 0.015_DP * r**3
-            else
-               hideal = 0.0_DP
-            end if
-            hideal = hideal * crater%fcrat
-
-            ! find out if we're part of the counting rim or not
-            if ((iradsq * 1._DP) >= rimdissq) then
-               nrim = nrim + 1
-               rimelevation(nrim) = hideal !surf(xpi,ypi)%dem - baseline
-            else
-               nbowl = nbowl + 1
-               bowlelevation(nbowl) = hideal !surf(xpi,ypi)%dem - baseline
-            end if
-         end if
-
-      end do
-   end do !end area loopover 
-
-   if (nrim < 2) then
-      write(*,*) 'Crater rim too small to count! Increase the value of SMALLESTCOUNTABLE or rimfrac'
-      avgrim = -huge(depth)
-   else
-      avgrim = sum(rimelevation(1:nrim)) / real(nrim, kind = DP)
-   end if
 
    do j=-inc,inc
       do i=-inc,inc
@@ -105,43 +50,16 @@ subroutine crater_record(user,surf,crater)
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
 
-            baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix
-
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
 
-            r = sqrt(iradsq * user%pix**2) / crater%frad
-
-            if (r < 0.2_DP) then
-               hideal = -0.181_DP
-            else if (r < 0.98_DP) then
-               hideal = -0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3
-            else if (r < 1.5_DP) then
-               hideal =  0.188_DP - 0.187_DP * r + 0.018_DP * r**2 - 0.015_DP * r**3
-            else
-               hideal = 0.0_DP
-            end if
-            hideal = hideal * crater%fcrat
-
-
-            ! find out if we're part of the counting rim or not
-            if ((iradsq*1._DP) >= rimdissq) then
-               isrim = 1
-            else
-               isrim = 0
-            end if
-            ! Calculate the current depth below the average rim height
-            !depth = real(avgrim - (surf(xpi,ypi)%dem - baseline), kind = SP)
-            depth = real(avgrim - hideal, kind = SP)
-
             ! record crater in available layer
-            call util_add_to_layer(user,surf(xpi,ypi),isrim,crater%fcrat,crater%xl,crater%yl,depth,real(baseline, kind = SP))
+            call util_add_to_layer(user,surf(xpi,ypi),crater%fcrat,crater%xl,crater%yl)
          end if
 
       end do
    end do 
 
-   deallocate(rimelevation,bowlelevation,elevind)
    return
 end subroutine crater_record
 
