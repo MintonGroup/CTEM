@@ -62,8 +62,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
       lambda_regolith(i) = dN(i) * 0.25_DP * PI * (nflux(2,i) + SQRT2 * user%pix)**2 
        
       if (user%dosoftening) then
-         kappat_bedrock(i) = user%soften_factor * nflux(1,i)**(user%soften_slope)
-         kappat_regolith(i) = user%soften_factor * nflux(2,i)**(user%soften_slope)
+         kappat_bedrock(i) = user%soften_factor * (0.5_DP * nflux(1,i))**(user%soften_slope)
+         kappat_regolith(i) = user%soften_factor * (0.5_DP * nflux(2,i))**(user%soften_slope)
       end if
 
    end do
