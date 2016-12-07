@@ -84,7 +84,7 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%doporosity = .false.
-   user%soften_factor = 0.9_DP
+   user%soften_factor = 0.43_DP
    user%soften_slope = 1.8_DP
    user%discontinuous = .true.
    
