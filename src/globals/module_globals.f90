@@ -255,7 +255,7 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 3             ! periodic boundary condition limit
-integer(I4B),parameter :: SMALLESTCOUNTABLE = 20 ! Minimum number of pixels for a crater to be considered countable
+integer(I4B),parameter :: SMALLESTCOUNTABLE = 5 ! Minimum pixel diameter for a crater to be considered countable
 real(DP),parameter :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
 integer(I4B),parameter :: TRUECOLS = 6 ! Number of columns in the true crater count array
 integer(I4B)           :: NTHREADS = 1 ! Number of OpenMP threads (reset by OpenMP if a parallel environment is detected)
