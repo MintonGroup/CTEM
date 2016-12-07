@@ -54,7 +54,7 @@ subroutine crater_record(user,surf,crater)
             call util_periodic(xpi,ypi,user%gridsize)
 
             ! record crater in available layer
-            call util_add_to_layer(user,surf(xpi,ypi),crater%fcrat,crater%xl,crater%yl)
+            call util_add_to_layer(user,surf(xpi,ypi),crater)
          end if
 
       end do

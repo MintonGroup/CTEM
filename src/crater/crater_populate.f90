@@ -200,7 +200,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
 
          ! Place crater onto the surface
-         if (crater%fcrat > domain%smallest_crater) then
+         if (crater%fcrat > domain%smallest_counted_crater) then
             call crater_emplace(user,surf,crater,domain,ejbmass)
 
             !call crater_mass_conservation(user,surf,crater) ! mass conservation is now done in crater_emplace
