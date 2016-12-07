@@ -59,9 +59,9 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    domain%parea = user%pix**2
    domain%area = domain%side**2
    domain%biggest_crater = domain%side * user%maxcrat
-   domain%smallest_crater = user%pix
+   domain%smallest_crater =  user%pix
    domain%smallest_ejecta = SMALLESTEJECTA * user%pix
-   domain%smallest_counted_crater = 2._DP / (1._DP + COUNTINGRIM) * sqrt(SMALLESTCOUNTABLE / PI) * user%pix 
+   domain%smallest_counted_crater = SMALLESTCOUNTABLE * user%pix 
    domain%vescsq = 2 * user%gaccel * user%trad
 
    ! Set up transition values
