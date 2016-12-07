@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_add_to_layer(user,surfi,fcrat,xl,yl)
+subroutine util_add_to_layer(user,surfi,crater)
 use module_globals
 use module_util, EXCEPT_THIS_ONE => util_add_to_layer
 implicit none
@@ -26,8 +26,7 @@ implicit none
 ! Arguments
 type(usertype),intent(in) :: user
 type(surftype),intent(inout) :: surfi
-real(DP),intent(in) :: fcrat
-real(SP),intent(in) :: xl,yl
+type(cratertype),intent(in) :: crater
 
 ! Internals
 integer(I4B) :: layer,l
@@ -37,7 +36,7 @@ layer=0
 !  add to successive layers, destroying smaller craters if they exist
 do l=user%numlayers,1,-1
    ! mark layer as available if nothing as big is now recorded there:
-   if ((fcrat * COOKIESIZE) > surfi%diam(l) ) then 
+   if ((crater%fcrat * COOKIESIZE) > surfi%diam(l) ) then 
       call util_remove_from_layer(surfi,l)
       layer = l
    end if
@@ -45,9 +44,9 @@ end do
 
 ! Emplace a new crater if requested and a spot is available
 if (layer>0) then
-   surfi%diam(layer) = fcrat
-   surfi%xl(layer) = xl
-   surfi%yl(layer) = yl
+   surfi%diam(layer) = crater%fcrat
+   surfi%xl(layer) = crater%xl
+   surfi%yl(layer) = crater%yl
 else
    write(*,*)
    write(*,*) 'WARNING! No free layer to add crater pixel. Consider increasing NUMLAYERS'
