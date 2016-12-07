@@ -32,7 +32,7 @@ subroutine ejecta_soften(user,surf,N,indarray,cumulative_elchange)
    integer(I4B),dimension(2,N,N),intent(in) :: indarray
    real(DP),dimension(N,N),intent(inout) :: cumulative_elchange 
    !real(DP),parameter :: SOFTEN_FACTOR = 2.50_DP ! Constant in topographic diffusion term for ejecta blanket softening
-   real(DP),parameter :: EJECTA_SOFTEN_FACTOR = 1.50_DP ! Constant in topographic diffusion term for ejecta blanket softening
+   real(DP),parameter :: EJECTA_SOFTEN_FACTOR = 3.00_DP ! Constant in topographic diffusion term for ejecta blanket softening
 
    ! Internal variables
    integer(I4B) :: maxhits
