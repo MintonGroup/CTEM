@@ -203,7 +203,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       outer = outer / nouter
       tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
 
-      if ((tmp_depthdiam(craternum) > 0.03_DP).and.((rim - outer) / crater%fcrat < 0.05)) then
+      if ((tmp_depthdiam(craternum) > 0.03_DP).and.(abs(outer - rim) / crater%fcrat < 0.05)) then
          countable(craternum) = .true.
          killable = .false.
       else  
