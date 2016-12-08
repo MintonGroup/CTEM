@@ -178,7 +178,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       bowl = 0.0_DP
       rim = 0.0_DP
       outer = 0.0_DP
-      inc = ceiling(0.5_DP * crater%fcrat / user%pix * 2.00_DP)  
+      inc = ceiling(0.5_DP * crater%fcrat / user%pix * 1.50_DP)  
       do j = -inc, inc
          do i = -inc, inc
             rad = sqrt((i**2 + j**2)*1._DP) * user%pix / crater%fcrat
@@ -203,7 +203,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       outer = outer / nouter
       tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
 
-      if ((tmp_depthdiam(craternum) > 0.03_DP).and.(abs(outer - rim) / crater%fcrat < 0.05)) then
+      if ((tmp_depthdiam(craternum) > 0.05_DP).and.(abs(outer - rim) / crater%fcrat < 0.05)) then
          countable(craternum) = .true.
          killable = .false.
       else  
