@@ -59,8 +59,8 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(DP) :: avgrim,avgbowldepth,avgbowldepth_orig,xk,Mkm1,xkdd,Mkm1dd
    real(DP) :: xkdev,Mkm1dev,deviation,sigma
    logical :: killable
-   integer(I4B) :: nrim,nbowl
-   real(DP) :: totavg,avgelev,profres,avgdis,rim,bowl,rad,baseline
+   integer(I4B) :: nrim,nbowl,nouter
+   real(DP) :: totavg,avgelev,profres,avgdis,rim,bowl,outer,rad,baseline
 
    ! Executable code
 
@@ -174,33 +174,36 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       call crater_averages(user,surf,crater)
       nrim = 0
       nbowl = 0
+      nouter = 0
       bowl = 0.0_DP
       rim = 0.0_DP
-      inc = ceiling(0.5_DP * crater%fcrat / user%pix * 1.25_DP)  
+      outer = 0.0_DP
+      inc = ceiling(0.5_DP * crater%fcrat / user%pix * 2.00_DP)  
       do j = -inc, inc
          do i = -inc, inc
             rad = sqrt((i**2 + j**2)*1._DP) * user%pix / crater%fcrat
             baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix 
+            xpi = crater%xlpx + i
+            ypi = crater%ylpx + j
+            call util_periodic(xpi,ypi,user%gridsize)
             if (rad < 0.1_DP) then
-               xpi = crater%xlpx + i
-               ypi = crater%ylpx + j
-               call util_periodic(xpi,ypi,user%gridsize)
                bowl = bowl + surf(xpi,ypi)%dem - baseline
                nbowl = nbowl + 1 
-            else if (rad > 0.45_DP) then
-               xpi = crater%xlpx + i
-               ypi = crater%ylpx + j
-               call util_periodic(xpi,ypi,user%gridsize)
+            else if ((rad > 0.45_DP).and.(rad < 0.55_DP)) then
                rim = rim + surf(xpi,ypi)%dem - baseline
                nrim = nrim + 1 
+            else if (rad > 0.55_DP) then
+               outer = outer + surf(xpi,ypi)%dem - baseline
+               nouter = nouter + 1 
             end if
          end do
       end do
       rim = rim / nrim 
       bowl = bowl / nbowl 
+      outer = outer / nouter
       tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
 
-      if (tmp_depthdiam(craternum) > 0.03_DP) then
+      if ((tmp_depthdiam(craternum) > 0.03_DP).and.((rim - outer) / crater%fcrat < 0.05)) then
          countable(craternum) = .true.
          killable = .false.
       else  
