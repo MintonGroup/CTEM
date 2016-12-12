@@ -94,7 +94,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    real(DP),intent(out) :: ejbmass
 
    ! Internal variables
-   real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,baseline,inneredge,outeredge
+   real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,landslope,baseline,inneredge,outeredge,lradtrue
    integer(I4B),parameter :: MAXLOOP = 10 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
    real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous
@@ -148,7 +148,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    if (crater%ejdis <= crater%rad) return
 
    ! determine area to effect
-   inc = max(min(crater%ejdispx + 1,PBCLIM*user%gridsize),1)
+   inc = max(min(nint(1.5_DP * crater%ejdis / user%pix) + 1,PBCLIM*user%gridsize),1)
    crater%maxinc = max(crater%maxinc,inc)
    radsq = crater%rad**2
    incsq = inc**2
@@ -286,14 +286,24 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
 
          ! Find angle-corrected landing distance
          distance = sqrt((crater%xl - xp)**2 + (crater%yl - yp)**2)
-         baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix - surf(xpi,ypi)%dem
+
+         baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix 
          craterslope = atan(baseline / distance)
+
+
          lrad = distance
          lrad0 = lrad
          do n = 1,MAXLOOP
-            k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
+            !k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
             call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad)
-            lrad =  distance * (erad + sqrt(vsq) * sin(2*ejtheta)) / (erad + sqrt(vsq) * (sin(2 * (ejtheta + craterslope))))
+            erad = exp(erad)
+            baseline = surf(xpi,ypi)%dem - erad * sin(craterslope)
+            landslope = atan(baseline / (distance - erad * cos(craterslope)))
+
+            lradtrue = erad * cos(craterslope) + vsq / (user%gaccel * cos(landslope)) * &
+                                             (sin(2 * ejtheta + 2 * craterslope - landslope) - sin(landslope))
+            lrad = lrad * distance / lradtrue
+            if (lrad > outeredge) exit
             if (abs(lrad - lrad0) < domain%small) exit
             lrad0 = lrad
          end do
