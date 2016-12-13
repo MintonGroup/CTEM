@@ -165,7 +165,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       poslist(:,craternum) = mposlist(:,ind(istart(craternum)))
       totpix(craternum) = 1 + iend(craternum) - istart(craternum)
       crater%fcrat = tlist(craternum)
-      crater%frad = 0.5_DP * crater%fcrat * OUTERD
+      crater%frad = 0.5_DP * crater%fcrat 
       crater%fradpx = int(crater%frad / user%pix) + 1
       crater%xlpx = int(poslist(1,craternum) / user%pix)
       crater%ylpx = int(poslist(2,craternum) / user%pix)
@@ -176,7 +176,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       bowl = 0.0_DP
       rim = 0.0_DP
       outer = 0.0_DP
-      inc = crater%fradpx 
+      inc = int(OUTERD * crater%frad / user%pix) + 1 
       do j = -inc, inc
          do i = -inc, inc
             rad = sqrt((i**2 + j**2)*1._DP) * user%pix / crater%frad
