@@ -3,12 +3,10 @@ pro ctem_window_display,ncount,totalimpacts,gridsize,pix,curyear,masstot,odist,p
 Compile_Opt DEFINT32
 
 ; console output graphics resolution
-minref = pix * 1.0d-4
 conresx = 1280
 ;conresy = 0.758*conresx
 profsize = 0.00
 conresy = (0.60 + profsize) * conresx 
-sun = 20.d0 ; sun angle for display
 
 minx = (pix / 3.0d0) *  1d-3 
 maxx = 3 * pix * gridsize * 1d-3
@@ -100,25 +98,22 @@ endelse
 ; create r-plot array containing exactly 1 crater per bin
 area = (gridsize * pix * 1d-3)^2
 plo = 1
-while (sqrt(2.0d0)^plo gt minx) do begin
+sq2 = sqrt(2.0d)
+while (sq2^plo gt minx) do begin
 	plo = plo - 1
 endwhile
 phi = plo + 1
-while (sqrt(2.0d0)^phi lt maxx) do begin
+while (sq2^phi lt maxx) do begin
 	phi = phi + 1
 endwhile
 n = phi - plo
-sdist = dblarr(6,n + 1)
+sdist = dblarr(2, n + 1)
 p = plo
-for i=0,n  do begin
-	sdist(0,i) = sqrt(2.d0)^p 
-	sdist(1,i) = sqrt(2.d0)^(p+1) 
-	sdist(2,i) = sqrt(sdist(0,i) * sdist(1,i))
-	sdist(3,i) = 1.0d0
-	sdist(5,i) = (sdist(2,i))^3 / (area * (sdist(1,i) - sdist(0,i)))
-	p = p + 1
+for i=0, n  do begin
+  sdist(0,i) = sq2^p
+  sdist(1,i) = sq2^(2.0 * p + 1.5)/ (area * (sq2 - 1))
+  p = p + 1
 endfor
-sdist(4,*) = reverse(total(sdist(3,*),/cumulative),2)
 
 plot, odistnz(2,*)*1.0d-3, odistnz(5,*), line=0, color=255, thick=2.0, $
    TITLE='Crater Distribution R-Plot', charsize=charfac*conresy/720, $
@@ -138,22 +133,20 @@ oplot, geomep(0,*), geomep(1,*), line=1, color=255, thick=1.0
 oplot, geomel(0,*), geomel(1,*), line=1, color=255, thick=1.0
 oplot, pdistnz(2,*)*1.0d-3, pdistnz(5,*), line=3, color=255, thick=1.0
 oplot, odistnz(2,*)*1.0d-3, odistnz(5,*), line=1, color=255, thick=1.0
-oplot, sdist(0,*), sdist(5,*), line=1, color=255, thick=1.0
+oplot, sdist(0,*), sdist(1,*), line=1, color=255, thick=1.0
 oplot, ph1(0,*)*Dfac*1.0d-3, ph1(1,*), psym=1, color=255, thick=1.0
 ;oplot, ph2(0,*), ph2(1,*), psym=4, color=255, thick=1.0
 ;oplot, ph3(0,*), ph3(1,*), psym=5, color=255, thick=1.0
 
 ; set up profile display
-surfpos = dblarr(gridsize)
-surfpro = dblarr(gridsize)
-surfhpro = dblarr(gridsize)
-surfrpro = dblarr(gridsize)
-for k = 0,gridsize-1 do begin
-  surfpos(k) = (-0.5d0*(gridsize-1) + double(k)) * pix
-endfor
-surfpro(*) = surface_dem(*,gridsize/2-1)
-surfhpro(*) = regolith(*,gridsize/2-1)
-surfrpro(*) = surfpro(*) - surfhpro(*)
+;surfpro = dblarr(gridsize)
+;surfhpro = dblarr(gridsize)
+;surfrpro = dblarr(gridsize)
+;surfpos = dindgen(gridsize)
+;surfpos = (-0.5d0*(gridsize-1) + surfpos) * pix
+;surfpro(*) = surface_dem(*,gridsize/2-1)
+;surfhpro(*) = regolith(*,gridsize/2-1)
+;surfrpro(*) = surfpro(*) - surfhpro(*)
 
 ; set up profile
 ;maxelevp = max(surfpro)
