@@ -58,8 +58,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
       ntot = i
       dN(i) = nflux(3,i) * user%interval * finterval
 
-      lambda_bedrock(i) = dN(i) * 0.25_DP * PI * (nflux(1,i) + SQRT2 * user%pix)**2 
-      lambda_regolith(i) = dN(i) * 0.25_DP * PI * (nflux(2,i) + SQRT2 * user%pix)**2 
+      lambda_bedrock(i) = dN(i) * user%pix**2 !0.25_DP * PI * (nflux(1,i) + SQRT2 * user%pix)**2 
+      lambda_regolith(i) = dN(i) * user%pix**2 !0.25_DP * PI * (nflux(2,i) + SQRT2 * user%pix)**2 
        
       if (user%dosoftening) then
          kappat_bedrock(i) = user%soften_factor * (0.5_DP * nflux(1,i))**(user%soften_slope)
@@ -84,8 +84,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
             end if 
             if (diam > domain%smallest_crater) exit
             k = util_poisson(lambda)
-            rad = 0.5_DP * diam / user%pix
-            Abar = 2 * sqrt(0.5_DP * PI) * rad**2 / (rad + 1.0_DP / SQRT2)**2 - 0.024_DP * rad**0.682_DP
+            rad = 0.5_DP * diam !/ user%pix
+            Abar = PI * rad**2 / user%pix**2 !2 * sqrt(0.5_DP * PI) * rad**2 / (rad + 1.0_DP / SQRT2)**2 - 0.024_DP * rad**0.682_DP
             kdiff(i,j) = kdiff(i,j) + k * Abar * kappat
          end do
       end do
