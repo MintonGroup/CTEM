@@ -62,7 +62,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    ! Counting parameters from Howl study
    real(DP),parameter :: DDCUTOFF = 5.e-2_DP
    real(DP),parameter :: OCUTOFF = 5.5e-2_DP
-   real(DP),parameter :: RIMDI = 1.1_DP
+   real(DP),parameter :: RIMDI = 1.0_DP
    real(DP),parameter :: RIMDO = 1.2_DP
    real(DP),parameter :: BOWLD = 0.2_DP
    real(DP),parameter :: OUTERD = 2.0_DP
