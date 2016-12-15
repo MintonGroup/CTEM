@@ -38,7 +38,7 @@ subroutine crater_soften(user,surf,crater,domain)
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
    real(DP) :: xp,yp,fradsq,xbar,ybar,areafrac,kappatmax,ss,sf
 
-   kappatmax = user%soften_factor * crater%fcrat**user%soften_slope
+   kappatmax = user%soften_factor * crater%frad**user%soften_slope
    
    inc = max(min(int(crater%fradpx + 2),PBCLIM * user%gridsize),2) 
    crater%maxinc = max(crater%maxinc,inc)
