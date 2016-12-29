@@ -62,7 +62,9 @@ type regodatatype
    real(DP) :: thickness
    real(DP) :: meltfrac 
    real(DP) :: comp 
-   real(DP) :: porosity
+   real(DP) :: porosity   ! Porosity: Maximum 1, Minium 0.
+   real(DP) :: damage     ! Damage  : Maximum 1, Minium 0.
+   real(DP) :: depth      ! Absolute location with respect to the initial surface. 
 end type regodatatype
    
 type regolisttype
@@ -77,7 +79,8 @@ type surftype
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
-   type(regolisttype),pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+   type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+	type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
 end type surftype
 
 ! Derived data type for crater information
@@ -242,6 +245,10 @@ character(*),parameter :: REGOFILE   = 'surface_regotop.dat'
 character(*),parameter :: MELTFILE   = 'surface_melt.dat'
 character(*),parameter :: COMPFILE   = 'surface_comp.dat'
 character(*),parameter :: STACKNUMFILE = 'surface_stacknum.dat'
+character(*),parameter :: STACKPORFILE = 'porosity_stacknum.dat'
+character(*),parameter :: POROFILE     = 'porosity_porosity.dat'
+character(*),parameter :: DEPTHFILE    = 'porosity_depth.dat'
+character(*),parameter :: POROTHICKFILE = 'porosity_thickness.dat'
 !character(*),parameter :: THICKFILE  = 'surface_crustal_thickness.dat'
 character(*),parameter :: POSFILE    = 'surface_pos.dat'
 character(*),parameter :: TDISTFILE  = 'tdistribution.dat'
@@ -255,8 +262,8 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 3             ! periodic boundary condition limit
-integer(I4B),parameter :: SMALLESTCOUNTABLE = 3 ! Minimum pixel diameter for a crater to be considered countable
-real(DP),parameter :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
+integer(I4B),parameter :: SMALLESTCOUNTABLE = 5 ! Minimum pixel diameter for a crater to be considered countable
+real(DP),parameter     :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
 integer(I4B),parameter :: TRUECOLS = 6 ! Number of columns in the true crater count array
 integer(I4B)           :: NTHREADS = 1 ! Number of OpenMP threads (reset by OpenMP if a parallel environment is detected)
 integer(I4B),parameter :: INCPAR = 1   ! Minimum size of inc variables before parallelization kicks in
@@ -266,7 +273,7 @@ real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see R
 !real(DP),parameter :: CT = KT * 1.0077158813689795507466256218613060723322903283648264_DP ! KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: DDRATIO = 0.19_DP        ! ?
-real(DP),parameter :: RDRATIO = 0.020_DP      ! Rim height to diameter ratio
+real(DP),parameter :: RDRATIO = 0.020_DP       ! Rim height to diameter ratio
 real(DP),parameter :: RIMDROP = 4.22_DP        ! Power law index for rim profile 
 real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
@@ -278,14 +285,18 @@ real(DP),parameter :: CXEXPI = 0.155_DP        ! ?
 real(DP),parameter :: SIMCOMKI = 3081.39_DP    ! ?
 real(DP),parameter :: SIMCOMPI = -1.22486_DP   ! ?
 real(DP),parameter :: SUBPIXFAC = 0.1_DP       ! Subpixel resolution (used for lookup tables and rim creation)
-integer(I4B),parameter :: EJBTABSIZE = 1000           ! Lookup table size 
+integer(I4B),parameter :: EJBTABSIZE = 1000    ! Lookup table size 
 real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
+real(DP),parameter :: TRNRATIO = 0.30_DP       ! The ration of the transient crater depth to the crater diameter.
+
 !real(DP),parameter :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
 !#real(DP) :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
 !real(DP),parameter :: SOFTEN_SLOPE = 1.3_DP    ! Extra per crater diffusion power law slope
+
+
 
 
 end module module_globals
