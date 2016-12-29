@@ -54,7 +54,7 @@
 !                layer. 
 !
 !**********************************************************************************************************************************
-subroutine util_init_list(regolayer,initstat)
+subroutine util_init_list(regolayer, initstat)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_init_list
    implicit none
@@ -74,9 +74,11 @@ subroutine util_init_list(regolayer,initstat)
          initstat = .true.
          nullify(regolayer%next)
          regolayer%regodata%thickness = VBIG ! This generates a buffer layer that the model should never reach if the run is structured properly
-         regolayer%regodata%comp = 0.0_DP
-         regolayer%regodata%meltfrac = 0.0_DP
-         regolayer%regodata%porosity = 0.0_DP
+         regolayer%regodata%comp      = 0.0_DP
+         regolayer%regodata%meltfrac  = 0.0_DP
+         regolayer%regodata%porosity  = 0.07_DP      ! This is also the initial bedrock porosity, Should be in the input file. 
+         regolayer%regodata%depth     = - 30000.0_DP ! The depth at the boundary of the crust. 
+                                                     ! This must be defined in the input file. But not in this version. 
       else
          write(*,*) 'util_init_list: Initialization failed. Exhausted memory.'
       end if
@@ -86,4 +88,3 @@ subroutine util_init_list(regolayer,initstat)
 
    return
 end subroutine util_init_list
-
