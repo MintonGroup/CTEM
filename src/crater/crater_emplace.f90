@@ -52,6 +52,7 @@
 subroutine crater_emplace(user,surf,crater,domain,ejbmass)
    use module_globals
    use module_util
+   use module_porosity   
    use module_crater, EXCEPT_THIS_ONE => crater_emplace
    implicit none
 
@@ -98,6 +99,17 @@ subroutine crater_emplace(user,surf,crater,domain,ejbmass)
             call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,deltaMi)
             deltaMtot = deltaMtot + deltaMi
          end if
+
+			! do porosity computation if (user%doporosity)
+			! It is still important to consider the physical meaning of frad and rad. 
+			! frad is the final crater, while rad is the transient crater. 
+			! which one should be reasonable here. 
+         if (lradsq <= crater%frad**2) then
+				if (user%doporosity) then
+					call porosity_form_interior(user, surf(xpi,ypi), crater, lradsq)
+				end if
+			end if
+     
       end do
    end do
 
