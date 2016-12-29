@@ -55,4 +55,13 @@ save
       end subroutine init_regolith_stack
    end interface
 
+   interface
+      subroutine init_porosity_stack(user,surf)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      end subroutine init_porosity_stack
+   end interface
+
 end module module_init
