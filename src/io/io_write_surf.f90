@@ -65,6 +65,10 @@ subroutine io_write_surf(user,surf)
       !call io_write_regodist(user,surf)
       call io_write_regotrack(user,surf) 
    end if
+   
+   ! write data from porosity analysis
+   if (user%doporosity) call io_write_porotrack(user, surf)
+   
 !   if (user%docrustal_thinning) then
 !      recsize = sizeof(itmp) * user%gridsize * user%gridsize
 !      open(LUN,file=THICKFILE,status='replace',form='unformatted',recl=recsize,access='direct')
