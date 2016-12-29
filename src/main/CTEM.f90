@@ -155,6 +155,15 @@ if (user%doregotrack) then
    end do
 end if
 
+! If doporosity is true, then destroy the linked list for porosity
+if (user%doporosity) then
+   do yp = 1, user%gridsize
+      do xp = 1, user%gridsize
+         call util_destroy_list(surf(xp,yp)%porolayer)
+      end do
+   end do
+end if
+
 ! Deallocate all the allocatables
 deallocate(seedarr)
 deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux,production_list)
