@@ -66,6 +66,15 @@ save
       end subroutine io_read_regotrack
   end interface  
 
+  interface
+      subroutine io_read_porotrack(user,surf)
+		use module_globals
+		implicit none
+		type(usertype),intent(in) :: user
+		type(surftype),dimension(:,:),intent(out) :: surf  
+      end subroutine io_read_porotrack
+  end interface  
+
   interface   
       subroutine io_write_surf(user,surf)
       use module_globals
@@ -82,6 +91,15 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf      
       end subroutine io_write_regotrack
+  end interface 
+
+  interface 
+      subroutine io_write_porotrack(user,surf)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(in) :: surf      
+      end subroutine io_write_porotrack
   end interface 
 
   interface   
