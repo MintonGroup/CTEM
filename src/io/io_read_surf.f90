@@ -79,6 +79,9 @@ subroutine io_read_surf(user,surf)
    close(LUN)
 
    if (user%doregotrack) call io_read_regotrack(user,surf)
+   
+	! if doporosity, call io_read_porotrack to define the porosity linked list from the read files. 
+   if (user%doporosity)  call io_read_porotrack(user,surf)
 
    !if (user%docrustal_thinning) then
    !   recsize=sizeof(itmp)*user%gridsize*user%gridsize
