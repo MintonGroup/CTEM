@@ -40,6 +40,7 @@ io/io_get_token.f90\
 io/io_input.f90\
 io/io_read_prod.f90\
 io/io_read_regotrack.f90\
+io/io_read_porotrack.f90\
 io/io_read_vdist.f90\
 io/io_read_surf.f90\
 io/io_ejecta_table.f90\
@@ -48,6 +49,7 @@ io/io_write_tally.f90\
 io/io_write_surf.f90\
 io/io_write_const.f90\
 io/io_write_regotrack.f90\
+io/io_write_porotrack.f90\
 io/io_crater_profile.f90\
 io/io_updatePbar.f90\
 io/io_resetPbar.f90\
@@ -83,6 +85,7 @@ init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
 init/init_regolith_stack.f90\
+init/init_porosity_stack.f90\
 seismic/seismic_shake.f90\
 seismic/seismic_distance.f90\
 seismic/seismic_table_define.f90\
