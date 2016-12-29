@@ -21,7 +21,6 @@
 subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    use module_globals
    use module_util
-   use module_porosity
    use module_crater, EXCEPT_THIS_ONE => crater_form_interior
    implicit none
 
@@ -67,13 +66,9 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    deltaMi = elchange
    surfi%dem = newdem
    
-  if (user%doporosity) then
-      call porosity_form_interior(user,surfi,crater,elchange,lradsq,newelev)
-   else
-      !change ejecta coverage
-      surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
-   end if    
-     
+   !change ejecta coverage
+   surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
+
    if (user%doregotrack) then
       call util_traverse_pop(surfi%regolayer,abs(elchange),poppedlist)
       call util_destroy_list(poppedlist)
