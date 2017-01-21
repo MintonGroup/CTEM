@@ -75,7 +75,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    use module_globals
    use module_util
    use module_io
@@ -91,13 +91,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)    :: ejb
-   real(DP),intent(out) :: ejbmass
+   real(DP),intent(in) :: deltaMtot
 
    ! Internal variables
    real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,landslope,baseline,inneredge,outeredge,lradtrue
    integer(I4B),parameter :: MAXLOOP = 10 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous
+   real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous,ejbmass
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    integer(I4B) :: bigi,bigj
@@ -359,6 +359,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass)
 !   !$OMP END PARALLEL DO
 
    deallocate(ef)
+
+   ! Do mass conservation by adjusting ejecta thickness
+   cumulative_elchange = cumulative_elchange * (-deltaMtot)/ ejbmass
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
