@@ -37,13 +37,13 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
    real(DP) :: tslp1sq,tslp2sq,tslp3sq,tslp4sq
    real(DP) :: xgrad,ygrad,tgrad,gradmax
    integer(I4B) :: iradsq
-   integer(I4B) :: i,j,inc,incsq,mx1,mx2,mx3,my1,my2,my3
+   integer(I4B) :: i,j,inc,incsq,mx1,mx2,mx3,my1,my2,my3,xpi,ypi
    integer(I4B) :: loopcnt,looplim,mult
    real(DP),dimension(:,:),allocatable :: elevarray
    real(DP),dimension(:,:),allocatable :: gradarray,slparray
-   real(DP),dimension(:,:),allocatable :: cumulative_elchange
+   real(DP),dimension(:,:),allocatable :: cumulative_elchange,kappat
    integer(I4B),dimension(:,:,:),allocatable :: indarray
-   logical  :: failflag,oldfail
+   logical  :: failflag
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP) :: rfac
 
@@ -54,11 +54,11 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
    ! Executable Code
 
    ! Some preliminary setup
-   diffmax = 0.25_DP
+   diffmax = 0.25_DP * user%pix**2
    looplim = 1000 * crater%fcratpx
 
    !     determine area to effect
-   inc = max(min(crater%fcratpx,ceiling(SQRT2*user%gridsize)),1)
+   inc = max(min(crater%fcratpx,ceiling(SQRT2*user%gridsize)),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
    incsq = inc*inc
 
@@ -79,27 +79,27 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
    allocate(slparray(-inc:inc,-inc:inc))
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(indarray(6,-inc:inc,-inc:inc))
+   allocate(kappat(-inc:inc,-inc:inc))
 
    !mult = inc/(user%gridsize/2) + 1 ! Reduce max diffusion if the loopover area exceeds the periodic boundary conditions
    mult = (1 + (inc/(user%gridsize/2)))**2
-   difflim = diffmax/mult
+   !difflim = diffmax/mult
 
    cumulative_elchange = 0._DP
 
    !  begin downslope motion loop
-   failflag=.true.
    oldslpmax = huge(oldslpmax)
-   slparray = 0._DP
+   slparray = 0.0_DP
+   kappat = 0.0_DP
 
    do loopcnt=1,looplim
       !     reset slope failure flag
       !if (mod(loopcnt,100)==0) write(*,*) loopcnt,looplim
-      oldfail = failflag
       failflag = .false.
 
       ! loop over affected matrix area
       !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-      !$OMP SHARED(inc,loopcnt,incsq,difflim,failflag,elevarray,gradarray,slparray,cumulative_elchange,indarray) &
+      !$OMP SHARED(inc,loopcnt,incsq,failflag,elevarray,gradarray,slparray,cumulative_elchange,indarray,kappat) &
       !$OMP SHARED(crater,user,surf) 
       do j=-inc,inc 
          do i=-inc,inc
@@ -151,38 +151,51 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                slpsq = max(tslp1sq,tslp2sq,tslp3sq,tslp4sq)
                slparray(i,j) = slpsq
                critical = crater_critical_slope(user,crater,iradsq) * user%pix**2
-               if (slpsq > critical) then
-                  failflag = .true.
-                  ! find elevation change
-                  xgrad = (xslp1 - xslp2) 
-                  ygrad = (yslp1 - yslp2) 
-                  tgrad = xgrad + ygrad
-                  elchange = difflim * tgrad
-
-                  ! change digital elevation map
-                  elevarray(i,j) = elchange
-                  gradarray(i,j) = tgrad
-                  cumulative_elchange(i,j) = cumulative_elchange(i,j) + elchange
-               end if
+               kappat(i,j) = max(slpsq - critical,0.0_DP)
+               if (slpsq > critical)  failflag = .true.
+               !   ! find elevation change
+               !   xgrad = (xslp1 - xslp2) 
+               !   ygrad = (yslp1 - yslp2) 
+               !   tgrad = xgrad + ygrad
+               !   elchange = difflim * tgrad
+!
+!                  ! change digital elevation map
+!                  elevarray(i,j) = elchange
+!                  gradarray(i,j) = tgrad
+!                  cumulative_elchange(i,j) = cumulative_elchange(i,j) + elchange
+              ! end if
             end if  
          end do
       end do !     end area loopover
       !$OMP END PARALLEL DO
 
+      if (.not.failflag) exit
+      kappat = kappat / maxval(kappat) * diffmax * 2_DP
+      
+      call util_diffusion_solver(user,surf,2 * inc + 1,indarray(1:2,:,:),kappat,cumulative_elchange,mult)
+      do j = -inc,inc
+         do i = -inc,inc
+            xpi = indarray(1,i,j)
+            ypi = indarray(2,i,j)
+            surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cumulative_elchange(i,j)
+            surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j),0.0_DP)
+         end do
+      end do
+
      ! See if we have reached maximums
-      elchgmax = maxval(elevarray)
-      slpmax = sqrt(maxval(slparray))/user%pix
+      !elchgmax = maxval(elevarray)
+      slpmax = sqrt(maxval(slparray)) / user%pix
       gradmax = maxval(gradarray)
 
       ! Add the elevation changes back to the dem
-      do j=-inc,inc
-         do i=-inc,inc
-            mx1=indarray(1,i,j)
-            my1=indarray(2,i,j)
-            surf(mx1,my1)%dem = surf(mx1,my1)%dem + elevarray(i,j)
-            surf(mx1,my1)%ejcov = max(surf(mx1,my1)%ejcov + elevarray(i,j),0.0_DP)
-         end do
-      end do
+      !do j=-inc,inc
+      !   do i=-inc,inc
+      !      mx1=indarray(1,i,j)
+      !      my1=indarray(2,i,j)
+      !      surf(mx1,my1)%dem = surf(mx1,my1)%dem + elevarray(i,j)
+      !      surf(mx1,my1)%ejcov = max(surf(mx1,my1)%ejcov + elevarray(i,j),0.0_DP)
+      !   end do
+      !end do
 
       !***************************************************
       ! TESTING -- makes frames for a slope collapse movie
@@ -206,7 +219,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
       !***************************************************
 
       !     if stuck, get out
-      if (failflag.and.(abs(elchgmax) < 1.0e-8*domain%small)) exit
+      !if (failflag.and.(abs(elchgmax) < 1.0e-8*domain%small)) exit
 
       !if (slpmax >= oldslpmax) exit
       !oldslpmax = slpmax
