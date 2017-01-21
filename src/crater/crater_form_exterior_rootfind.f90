@@ -50,7 +50,10 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
 
    ! Executable code
    if (abs(deltaMtot) < VSMALL) return
-   if (deltaMtot > 0._DP) return
+   if (deltaMtot > 0._DP) then 
+      write(*,*) 'Too much mass already! Skipping exterior raised rim.',crater%fcratpx
+      return
+   end if
    lastloop = .false.
    factor = FIRSTFACTOR
    startrd = RIMDROP
@@ -108,7 +111,7 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
          end if
          Tol1 = 2 * FPP * abs(BB) + 0.5_DP * Tolerance
          xm = 0.5_DP * (CC-BB)
-         if ((abs(xm) <= Tol1).or.(abs(FA) < nearzero)) then
+         if ((abs(xm) <= Tol1).or.(abs(FB) < nearzero)) then
             ! A root has been found
             rd = BB 
             lastloop = .true.
@@ -155,7 +158,7 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
       end do
       if (i >= maxIterations) error = -2
    end if
-   !write(*,'(I4,4F19.12)') niter,rd,RIMDROP
+   !write(*,'(I4,4F19.12)') niter,rd,RIMDROP,deltaMp
    !read(*,*)
    return
 
