@@ -122,7 +122,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset coverage map
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
-
    do while (icrater < ntotcrat)
       makecrater = .true.
       icrater = icrater + 1
@@ -177,6 +176,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          ! find the average height and slope at crater location
          call crater_averages(user,surf,crater)
+
+         ! Place crater onto the surface
+         call crater_emplace(user,surf,crater,domain,ejbmass)
          
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                         ! For very steep size distributions, only a fraction of the
@@ -185,7 +187,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                                                                         ! the total distance to determine if it is worth doing the 
                                                                         ! full calculation later.
          ! Place ejecta onto the surface
-         ejbmass = 0.0_DP
          if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
             if (user%doregotrack) then 
                call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
@@ -198,21 +199,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          else
             ejtble = 0
          end if
+         
 
-         ! Place crater onto the surface
-         if (crater%fcrat > domain%smallest_counted_crater) then
-            call crater_emplace(user,surf,crater,domain,ejbmass)
-
-            !call crater_mass_conservation(user,surf,crater) ! mass conservation is now done in crater_emplace
-
-            ! Record crater in an available layer as long as it is above the cutoff
-            call crater_record(user,surf,crater)
-            call util_sort_layer(user,surf,crater)
-            vistrue = vistrue + 1
-            nsincetally = nsincetally + 1
-            if (.not.user%testflag) call io_updatePbar("")
-         end if
-
+         ! Record crater in an available layer as long as it is above the cutoff
+         call crater_record(user,surf,crater)
+         call util_sort_layer(user,surf,crater)
+         vistrue = vistrue + 1
+         nsincetally = nsincetally + 1
+         if (.not.user%testflag) call io_updatePbar("")
 
 
          ! Collapse any remaining unstable slopes
