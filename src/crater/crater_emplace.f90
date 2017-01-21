@@ -49,7 +49,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_emplace(user,surf,crater,domain,ejbmass)
+subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    use module_globals
    use module_util
    use module_porosity   
@@ -61,12 +61,13 @@ subroutine crater_emplace(user,surf,crater,domain,ejbmass)
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout) :: domain
-   real(DP),intent(in) :: ejbmass
+   real(DP),intent(out) :: deltaMtot
 
    ! Internal variables
    real(DP) :: lradsq,newelev
    integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,deltaMi,deltaMtot
+   real(DP) :: xp,yp,fradsq,deltaMi !,deltaMtot
+   logical :: lastloop
 
    ! Executable code
 
@@ -75,7 +76,7 @@ subroutine crater_emplace(user,surf,crater,domain,ejbmass)
    inc = max(min(crater%rimdispx,PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
-   deltaMtot = ejbmass
+   deltaMtot = 0.0_DP !ejbmass
    incsq = inc**2
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space
@@ -100,20 +101,22 @@ subroutine crater_emplace(user,surf,crater,domain,ejbmass)
             deltaMtot = deltaMtot + deltaMi
          end if
 
-			! do porosity computation if (user%doporosity)
-			! It is still important to consider the physical meaning of frad and rad. 
-			! frad is the final crater, while rad is the transient crater. 
-			! which one should be reasonable here. 
+         ! do porosity computation if (user%doporosity)
+         ! It is still important to consider the physical meaning of frad and rad. 
+         ! frad is the final crater, while rad is the transient crater. 
+         ! which one should be reasonable here. 
          if (lradsq <= crater%frad**2) then
-				if (user%doporosity) then
-					call porosity_form_interior(user, surf(xpi,ypi), crater, lradsq)
-				end if
-			end if
+            if (user%doporosity) then
+               call porosity_form_interior(user, surf(xpi,ypi), crater, lradsq)
+            end if
+         end if
      
       end do
    end do
 
-   call crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
+   !call crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
+   lastloop = .true.
+   deltaMtot = crater_form_exterior_func(user,surf,crater,domain,RIMDROP,deltaMtot,lastloop)
 
    domain%tallycoverage = domain%tallycoverage + int(fradsq * PI / user%pix**2)
    domain%subpixelcoverage = domain%subpixelcoverage + int(fradsq * PI / user%pix**2)
