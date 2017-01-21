@@ -95,14 +95,14 @@ end interface
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,ejbmass)
+      subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
-      real(DP),intent(in) :: ejbmass
+      real(DP),intent(out) :: deltaMtot
       end subroutine crater_emplace
    end interface
 
