@@ -123,23 +123,16 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    ! Flowery ray variables
    integer(I4B)  :: nfrays
    real(DP)      :: n1f, n2f, magf, lradf, rayf
-   ! Ray mixing model parameters:
-   real(DP)      :: h_raymix ! Ray mixing depth: l = 0.5755 * (D_sc)^-0.3136 * R_p^1.25, D_sc = 8 * h
-                             !                   h = 0.021 * l^-3.188 * R_p^3.985 in unit of kilometers
-   real(DP)      :: h_raymixratio ! Ray mixing ratio: h / L = h / (0.1 R_p^0.74 * (l/R_p)^-4.37
-                                  ! h/L = 0.2137 * R_p^0.052 * (l/R_p)^1.182
-   real(DP), parameter :: k_raymixratio = 0.171726_DP !1.7172_DP 
-   real(DP), parameter :: b_lrad1  = -3.188_DP !1.181_DP
-   real(DP), parameter :: b_frad1  =  0.79719_DP !0.057_DP
-   real(DP), parameter :: SCD = 0.125_DP
-   real(DP) :: vsq, ejtheta, melt, vol_sc, dsc
+   real(DP)      :: vsq, ejtheta
+   ! Ray mixing model variables 
+   real(DP)      :: dsc
 
    ! Melt zone's radius
-   real(DP) :: rm, dm
-   !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
-   !write(*,*) crater%imp, crater%frad, rm
-   
+   real(DP) :: rm, dm, melt, eradc
+
    ! Executable code
+
+   !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
 
    cdepth = DDRATIO * crater%fcrat
    crater%vdepth = crater%ejrim + cdepth
@@ -328,22 +321,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
                if (user%doregotrack .and. ebh>1.0e-8) then
                   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
-                  !call regolith_transport(user,surf(xpi,ypi),crater,domain,ejb,ejtble,lrad,ebh,newlayer)
-                  !print *, lrad / crater%frad, comp 
-                  dsc = ebh + SCD * 1.161_DP * (ebh**0.78) * (sqrt(vsq)**0.44) * (user%gaccel**(-0.22)) * (sin(ejtheta)**(1.0/3.0))
-                  if (dsc - ebh > 1.0e-08) then
-                     call regolith_mix(surf(xpi,ypi), dsc)
-                  end if
-                  !vol_sc = PI / 48.0 * dsc**3
-                  !h_raymixratio = dsc / ebh
-                  !if (i > 0 .and. j > 0 .and. lrad > continuous) write(*,*) lrad/crater%frad, ebh, sqrt(vsq), &
-                  !dsc, h_raymixratio  
-                  ! Check out: Ray_Mixing_Model.dox
-                  !h_raymixratio = ALPHA * k_raymixratio * (lrad/crater%frad)**(b_lrad1) * (crater%frad/1000.0_DP)**(b_frad1)
-                  !h_raymix = h_raymixratio * ebh 
-                  !if (h_raymix > ebh) then
-                  !   call regolith_mix(surf(xpi,ypi), h_raymix)
-                  !end if
                end if
 
             else
