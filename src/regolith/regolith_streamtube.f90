@@ -71,7 +71,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    type(ejbtype),dimension(ejtble),intent(in)   :: ejb
    real(DP),intent(in)          :: xp,yp,lrad,ebh
    integer(I4B),intent(in)      :: xpi,ypi
-   real(DP),intent(in)          :: rm 
+   real(DP),intent(in)          :: rm
 
    ! Traversing a linked list 
    real(DP),parameter :: a = 0.936457 ! Fitting parameters for the relation between height difference and a radial position of a stream tube
@@ -88,7 +88,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
-   type(regodatatype) :: newlayer
+   type(regodatatype) :: newlayer, sumlayer
 
    ! Constrain the tangital tube's volume with CTEM result
    real(DP)     :: k1,k2,k3,k4,c1,c2
@@ -102,7 +102,11 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
    ! Monte Carlo method for two layers system
    !real(DP) :: compnohead,compmc,mceb
-   real(DP) :: meltfrac
+
+   ! Fresh melt's calculation
+   real(DP) :: meltfrac, melt, volm1, volv1
+   real(DP) :: xm, sinvints, cosvints, rvints, rmints, xvints
+   real(DP) :: cosq1, cosq2, thetaq, depthb, q1, q2, q3, xmints   
 
    ! Executalbe code
 
@@ -116,20 +120,20 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    if (k==ejtble) then
       logdelta = logtablerad - ejb(k - 1)%lrad
       frac = (loglrad - ejb(k-1)%lrad) / logdelta
-      eradc = ejb(k-1)%erad + ((ejb(k)%erad - ejb(k-1)%erad) * frac)
+      eradc = exp(ejb(k-1)%erad) + ((exp(ejb(k)%erad) - exp(ejb(k-1)%erad)) * frac)
    !   frac = (loglrad - logtablerad) / logdelta
    !   eradc = ejb(k)%erad - ((ejb(k)%erad - LOGVSMALL) * frac)
    else
       logdelta = ejb(k + 1)%lrad - logtablerad 
       frac = (loglrad - logtablerad) / logdelta  
-      eradc = ejb(k)%erad - ((ejb(k)%erad - ejb(k+1)%erad) * frac)
+      eradc = exp(ejb(k)%erad) - ((exp(ejb(k)%erad) - exp(ejb(k+1)%erad)) * frac)
    end if
 
    if (eradc<=0.0_DP) then
    write(*,*) k,ebh,crater%ejdis,lrad,exp(ejb(k-1)%lrad),exp(ejb(k)%lrad),eradc,ejb(k-1)%erad,ejb(k)%erad
    stop
    end if
- 
+
    ! ********* Calculate the height difference between two streamlines that define a stream tube with varying radial position *******
    xl = xp - crater%xl
    yl = yp - crater%yl
@@ -242,9 +246,31 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! this method will be used frequently. 
 
    vst = (0.25_DP * PI * deltar**2 * a**2 * eradi / b *(tan(b)-b)) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
-   totmare = 0._DP
-   tots = 0._DP
-   
+
+   ! Fresh melt's calculation
+   depthb             = crater%imp / 2.0
+   rints              = sqrt(rm**2 - (depthb)**2)
+   cosvints           = eradi / (crater%imp + eradi)
+   sinvints           = sqrt(1.0 - cosvints**2)
+   xvints             = eradi * ( 1.0 - cosvints) * sinvints
+   volv1              = ( 0.25_DP * PI * deltar**2 * a**2 * eradi / b * (tan(b/eradi*(xvints))-b/eradi*(xvints)) )
+   if (eradi <= rints) then
+      volm1             = vst - volv1
+      melt              = volm1
+      newlayer%meltfrac = 1.0
+   else if (eradi > rints) then
+           q1           =   1.0 / (1.0 + 2.0 * depthb / eradi)
+           q2           =  -1.0 - 1.0/q1
+           q3           = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1
+           cosq1        = 0.5 * q1 * (-1.0 * q2 + sqrt(q2**2 - 4.0 * q3/q1))
+           cosq2        = 0.5 * q1 * (-1.0 * q2 - sqrt(q2**2 - 4.0 * q3/q1))
+           thetaq       = acos( min(abs(cosq1),abs(cosq2)) )
+           xmints       = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
+           volm1        = ( 0.25_DP * PI * deltar**2 * a**2 * eradi / b * (tan(b/eradi*(xmints))-b/eradi*(xmints)) )
+           melt         = volm1 - volv1
+           newlayer%meltfrac = melt/(vst-volv1)
+   end if
+
    if (eradc <= user%pix) then
 
       xc = (xints(2) + xints(1))/2.0_DP
@@ -253,16 +279,17 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       ystpi = crater%ylpx + nint(yc/user%pix) 
       ri = sqrt(xints(2)**2 + yints(2)**2)
       rip1 = sqrt(xints(1)**2 + yints(1)**2)
-      vseg = 0.25_DP * PI * deltar**2 * a**2 * eradi / b * abs(tan(b) - b) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
-      newlayer%thickness = vseg/(user%pix**2)
+      vseg = 0.25_DP * PI * deltar**2 * a**2 * eradi / b * abs(tan(b) - b) 
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb)
-      totmare = vmare
-      tots = totseb
+      call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,vseg,newlayer,rm)
+      newlayer%comp = newlayer%comp / newlayer%thickness
       newlayer%thickness = ebh
-      newlayer%comp = totmare/tots
 
    else
+      ! Define a regodata typed layer that is able to sum up all components during travesing a stream tube
+      sumlayer%thickness = 0._DP
+      sumlayer%comp      = 0._DP
+      sumlayer%meltfrac  = 0._DP 
 
       rbody = sqrt(xints(2)**2 + yints(2)**2)
       if (rbody<eradi) then
@@ -272,12 +299,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          ystpi = crater%ylpx + nint(yc/user%pix)
          vseg = 0.25 * PI * deltar**2 * a**2 * eradi / b * (abs(tan(b) - tan(b/eradi * rbody)) - &
                abs(b - b/eradi * rbody))
-         newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
-         call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-              totseb)
-         totmare = totmare + vmare
-         tots = tots + totseb
+         call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,vseg,newlayer,rm)
+         sumlayer%comp      = sumlayer%comp      + newlayer%comp
+         sumlayer%thickness = sumlayer%thickness + newlayer%thickness
       end if           
   
       do i=cnt,3,-1
@@ -290,30 +315,27 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          if (abs(ri-rip1)>user%pix/1000000.0) then
             vseg = 0.25_DP * PI * deltar**2 * a**2 * eradi / b * (abs(tan(b/eradi * rip1) - tan(b/eradi * ri)) &
                    - abs(b/eradi * rip1 - b/eradi * ri)) 
-            newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
-            call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-                 totseb)
-            totmare = totmare + vmare
-            tots = tots + totseb 
+            call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,vseg,newlayer,rm)
+            sumlayer%comp      = sumlayer%comp      + newlayer%comp
+            sumlayer%thickness = sumlayer%thickness + newlayer%thickness
          end if
       end do
 
+      newlayer%thickness = 0._DP
+      newlayer%comp      = 0._DP
       xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,newlayer,eradi,rm)
+      sumlayer%comp      = sumlayer%comp      + newlayer%comp
+      sumlayer%thickness = sumlayer%thickness + newlayer%thickness
+      newlayer%comp      = sumlayer%comp / sumlayer%thickness
       newlayer%thickness = ebh
-      newlayer%comp = totmare/tots
 
   end if
 
   call util_push(surf(xpi,ypi)%regolayer,newlayer)
-
-  ! Calculate total melts inside the stream tube
-  !call regolith_melt_fraction(crater%imp, crater%imprad, eradi, erado, rm, meltfrac) 
-  !write(*,*) lrad / crater%frad, eradc/rm, meltfrac
-
   deallocate(xints,yints)
 
   return
