@@ -87,55 +87,53 @@ save
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
       real(DP),intent(in)          :: xp,yp,lrad,ebh
       integer(I4B),intent(in)      :: xpi,ypi
-      real(DP),intent(in)          :: rm 
+      real(DP),intent(in)          :: rm
       end subroutine regolith_streamtube
    end interface
 
    interface 
-      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)
+      subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,vseg,newlayer,rm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
-      real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
+      real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado,vseg,rm
       type(regodatatype),intent(inout) :: newlayer
-      real(DP),intent(out) :: vmare,totseb
       end subroutine regolith_traverse_streamtube
    end interface
 
    interface 
-      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb)      
+      subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,vseg,newlayer,rm)      
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
-      real(DP),intent(in)            :: deltar,ri,rip1,eradi
+      real(DP),intent(in)            :: deltar,ri,rip1,eradi,vseg
       type(regodatatype),intent(inout) :: newlayer
-      real(DP),intent(out) :: vmare,totseb
+      real(DP),intent(in) :: rm
       end subroutine regolith_subpixel_streamtube
    end interface
 
    interface 
-      subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-      totseb)
+      subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,vseg,newlayer,rm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
-      real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
+      real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,vseg,rm
       type(regodatatype),intent(inout) :: newlayer
-      real(DP),intent(inout) :: vmare,totseb
       end subroutine regolith_streamtube_lineseg
    end interface 
 
    interface 
-      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots)
+      subroutine regolith_streamtube_head(user,surfi,deltar,newlayer,eradi,rm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
       real(DP),intent(in) :: deltar
-      real(DP),intent(inout) :: totmare,tots
+      type(regodatatype),intent(inout) :: newlayer
+      real(DP),intent(in) :: eradi,rm
       end subroutine regolith_streamtube_head
    end interface
 
