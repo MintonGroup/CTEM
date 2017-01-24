@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb)
+subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,vseg,newlayer,rm)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_streamtube
    implicit none
@@ -26,9 +26,8 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
-   real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
+   real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado,vseg,rm
    type(regodatatype),intent(inout) :: newlayer
-   real(DP),intent(out)            :: vmare,totseb
 
    ! Traversing a linked list 
    real(DP) :: zri,zrip1,cosi,coso,rzmax
@@ -51,24 +50,18 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    end if
 
    z = surfi%regolayer%regodata%thickness
-   vmare = 0._DP
-   totseb = 0._DP
 
    if (z>=zmax) then 
-      vmare = newlayer%thickness * user%pix**2 * surfi%regolayer%regodata%comp
-      totseb = newlayer%thickness * user%pix**2 
-      !write(*,*) 'z>zmax',ri,rip1,erad/4.0,zmax,vmare/(user%pix**2),totseb/(user%pix**2)
+
+      newlayer%thickness = vseg
+      newlayer%comp      = vseg * surfi%regolayer%regodata%comp
+
    else 
-     !if (ri == 0.0 .or. rip1>=eradi .or. abs(thetast)>10.0) then
-     !call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,&
-     !     turnover)
-     call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb)!,turnover,dmix)
-     !write(*,*) 'line',ri,rip1,zmax,vmare/(user%pix**2), totseb/(user%pix**2)
-     !else
-     !   call regolith_streamtube_cylinder(user,surfi,cosi,coso,ri,rip1,erad,eradi,deltar,thetast,vmare,totseb,&
-     !        turnover,dmix)
-        !write(*,*) 'cyli',ri,rip1,zmax,vmare/(user%pix**2), totseb/(user%pix**2)
-     !end if
+
+     newlayer%thickness  = 0._DP
+     newlayer%comp       = 0._DP
+     call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,vseg,newlayer,rm)
+
    end if
 
    return
