@@ -45,11 +45,18 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    !cform = crater%vcorr - (crater%parab * lradsq)
    !if (lradsq < crater%rad**2) then
    r = sqrt(lradsq) / crater%frad
-   h = 2.5_DP*crater%rad !0.5_DP*crater%fcrat
-   circrad = 0.5_DP * h + (2*crater%rad)**2 / (8 * h)
-   cform = sqrt(circrad**2 - lradsq) + (circrad - h) + 0.15_DP*crater%frad
-                  
-   newdem = newelev - cform
+   !h = 2.5_DP*crater%rad !0.5_DP*crater%fcrat
+   !circrad = 0.5_DP * h + (2*crater%rad)**2 / (8 * h)
+   !cform = sqrt(circrad**2 - lradsq) + (circrad - h) + 0.15_DP*crater%frad
+   !          
+   if (r < 0.2_DP) then
+      cform = -0.181_DP * crater%fcrat
+   else if (r < 0.98_DP) then
+      cform =  (-0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3) * crater%fcrat
+   else 
+      cform =  crater%rheight !0.188_DP - 0.187_DP * r + 0.018_DP * r**2 + 0.015_DP * r**3 
+   end if      
+   newdem = newelev + cform 
 
    pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
    !write(*,*) melev,pikeD

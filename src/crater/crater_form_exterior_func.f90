@@ -45,7 +45,7 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
    crater%maxinc = max(crater%maxinc,inc)
    incsq = inc**2
 
-   radsq = crater%rad**2
+   radsq = crater%frad**2
 
    deltaMp = 0.0_DP
 

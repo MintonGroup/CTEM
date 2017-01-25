@@ -96,10 +96,12 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
          call util_periodic(xpi,ypi,user%gridsize)
 
          lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-         if (lradsq <= crater%rad**2) then
+         if (lradsq <= crater%frad**2) then
             call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,deltaMi)
-            deltaMtot = deltaMtot + deltaMi
+         else
+            call crater_form_exterior(user,surf(xpi,ypi),crater,domain,lradsq,newelev,deltaMi)
          end if
+         deltaMtot = deltaMtot + deltaMi
 
          ! do porosity computation if (user%doporosity)
          ! It is still important to consider the physical meaning of frad and rad. 
@@ -113,10 +115,6 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
      
       end do
    end do
-
-   !call crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
-   lastloop = .true.
-   deltaMtot = crater_form_exterior_func(user,surf,crater,domain,RIMDROP,deltaMtot,lastloop)
 
    domain%tallycoverage = domain%tallycoverage + int(fradsq * PI / user%pix**2)
    domain%subpixelcoverage = domain%subpixelcoverage + int(fradsq * PI / user%pix**2)
