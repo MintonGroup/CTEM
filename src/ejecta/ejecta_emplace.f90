@@ -144,6 +144,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    inc = max(min(nint(1.5_DP * crater%ejdis / user%pix) + 1,PBCLIM*user%gridsize),1)
    crater%maxinc = max(crater%maxinc,inc)
    radsq = crater%rad**2
+   fradsq = crater%frad**2
    incsq = inc**2
    ejdissq = crater%ejdis**2
 
@@ -303,7 +304,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          lradsq = lrad**2
 
 
-         if ((lradsq <= ejdissq) .and. (lradsq >= radsq) .and. (lrad > 0.0_DP)) then
+         if ((lradsq <= ejdissq) .and. (lradsq >= fradsq) .and. (lrad > 0.0_DP)) then
             theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
             mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
                     (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
