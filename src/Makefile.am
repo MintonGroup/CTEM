@@ -71,8 +71,6 @@ crater/crater_averages.f90\
 crater/crater_emplace.f90\
 crater/crater_form_interior.f90\
 crater/crater_form_exterior.f90\
-crater/crater_form_exterior_func.f90\
-crater/crater_form_exterior_rootfind.f90\
 crater/crater_record.f90\
 crater/crater_tally_true.f90\
 crater/crater_tally_observed.f90\
