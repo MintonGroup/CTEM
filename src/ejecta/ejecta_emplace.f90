@@ -190,12 +190,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    mvrld      = crater%ejdis
    mvrldsc    = mvrld / continuous
    n2         = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
-
    ! *************************** Part II. Flowery Ray Model         ************************************!
    nfrays = 20
    n1f  = 1.0_DP
    n2f  = 0.5_DP
    rayf = 7.5_DP
+
+   !write(*,*) mvrld, mvrldsc, n2
  
    ! Enhanced factor test: Build a enhanced factor quick lookup table
    ! Use a circular sector with an angle containing a half ray, which is pi/nrays. First, we determine the looping area for 
@@ -206,7 +207,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    yef        = mvrld * sin(thetamax)
    xefpi      = nint(xef / user%pix)
    yefpi      = nint(yef / user%pix)
-   nef        = ceiling( (mvrld - crater%rad) / user%pix)
+   nef        = ceiling( (mvrld) / user%pix) !ceiling( (mvrld - crater%rad) / user%pix)
    allocate(sf(nef))
    allocate(tot(nef))
    allocate(ef(nef))
@@ -223,8 +224,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          theta  = atan2(j * 1._DP,i * 1._DP)
          mag    = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) !&
          magf   = rayf * ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f) 
-         lradp  = continuous * mag
-         lradf  = continuous * magf 
+         lradp  = crater%frad * mag
+         lradf  = crater%frad * magf 
          lradp  = max(lradp, lradf)
          !if ( lrad > continuous .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
          if (lrad >= crater%rad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
@@ -283,10 +284,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
                  (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
          magf  = rayf * ( ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + &
                    (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f))
-         lradp = continuous * mag
-         lradf = continuous * magf
+         lradp = crater%frad * mag
+         lradf = crater%frad * magf
          lradp = max(lradp, lradf) 
-            
+         
+         !if (xpi>0 .and. xpi>ypi) write(*,*) lrad/crater%frad, mag, magf, lradp/crater%frad, lradf/crater%frad
 
          if (lrad < lradp) then
             call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,melt=melt)
