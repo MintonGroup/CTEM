@@ -97,7 +97,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,landslope,baseline,inneredge,outeredge,lradtrue
    integer(I4B),parameter :: MAXLOOP = 10 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous,ejbmass
+   real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous,ejbmass,fmasscons
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    integer(I4B) :: bigi,bigj
@@ -141,7 +141,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    if (crater%ejdis <= crater%rad) return
 
    ! determine area to effect
+   continuous = 2.348_DP * crater%frad**(1.006_DP)
    inc = max(min(nint(1.5_DP * crater%ejdis / user%pix) + 1,PBCLIM*user%gridsize),1)
+   if (.not.user%discontinuous) inc = int(continuous / user%pix) + 1
    crater%maxinc = max(crater%maxinc,inc)
    radsq = crater%rad**2
    fradsq = crater%frad**2
@@ -165,7 +167,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
                 ! within a circle of radius irad
 
    ! *************************** Continuous Ejecta Formula  *****************************!
-   continuous = 2.3_DP * crater%frad**(1.006_DP)
+   !^^^^^^^^^^^^^^^^^^^^^^^^
 
    ! *************************** Superformula Ray Model              ************************************!
    ! *************************** Part I.  Spoke and Skinny Ray Model ************************************!
@@ -220,7 +222,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          ! inside or outside a ray?
          theta  = atan2(j * 1._DP,i * 1._DP)
          mag    = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) !&
-         
          magf   = rayf * ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f) 
          lradp  = continuous * mag
          lradf  = continuous * magf 
@@ -251,13 +252,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    inneredge = crater%frad + 0.5_DP * domain%ejbres 
   
    ejbmass = 0.0_DP
+   write(*,*) 'NEW EJECTA'
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
 !   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
 !   !$OMP SHARED(inc,incsq,ejdissq,fradsq,radsq,indarray,cumulative_elchange,rn,continuous) 
 !   !$OMP REDUCTION(+:massray,massej,massrayef)
    do j = -inc,inc
       do i = -inc,inc
-
          ! find distance from crater center
          iradsq = i*i + j*j
          xpi = crater%xlpx + i
@@ -267,70 +268,41 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          xp = xpi * user%pix
          yp = ypi * user%pix
          
-         !lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-         !lrad = sqrt(lradsq)
-
-            
+         lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+         lrad = sqrt(lradsq)
 
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
 
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
+         if ((iradsq > incsq).or.(lradsq < fradsq)) cycle
 
-         ! Find angle-corrected landing distance
-         distance = sqrt((crater%xl - xp)**2 + (crater%yl - yp)**2)
+         theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
+         mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
+                 (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
+         magf  = rayf * ( ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + &
+                   (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f))
+         lradp = continuous * mag
+         lradf = continuous * magf
+         lradp = max(lradp, lradf) 
+            
 
-         baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix 
-         craterslope = atan(baseline / distance)
+         if (lrad < lradp) then
+            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,melt=melt)
+            ray_pix = ceiling((lrad - crater%rad) / user%pix)
+            ebh       = ebh * ef(ray_pix)
 
-
-         lrad = distance
-         lrad0 = lrad
-         do n = 1,MAXLOOP
-            !k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
-            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad)
-            erad = exp(erad)
-            baseline = surf(xpi,ypi)%dem - erad * sin(craterslope)
-            landslope = atan(baseline / (distance - erad * cos(craterslope)))
-
-            lradtrue = erad * cos(craterslope) + vsq / (user%gaccel * cos(landslope)) * &
-                                             (sin(2 * ejtheta + 2 * craterslope - landslope) - sin(landslope))
-            lrad = lrad * distance / lradtrue
-            if (lrad > outeredge) exit
-            if (abs(lrad - lrad0) < domain%small) exit
-            lrad0 = lrad
-         end do
-         lradsq = lrad**2
-
-
-         if ((lradsq <= ejdissq) .and. (lradsq >= fradsq) .and. (lrad > 0.0_DP)) then
-            theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
-            mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
-                    (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
-            magf  = rayf * ( ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + &
-                      (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f))
-            lradp = continuous * mag
-            lradf = continuous * magf
-            lradp = max(lradp, lradf) 
-               
-
-            if (lrad < lradp) then
-               call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,melt=melt)
-               ray_pix = ceiling((lrad - crater%rad) / user%pix)
-               ebh       = ebh * ef(ray_pix)
-
-               if (user%doregotrack .and. ebh>1.0e-8) then
-                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
-               end if
-
-            else
-               ebh = 0._DP
+            if (user%doregotrack .and. ebh>1.0e-8) then
+               call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
             end if
 
-            cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
-            ejbmass = ejbmass + ebh
+         else
+            ebh = 0._DP
          end if
+
+         cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
+         ejbmass = ejbmass + ebh
          
       end do
    end do
@@ -339,7 +311,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    deallocate(ef)
 
    ! Do mass conservation by adjusting ejecta thickness
-   cumulative_elchange = cumulative_elchange * (-deltaMtot)/ ejbmass
+   write(*,*) 'ejbmass = ',ejbmass
+   fmasscons = (-deltaMtot)/ ejbmass
+   write(*,*) 'fmasscons = ',fmasscons
+
+   cumulative_elchange = cumulative_elchange * fmasscons
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
