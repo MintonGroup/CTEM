@@ -318,7 +318,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
             ! Find out where in the table this new velocity corresponds to
             ind = 1
             call util_search(ejb%vesq,ind,ejtble,vsq,klo)
-            klo = min(max(klo,1),ejtble)
+            klo = min(max(klo,1),ejtble-1)
             ! Interpolate on the table to find the flat plane equivalent landing distance for this velocity
             frac = (vsq - ejb(klo)%vesq) / (ejb(klo+1)%vesq - ejb(klo)%vesq)
             distance = exp(ejb(klo)%lrad) + frac * (exp(ejb(klo+1)%lrad) - exp(ejb(klo)%lrad))
