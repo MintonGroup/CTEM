@@ -94,8 +94,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    real(DP),intent(in) :: deltaMtot
 
    ! Internal variables
-   real(DP) :: lrad,lrad0,lradsq,cdepth,distance,erad,craterslope,landslope,baseline,inneredge,outeredge,lradtrue
-   integer(I4B),parameter :: MAXLOOP = 10 ! Maximum number of times to loop the ejecta angle correction calculation
+   real(DP) :: lrad,lradsq,cdepth
+   integer(I4B),parameter :: MAXLOOP = 100 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
    real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous,ejbmass,fmasscons
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
@@ -130,6 +130,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    ! Melt zone's radius
    real(DP) :: rm, dm, melt, eradc
 
+   ! Ejecta pattern distortion parameters
+   real(DP) :: distance,erad,craterslope,landslope,baseline,lrange,frac,ejheight,ebh0,maxdistance
+   integer(I4B) :: klo,ind
    ! Executable code
 
    !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
@@ -142,8 +145,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    ! determine area to effect
    continuous = 2.348_DP * crater%frad**(1.006_DP)
-   inc = max(min(nint(1.5_DP * crater%ejdis / user%pix) + 1,PBCLIM*user%gridsize),1)
+   inc = max(min(nint(crater%ejdis / user%pix) + 1,PBCLIM*user%gridsize),1)
    if (.not.user%discontinuous) inc = int(continuous / user%pix) + 1
+   maxdistance = inc * user%pix
+   ! Increase the box a bit to take into account possible ejecta pattern distortion due to topography
+   inc = ceiling(inc * 1.5_DP)
    crater%maxinc = max(crater%maxinc,inc)
    radsq = crater%rad**2
    fradsq = crater%frad**2
@@ -249,11 +255,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    
    deallocate(sf)
    deallocate(tot)
-   outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
-   inneredge = crater%frad + 0.5_DP * domain%ejbres 
   
    ejbmass = 0.0_DP
-   write(*,*) 'NEW EJECTA'
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
 !   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
 !   !$OMP SHARED(inc,incsq,ejdissq,fradsq,radsq,indarray,cumulative_elchange,rn,continuous) 
@@ -279,6 +282,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          indarray(2,i,j) = ypi
          if ((iradsq > incsq).or.(lradsq < fradsq)) cycle
 
+         ! Ray pattern setup
          theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
          mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
                  (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
@@ -287,19 +291,52 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          lradp = crater%frad * mag
          lradf = crater%frad * magf
          lradp = max(lradp, lradf) 
-         
-         !if (xpi>0 .and. xpi>ypi) write(*,*) lrad/crater%frad, mag, magf, lradp/crater%frad, lradf/crater%frad
 
-         if (lrad < lradp) then
-            call ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,melt=melt)
-            ray_pix = ceiling((lrad - crater%rad) / user%pix)
+         ! Estimate ejecta pattern distortion due to target surface angle and topography
+         ! This must be done iteratively because the ejection distance and ejection angle vary
+         distance = lrad
+         do n = 1,MAXLOOP
+            call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad,melt=melt)
+            if ((n > 1).and.((abs(ebh0 - ebh) / ebh0) < domain%small)) exit
+            ebh0 = ebh
+               
+            erad = exp(erad)
+            lrange = lrad - erad
+
+            baseline = ((i * crater%xslp) + (j * crater%yslp)) * user%pix
+            craterslope = atan(baseline / lrad)
+
+            ejheight = erad * sin(craterslope) + crater%melev
+           
+            landslope = atan((surf(xpi,ypi)%dem - ejheight) / lrange)
+
+            ! Calculate corrected landing velocity for this location
+            vsq = (lrange * user%gaccel * cos(craterslope)) / &
+                  (sin(2 * ejtheta + 2 * craterslope - landslope) - sin(landslope))
+            if (vsq < 0.0_DP) exit
+
+            ! Find out where in the table this new velocity corresponds to
+            ind = 1
+            call util_search(ejb%vesq,ind,ejtble,vsq,klo)
+            klo = min(max(klo,1),ejtble)
+            ! Interpolate on the table to find the flat plane equivalent landing distance for this velocity
+            frac = (vsq - ejb(klo)%vesq) / (ejb(klo+1)%vesq - ejb(klo)%vesq)
+            distance = exp(ejb(klo)%lrad) + frac * (exp(ejb(klo+1)%lrad) - exp(ejb(klo)%lrad))
+         end do 
+
+         if (vsq < 0.0_DP) cycle
+         if ((distance < maxdistance) .and. (distance < lradp)) then ! Inside a ray or continuous ejecta
+
+
+            ! Ray mass conservation
+            ray_pix = max(min(ceiling((lrad - crater%rad) / user%pix),1),nef)
             ebh       = ebh * ef(ray_pix)
 
             if (user%doregotrack .and. ebh>1.0e-8) then
                call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
             end if
 
-         else
+         else ! Outside a ray
             ebh = 0._DP
          end if
 
@@ -313,10 +350,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    deallocate(ef)
 
    ! Do mass conservation by adjusting ejecta thickness
-   write(*,*) 'ejbmass = ',ejbmass
    fmasscons = (-deltaMtot)/ ejbmass
-   write(*,*) 'fmasscons = ',fmasscons
-
    cumulative_elchange = cumulative_elchange * fmasscons
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
