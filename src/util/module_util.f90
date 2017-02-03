@@ -143,6 +143,15 @@ interface util_search
    real(DP),intent(in) :: val
    integer(I4B),intent(out) :: k
    end subroutine util_search_double
+   
+   subroutine util_search_double_1(arr,ind,n,val,k)
+   use module_globals
+   implicit none
+   integer(I4B),intent(in) :: ind,n
+   real(DP),dimension(:),intent(in) :: arr
+   real(DP),intent(in) :: val
+   integer(I4B),intent(out) :: k
+   end subroutine util_search_double_1
 
    subroutine util_search_int(arr,ind,n,val,k)
    use module_globals
