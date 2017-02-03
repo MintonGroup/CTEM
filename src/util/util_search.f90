@@ -94,7 +94,7 @@ end subroutine util_search_double
 
 subroutine util_search_double_1(arr,ind,n,val,klo)
 use module_globals
-use module_util, EXCEPT_THIS_ONE => util_search_double
+use module_util, EXCEPT_THIS_ONE => util_search_double_1
 implicit none
 
    ! Arguments
