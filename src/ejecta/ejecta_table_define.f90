@@ -42,11 +42,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    ! Executable code
 
    ! Get estimate of size of ejb table
-   if (.not.user%discontinuous) then
-      crater%ejdis =  2 * 2.3_DP * crater%frad**(1.006_DP)  ! Continuous ejecta distance From Melosh (1989) eq. 6.3.1
-   else
-      crater%ejdis = 2 * DISEJB * 2.3_DP * crater%frad**(1.006_DP)  ! Continuous ejecta distance From Melosh (1989) eq. 6.3.1
-   end if
+   crater%ejdis = DISEJB * 2.348_DP * crater%frad**(1.006_DP)  ! Continuous ejecta distance From Moore (1974) eq. 1
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
    domain%ejbres = (crater%ejdis - crater%rad) / EJBTABSIZE
    lrad = crater%frad 
@@ -74,8 +70,10 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    do k = 0,EJBTABSIZE
       call ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       if (k >= 1) then
-         call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
-         ejb(k)%lrad = log(lrad - 0.5_DP * domain%ejbres)
+         !call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
+         ejb(k)%lrad = log(lrad)
+         ! Use McGetchin et al. 1973 for ejecta thickness 
+         thick = 0.14_DP * crater%frad**(0.74_DP) * ((lrad - 0.5_DP * domain%ejbres) / crater%frad)**(-3.0_DP)
          ejb(k)%thick = log(thick) 
          ejb(k)%vesq = vejsq
          ejb(k)%angle = ejang
@@ -96,7 +94,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    end do
    !write(*,*) 'A MELT ZONE of ',crater%frad,' meter-sized crater: ',rmelt,'at a rim',ejb(1)%meltfrac
    ! Get pixel space distance
-   crater%ejdis = crater%ejdis / 2.0_DP
+   crater%ejdis = crater%ejdis / 3.0_DP
    crater%ejdispx = nint(crater%ejdis / user%pix)
 
    return
