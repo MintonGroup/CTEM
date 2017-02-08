@@ -180,6 +180,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass)
          
+         ! Collapse any remaining unstable slopes
+         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,ejbmass)
+
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                         ! For very steep size distributions, only a fraction of the
                                                                         ! craters are retained. The full ejecta_table_define function
@@ -207,10 +210,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          vistrue = vistrue + 1
          nsincetally = nsincetally + 1
          if (.not.user%testflag) call io_updatePbar("")
-
-
-         ! Collapse any remaining unstable slopes
-         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain)
 
          !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
          
