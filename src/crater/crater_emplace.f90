@@ -7,7 +7,7 @@
 !   * module_util
 !   * module_crater
 !   
-!   call crater_emplace(user,surf,crater,domain,ejbmass)
+!   call crater_emplace(user,surf,crater,domain,deltaMtot)
 !
 ! DESCRIPTION
 !    
@@ -18,7 +18,7 @@
 !   * surf    -- Surface grid
 !   * crater  -- Crater dimension container
 !   * domain  -- Simulation domain variable container
-!   * ejbmass -- Total ejecta blanket thickness for a given cratering event
+!   * deltaMtot -- Total displaced mass used to calculate mass-conserving ejecta blanket
 !
 !   Output
 !   * surf   -- Outputs the new ejecta blanket onto the grid
