@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_slope_collapse(user,surf,crater,domain)
+subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    use module_globals
    use module_util
    use module_io
@@ -28,6 +28,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
+   real(DP),intent(inout) :: deltaMtot
    
    ! Internal variables
    real(DP) :: diffmax,difflim
@@ -124,12 +125,12 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                indarray(6,i,j)=my3
 
             else
-               mx1=indarray(1,i,j)
-               my1=indarray(2,i,j)
-               mx2=indarray(3,i,j)
-               my2=indarray(4,i,j)
-               mx3=indarray(5,i,j)
-               my3=indarray(6,i,j)
+               mx1 = indarray(1,i,j)
+               my1 = indarray(2,i,j)
+               mx2 = indarray(3,i,j)
+               my2 = indarray(4,i,j)
+               mx3 = indarray(5,i,j)
+               my3 = indarray(6,i,j)
             end if
             iradsq = i*i+j*j
             if (iradsq <= incsq) then ! round corners
@@ -146,8 +147,8 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                tslp2sq = (xslp1*xslp1 + yslp2*yslp2)
                tslp3sq = (xslp2*xslp2 + yslp1*yslp1)
                tslp4sq = (xslp2*xslp2 + yslp2*yslp2)
-               slpsq=max(tslp1sq,tslp2sq,tslp3sq,tslp4sq)
-
+               slpsq = max(tslp1sq,tslp2sq,tslp3sq,tslp4sq)
+               critical = (crater_critical_slope(user,crater,iradsq)*user%gridsize)**2 
                if (slpsq > critical) then
                   failflag = .true.
                   ! find elevation change
@@ -157,10 +158,10 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
                   elchange = difflim * tgrad
 
                   ! change digital elevation map
-                  elevarray(i,j)=elchange
-                  gradarray(i,j)=tgrad
-                  slparray(i,j)=slpsq
-                  cumulative_elchange(i,j)=cumulative_elchange(i,J) + elchange
+                  elevarray(i,j) = elchange
+                  gradarray(i,j) = tgrad
+                  slparray(i,j) = slpsq
+                  cumulative_elchange(i,j) = cumulative_elchange(i,j) + elchange
                end if
             end if  
          end do
@@ -212,7 +213,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain)
       
       if (.not.failflag) exit
    end do  ! end downslope motion loops
-
+   deltaMtot = deltaMtot + sum(cumulative_elchange)
    deallocate(elevarray,gradarray,slparray,cumulative_elchange,indarray)
    
    return
