@@ -145,7 +145,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    ! determine area to effect
    continuous = 2.348_DP * crater%frad**(1.006_DP)
-   inc = max(min(nint(crater%fcrat * user%ejecta_truncation / user%pix) + 1,PBCLIM*user%gridsize),1)
+   inc = max(min(nint(crater%frad * user%ejecta_truncation / user%pix) + 1,PBCLIM*user%gridsize),1)
    maxdistance = inc * user%pix
    ! Increase the box a bit to take into account possible ejecta pattern distortion due to topography
    inc = ceiling(inc * 1.5_DP)
