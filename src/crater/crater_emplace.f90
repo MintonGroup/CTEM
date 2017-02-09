@@ -66,14 +66,14 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    ! Internal variables
    real(DP) :: lradsq,newelev
    integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,deltaMi !,deltaMtot
+   real(DP) :: xp,yp,fradsq,deltaMi,rimheight
    logical :: lastloop
 
    ! Executable code
 
    ! determine area to effect
    ! First make the interior of the crater
-   inc = max(min(crater%rimdispx,PBCLIM*user%gridsize),1) + 1
+   inc = max(min(crater%fradpx,PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    deltaMtot = 0.0_DP !ejbmass
@@ -81,36 +81,31 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space
       do i=-inc,inc
+         iradsq = i**2 + j**2 
          ! find distance from crater center
          
          ! find elevation and grid point
          newelev = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
-            
 
          xp = xpi * user%pix
          yp = ypi * user%pix
          
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
-
          lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
-         if (lradsq <= crater%frad**2) then
-            call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,deltaMi)
-         else
-            call crater_form_exterior(user,surf(xpi,ypi),crater,domain,lradsq,newelev,deltaMi)
-         end if
+
+         if (lradsq > crater%frad**2) cycle
+         call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,deltaMi)
          deltaMtot = deltaMtot + deltaMi
 
          ! do porosity computation if (user%doporosity)
          ! It is still important to consider the physical meaning of frad and rad. 
          ! frad is the final crater, while rad is the transient crater. 
          ! which one should be reasonable here. 
-         if (lradsq <= crater%frad**2) then
-            if (user%doporosity) then
-               call porosity_form_interior(user, surf(xpi,ypi), crater, lradsq)
-            end if
+         if (user%doporosity) then
+            call porosity_form_interior(user, surf(xpi,ypi), crater, lradsq)
          end if
      
       end do
