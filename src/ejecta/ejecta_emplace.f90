@@ -97,7 +97,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    real(DP) :: lrad,lradsq,cdepth
    integer(I4B),parameter :: MAXLOOP = 100 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,radsq,ebh,ejdissq,continuous,ejbmass,fmasscons
+   real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,continuous,ejbmass,fmasscons
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    integer(I4B) :: bigi,bigj
@@ -145,14 +145,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    ! determine area to effect
    continuous = 2.348_DP * crater%frad**(1.006_DP)
-   inc = max(min(nint(crater%ejdis / user%pix) + 1,PBCLIM*user%gridsize),1)
-   if (.not.user%discontinuous) inc = int(continuous / user%pix) + 1
+   inc = max(min(nint(crater%fcrat * user%ejecta_truncation / user%pix) + 1,PBCLIM*user%gridsize),1)
    maxdistance = inc * user%pix
    ! Increase the box a bit to take into account possible ejecta pattern distortion due to topography
    inc = ceiling(inc * 1.5_DP)
    crater%maxinc = max(crater%maxinc,inc)
    radsq = crater%rad**2
    fradsq = crater%frad**2
+   fradpxsq = crater%fradpx**2
    incsq = inc**2
    ejdissq = crater%ejdis**2
 
@@ -280,7 +280,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
-         if ((iradsq > incsq).or.(lradsq < fradsq)) cycle
+         if ((iradsq > incsq).or.(lrad <= crater%rad)) cycle
 
          ! Ray pattern setup
          theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
@@ -351,11 +351,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    ! Do mass conservation by adjusting ejecta thickness
    fmasscons = (-deltaMtot)/ ejbmass
+   !write(*,*) 'fmasscons = ',fmasscons
    cumulative_elchange = cumulative_elchange * fmasscons
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
-      call ejecta_soften(user,surf,2 * inc + 1,indarray,cumulative_elchange)
       ! Add the ejecta back to the DEM
       do j = -inc,inc
          do i = -inc,inc
@@ -365,6 +365,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
             surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j), 0.0_DP)
          end do
       end do
+      call ejecta_soften(user,surf,2 * inc + 1,indarray,cumulative_elchange)
    else ! Ejecta wraps around the grid. 
         ! We will therefore send in the whole grid with the total ejecta thickness added to each pixel
       allocate(big_cumulative_elchange(0:user%gridsize+1,0:user%gridsize+1))
@@ -387,13 +388,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
             big_cumulative_elchange(xpi,ypi) = big_cumulative_elchange(xpi,ypi) + cumulative_elchange(i,j)
          end do
       end do
-      call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
       do i = 1,user%gridsize
          do j = 1,user%gridsize
             surf(i,j)%dem = surf(i,j)%dem + big_cumulative_elchange(i,j) 
             surf(i,j)%ejcov = max(surf(i,j)%ejcov + big_cumulative_elchange(i,j),0.0_DP)
          end do
       end do
+      call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
       deallocate(big_cumulative_elchange,big_indarray)
    end if
 
