@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev,deltaMi)
+subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev,rimheight,deltaMi)
    use module_globals
    use module_util
    use module_ejecta
@@ -30,7 +30,7 @@ subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev,deltaMi)
    type(surftype),intent(inout) :: surfi
    type(cratertype),intent(in) :: crater
    type(domaintype),intent(in) :: domain
-   real(DP),intent(in) :: lradsq,newelev
+   real(DP),intent(in) :: lradsq,newelev,rimheight
    real(DP),intent(out) :: deltaMi
    integer(I4B) :: l
 
@@ -43,17 +43,11 @@ subroutine crater_form_exterior(user,surfi,crater,domain,lradsq,newelev,deltaMi)
    lrad = sqrt(lradsq)
 
    ! change digital elevation map
-   cform = crater%rheight * ((crater%rad / lrad)**RIMDROP) 
+   cform = rimheight * ((crater%frad / lrad)**RIMDROP) 
 
-   ! elevation changes
-   !if (lrad <= crater%frim) then
-   !   hcorr = cform * ((crater%frim - lrad) / (crater%frim - crater%rad))**20 
-   !   elchange = hcorr + cform 
-   !else 
-      elchange = cform 
-   !end if
-   surfi%dem = surfi%dem + elchange 
-   deltaMi = elchange
+   elchange = cform 
+   deltaMi = 0.0_DP !elchange
+   surfi%dem = surfi%dem !+ elchange 
 
    !change ejecta coverage
    !surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
