@@ -86,7 +86,7 @@ subroutine io_input(infile,user)
    user%doporosity = .false.
    user%soften_factor = 0.43_DP
    user%soften_slope = 1.8_DP
-   user%discontinuous = .true.
+   user%ejecta_truncation = 10.0_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -303,11 +303,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%testtally
-         case ("DISCONTINUOUS") ! Do discontinuous ejecta blanket
+         case ("EJECTA_TRUNCATION") ! Size of ejecta blankets to model in terms of crater diameter 
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%discontinuous
+            read(token, *) user%ejecta_truncation
          ! Porosity model
          case ("POROSITYFLG")
             ifirst = ilast + 1
