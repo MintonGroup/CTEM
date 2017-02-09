@@ -80,7 +80,7 @@ type surftype
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
    type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
-	type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
 end type surftype
 
 ! Derived data type for crater information
@@ -180,7 +180,7 @@ type usertype
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model
-   logical           :: discontinuous 
+   real(DP)          :: ejecta_truncation ! Set the number of crater diameters to truncate the ejecta
 
    ! Regolith tracking variables
    logical           :: doregotrack ! Set T to use the regolith tracking model (EXPERIMENTAL)
@@ -273,8 +273,8 @@ real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see R
 !real(DP),parameter :: CT = KT * 1.0077158813689795507466256218613060723322903283648264_DP ! KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: DDRATIO = 0.19_DP        ! ?
-real(DP),parameter :: RDRATIO = 0.020_DP       ! Rim height to diameter ratio
-real(DP),parameter :: RIMDROP = 4.22_DP        ! Power law index for rim profile 
+real(DP),parameter :: RDRATIO = 0.040_DP       ! Rim height to diameter ratio
+real(DP),parameter :: RIMDROP = 10.00_DP        ! Power law index for rim profile 
 real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
@@ -290,7 +290,7 @@ real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
 real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside final diameter to count as rim pixels
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
-real(DP),parameter :: TRNRATIO = 0.30_DP       ! The ration of the transient crater depth to the crater diameter.
+real(DP),parameter :: TRNRATIO = 0.30_DP       ! The ratio of the transient crater depth to the crater diameter.
 
 !real(DP),parameter :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
 !#real(DP) :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
