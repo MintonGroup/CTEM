@@ -303,7 +303,7 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%testtally
-         case ("EJECTA_TRUNCATION") ! Size of ejecta blankets to model in terms of crater diameter 
+         case ("EJECTA_TRUNCATION") ! Radius of ejecta blankets to model in terms of crater radius
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
