@@ -200,7 +200,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    nfrays = 20
    n1f  = 1.0_DP
    n2f  = 0.5_DP
-   rayf = 7.5_DP
+   rayf = 5.0 !7.5_DP
 
    !write(*,*) mvrld, mvrldsc, n2
  
