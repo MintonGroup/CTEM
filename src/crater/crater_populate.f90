@@ -180,8 +180,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass)
          
-         ! Collapse any remaining unstable slopes
-         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,ejbmass)
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                         ! For very steep size distributions, only a fraction of the
@@ -203,6 +201,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             ejtble = 0
          end if
          
+         ! Collapse any remaining unstable slopes
+         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,ejbmass)
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater)
