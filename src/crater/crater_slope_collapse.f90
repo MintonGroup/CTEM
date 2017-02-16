@@ -32,7 +32,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    
    ! Internal variables
    real(DP) :: diffmax,difflim
-   real(DP) :: slpmax,slpsq,oldslpmax
+   real(DP) :: slpmax,slpsq
    real(DP) :: elchgmax,critical
    real(DP) :: xslp1,xslp2,yslp1,yslp2
    real(DP) :: tslp1sq,tslp2sq,tslp3sq,tslp4sq
@@ -45,17 +45,16 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    integer(I4B),dimension(:,:,:),allocatable :: indarray
    logical  :: failflag
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
-   real(DP) :: rfac
 
    ! testing
-   character(STRMAX) :: filename
-   integer(I4B) :: ioerr
+   !character(STRMAX) :: filename
+   !integer(I4B) :: ioerr
 
    ! Executable Code
 
    ! Some preliminary setup
    diffmax = 0.25_DP * user%pix**2
-   looplim = 10 * crater%fcratpx
+   looplim = 100 * crater%fcratpx
    critical = (CRITSLP * user%pix)**2
 
    !     determine area to effect
@@ -84,10 +83,9 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    cumulative_elchange = 0._DP
 
    !  begin downslope motion loop
-   oldslpmax = huge(oldslpmax)
-   kappat = 0.0_DP
    do loopcnt=1,looplim
       failflag = .false.
+      kappat = 0.0_DP
 
       ! loop over affected matrix area
       !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
@@ -197,6 +195,6 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    end do  ! end downslope motion loops
    
    deltaMtot = deltaMtot + sum(cumulative_elchange)
-   deallocate(elevarray,cumulative_elchange,indarray)
+   deallocate(elevarray,cumulative_elchange,indarray,kappat)
    return
    end subroutine crater_slope_collapse
