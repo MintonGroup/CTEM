@@ -61,7 +61,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    !     determine area to effect
    inc = max(min(crater%fcratpx,ceiling(SQRT2*user%gridsize)),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
-   incsq = inc*inc
+   incsq = inc**2
 
    !if (inc >= user%gridsize/2) then
    !   write(*,*) 'D =',crater%fcrat, ' Cl/S =',(crater%fcratpx*user%pix)/domain%side
@@ -79,9 +79,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(indarray(6,-inc:inc,-inc:inc))
    allocate(kappat(-inc:inc,-inc:inc))
-   !mult = inc/(user%gridsize/2) + 1 ! Reduce max diffusion if the loopover area exceeds the periodic boundary conditions
    mult = (1 + (inc/(user%gridsize/2)))**2
-   !difflim = diffmax/mult
 
    cumulative_elchange = 0._DP
 
