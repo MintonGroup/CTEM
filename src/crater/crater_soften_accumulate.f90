@@ -33,7 +33,6 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    real(DP),dimension(:,:),intent(inout) :: kdiff
 
    ! Internal variables
-   real(DP) :: SOFTEN_FACTOR = 1.00e-3_DP ! Constant in topographic diffusion term for crater softening
    integer(I4B) :: SOFTEN_SIZE = 100 ! Constant in topographic diffusion term for crater softening
 
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
@@ -46,13 +45,16 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    !********
 
 
-   kappatmax = SOFTEN_FACTOR * crater%frad**2
+   kappatmax = user%soften_factor / (PI * (SOFTEN_SIZE * crater%frad)**(user%soften_slope - 2.0_DP))
    inc = SOFTEN_SIZE * crater%fradpx + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
 
    ! Loop over affected matrix area
+   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(2*N > INCPAR) &
+   !$OMP SHARED(user,crater,fradsq,incsq,kappatmax,SOFTEN_SIZE) &
+   !$OMP REDUCTION(+:kdiff)
    do j=-inc,inc  ! Do the loop in pixel space
       do i=-inc,inc
          ! find distance from crater center
@@ -83,6 +85,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
       end do
    end do !end area loopover 
+   !$OMP END PARALLEL DO
 
 return
 end subroutine crater_soften_accumulate
