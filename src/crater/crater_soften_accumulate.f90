@@ -75,10 +75,8 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
             call util_periodic(xpi,ypi,user%gridsize)
             areafrac = util_area_intersection(SOFTEN_SIZE * crater%frad,xbar,ybar,user%pix)
             
-            if (lradsq < fradsq) then 
-               kdiff(xpi,ypi) = 0.0_DP
-            else 
-               kdiff(xpi,ypi) = kappatmax * areafrac 
+            if (lradsq > fradsq) then 
+               kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * areafrac 
             end if
 
          end if
