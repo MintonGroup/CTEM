@@ -71,7 +71,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP)                :: ejbmass
    logical                 :: makecrater
-   real(DP),dimension(user%gridsize,user%gridsize) :: kdiff
+   real(DP),dimension(user%gridsize,user%gridsize) :: kdiff 
    TARGET :: surf
 
    ! ejecta blanket array
@@ -123,6 +123,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset coverage map
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
+   kdiff = 0.0_DP
    do while (icrater < ntotcrat)
       makecrater = .true.
       icrater = icrater + 1
