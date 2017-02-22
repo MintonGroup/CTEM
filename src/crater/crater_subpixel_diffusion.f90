@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
+subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiffin)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_subpixel_diffusion
@@ -31,6 +31,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
    real(DP),dimension(:,:),intent(in) :: prod,nflux 
    type(domaintype),intent(in) :: domain
    real(DP),intent(in) :: finterval
+   real(DP),dimension(:,:),intent(inout) :: kdiffin
 
    ! Internal variables
    real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: cumulative_elchange,kdiff
@@ -48,6 +49,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          call util_periodic(xpi,ypi,user%gridsize)
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
+         kdiff(i,j) = kdiffin(xpi,ypi)
       end do
    end do
    !goto 100 
@@ -68,7 +70,6 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
 
    end do
 
-   kdiff = 0._DP
    do j = 1,user%gridsize
       do i = 1,user%gridsize
          do n = 1,ntot
@@ -86,7 +87,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
             k = util_poisson(lambda)
             !rad = 0.5_DP * diam !/ user%pix
             !Abar = PI * rad**2 / user%pix**2 !2 * sqrt(0.5_DP * PI) * rad**2 / (rad + 1.0_DP / SQRT2)**2 - 0.024_DP * rad**0.682_DP
-            kdiff(i,j) = kdiff(i,j) + k * kappat
+            kdiff(i,j) = kdiff(i,j) + k * kappat / user%pix**2
          end do
       end do
    end do
@@ -110,6 +111,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
          surf(i,j)%ejcov = max(surf(i,j)%ejcov + cumulative_elchange(i,j),0.0_DP)
       end do
    end do
+   kdiffin = 0.0_DP
 
 return
 end subroutine crater_subpixel_diffusion

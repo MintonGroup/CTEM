@@ -34,9 +34,10 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
    ! Internal variables
    real(DP) :: SOFTEN_FACTOR = 1.00e-3_DP ! Constant in topographic diffusion term for crater softening
+   integer(I4B) :: SOFTEN_SIZE = 100 ! Constant in topographic diffusion term for crater softening
 
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
-   real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq
+   real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,areafrac,xbar,ybar
 
    ! TESTING
    !open(unit=55,file="SOFTEN_FACTOR.test",status="old")
@@ -45,10 +46,8 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    !********
 
 
-   kappatmax = SOFTEN_FACTOR * crater%fcrat**2
-   
-   inc = int(crater%frad/user%pix*(domain%small/crater%rheight)**(-1._DP/RIMDROP)) !  Maximum distance of crater form
-   inc = max(min(max(crater%rimdispx,inc),PBCLIM*user%gridsize),1)
+   kappatmax = SOFTEN_FACTOR * crater%frad**2
+   inc = SOFTEN_SIZE * crater%fradpx + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
@@ -66,19 +65,20 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
             ! Find distance from crater center to current pixel center in real space
             xp = xpi * user%pix
             yp = ypi * user%pix
+
+            xbar = xp - crater%xl 
+            ybar = yp - crater%yl
             
             lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
+            areafrac = util_area_intersection(SOFTEN_SIZE * crater%frad,xbar,ybar,user%pix)
             
-            ! interior of the crater should have a constant kappa*t, while the
-            ! rim should fall away with the power law drop as the rim profile
             if (lradsq < fradsq) then 
-               kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax
+               kdiff(xpi,ypi) = 0.0_DP
             else 
-               lrad = sqrt(lradsq)
-               kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * ((crater%frad / lrad)**RIMDROP)
+               kdiff(xpi,ypi) = kappatmax * areafrac 
             end if
 
          end if

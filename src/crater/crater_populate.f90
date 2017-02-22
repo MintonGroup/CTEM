@@ -71,6 +71,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP)                :: ejbmass
    logical                 :: makecrater
+   real(DP),dimension(user%gridsize,user%gridsize) :: kdiff
    TARGET :: surf
 
    ! ejecta blanket array
@@ -172,7 +173,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (user%doseismic) call seismic_shake(user,surf,crater,domain)
          
          ! Generate dynamic diffusion
-         !if (user%dosoftening) call crater_soften(user,surf,crater,domain)
+         if (user%dosoftening) call crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
          ! find the average height and slope at crater location
          call crater_averages(user,surf,crater)
@@ -253,7 +254,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call io_updatePbar(message)
             craters_since_subpixel = icrater - icrater_last_subpixel
             finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
-            call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval)
+            call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff)
             icrater_last_subpixel = icrater
          end if
          ! Intermediate tally step 
