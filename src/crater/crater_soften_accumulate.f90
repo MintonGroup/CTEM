@@ -33,28 +33,19 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    real(DP),dimension(:,:),intent(inout) :: kdiff
 
    ! Internal variables
-   integer(I4B) :: SOFTEN_SIZE = 100 ! Constant in topographic diffusion term for crater softening
-
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
    real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,areafrac,xbar,ybar
 
-   ! TESTING
-   !open(unit=55,file="SOFTEN_FACTOR.test",status="old")
-   !read(55,*) SOFTEN_FACTOR
-   !close(55)
-   !********
-
-
-   kappatmax = user%soften_factor / (PI * SOFTEN_SIZE**2 * crater%frad**(user%soften_slope - 2.0_DP))
-   kappatmax = kappatmax - 0.84_DP / (PI * (SOFTEN_SIZE * crater%frad)**2)
-   inc = SOFTEN_SIZE * crater%fradpx + 2 
+   kappatmax = user%soften_factor / (PI * user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
+   kappatmax = kappatmax - 0.84_DP / (PI * (user%soften_size * crater%frad)**2)
+   inc = int(user%soften_size * crater%frad / user%pix) + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
 
    ! Loop over affected matrix area
    !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,SOFTEN_SIZE) &
+   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax) &
    !!$OMP REDUCTION(+:kdiff)
    do j = -inc,inc  ! Do the loop in pixel space
       do i = -inc,inc
@@ -76,7 +67,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
-            areafrac = util_area_intersection(SOFTEN_SIZE * crater%frad,xbar,ybar,user%pix)
+            areafrac = util_area_intersection(user%soften_size * crater%frad,xbar,ybar,user%pix)
             
             if (lradsq > fradsq) then 
                kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * areafrac 
