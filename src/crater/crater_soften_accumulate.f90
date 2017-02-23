@@ -46,19 +46,20 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
 
    kappatmax = user%soften_factor / (PI * (SOFTEN_SIZE * crater%frad)**(user%soften_slope - 2.0_DP))
+   kappatmax = kappatmax - 0.84_DP / (PI * (SOFTEN_SIZE * crater%frad)**2.0)
    inc = SOFTEN_SIZE * crater%fradpx + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
 
    ! Loop over affected matrix area
-   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(2*N > INCPAR) &
-   !$OMP SHARED(user,crater,fradsq,incsq,kappatmax,SOFTEN_SIZE) &
+   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
+   !$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,SOFTEN_SIZE) &
    !$OMP REDUCTION(+:kdiff)
-   do j=-inc,inc  ! Do the loop in pixel space
-      do i=-inc,inc
+   do j = -inc,inc  ! Do the loop in pixel space
+      do i = -inc,inc
          ! find distance from crater center
-         iradsq = i*i + j*j
+         iradsq = i**2 + j**2
          if (iradsq <= incsq) then
             ! find elevation and grid point
             xpi = crater%xlpx + i
