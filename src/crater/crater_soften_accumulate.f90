@@ -53,9 +53,9 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    incsq = inc**2
 
    ! Loop over affected matrix area
-   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,SOFTEN_SIZE) &
-   !$OMP REDUCTION(+:kdiff)
+   !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
+   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,SOFTEN_SIZE) &
+   !!$OMP REDUCTION(+:kdiff)
    do j = -inc,inc  ! Do the loop in pixel space
       do i = -inc,inc
          ! find distance from crater center
@@ -86,7 +86,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
       end do
    end do !end area loopover 
-   !$OMP END PARALLEL DO
+   !!$OMP END PARALLEL DO
 
 return
 end subroutine crater_soften_accumulate
