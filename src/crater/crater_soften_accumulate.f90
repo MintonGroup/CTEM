@@ -45,8 +45,8 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    !********
 
 
-   kappatmax = user%soften_factor / (PI * (SOFTEN_SIZE * crater%frad)**(user%soften_slope - 2.0_DP))
-   kappatmax = kappatmax - 0.84_DP / (PI * (SOFTEN_SIZE * crater%frad)**2.0)
+   kappatmax = user%soften_factor / (PI * SOFTEN_SIZE**2 * crater%frad**(user%soften_slope - 2.0_DP))
+   kappatmax = kappatmax - 0.84_DP / (PI * (SOFTEN_SIZE * crater%frad)**2)
    inc = SOFTEN_SIZE * crater%fradpx + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
