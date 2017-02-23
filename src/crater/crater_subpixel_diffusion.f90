@@ -70,8 +70,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
    end do
 
-   do j = 1,user%gridsize
-      do i = 1,user%gridsize
+   do j = 0,user%gridsize + 1
+      do i = 0,user%gridsize + 1
          do n = 1,ntot
             dburial = EXFAC * 0.5_DP * nflux(1,n)
             if (surf(i,j)%ejcov > dburial) then
