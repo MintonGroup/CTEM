@@ -33,19 +33,44 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    real(DP),dimension(:,:),intent(inout) :: kdiff
 
    ! Internal variables
-   integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j
+   integer(I4B) :: inc,cinc,incsq,N,xpi,ypi,iradsq,i,j
    real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,areafrac,xbar,ybar
+   real(DP),dimension(user%gridsize,user%gridsize) :: craterhole
 
    kappatmax = user%soften_factor / (PI * user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
-   kappatmax = kappatmax - 0.84_DP / (PI * user%soften_size**2) * crater%frad**2 !Take out the intrinsic crater erosion contribution 
+   !Take out the intrinsic crater erosion contribution 
+   kappatmax = max(kappatmax - 0.84_DP / (PI * user%soften_size**2) * crater%frad**2,0.0_DP) 
+
    inc = int(user%soften_size * crater%frad / user%pix) + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
+   cinc = crater%fradpx + 1
+   craterhole = 1.0_DP
+   ! Cut out a hole for the new crater so we don't soften it with itself
+   do j = -cinc,cinc
+      do i = -cinc,cinc
+         xpi = crater%xlpx + i
+         ypi = crater%ylpx + j
+
+         ! Find distance from crater center to current pixel center in real space
+         xp = xpi * user%pix
+         yp = ypi * user%pix
+
+         xbar = xp - crater%xl 
+         ybar = yp - crater%yl
+   
+         areafrac = util_area_intersection(crater%frad,xbar,ybar,user%pix)
+
+         call util_periodic(xpi,ypi,user%gridsize)
+         craterhole(xpi,ypi) = 1.0_DP - areafrac
+      end do
+   end do
+
 
    ! Loop over affected matrix area
    !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax) &
+   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,craterhole) &
    !!$OMP REDUCTION(+:kdiff)
    do j = -inc,inc  ! Do the loop in pixel space
       do i = -inc,inc
@@ -68,6 +93,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
             areafrac = util_area_intersection(user%soften_size * crater%frad,xbar,ybar,user%pix)
+            areafrac = areafrac * craterhole(xpi,ypi)
             
             if (lradsq > fradsq) then 
                kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * areafrac 
