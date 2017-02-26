@@ -84,8 +84,9 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%doporosity = .false.
-   user%soften_factor = 37.0_DP
-   user%soften_slope = 1.8_DP
+   user%soften_factor = 3.0_DP
+   user%soften_slope = 4.0_DP
+   user%soften_size = 10.0_DP
    user%ejecta_truncation = 10.0_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
@@ -434,6 +435,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%soften_slope
+         case ("SOFTEN_SIZE")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%soften_size
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
          !**************************************************************************
