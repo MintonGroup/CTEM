@@ -52,7 +52,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
          kdiff(i,j) = kdiffin(xpi,ypi)
       end do
    end do
-   !goto 100 
+
    ntot = 1
    ! calculate the subpixel diffusion probability function
    do i = 1,domain%pnum
@@ -85,25 +85,11 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             end if 
             if (diam > domain%smallest_crater) exit
             k = util_poisson(lambda)
-            !rad = 0.5_DP * diam !/ user%pix
-            !Abar = PI * rad**2 / user%pix**2 !2 * sqrt(0.5_DP * PI) * rad**2 / (rad + 1.0_DP / SQRT2)**2 - 0.024_DP * rad**0.682_DP
             kdiff(i,j) = kdiff(i,j) + k * kappat / user%pix**2
          end do
       end do
    end do
-   !100 continue     
-   !Testing
-   !open(unit=16,file='kdiff.dat',status='old')
-   !read(16,*) kappat
-   !if (kappat > 0.0_DP) then 
-   !   kdiff = kappat * finterval * user%interval
-   !else
-   !   kdiff = sum(kdiff) / user%gridsize**2 
-   !end if
-   !close(16)
-   !write(*,*) 'kdiff = ',kdiff(1,1)
-   !write(*,*)
-   !write(*,*) 'subpix kappa t ',sum(kdiff) / user%gridsize**2 / (finterval * user%interval)
+   
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
    do j = 1,user%gridsize
       do i = 1,user%gridsize
