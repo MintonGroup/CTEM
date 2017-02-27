@@ -35,13 +35,16 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    ! Internal variables
    integer(I4B) :: inc,cinc,incsq,N,xpi,ypi,iradsq,i,j
    real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,areafrac,xbar,ybar
-   real(DP),dimension(user%gridsize,user%gridsize) :: craterhole
+   real(DP),dimension(user%gridsize,user%gridsize) :: craterhole,kdifftmp
+   logical,dimension(user%gridsize,user%gridsize) :: hit 
+
+   hit = .false.
 
    kappatmax = user%soften_factor / (PI * user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
    !Take out the intrinsic crater erosion contribution 
    kappatmax = max(kappatmax - 0.84_DP / (PI * user%soften_size**2) * crater%frad**2,0.0_DP) 
 
-   inc = int(user%soften_size * crater%frad / user%pix) + 2 
+   inc = int(min(user%soften_size * crater%frad / user%pix, user%gridsize / SQRT2)) + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
@@ -67,10 +70,9 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
       end do
    end do
 
-
    ! Loop over affected matrix area
    !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,craterhole) &
+   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,craterhole,nothit) &
    !!$OMP REDUCTION(+:kdiff)
    do j = -inc,inc  ! Do the loop in pixel space
       do i = -inc,inc
@@ -95,8 +97,9 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
             areafrac = util_area_intersection(user%soften_size * crater%frad,xbar,ybar,user%pix)
             areafrac = areafrac * craterhole(xpi,ypi)
             
-            if (lradsq > fradsq) then 
+            if (.not.hit(xpi,ypi)) then 
                kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * areafrac 
+               hit = .true.
             end if
 
          end if
@@ -104,7 +107,6 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
       end do
    end do !end area loopover 
    !!$OMP END PARALLEL DO
-
 return
 end subroutine crater_soften_accumulate
 
