@@ -99,7 +99,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
             
             if (.not.hit(xpi,ypi)) then 
                kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * areafrac 
-               hit = .true.
+               hit(xpi,ypi) = .true.
             end if
 
          end if
