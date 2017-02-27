@@ -84,9 +84,9 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%doporosity = .false.
-   user%soften_factor = 3.0_DP
+   user%soften_factor = 2.0_DP
    user%soften_slope = 4.0_DP
-   user%soften_size = 10.0_DP
+   user%soften_size = 30.0_DP
    user%ejecta_truncation = 10.0_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
