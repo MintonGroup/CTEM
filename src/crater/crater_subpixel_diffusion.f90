@@ -73,8 +73,8 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
    end do
 
-   do j = 0,user%gridsize + 1
-      do i = 0,user%gridsize + 1
+   do j = 1,user%gridsize
+      do i = 1,user%gridsize
          do n = 1,ntot
             dburial = EXFAC * 0.5_DP * nflux(1,n)
             if (surf(i,j)%ejcov > dburial) then
@@ -92,6 +92,12 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
          end do
       end do
    end do
+   kdiff(0,0) = kdiff(user%gridsize,user%gridsize)
+   kdiff(user%gridsize + 1,user%gridsize + 1) = kdiff(1,1)
+   kdiff(0,:) = kdiff(user%gridsize,:)
+   kdiff(:,0) = kdiff(:,user%gridsize)
+   kdiff(user%gridsize + 1,:) = kdiff(1,:)
+   kdiff(:,user%gridsize + 1) = kdiff(:,1)
 
    ! Now add the superdomain contribution to crater degradation 
    !if (user%dosoftening) then
