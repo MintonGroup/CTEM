@@ -94,30 +94,30 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    end do
 
    ! Now add the superdomain contribution to crater degradation 
-   if (user%dosoftening) then
-      avgejc = sum(surf%ejcov) / user%gridsize**2
-      do i = 1,domain%pnum
-         if ((user%soften_size * nflux(1,i) <= user%gridsize / SQRT2 ).and.&
-             (user%soften_size * nflux(2,i) <= user%gridsize / SQRT2 )) cycle
-
-         dburial = EXFAC * 0.5_DP * nflux(1,n)
-         if (avgejc > dburial) then
-            radius = nflux(2,i) * 0.5_DP
-         else
-            radius = nflux(1,i) * 0.5_DP
-         end if
-
-         dN(i) = nflux(3,i) * user%interval * finterval
-         Area = min(2 * (user%soften_size * radius)**2 , PI * user%trad**2)
-         Area = max(Area - user%gridsize**2,0.0_DP)
-
-         lambda = dN(i) * Area
-         if (lambda == 0.0_DP) cycle
-         k = util_poisson(lambda)
-          
-         if (k > 0) kdiff = kdiff + k * user%soften_factor / (PI * user%soften_size**2) * radius**(user%soften_slope - 2.0_DP)
-      end do
-   end if
+   !if (user%dosoftening) then
+   !   avgejc = sum(surf%ejcov) / user%gridsize**2
+   !   do i = 1,domain%pnum
+   !      if ((user%soften_size * nflux(1,i) <= user%gridsize / SQRT2 ).and.&
+   !          (user%soften_size * nflux(2,i) <= user%gridsize / SQRT2 )) cycle
+!
+!         dburial = EXFAC * 0.5_DP * nflux(1,n)
+!         if (avgejc > dburial) then
+!            radius = nflux(2,i) * 0.5_DP
+!         else
+!            radius = nflux(1,i) * 0.5_DP
+!         end if
+!
+!         dN(i) = nflux(3,i) * user%interval * finterval
+!         Area = min(2 * (user%soften_size * radius)**2 , PI * user%trad**2)
+!         Area = max(Area - user%gridsize**2,0.0_DP)
+!
+!         lambda = dN(i) * Area
+!         if (lambda == 0.0_DP) cycle
+!         k = util_poisson(lambda)
+!          
+!         if (k > 0) kdiff = kdiff + k * user%soften_factor / (PI * user%soften_size**2) * radius**(user%soften_slope - 2.0_DP)
+!      end do
+!   end if
    
 
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
