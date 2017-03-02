@@ -87,7 +87,6 @@ init/init_regolith_stack.f90\
 init/init_porosity_stack.f90\
 seismic/seismic_shake.f90\
 seismic/seismic_distance.f90\
-seismic/seismic_table_define.f90\
 seismic/seismic_kdiff_func.f90\
 regolith/regolith_circle_sector_func.f90\
 regolith/regolith_cubic_func.f90\

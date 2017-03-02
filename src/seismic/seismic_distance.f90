@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine seismic_distance(user,domain,crater,seisdis,maxhits,firstrun)
+subroutine seismic_distance(user,domain,crater,seisdis,maxhits)
    use module_globals
    use module_seismic, EXCEPT_THIS_ONE => seismic_distance
    implicit none
@@ -27,7 +27,6 @@ subroutine seismic_distance(user,domain,crater,seisdis,maxhits,firstrun)
    type(cratertype),intent(in) :: crater
    real(DP),intent(out) :: seisdis
    integer(I4B),intent(out) :: maxhits
-   logical,intent(inout) :: firstrun
    
    ! Internal variables
    real(DP) :: kdiff,startpnt,endpnt,rngdel,gratio,kdiffcalc
@@ -37,7 +36,7 @@ subroutine seismic_distance(user,domain,crater,seisdis,maxhits,firstrun)
 
    ! Executable Code
    kdiff = domain%small
-   seisdis = seismic_kdiff_func(user,crater,kdiff,gratio,firstrun,invflag=.true.)
+   seisdis = seismic_kdiff_func(user,crater,kdiff,gratio,invflag=.true.)
    if (gratio <= 1._DP) then
       startpnt = crater%rad
       endpnt = seisdis
@@ -46,7 +45,7 @@ subroutine seismic_distance(user,domain,crater,seisdis,maxhits,firstrun)
          rngdel = endpnt - startpnt
          if (abs(rngdel / startpnt) <= tol) exit
          seisdis = startpnt + (rngdel * 0.5_DP)
-         kdiffcalc = seismic_kdiff_func(user,crater,seisdis,gratio,firstrun,invflag=.false.)
+         kdiffcalc = seismic_kdiff_func(user,crater,seisdis,gratio,invflag=.false.)
          if (gratio < 0.1_DP) then
             endpnt = seisdis
          else
@@ -60,7 +59,7 @@ subroutine seismic_distance(user,domain,crater,seisdis,maxhits,firstrun)
             rngdel = endpnt - startpnt
             if (abs(rngdel / startpnt) <= tol) exit
             seisdis = startpnt + (rngdel * 0.5_DP)
-            kdiffcalc = seismic_kdiff_func(user,crater,seisdis,gratio,firstrun,invflag=.false.)
+            kdiffcalc = seismic_kdiff_func(user,crater,seisdis,gratio,invflag=.false.)
             if (kdiffcalc < kdiff) then
                endpnt = seisdis
             else

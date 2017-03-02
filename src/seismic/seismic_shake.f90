@@ -31,7 +31,7 @@ subroutine seismic_shake(user,surf,crater,domain)
    type(domaintype),intent(in) :: domain
    
    ! Internal variables
-   real(DP) :: totdiff,lradsq,fradsq,gratio,xp,yp,seisdis
+   real(DP) :: totdiff,lradsq,radsq,gratio,xp,yp,seisdis
    integer(I4B) :: iradsq
    integer(I4B) :: i,j,inc,incsq,xpi,ypi
    integer(I4B) :: maxhits
@@ -45,14 +45,18 @@ subroutine seismic_shake(user,surf,crater,domain)
 
    ! Some preliminary setup
 
+   ! find seismic constant terms for this crater
+      crater%kdiffterm = SHEFF * (user%seisq**QFAC) * (user%neff**NFAC) * (crater%imp**PFAC)
+      crater%kdiffterm = crater%kdiffterm * (crater%impvel**VFAC) * (user%gaccel**GFAC)
+      crater%saccelterm = user%neff * user%prho * (crater%impvel**2) * (SEISFREQ**2) * (crater%imp**3)
+
    !  find acceleration ratio at the crater rim
-   firstrun=.true.
-   totdiff = seismic_kdiff_func(user,crater,crater%frad,gratio,firstrun,invflag=.false.)
+   totdiff = seismic_kdiff_func(user,crater,crater%frad,gratio,invflag=.false.)
 
    ! apply seismic diffusion if magnitude is great enough
    if (totdiff < domain%small) return
 
-   call seismic_distance(user,domain,crater,seisdis,maxhits,firstrun)
+   call seismic_distance(user,domain,crater,seisdis,maxhits)
 
    !     report to screen
    if (seisdis / user%pix > (user%gridsize/2)) then
@@ -69,14 +73,14 @@ subroutine seismic_shake(user,surf,crater,domain)
 
    crater%maxinc = max(crater%maxinc,inc)
    incsq = inc**2
-   fradsq = crater%frad**2
+   radsq = crater%rad**2
 
    allocate(indarray(2,-inc:inc,-inc:inc))
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(kdiff(-inc:inc,-inc:inc))
 
    !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !$OMP SHARED(user,crater,inc,incsq,indarray,fradsq,kdiff) 
+   !$OMP SHARED(user,crater,inc,incsq,indarray,radsq,kdiff) 
    do j = -inc,inc 
       do i = -inc,inc
          ! find distance from crater center
@@ -87,7 +91,7 @@ subroutine seismic_shake(user,surf,crater,domain)
          ! Find distance from crater center to current pixel center in real space
          xp = xpi * user%pix
          yp = ypi * user%pix
-         
+
          lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
 
          ! periodic boundary conditions
@@ -96,8 +100,10 @@ subroutine seismic_shake(user,surf,crater,domain)
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
 
-         if ((iradsq <= incsq) .and. (lradsq >= fradsq)) then
-            kdiff(i,j) = seismic_kdiff_func(user,crater,sqrt(lradsq),gratio,firstrun,invflag=.false.) 
+         if ((iradsq <= incsq) .and. (lradsq >= radsq)) then
+            kdiff(i,j) = seismic_kdiff_func(user,crater,sqrt(lradsq),gratio,invflag=.false.)
+         else if (lradsq < radsq) then
+            kdiff(i,j) = seismic_kdiff_func(user,crater,sqrt(radsq),gratio,invflag=.false.)
          else
             kdiff(i,j) = 0.0_DP
          end if
@@ -105,7 +111,7 @@ subroutine seismic_shake(user,surf,crater,domain)
    end do
    !$OMP END PARALLEL DO
 
-   call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kdiff,cumulative_elchange,maxhits)         
+   call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kdiff,cumulative_elchange,maxhits)
     
    ! Add the total diffusion to the layers
    do j=-inc,inc

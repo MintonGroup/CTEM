@@ -24,7 +24,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    implicit none
 
    ! Arguments
-   type(usertype),intent(in)                       :: user
+   type(usertype),intent(inout)                    :: user
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
    real(DP),dimension(:,:),intent(inout)           :: prod,vdist
@@ -73,6 +73,10 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
       crater%cxexp = CXEXPI
       crater%cxtran = SIMCOMKI*(user%gaccel**SIMCOMPI)
    end select
+
+   ! Preliminary seismic property calculations
+   user%seisk = THIRD * user%tvel * user%tfrac
+   user%cohaccel = user%regcoh / user%trho_r
 
    ! Now we build an idealized production population
    domain%initialize = .true.

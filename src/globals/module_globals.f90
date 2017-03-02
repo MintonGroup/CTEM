@@ -56,7 +56,7 @@ real(DP),parameter :: SUBPIXELCOVERAGE = 0.025_DP ! The total area coverage to r
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 real(DP),parameter :: ALPHA = 0.125_DP
-real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
+real(DP),parameter  :: DISEJB = 50.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 
 type regodatatype 
    real(DP) :: thickness
@@ -98,6 +98,7 @@ type cratertype
    real(DP) :: ejdis               ! ejecta max distance
    real(DP) :: ejrim               ! ejecta height at crater rim
    real(DP) :: cxexp,cxtran        ! simple to complex scaling parameters
+   real(DP) :: kdiffterm, saccelterm ! seismic diffusion and accelleration terms
    ! Pixel domain properties
    integer(I4B) :: xlpx,ylpx       ! Crater center in pixels
    integer(I4B) :: fcratpx,fradpx,rimdispx,ejdispx
@@ -157,6 +158,7 @@ type usertype
    real(DP)          :: prho      ! Projectile density
    character(STRMAX) :: sfdfile   ! Name of size distribution file
    character(STRMAX) :: velfile   ! Name of velocity distribution file
+   real(DP) :: seisk,cohaccel      ! seismic keff, cohesion breaking acceleration
    
    ! Optional input variables
    logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
@@ -274,8 +276,8 @@ real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see R
 !real(DP),parameter :: CT = KT * 1.0077158813689795507466256218613060723322903283648264_DP ! KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: DDRATIO = 0.19_DP        ! ?
-real(DP),parameter :: RDRATIO = 0.040_DP       ! Rim height to diameter ratio
-real(DP),parameter :: RIMDROP = 10.00_DP        ! Power law index for rim profile 
+real(DP),parameter :: RDRATIO = 0.030_DP       ! Rim height to diameter ratio
+real(DP),parameter :: RIMDROP = 4.20_DP        ! Power law index for rim profile 
 real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
@@ -297,7 +299,14 @@ real(DP),parameter :: TRNRATIO = 0.30_DP       ! The ratio of the transient crat
 !#real(DP) :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
 !real(DP),parameter :: SOFTEN_SLOPE = 1.3_DP    ! Extra per crater diffusion power law slope
 
-
-
+! Seismic shaking parameters
+real(DP),parameter :: SEISFREQ = 20.0_DP    ! seismic wave frequency
+real(DP),parameter :: SHEFF = 0.00639_DP    ! linear proportionality constant
+real(DP),parameter :: QFAC = 1.80_DP        ! seismic quality factor exponent
+real(DP),parameter :: NFAC = 0.294_DP       ! impact efficiency exponent
+real(DP),parameter :: PFAC = 0.809_DP       ! impactor diameter exponent
+real(DP),parameter :: VFAC = 0.485_DP       ! impactor velocity exponent
+real(DP),parameter :: GFAC = 0.487_DP       ! gravitational acceleration exponent
+real(DP),parameter :: DFAC = 0.556_DP       ! impact distance exponent
 
 end module module_globals
