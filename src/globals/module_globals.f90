@@ -56,7 +56,7 @@ real(DP),parameter :: SUBPIXELCOVERAGE = 0.025_DP ! The total area coverage to r
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 real(DP),parameter :: ALPHA = 0.125_DP
-real(DP),parameter  :: DISEJB = 50.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
+real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 
 type regodatatype 
    real(DP) :: thickness
@@ -301,7 +301,7 @@ real(DP),parameter :: TRNRATIO = 0.30_DP       ! The ratio of the transient crat
 
 ! Seismic shaking parameters
 real(DP),parameter :: SEISFREQ = 20.0_DP    ! seismic wave frequency
-real(DP),parameter :: SHEFF = 0.00639_DP    ! linear proportionality constant
+real(DP),parameter :: SHEFF = 0.0001_DP    ! linear proportionality constant
 real(DP),parameter :: QFAC = 1.80_DP        ! seismic quality factor exponent
 real(DP),parameter :: NFAC = 0.294_DP       ! impact efficiency exponent
 real(DP),parameter :: PFAC = 0.809_DP       ! impactor diameter exponent
