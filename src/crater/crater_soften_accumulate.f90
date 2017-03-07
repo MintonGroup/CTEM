@@ -35,14 +35,12 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    ! Internal variables
    integer(I4B) :: inc,cinc,incsq,N,xpi,ypi,iradsq,i,j
    real(DP) :: kappatmax,lrad,lradsq,xp,yp,fradsq,areafrac,xbar,ybar
-   real(DP),dimension(user%gridsize,user%gridsize) :: craterhole,kdifftmp
+   real(DP),dimension(user%gridsize,user%gridsize) :: craterhole
    logical,dimension(user%gridsize,user%gridsize) :: hit 
 
    hit = .false.
 
    kappatmax = user%soften_factor / (PI * user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
-   !Take out the intrinsic crater erosion contribution 
-   kappatmax = max(kappatmax - 0.84_DP / (PI * user%soften_size**2) * crater%frad**2,0.0_DP) 
 
    inc = int(min(user%soften_size * crater%frad / user%pix, user%gridsize / SQRT2)) + 2 
    crater%maxinc = max(crater%maxinc,inc)
@@ -72,7 +70,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
    ! Loop over affected matrix area
    !!$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,craterhole,nothit) &
+   !!$OMP SHARED(user,crater,fradsq,inc,incsq,kappatmax,craterhole,hit) &
    !!$OMP REDUCTION(+:kdiff)
    do j = -inc,inc  ! Do the loop in pixel space
       do i = -inc,inc
