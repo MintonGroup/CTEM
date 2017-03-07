@@ -36,10 +36,10 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    ! Internal variables
    real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: cumulative_elchange,kdiff
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
-   integer(I4B) :: i,j,k,xpi,ypi,n,ntot
+   integer(I4B) :: i,j,k,xpi,ypi,n,ntot,ioerr
    integer(I4B) :: maxhits = 1
-   real(DP) :: lamleft,dburial,lambda,kappat,diam,radius,Area,avgejc
-   real(DP),dimension(domain%pnum) :: dN,lambda_regolith,kappat_regolith,lambda_bedrock,kappat_bedrock
+   real(DP) :: lamleft,dburial,lambda,Kbar,diam,radius,Area,avgejc,sf
+   real(DP),dimension(domain%pnum) :: dN,lambda_regolith,Kbar_regolith,lambda_bedrock,Kbar_bedrock
 
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
@@ -65,10 +65,20 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
       lambda_bedrock(i) = dN(i) * Area
       lambda_regolith(i) = dN(i) * Area
+
+      Kbar_bedrock(i)  = 0.84_DP * (0.5_DP * nflux(1,i))**4 ! Intrinsic degradation function
+      Kbar_regolith(i) = 0.84_DP * (0.5_DP * nflux(2,i))**4
+      open(unit=22,file='soften.dat',status='old',iostat=ioerr)
+      if (ioerr == 0) then 
+         read(22,*) sf
+         close(22)
+         Kbar_bedrock(i)  = Kbar_bedrock(i) + sf * (0.5_DP * nflux(1,i))**4 !  Extra softening
+         Kbar_regolith(i) = Kbar_regolith(i) + sf * (0.5_DP * nflux(2,i))**4
+      end if
        
       if (user%dosoftening) then
-         kappat_bedrock(i) = user%soften_factor * (0.5_DP * nflux(1,i))**(user%soften_slope)
-         kappat_regolith(i) = user%soften_factor * (0.5_DP * nflux(2,i))**(user%soften_slope)
+         Kbar_bedrock(i) = Kbar_bedrock(i) + user%soften_factor * (0.5_DP * nflux(1,i))**(user%soften_slope) 
+         Kbar_regolith(i) = Kbar_regolith(i) + user%soften_factor * (0.5_DP * nflux(2,i))**(user%soften_slope)
       end if
 
    end do
@@ -79,16 +89,16 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             dburial = EXFAC * 0.5_DP * nflux(1,n)
             if (surf(i,j)%ejcov > dburial) then
                lambda = lambda_regolith(n)
-               kappat = kappat_regolith(n)
+               Kbar = Kbar_regolith(n)
                diam = nflux(2,n)
             else
                lambda = lambda_bedrock(n)
-               kappat = kappat_bedrock(n)
+               Kbar = Kbar_bedrock(n)
                diam = nflux(1,n)
             end if 
             if (diam > domain%smallest_crater) exit
             k = util_poisson(lambda)
-            kdiff(i,j) = kdiff(i,j) + k * kappat / Area
+            kdiff(i,j) = kdiff(i,j) + k * Kbar / Area
          end do
       end do
    end do
@@ -100,30 +110,30 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    kdiff(:,user%gridsize + 1) = kdiff(:,1)
 
    ! Now add the superdomain contribution to crater degradation 
-   !if (user%dosoftening) then
-   !   avgejc = sum(surf%ejcov) / user%gridsize**2
-   !   do i = 1,domain%pnum
-   !      if ((user%soften_size * nflux(1,i) <= user%gridsize / SQRT2 ).and.&
-   !          (user%soften_size * nflux(2,i) <= user%gridsize / SQRT2 )) cycle
-!
-!         dburial = EXFAC * 0.5_DP * nflux(1,n)
-!         if (avgejc > dburial) then
-!            radius = nflux(2,i) * 0.5_DP
-!         else
-!            radius = nflux(1,i) * 0.5_DP
-!         end if
-!
-!         dN(i) = nflux(3,i) * user%interval * finterval
-!         Area = min(2 * (user%soften_size * radius)**2 , PI * user%trad**2)
-!         Area = max(Area - user%gridsize**2,0.0_DP)
-!
-!         lambda = dN(i) * Area
-!         if (lambda == 0.0_DP) cycle
-!         k = util_poisson(lambda)
-!          
-!         if (k > 0) kdiff = kdiff + k * user%soften_factor / (PI * user%soften_size**2) * radius**(user%soften_slope - 2.0_DP)
-!      end do
-!   end if
+   if (user%dosoftening) then
+      avgejc = sum(surf%ejcov) / user%gridsize**2
+      do i = 1,domain%pnum
+         if ((PI * (user%soften_size * nflux(1,i) * 0.5_DP)**2 <= (user%gridsize)**2 ).and.&
+             (PI * (user%soften_size * nflux(2,i) * 0.5_DP)**2 <= (user%gridsize)**2 )) cycle
+
+         dburial = EXFAC * 0.5_DP * nflux(1,n)
+         if (avgejc > dburial) then
+            radius = nflux(2,i) * 0.5_DP
+         else
+            radius = nflux(1,i) * 0.5_DP
+         end if
+
+         dN(i) = nflux(3,i) * user%interval * finterval
+         Area = min(PI * (user%soften_size * radius)**2 , PI * user%trad**2)
+         Area = max(Area - user%gridsize**2,0.0_DP)
+
+         lambda = dN(i) * Area
+         if (lambda == 0.0_DP) cycle
+         k = util_poisson(lambda)
+          
+         if (k > 0) kdiff = kdiff + k * user%soften_factor / (PI * user%soften_size**2) * radius**(user%soften_slope - 2.0_DP)
+      end do
+   end if
    
 
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
