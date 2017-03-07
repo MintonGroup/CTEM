@@ -125,7 +125,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
          dN(i) = nflux(3,i) * user%interval * finterval
          Area = min(PI * (user%soften_size * radius)**2 , PI * user%trad**2)
-         Area = max(Area - user%gridsize**2,0.0_DP)
+         Area = max(Area - (user%pix * user%gridsize)**2,0.0_DP)
 
          lambda = dN(i) * Area
          if (lambda == 0.0_DP) cycle
