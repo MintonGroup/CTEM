@@ -66,7 +66,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B),parameter  :: TRUECHUNK = 1000000 ! Size of truelist chunks to allocate 
    integer(I4B)            :: truesize
    integer(I4B)            :: craters_since_tally,icrater_last_tally,craters_since_subpixel,icrater_last_subpixel
-   integer(I4B)            :: i,j
+   integer(I4B)            :: i,j,layer
    real(DP)                :: finterval ! fraction of interval so far completed
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP)                :: ejbmass
@@ -142,6 +142,16 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             makecrater = .false. ! Ignore this big crater
          end if
       end if 
+      if (crater%fcrat > 0.8_DP * domain%side) then
+         surf%ejcov  = 0.0_DP
+         surf%dem    = 0.0_DP
+         do layer = 1,user%numlayers
+            surf%diam(layer)   = 0.0_DP
+            surf%xl(layer)     = 0.0_SP
+            surf%yl(layer)     = 0.0_SP
+         end do
+         makecrater = .false.
+      end if
 
       if (crater%fcrat < domain%smallest_crater) makecrater = .false.
 
