@@ -96,34 +96,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    ! Internal variables
    real(DP) :: lrad,lradsq,cdepth
    integer(I4B),parameter :: MAXLOOP = 100 ! Maximum number of times to loop the ejecta angle correction calculation
-   integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq
-   real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,continuous,ejbmass,fmasscons
-   real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange
+   integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq,idistorted,jdistorted
+   real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,ejbmass,fmasscons
+   real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange,kdiff,big_kdiff,cel,big_cel
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
-   integer(I4B) :: bigi,bigj
+   real(DP),dimension(:,:),allocatable :: ejdistribution
+   integer(I4B) :: bigi,bigj,maxhits,nin,nnot
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
-   !Ray model parameters and variables by Gielis superformula
-   integer(I4B) :: nrays
-   real(DP),dimension(15) :: rn
-   real(DP) :: theta, lradp
-   real(DP), parameter :: n1 = 4.0_DP
-   real(DP) :: n2, mag
-   ! Ray Mass conservation
-   real(DP), parameter :: a = 16.8799 !a = 11.8126 ! Fitting parameters for a relation between ray length and radius of crater 
-   real(DP), parameter :: b = 0.120621 !0.143   ! based on Jake's crater rays mapping studies! 
-   real(DP) :: mvrld                  ! median value of ray length distribution
-   real(DP) :: mvrldsc                ! median value of ray length distribution scaled by continuous ejecta extent
 
-   ! Enhanced factor test
-   real(DP)     :: xef, yef, thetamax
-   integer(I4B) :: xefpi, yefpi, nef, ray_pix
-   integer(I4B), dimension(:), allocatable :: sf, tot
-   real(DP), dimension(:), allocatable     :: ef
- 
-   ! Flowery ray variables
-   integer(I4B)  :: nfrays
-   real(DP)      :: n1f, n2f, magf, lradf, rayf
-   real(DP)      :: vsq, ejtheta
    ! Ray mixing model variables 
    real(DP)      :: dsc
 
@@ -132,6 +112,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    ! Ejecta pattern distortion parameters
    real(DP) :: distance,erad,craterslope,landslope,baseline,lrange,frac,ejheight,ebh0,maxdistance
+   real(DP)      :: vsq, ejtheta
    integer(I4B) :: klo,ind
    ! Executable code
 
@@ -144,16 +125,16 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    if (crater%ejdis <= crater%rad) return
 
    ! determine area to effect
-   continuous = 2.348_DP * crater%frad**(1.006_DP)
-   inc = max(min(nint(crater%frad * user%ejecta_truncation / user%pix) + 1,PBCLIM*user%gridsize),1)
+   inc = max(min(nint(min(PI * user%trad / user%pix, min(crater%ejdis, crater%frad * user%ejecta_truncation / user%pix))) + 1, &
+            user%gridsize - nint(crater%continuous / user%pix)),1)
    maxdistance = inc * user%pix
    ! Increase the box a bit to take into account possible ejecta pattern distortion due to topography
+   incsq = inc**2
    inc = ceiling(inc * 1.5_DP)
    crater%maxinc = max(crater%maxinc,inc)
    radsq = crater%rad**2
    fradsq = crater%frad**2
    fradpxsq = crater%fradpx**2
-   incsq = inc**2
    ejdissq = crater%ejdis**2
 
    if (inc >= user%gridsize / 2) then
@@ -165,101 +146,25 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
        end if
    endif
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
+   allocate(cel(-inc:inc,-inc:inc))
+   allocate(kdiff(-inc-1:inc+1,-inc-1:inc+1))
    allocate(indarray(2,-inc:inc,-inc:inc))
+   allocate(ejdistribution(-inc:inc,-inc:inc))
 
-   call random_number(rn)
-   cumulative_elchange = 0._DP
+   cumulative_elchange = 0.0_DP
+   kdiff = 0.0_DP
    indarray = inc ! initialize this array to point to a corner (this should have 0 elevation change since we're only doing work
                 ! within a circle of radius irad
 
    ! *************************** Continuous Ejecta Formula  *****************************!
-   !^^^^^^^^^^^^^^^^^^^^^^^^
+   call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,ejdistribution)
 
-   ! *************************** Superformula Ray Model              ************************************!
-   ! *************************** Part I.  Spoke and Skinny Ray Model ************************************!
-   ! From fitting Jake Elliot's ray mapping data, it is a linear function that describes the relationship between the median value of ray length 
-   ! distribution and the radius of rayed craters (in unit of kilometers)
-   ! Also, we need to scale it with the continuous ejecta's extent for ray model
-!#   mvrld      = a * (crater%frad/1000.0)**(b)
-!#   mvrldsc    = mvrld / (continuous/crater%frad)
-   ! It appears that no strong correlation between the number of rays and size of craters.
-   ! The average number of rays is about 10. The minimum and maximum number is 6 and 14 respectively.
-
-   ! Determine parameters of Ray model based on Gielis's superformula
-   ! There are three parameters regarding to our desired ray shape: n1, n2, m
-   ! m:  the repeating part of formula, and it controls the number of rays (arms).
-   ! n1: the default value is set as 4.0 in our rays case
-   ! n2: n2 and n1 combining together is to control the slenderness of a ray, in general, n1/n2 is always smaller than 1 in our cases.
-   !     The smaller the ratio, the skinnier a ray.
-
-   nrays      = nint(8 * rn(15)) + 6
-   mvrld      = crater%ejdis
-   mvrldsc    = mvrld / continuous
-   n2         = 8.0_DP * ( log10(mvrldsc) / log10(2.0_DP) ) + 2.0_DP
-   ! *************************** Part II. Flowery Ray Model         ************************************!
-   nfrays = 20
-   n1f  = 1.0_DP
-   n2f  = 0.5_DP
-   rayf = 5.0 !7.5_DP
-
-   !write(*,*) mvrld, mvrldsc, n2
- 
-   ! Enhanced factor test: Build a enhanced factor quick lookup table
-   ! Use a circular sector with an angle containing a half ray, which is pi/nrays. First, we determine the looping area for 
-   ! this sector, then the look-up table will be built while looping over each pixel and then making it to go to the right bin. 
-   ! The size of bin is one pixel. 
-   xef        = mvrld   
-   thetamax   = PI/dble(nrays)                   
-   yef        = mvrld * sin(thetamax)
-   xefpi      = nint(xef / user%pix)
-   yefpi      = nint(yef / user%pix)
-   nef        = ceiling( (mvrld) / user%pix) !ceiling( (mvrld - crater%rad) / user%pix)
-   allocate(sf(nef))
-   allocate(tot(nef))
-   allocate(ef(nef))
-   tot = 0
-   sf  = 0
-
-   do j = yefpi, 0, -1
-      do i = xefpi, 0, -1
-         xp     = (i + crater%xlpx) * user%pix
-         yp     = (j + crater%ylpx) * user%pix
-         lradsq = (xp - crater%xl)**2 + (yp - crater%yl)**2
-         lrad   = sqrt(lradsq) 
-         ! inside or outside a ray?
-         theta  = atan2(j * 1._DP,i * 1._DP)
-         mag    = ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) !&
-         magf   = rayf * ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f) 
-         lradp  = crater%frad * mag
-         lradf  = crater%frad * magf 
-         lradp  = max(lradp, lradf)
-         !if ( lrad > continuous .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
-         if (lrad >= crater%rad .and. lrad < mvrld .and. theta < thetamax .and. theta>0._DP) then
-            ray_pix  = ceiling( (lrad - crater%rad) / user%pix)
-            tot(ray_pix) = tot(ray_pix) + 1
-            if (lrad < lradp) sf(ray_pix) = sf(ray_pix) + 1
-         end if
-      end do
-   end do
-
-   ! Smooth out the enhanced factor lookup table
-   do i=1,nef
-      ef(i) = max( dble(tot(i)) / dble(sf(i)), 1.0_DP)
-   end do
-
-   do i=1,nef
-      if (ef(i) /= ef(i) .or. ef(i) > VBIG) then 
-         ef(i) = dble(tot(i)) / 1.0 
-      end if
-   end do
-   
-   deallocate(sf)
-   deallocate(tot)
-  
    ejbmass = 0.0_DP
+   nin = 0
+   nnot = 0
 !   !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
 !   !$OMP SHARED(user,domain,crater,surf,ejb,ejtble,mvrld,mvrldsc,nrays,n2,nef,ef,n2f,n1f,nfrays,rayf) &
-!   !$OMP SHARED(inc,incsq,ejdissq,fradsq,radsq,indarray,cumulative_elchange,rn,continuous) 
+!   !$OMP SHARED(inc,incsq,ejdissq,fradsq,radsq,indarray,cumulative_elchange,rn) 
 !   !$OMP REDUCTION(+:massray,massej,massrayef)
    do j = -inc,inc
       do i = -inc,inc
@@ -280,17 +185,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
          indarray(1,i,j) = xpi
          indarray(2,i,j) = ypi
-         if ((iradsq > incsq).or.(lrad <= crater%rad)) cycle
 
-         ! Ray pattern setup
-         theta = atan2(j * 1._DP,i * 1._DP) + 2.0_DP * PI
-         mag   = ( ( (abs(cos(nrays * theta / 4.0_DP)))**n2 + &
-                 (abs(sin(nrays * theta / 4.0_DP)))**n2 )**(-1.0_DP/n1) ) 
-         magf  = rayf * ( ( (abs(cos(nfrays * theta / 4.0_DP)))**n2f + &
-                   (abs(sin(nfrays * theta / 4.0_DP)))**n2f )**(-1.0_DP/n1f))
-         lradp = crater%frad * mag
-         lradf = crater%frad * magf
-         lradp = max(lradp, lradf) 
 
          ! Estimate ejecta pattern distortion due to target surface angle and topography
          ! This must be done iteratively because the ejection distance and ejection angle vary
@@ -325,37 +220,42 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          end do 
 
          if (vsq < 0.0_DP) cycle
-         if ((distance < maxdistance) .and. (distance < lradp)) then ! Inside a ray or continuous ejecta
+         if (distance /= distance) cycle
+         idistorted = int(i * distance / lrad)
+         if (abs(idistorted) > inc) cycle
+         jdistorted = int(j * distance / lrad)
+         if (abs(jdistorted) > inc) cycle
+        
+         iradsq = idistorted**2 + jdistorted**2
+         if ((iradsq > incsq).or.(distance <= crater%rad)) cycle
 
+         ebh = ejdistribution(idistorted,jdistorted) * ebh
 
-            ! Ray mass conservation
-            ray_pix = max(min(ceiling((lrad - crater%rad) / user%pix),1),nef)
-            ebh       = ebh * ef(ray_pix)
-
-            if (user%doregotrack .and. ebh>1.0e-8) then
-               call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
-            end if
-
-         else ! Outside a ray
-            ebh = 0._DP
+         if (user%doregotrack .and. ebh>1.0e-8) then
+            call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
          end if
 
          cumulative_elchange(i,j) = cumulative_elchange(i,j) + ebh
          ejbmass = ejbmass + ebh
-         
+         if (ebh > 0.0_DP) then
+            kdiff(i,j) = user%soften_factor / (PI * user%soften_size**2) * crater%frad ** (user%soften_slope - 2.0) 
+            nin = nin + 1
+         else
+            nnot = nnot + 1
+         end if
       end do
    end do
 !   !$OMP END PARALLEL DO
-
-   deallocate(ef)
+   kdiff = kdiff * (nnot + nin) / (1.0_DP * nin)
 
    ! Do mass conservation by adjusting ejecta thickness
    fmasscons = (-deltaMtot)/ ejbmass
-   !write(*,*) 'fmasscons = ',fmasscons
    cumulative_elchange = cumulative_elchange * fmasscons
-
+   cel = 0.0_DP
+   maxhits = 1
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
+      call ejecta_soften(user,surf,2 * inc + 1,indarray,cumulative_elchange)
       ! Add the ejecta back to the DEM
       do j = -inc,inc
          do i = -inc,inc
@@ -365,11 +265,22 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
             surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j), 0.0_DP)
          end do
       end do
-      call ejecta_soften(user,surf,2 * inc + 1,indarray,cumulative_elchange)
+      call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kdiff,cel,maxhits)
+      do j = -inc,inc
+         do i = -inc,inc
+            xpi = indarray(1,i,j)
+            ypi = indarray(2,i,j)
+            surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cel(i,j)
+            surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cel(i,j),0.0_DP)
+         end do
+      end do
    else ! Ejecta wraps around the grid. 
         ! We will therefore send in the whole grid with the total ejecta thickness added to each pixel
       allocate(big_cumulative_elchange(0:user%gridsize+1,0:user%gridsize+1))
+      allocate(big_cel(0:user%gridsize+1,0:user%gridsize+1))
       allocate(big_indarray(2,0:user%gridsize+1,0:user%gridsize+1))
+      allocate(big_kdiff(0:user%gridsize+1,0:user%gridsize+1))
+      big_kdiff = 0.0_DP
       do bigj = 0,user%gridsize + 1
          do bigi = 0,user%gridsize + 1
             xpi = bigi
@@ -386,21 +297,29 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
             xpi = indarray(1,i,j) 
             ypi = indarray(2,i,j)
             big_cumulative_elchange(xpi,ypi) = big_cumulative_elchange(xpi,ypi) + cumulative_elchange(i,j)
+            big_kdiff(xpi,ypi) = big_kdiff(xpi,ypi) + kdiff(i,j)
          end do
       end do
+      call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
       do i = 1,user%gridsize
          do j = 1,user%gridsize
             surf(i,j)%dem = surf(i,j)%dem + big_cumulative_elchange(i,j) 
             surf(i,j)%ejcov = max(surf(i,j)%ejcov + big_cumulative_elchange(i,j),0.0_DP)
          end do
       end do
-      call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
-      deallocate(big_cumulative_elchange,big_indarray)
+      call util_diffusion_solver(user,surf,user%gridsize + 2,big_indarray,big_kdiff,big_cel,maxhits)
+      do j = 1,user%gridsize
+         do i = 1,user%gridsize
+            surf(i,j)%dem = surf(i,j)%dem + big_cel(i,j)
+            surf(i,j)%ejcov = max(surf(i,j)%ejcov + big_cel(i,j),0.0_DP)
+         end do
+      end do
+      deallocate(big_cumulative_elchange,big_indarray,big_kdiff,big_cel)
    end if
 
    !if (user%doregotrack) call regolith_rays(user,crater,domain,ejtble,ejb)
 
-   deallocate(cumulative_elchange,indarray)
+   deallocate(cumulative_elchange,indarray,ejdistribution,kdiff,cel)
 
    return
 end subroutine ejecta_emplace
