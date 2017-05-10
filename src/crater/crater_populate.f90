@@ -184,10 +184,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (user%doseismic) call seismic_shake(user,surf,crater,domain)
         
          ! Generate interior anomalous diffusion
-         if (user%dosoftening) call crater_soften(user,surf,crater,domain)
+         !if (user%dosoftening) call crater_soften(user,surf,crater,domain)
          
          ! Generate distal anomalous diffusion
-         if (user%dosoftening) call crater_soften_accumulate(user,surf,crater,domain,kdiff)
+         !if (user%dosoftening) call crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
          ! find the average height and slope at crater location
          call crater_averages(user,surf,crater)

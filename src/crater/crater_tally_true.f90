@@ -51,14 +51,14 @@ subroutine crater_tally_true(domain,truelist,ntrue,truedist)
 
    ! Bin the true crater distribution
    do craternum = 1,ntrue
-      ! Find out what bin this crate belongs in
+      ! Find out what bin this crater belongs in
       i = ceiling(log(truelist(1,craternum)/1e3_DP)/LOGSQRT2) - domain%plo
       if (i < 1) then
          write(*,*) 'fcrat = ',truelist(1,craternum)
          write(*,*) 'smallest bin: ',1e3_DP*SQRT2**(domain%plo)
          write(*,*) 'domain%smallest_crater = ',domain%smallest_crater
          write(*,*) 'domain%subcrater_limit = ',domain%subcrater_limit
-         read(*,*)
+         cycle
       end if
       truedist(3,i) = truedist(3,i) + log(truelist(1,craternum)) ! Geometric mean (intermediate step)
       truedist(4,i) = truedist(4,i) + 1 ! Differential number

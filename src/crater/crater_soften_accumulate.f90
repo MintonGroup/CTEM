@@ -22,6 +22,7 @@
 subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
    use module_globals
    use module_util
+   use module_ejecta
    use module_crater, EXCEPT_THIS_ONE => crater_soften_accumulate
    implicit none
 
@@ -96,7 +97,8 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
             areafrac = areafrac * craterhole(xpi,ypi)
             
             if (.not.hit(xpi,ypi)) then 
-               kdiff(xpi,ypi) = kdiff(xpi,ypi) + kappatmax * areafrac 
+               lrad = sqrt(lradsq)
+               kdiff(xpi,ypi) = kdiff(xpi,ypi) * lrad**2 + kappatmax * areafrac 
                hit(xpi,ypi) = .true.
             end if
 

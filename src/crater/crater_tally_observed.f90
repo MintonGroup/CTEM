@@ -58,9 +58,9 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    integer(I4B) :: inc,xpi,ypi
    logical :: killable
    integer(I4B) :: nrim,nbowl,nouter
-   real(DP) :: rim,bowl,outer,rad,baseline
+   real(DP) :: rim,bowl,outer,rad,baseline,dd
    ! Counting parameters from Howl study
-   real(DP),parameter :: DDCUTOFF = 5.e-2_DP
+   real(DP),parameter :: DDCUTOFF = 5.0e-2_DP
    real(DP),parameter :: OCUTOFF = 5.5e-2_DP
    real(DP),parameter :: RIMDI = 1.0_DP
    real(DP),parameter :: RIMDO = 1.2_DP
@@ -200,8 +200,12 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       bowl = bowl / nbowl 
       outer = outer / nouter
       tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
-
-      if (((tmp_depthdiam(craternum) > DDCUTOFF).and.((outer - rim) / crater%fcrat < OCUTOFF)).and.&
+      if (crater%fcrat < 20e3_DP) then
+         dd = DDCUTOFF
+      else
+         dd = DDCUTOFF - (crater%fcrat - 20e3_DP) * 2e-7
+      end if
+      if (((tmp_depthdiam(craternum) > dd).and.((outer - rim) / crater%fcrat < OCUTOFF)).and.&
           (nrim /= 0).and.(nbowl /= 0).and.(nouter /= 0)) then
          countable(craternum) = .true.
          killable = .false.
