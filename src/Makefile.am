@@ -1,12 +1,12 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
-#AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR 
+AM_FCFLAGS =  -O3 -openmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arrays -FR 
 #AM_FCFLAGS =  -O3 -openmp -parallel -assume byterecl -m64 -heap-arrays -FR 
 #ifort debug flags
 #AM_FCFLAGS = -O3 -p -g -openmp -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
 
 #gfortran optimized flags
-AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
+#AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
@@ -55,6 +55,7 @@ io/io_updatePbar.f90\
 io/io_resetPbar.f90\
 io/io_splash.f90\
 ejecta/ejecta_emplace.f90\
+ejecta/ejecta_ray_pattern.f90\
 ejecta/ejecta_blanket.f90\
 ejecta/ejecta_blanket_func.f90\
 ejecta/ejecta_thickness.f90\

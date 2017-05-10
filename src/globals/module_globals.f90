@@ -99,6 +99,7 @@ type cratertype
    real(DP) :: ejrim               ! ejecta height at crater rim
    real(DP) :: cxexp,cxtran        ! simple to complex scaling parameters
    real(DP) :: kdiffterm, saccelterm ! seismic diffusion and accelleration terms
+   real(DP) :: continuous          ! Size of the continuous ejecta blanket
    ! Pixel domain properties
    integer(I4B) :: xlpx,ylpx       ! Crater center in pixels
    integer(I4B) :: fcratpx,fradpx,rimdispx,ejdispx
@@ -264,7 +265,7 @@ character(*),parameter :: DATFILE    = 'ctem.dat'
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
 
 ! Global variables 
-integer(I4B),parameter :: PBCLIM = 3             ! periodic boundary condition limit
+integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit
 integer(I4B),parameter :: SMALLESTCOUNTABLE = 5 ! Minimum pixel diameter for a crater to be considered countable
 real(DP),parameter     :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
 integer(I4B),parameter :: TRUECOLS = 6 ! Number of columns in the true crater count array
