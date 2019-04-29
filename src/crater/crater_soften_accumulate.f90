@@ -41,9 +41,9 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
    hit = .false.
 
-   kappatmax = user%soften_factor / (PI * user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
+   kappatmax = user%Kd1 * crater%frad**(user%psi)
 
-   inc = int(min(user%soften_size * crater%frad / user%pix, user%gridsize / SQRT2)) + 2 
+   inc = int(min(user%fe * crater%frad / user%pix, user%gridsize / SQRT2)) + 2 
    crater%maxinc = max(crater%maxinc,inc)
    fradsq = crater%frad**2
    incsq = inc**2
@@ -93,7 +93,7 @@ subroutine crater_soften_accumulate(user,surf,crater,domain,kdiff)
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
-            areafrac = util_area_intersection(user%soften_size * crater%frad,xbar,ybar,user%pix)
+            areafrac = util_area_intersection(user%fe * crater%frad,xbar,ybar,user%pix)
             areafrac = areafrac * craterhole(xpi,ypi)
             
             if (.not.hit(xpi,ypi)) then 

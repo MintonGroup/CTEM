@@ -48,15 +48,18 @@ integer(I4B), parameter :: UPPERCASE_OFFSET = iachar('A') - iachar('a')
 real(DP),parameter :: VSMALL  = tiny(1._DP)    ! Very small number
 real(DP),parameter :: LOGVSMALL = log(VSMALL)  ! log of a very small number
 real(DP),parameter :: VBIG    = huge(1._DP)    ! Very big number
-real(DP),parameter :: SMALLFAC = 1e-5_DP   ! Smallest unit of measurement proportional to pixel size
+real(DP),parameter :: SMALLFAC = 1e-5_DP       ! Smallest unit of measurement proportional to pixel size
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
-real(DP),parameter :: TALLYCOVERAGE = 0.01_DP   ! The total area coverage to reach before a tally step is executed
+real(DP),parameter :: TALLYCOVERAGE = 0.01_DP  ! The total area coverage to reach before a tally step is executed
 real(DP),parameter :: SUBPIXELCOVERAGE = 0.025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 real(DP),parameter :: ALPHA = 0.125_DP
 real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
+real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
+real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponentt of continuous ejecta size power law from Moore et al. (1974) 
+
 
 type regodatatype 
    real(DP) :: thickness
@@ -100,6 +103,7 @@ type cratertype
    real(DP) :: cxexp,cxtran        ! simple to complex scaling parameters
    real(DP) :: kdiffterm, saccelterm ! seismic diffusion and accelleration terms
    real(DP) :: continuous          ! Size of the continuous ejecta blanket
+   real(DP) :: fe                  ! Equivalent degradation radius
    ! Pixel domain properties
    integer(I4B) :: xlpx,ylpx       ! Crater center in pixels
    integer(I4B) :: fcratpx,fradpx,rimdispx,ejdispx
@@ -178,13 +182,15 @@ type usertype
    real(DP) :: regcoh  ! target surface regolith layer cohesion
 
    ! Crater diffusion input parameters
-   real(DP) :: soften_factor ! Kbar,0 from Minton et al. (2017)
-   real(DP) :: soften_slope  ! power law index of diffusion model Kbar
-   real(DP) :: soften_size  ! size of diffusion area in crater radii
+   real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2018))
+   real(DP) :: psi ! Degradation function exponent (from Minton et al. (2018))
+   real(DP) :: fe  ! Scale factor for size of degradation region (from Minton et al. (2018))
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model
    real(DP)          :: ejecta_truncation ! Set the number of crater diameters to truncate the ejecta
+   logical           :: dorays       ! Set T to use ray model
+   logical           :: superdomain  ! Set T to include the superdomain
 
    ! Regolith tracking variables
    logical           :: doregotrack ! Set T to use the regolith tracking model (EXPERIMENTAL)
@@ -235,7 +241,7 @@ end type ejbtype
 
 ! Progress bar variables
 integer(I4B),parameter :: PBARRES = 100
-integer(I4B),parameter :: PBARSIZE = 40
+integer(I4B),parameter :: PBARSIZE = 50 
 integer(I4B),parameter :: MESSAGESIZE = 32
 integer(I4B) :: pbarival
 integer(I4B) :: pbarpos
@@ -283,11 +289,11 @@ real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
 real(DP),parameter :: CXEXPS = 1._DP / 0.885_DP - 1.0_DP ! Complex crater scaling exponent (see Croft 1985)
-real(DP),parameter :: SIMCOMKS = 16533.8_DP    ! ?
-real(DP),parameter :: SIMCOMPS = -1.0303_DP    ! ?
+real(DP),parameter :: SIMCOMKS = 16533.8_DP    ! Simple-to-complex transition scaling coefficient for silicate rock
+real(DP),parameter :: SIMCOMPS = -1.0303_DP    ! Simple-to-complex transition scaling exponent for silicate rock
 real(DP),parameter :: CXEXPI = 0.155_DP        ! ?
-real(DP),parameter :: SIMCOMKI = 3081.39_DP    ! ?
-real(DP),parameter :: SIMCOMPI = -1.22486_DP   ! ?
+real(DP),parameter :: SIMCOMKI = 3081.39_DP    ! Simple-to-complex transition scaling coefficient for ice
+real(DP),parameter :: SIMCOMPI = -1.22486_DP   ! Simple-to-complex transition scaling exponent for ice
 real(DP),parameter :: SUBPIXFAC = 0.1_DP       ! Subpixel resolution (used for lookup tables and rim creation)
 integer(I4B),parameter :: EJBTABSIZE = 1000    ! Lookup table size 
 real(DP),parameter :: CRITSLP = 0.7_DP         ! critical slope angle
@@ -295,10 +301,9 @@ real(DP),parameter :: COUNTINGRIM = 0.05_DP    ! Fraction inside and outside fin
 real(DP),parameter :: BOWLFRAC = 0.2_DP        ! Fraction of crater interior pixels to use for the bowl-to-rim height calculation
                                                ! (calibrated for Orientale using Potter et al. 2012)
 real(DP),parameter :: TRNRATIO = 0.30_DP       ! The ratio of the transient crater depth to the crater diameter.
-
-!real(DP),parameter :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
-!#real(DP) :: SOFTEN_FACTOR = 0.60_DP   ! Extra per crater diffusion constant
-!real(DP),parameter :: SOFTEN_SLOPE = 1.3_DP    ! Extra per crater diffusion power law slope
+real(DP),parameter :: KD1PROX = 0.27_DP        ! Intrinsic proximal ejecta degradation function coefficient
+real(DP),parameter :: PSIPROX = 2.0_DP         ! Intrinsic proximal ejecta degradation function exponent
+real(DP),parameter :: FEPROX  = 1.0_DP         ! Intrinsic proximal ejecta degradation function size scale factor
 
 ! Seismic shaking parameters
 real(DP),parameter :: SEISFREQ = 20.0_DP    ! seismic wave frequency
@@ -309,5 +314,13 @@ real(DP),parameter :: PFAC = 0.809_DP       ! impactor diameter exponent
 real(DP),parameter :: VFAC = 0.485_DP       ! impactor velocity exponent
 real(DP),parameter :: GFAC = 0.487_DP       ! gravitational acceleration exponent
 real(DP),parameter :: DFAC = 0.556_DP       ! impact distance exponent
+
+! Crater ray parameters
+real(DP),parameter :: rray = 16_DP
+integer(I4B),parameter :: Nraymax = 16
+real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
+real(DP),parameter :: rayp = 2.0_DP 
+integer(I4B),parameter :: rayq = 4
+real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
 
 end module module_globals

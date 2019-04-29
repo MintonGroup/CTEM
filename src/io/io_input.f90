@@ -77,6 +77,8 @@ subroutine io_input(infile,user)
    user%doscour = .false.
    user%tallyonly = .false.
    user%dosoftening = .true.
+   user%dorays = .false.
+   user%superdomain = .true.
    user%doregotrack = .false.
    user%basinimp = huge(0._DP)
    user%maxcrat = 1.00_DP
@@ -84,9 +86,9 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%doporosity = .false.
-   user%soften_factor = 2.0_DP
-   user%soften_slope = 4.0_DP
-   user%soften_size = 30.0_DP
+   user%Kd1 = 0.00_DP
+   user%psi = 2.0_DP
+   user%fe  = 1.0_DP
    user%ejecta_truncation = 10.0_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
@@ -274,6 +276,16 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%dosoftening
+         case ("DORAYS")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%dorays
+         case ("SUPERDOMAIN")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%superdomain
          case ("DOREGOTRACK")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
@@ -425,21 +437,21 @@ subroutine io_input(infile,user)
             token = line(ifirst:ilast)
             read(token, *) user%shadedmaxh
             read(token, *) user%shadedminh
-         case ("SOFTEN_FACTOR")
+         case ("KD1")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%soften_factor
-         case ("SOFTEN_SLOPE")
+            read(token, *) user%Kd1
+         case ("PSI")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%soften_slope
-         case ("SOFTEN_SIZE")
+            read(token, *) user%psi
+         case ("FE")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%soften_size
+            read(token, *) user%fe
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
          !**************************************************************************

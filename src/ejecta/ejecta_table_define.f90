@@ -42,7 +42,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    ! Executable code
 
    ! Get estimate of size of ejb table
-   crater%continuous = 2.348_DP * crater%frad**(1.006_DP)  ! Continuous ejecta distance From Moore (1974) eq. 1
+   crater%continuous = RCONT * crater%frad**(EXPCONT)  ! Continuous ejecta distance From Moore (1974) eq. 1
    crater%ejdis = DISEJB * crater%continuous
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
    domain%ejbres = (log(crater%ejdis) - log(crater%rad)) / EJBTABSIZE

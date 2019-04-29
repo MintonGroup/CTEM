@@ -73,6 +73,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    logical                 :: makecrater
    real(DP),dimension(user%gridsize,user%gridsize) :: kdiff 
    TARGET :: surf
+   integer(I4B)            :: oldpbarpos
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -124,10 +125,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
    kdiff = 0.0_DP
+   pbarpos = 0
+   call io_updatePbar("")
+   oldpbarpos = 0
    do while (icrater < ntotcrat)
       makecrater = .true.
       icrater = icrater + 1
-      pbarpos = ceiling(real(icrater) / real(ntotcrat) * PBARRES)
+      pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat
@@ -224,7 +228,12 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call util_sort_layer(user,surf,crater)
          vistrue = vistrue + 1
          nsincetally = nsincetally + 1
-         if (.not.user%testflag) call io_updatePbar("")
+         if (.not.user%testflag) then
+            if (pbarpos /= oldpbarpos) then
+               call io_updatePbar("")
+               oldpbarpos = pbarpos
+            end if
+         end if
 
          !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
          
