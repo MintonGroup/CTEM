@@ -77,7 +77,7 @@ end type
 
 ! Derived data type for simulated surface
 type surftype
-   real(DP),dimension(MAXLAYER) :: diam
+   real(DP),dimension(MAXLAYER) :: diam   ! Crater diameter
    real(SP),dimension(MAXLAYER) :: xl,yl ! Crater center 
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
