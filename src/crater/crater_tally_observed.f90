@@ -200,11 +200,14 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       bowl = bowl / nbowl 
       outer = outer / nouter
       tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
-      if (crater%fcrat < 20e3_DP) then
-         dd = DDCUTOFF
-      else
-         dd = DDCUTOFF - (crater%fcrat - 20e3_DP) * 2e-7
-      end if
+
+      !if (crater%fcrat < 20e3_DP) then
+      !   dd = DDCUTOFF
+      !else
+      !   dd = DDCUTOFF - (crater%fcrat - 20e3_DP) * 2e-7
+      !end if
+      dd = min(DDCUTOFF, 24.897 * crater%fcrat ** (-0.632545))
+
       if (((tmp_depthdiam(craternum) > dd).and.((outer - rim) / crater%fcrat < OCUTOFF)).and.&
           (nrim /= 0).and.(nbowl /= 0).and.(nouter /= 0)) then
          countable(craternum) = .true.
