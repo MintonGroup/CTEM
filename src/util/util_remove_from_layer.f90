@@ -32,5 +32,6 @@ integer(I4B),intent(in) :: layer
 surfi%diam(layer) = 0.0_DP
 surfi%xl(layer) = 0.0_SP
 surfi%yl(layer) = 0.0_SP
+surfi%timestamp(layer) = 0.0_SP
 
 end subroutine util_remove_from_layer

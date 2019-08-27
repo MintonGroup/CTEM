@@ -88,7 +88,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
 
 
    allocate(mlist(max(mnum,1)))
-   allocate(mposlist(2,max(mnum,1)))
+   allocate(mposlist(3,max(mnum,1)))
    allocate(mpxlist(2,max(mnum,1)))
    allocate(mlayerlist(max(mnum,1)))
    allocate(ind(max(mnum,1)))
@@ -111,6 +111,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
                ! Save the crater center coordinates
                mposlist(1,imnum) = surf(m,n)%xl(layer) 
                mposlist(2,imnum) = surf(m,n)%yl(layer) 
+               mposlist(3,imnum) = surf(m,n)%timestamp(layer) 
                ! Save the pixel index location
                mpxlist(1,imnum) = m 
                mpxlist(2,imnum) = n 
@@ -143,7 +144,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    iend(tnum) = mnum
 
    allocate(totpix(tnum))
-   allocate(poslist(2,tnum))
+   allocate(poslist(3,tnum))
    allocate(tlist(tnum))
    allocate(tmp_depthdiam(tnum))
    allocate(countable(tnum))
@@ -242,7 +243,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    if (present(obsdist)) then
       allocate(depthdiam(onum))
       allocate(obslist(onum))
-      allocate(oposlist(2,onum))
+      allocate(oposlist(3,onum))
       ! Reset all the distribution bins
       do i=1,domain%distl
          obsdist(1,i) = 1e3_DP*SQRT2**(domain%plo+(i-1))

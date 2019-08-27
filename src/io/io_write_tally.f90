@@ -42,7 +42,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
    distl = size(tdist,2)
    allocate(oldtdist(distc,distl))
 1000 format(3F16.4,2F15.0,F15.6)
-2000 format(ES23.15,1X,6(ES14.6,1X,:))
+2000 format(ES23.15,1X,7(ES14.6,1X,:))
    oldtdist = 0._DP
 
    inquire(file=tdistfile, exist=file_exists)
@@ -74,7 +74,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
    close(LUN)
 
    open(LUN, FILE=OLISTFILE, status='REPLACE')
-   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        depth/diam")'  )
+   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        time(y)        depth/diam")'  )
    do i=1,onum
 
       write(LUN,2000) olist(i),oposlist(:,i),depthdiam(i)
@@ -83,7 +83,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
 
 
    open(LUN, FILE=TLISTFILE, status='REPLACE')
-   write(LUN,'("#Dcrat(m)                 Dimp(m)        xpos(m)        ypos(m)        vimp(m/s)      sinang")')
+   write(LUN,'("#Dcrat(m)                 Dimp(m)        xpos(m)        ypos(m)        vimp(m/s)      sinang         time(y)")')
    do i=1,size(tlist,2)
       write(LUN,2000) tlist(:,i)
    end do

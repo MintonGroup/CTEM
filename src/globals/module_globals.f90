@@ -79,6 +79,7 @@ end type
 type surftype
    real(DP),dimension(MAXLAYER) :: diam   ! Crater diameter
    real(SP),dimension(MAXLAYER) :: xl,yl ! Crater center 
+   real(SP),dimension(MAXLAYER) :: timestamp ! Crater formation time
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
@@ -91,6 +92,7 @@ type cratertype
    real(DP) :: imp,imprad,impvel,sinimpang,impmass ! Impactor properties
    ! Real domain properties
    real(SP) :: xl,yl               ! Crater center in simulated surface size units 
+   real(SP) :: timestamp           ! The formation time of the crater
    real(DP) :: rad                 ! Transient radius
    real(DP) :: grad                ! Strengthless material transient crater radius
    real(DP) :: frad                ! Final crater radius
@@ -249,6 +251,7 @@ character(len=PBARSIZE) :: pbarchar
 
 ! Grid array file names
 character(*),parameter :: DIAMFILE   = 'surface_diam.dat'
+character(*),parameter :: TIMEFILE   = 'surface_time.dat'
 character(*),parameter :: EJCOVFILE  = 'surface_ejc.dat'
 character(*),parameter :: DEMFILE    = 'surface_dem.dat'
 character(*),parameter :: REGOFILE   = 'surface_regotop.dat'
@@ -274,7 +277,7 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit
 integer(I4B),parameter :: SMALLESTCOUNTABLE = 5 ! Minimum pixel diameter for a crater to be considered countable
 real(DP),parameter     :: SMALLESTEJECTA = 1.5  ! Minimum number of pixels from center of crater for an ejecta to have any surface effects
-integer(I4B),parameter :: TRUECOLS = 6 ! Number of columns in the true crater count array
+integer(I4B),parameter :: TRUECOLS = 7 ! Number of columns in the true crater count array
 integer(I4B)           :: NTHREADS = 1 ! Number of OpenMP threads (reset by OpenMP if a parallel environment is detected)
 integer(I4B),parameter :: INCPAR = 1   ! Minimum size of inc variables before parallelization kicks in
 

@@ -18,7 +18,7 @@
 !
 !**********************************************************************************************************************************
 subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
-                           fracdone,nflux,ntotcrat)
+                           fracdone,nflux,ntotcrat,curyear)
    use module_globals
    use module_seismic
    use module_io
@@ -44,6 +44,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),intent(out)                            :: fracdone
    real(DP),dimension(:,:),intent(in)              :: nflux 
    integer(I8B),intent(in)                         :: ntotcrat  ! Total number of attempted impacts
+   real(DP),intent(in)                             :: curyear
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -160,7 +161,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (crater%fcrat < domain%smallest_crater) makecrater = .false.
 
       if (makecrater) then
-      
+         ! Stamp the current time onto the crater
+         crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
          ! Find the visible crater parameters
          call crater_find_visible(user,crater,domain)
 
@@ -181,6 +183,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          truelist(4,ntrue) = crater%yl
          truelist(5,ntrue) = crater%impvel
          truelist(6,ntrue) = crater%sinimpang
+         truelist(7,ntrue) = crater%timestamp
          mass = mass + crater%impmass
 
          crater%maxinc = 0

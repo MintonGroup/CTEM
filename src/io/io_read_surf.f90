@@ -48,6 +48,7 @@ subroutine io_read_surf(user,surf)
    read(LUN,rec=1) surf%dem
    close(LUN)
 
+
    open(LUN,file=EJCOVFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
       write(*,*) 'Error! Cannot read file ',trim(adjustl(EJCOVFILE))
@@ -65,6 +66,17 @@ subroutine io_read_surf(user,surf)
       read(LUN,rec=i) surf%diam(i)
    end do
    close(LUN)
+
+   open(LUN,file=TIMEFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
+   if (ioerr/=0) then
+      write(*,*) 'Error! Cannot read file ',trim(adjustl(DIAMFILE))
+      stop
+   end if
+   do i=1,user%numlayers 
+      read(LUN,rec=i) surf%timestamp(i)
+   end do
+   close(LUN)
+
 
    recsize = sizeof(stmp) * user%gridsize * user%gridsize
    open(LUN,file=POSFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
