@@ -18,3 +18,9 @@ src/Makefile.in
 build/
 
 configure
+
+INSTALL
+
+Makefile.in
+
+config/
