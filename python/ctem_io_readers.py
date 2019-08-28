@@ -17,7 +17,7 @@ def read_ctemin(parameters,notset):
    inputfile = parameters['workingdir'] + parameters['ctemfile']
 
    #Read ctem.in file
-   print 'Reading input file '+ parameters['ctemfile']
+   print('Reading input file '+ parameters['ctemfile'])
    fp = open(inputfile,'r')
    lines = fp.readlines()
    fp.close()
@@ -51,33 +51,33 @@ def read_ctemin(parameters,notset):
        
    #Test values for further processing
    if (parameters['interval'] <= 0.0):
-       print 'Invalid value for or missing variable INTERVAL in '+ inputfile
+       print('Invalid value for or missing variable INTERVAL in '+ inputfile)
    if (parameters['numintervals'] <= 0):
-       print 'Invalid value for or missing variable NUMINTERVALS in '+ inputfile
+       print('Invalid value for or missing variable NUMINTERVALS in '+ inputfile)
    if (parameters['pix'] <= 0.0):
-       print 'Invalid value for or missing variable PIX in '+ inputfile
+       print('Invalid value for or missing variable PIX in '+ inputfile)
    if (parameters['gridsize'] <= 0):
-       print 'Invalid value for or missing variable GRIDSIZE in '+ inputfile
+       print('Invalid value for or missing variable GRIDSIZE in '+ inputfile)
    if (parameters['seed'] == 0):
-       print 'Invalid value for or missing variable SEED in '+ inputfile
+       print('Invalid value for or missing variable SEED in '+ inputfile)
    if (parameters['sfdfile'] == notset):
-       print 'Invalid value for or missing variable SFDFILE in '+ inputfile
+       print('Invalid value for or missing variable SFDFILE in '+ inputfile)
    if (parameters['impfile'] == notset):
-       print 'Invalid value for or missing variable IMPFILE in '+ inputfile
+       print('Invalid value for or missing variable IMPFILE in '+ inputfile)
    if (parameters['popupconsole'] == notset):
-       print 'Invalid value for or missing variable POPUPCONSOLE in '+ inputfile
+       print('Invalid value for or missing variable POPUPCONSOLE in '+ inputfile)
    if (parameters['saveshaded'] == notset):
-       print 'Invalid value for or missing variable SAVESHADED in '+ inputfile
+       print('Invalid value for or missing variable SAVESHADED in '+ inputfile)
    if (parameters['saverego'] == notset):
-       print 'Invalid value for or missing variable SAVEREGO in '+ inputfile
+       print('Invalid value for or missing variable SAVEREGO in '+ inputfile)
    if (parameters['savepres'] == notset):
-       print 'Invalid value for or missing variable SAVEPRES in '+ inputfile
+       print('Invalid value for or missing variable SAVEPRES in '+ inputfile)
    if (parameters['savetruelist'] == notset):
-       print 'Invalid value for or missing variable SAVETRUELIST in '+ inputfile
+       print('Invalid value for or missing variable SAVETRUELIST in '+ inputfile)
    if (parameters['runtype'] == notset):
-       print 'Invalid value for or missing variable RUNTYPE in '+ inputfile
+       print('Invalid value for or missing variable RUNTYPE in '+ inputfile)
    if (parameters['restart'] == notset):
-       print 'Invalid value for or missing variable RESTART in '+ inputfile
+       print('Invalid value for or missing variable RESTART in '+ inputfile)
        
    return
 
@@ -101,7 +101,7 @@ def read_ctemdat(parameters, seedarr):
     datfile = parameters['workingdir'] + 'ctem.dat'
  
     #Read ctem.dat file    
-    print 'Reading input file '+ parameters['datfile']
+    print('Reading input file '+ parameters['datfile'])
     fp = open(datfile,'r')
     lines = fp.readlines()
     fp.close()

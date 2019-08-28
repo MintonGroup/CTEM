@@ -91,7 +91,7 @@ def image_dem(parameters, surface_dem):
     dem_map = 254.0 * numpy.cos(dem_map)
     
     #Save image to file
-    filename = parameters['workingdir'] + 'surf' + os.sep + "surf%06d.jpg" % parameters['ncount']
+    filename = parameters['workingdir'] + 'surf' + os.sep + "surf%06d.png" % parameters['ncount']
     height = parameters['gridsize'] / dpi
     width = height
     fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)
@@ -113,7 +113,7 @@ def image_regolith(parameters, regolith):
     regolith_scaled = 254.0 * ((numpy.log(regolith_scaled) - numpy.log(minreg)) / (numpy.log(maxreg) - numpy.log(minreg)))    
     
     #Save image to file
-    filename = parameters['workingdir'] + 'rego' + os.sep + "rego%06d.jpg" % parameters['ncount']
+    filename = parameters['workingdir'] + 'rego' + os.sep + "rego%06d.png" % parameters['ncount']
     height = parameters['gridsize'] / dpi
     width = height
     fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)
@@ -177,7 +177,7 @@ def image_shaded_relief(parameters, surface_dem):
     shaded_imagearr = numpy.around(shaded_imagearr, decimals = 1)
         
     #Save image to file
-    filename = parameters['workingdir'] + 'shaded' + os.sep + "shaded%06d.jpg" % parameters['ncount']
+    filename = parameters['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % parameters['ncount']
     height = parameters['gridsize'] / dpi
     width = height
     fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)
@@ -236,7 +236,7 @@ def create_rplot(parameters,odist,pdist,tdist,ph1):
     timelabel = 'Time = '+ r'${}$ x 10$^{}$'.format(tlabel[0], texp) + ' yrs'    
     
     #Save image to file
-    filename = parameters['workingdir'] + 'rplot' + os.sep + "rplot%06d.jpg" % parameters['ncount']
+    filename = parameters['workingdir'] + 'rplot' + os.sep + "rplot%06d.png" % parameters['ncount']
     height = parameters['gridsize'] / dpi
     width = height
     fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)

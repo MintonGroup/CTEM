@@ -81,7 +81,7 @@ ctem_io_writers.write_production(parameters, production)
 
 #Starting new or old run?
 if (parameters['restart'].upper() == 'F'):
-    print 'Starting a new run'
+    print('Starting a new run')
     
     if (parameters['runtype'].upper() == 'STATISTICAL'):
         parameters['ncount'] = 1
@@ -98,7 +98,7 @@ if (parameters['restart'].upper() == 'F'):
         os.remove(tdist_file)
     
 else:
-    print 'Continuing a previous run'  
+    print('Continuing a previous run')
     
     #Read surface dem(shaded relief) and ejecta data files
     dem_file = parameters['workingdir'] + 'surface_dem.dat'
@@ -128,7 +128,7 @@ filename = parameters['workingdir'] + 'regolithdepth.dat'
 fp_reg = open(filename,'w')
 
 #Begin CTEM processing loops
-print 'Beginning loops'
+print('Beginning loops')
 
 ctem_io_writers.create_dir_structure(parameters)
 
@@ -143,17 +143,17 @@ while (parameters['ncount'] <= parameters['numintervals']):
         shutil.copy2(forig, fdest)
     
         #Create crater population and display CTEM progress on screen
-        print parameters['ncount'], '  Calling FORTRAN routine'
+        print(parameters['ncount'], '  Calling FORTRAN routine')
         proc = subprocess.Popen([parameters['workingdir']+'CTEM'],stdout=subprocess.PIPE,bufsize=1, universal_newlines=True)
         for line in proc.stdout:
-            print line
+            print(line)
         proc.wait()
         
         #Optional: do not pipe CTEM progress to the screen
         #subprocess.check_output([parameters['workingdir']+'CTEM'])
     
         #Read Fortran output
-        print parameters['ncount'], '  Reading Fortran output'
+        print(parameters['ncount'], '  Reading Fortran output')
     
         #Read surface dem(shaded relief) and ejecta data files
         dem_file = parameters['workingdir'] + 'surface_dem.dat'
@@ -191,7 +191,7 @@ while (parameters['ncount'] <= parameters['numintervals']):
         ctem_io_writers.copy_dists(parameters)
 
     #Display results
-    print parameters['ncount'], '  Displaying results'
+    print(parameters['ncount'], '  Displaying results')
 
     #Write surface dem, surface ejecta, shaded relief, and rplot data
     ctem_io_writers.image_dem(parameters, surface_dem)
