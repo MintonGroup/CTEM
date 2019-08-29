@@ -24,3 +24,7 @@ INSTALL
 Makefile.in
 
 config/
+
+examples/global-lunar-bombardment/.DS_Store
+
+examples/mare-with-rays-model2/.DS_Store

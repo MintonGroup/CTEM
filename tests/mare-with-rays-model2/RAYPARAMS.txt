@@ -1,8 +1,0 @@
-rw0 = rmin * pi / Nraymax / 2
-ireal(DP),parameter :: rray = 16_DP
-integer(I4B),parameter :: Nraymax = 16
-real(DP),parameter :: fpeak = 8000_DP
-real(DP),parameter :: rayp = 2.0_DP 
-integer(I4B),parameter :: rayq = 4
-real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
-
