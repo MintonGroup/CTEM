@@ -186,7 +186,7 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
          ans = 0.0_DP
       end if
    else
-      rw0 = rmin * pi / Nraymax / 1
+      rw0 = rmin * pi / Nraymax / 2
       rw1 = 2 * pi / Nraymax
       rw = rw0 * (1._DP - (1.0_DP - rw1 / rw0) * exp(1._DP - (r / rmin)**2))
       n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
