@@ -1,8 +1,8 @@
 #!/bin/bash
-rm console/console*.jpg
-rm surf/surf*.jpg
-rm rego/rego*.jpg
-rm shaded/shaded*.jpg
+rm console/console*.*
+rm surf/surf*.*
+rm rego/rego*.*
+rm shaded/shaded*.*
 rm dist/odist_*.dat
 rm dist/tdist_*.dat
 rm dist/pdist_*.dat
