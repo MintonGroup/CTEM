@@ -144,11 +144,9 @@ while (parameters['ncount'] <= parameters['numintervals']):
     
         #Create crater population and display CTEM progress on screen
         print(parameters['ncount'], '  Calling FORTRAN routine')
-        #proc = subprocess.Popen([parameters['workingdir']+'CTEM'],stdout=subprocess.PIPE,bufsize=1, universal_newlines=True)
-        #for line in proc.stdout:
-        #    print(line)
-        #proc.wait()
-        with subprocess.Popen([parameters['workingdir']+'CTEM'], stdout=subprocess.PIPE, bufsize=1,universal_newlines=True) as p:
+        with subprocess.Popen([parameters['workingdir']+'CTEM'], 
+                              stdout=subprocess.PIPE, 
+                              universal_newlines=True) as p:
             for line in p.stdout:
                 print(line, end='')
 
