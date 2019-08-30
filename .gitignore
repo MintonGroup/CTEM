@@ -13,7 +13,6 @@ build/src/CTEM
 
 src/Makefile.am
 
-src/Makefile.in
 
 build/
 
