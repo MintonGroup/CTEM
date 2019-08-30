@@ -3,13 +3,13 @@ rm console/console*.*
 rm surf/surf*.*
 rm rego/rego*.*
 rm shaded/shaded*.*
-rm dist/odist_*.dat
-rm dist/tdist_*.dat
-rm dist/pdist_*.dat
-rm dist/ocum_*.dat
-rm dist/tcum_*.dat
-rm misc/mass_*.dat
-rm misc/ctem_*.dat
+rm dist/odist*.dat
+rm dist/tdist*.dat
+rm dist/pdist*.dat
+rm dist/ocum*.dat
+rm dist/tcum*.dat
+rm misc/mass*.dat
+rm misc/ctem*.dat
 rm presentation/presentation*.jpg
 rm surface_*.dat
 rm odistribution.dat
@@ -30,3 +30,4 @@ rm avgkdiff.dat
 rm *.o*
 rm term.out
 rm time.out
+rm testprofile.dat
