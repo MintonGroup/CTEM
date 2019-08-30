@@ -34,3 +34,5 @@ examples/mare-with-rays-model2/__pycache__/
 *.dat
 
 *.png
+
+examples/.DS_Store
