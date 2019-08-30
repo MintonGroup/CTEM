@@ -11,16 +11,10 @@ build/src/CTEM
 
 *.swp
 
-src/Makefile.am
-
 
 build/
 
 configure
-
-INSTALL
-
-Makefile.in
 
 config/
 
@@ -28,10 +22,10 @@ examples/global-lunar-bombardment/.DS_Store
 
 examples/mare-with-rays-model2/.DS_Store
 
-examples/mare-with-rays-model2/__pycache__/
+__pycache__/
 
 *.dat
 
 *.png
 
-examples/.DS_Store
+*.DS_Store
