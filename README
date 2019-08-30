@@ -11,6 +11,7 @@ common flags (optimized code vs. debugging code) for gfortran and ifort.  Simply
 activate the appropriate set of flags for your system.
 
 From then on, you simply need to execute the following:
+$ mkdir build
 $ cd build
 $ ../configure
 $ make clean
