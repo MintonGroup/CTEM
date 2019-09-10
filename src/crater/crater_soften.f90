@@ -40,8 +40,18 @@ subroutine crater_soften(user,surf,crater,domain)
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j,ss,ioerr,bigi,bigj
    real(DP) :: xp,yp,fradsq,xbar,ybar,areafrac,kdiffmax,sf
 
+   real(DP) :: mfe,bfe
+
+   ! TEST VARIABLE FE MODEL
+   mfe = (user%femax - user%femin) / (log10(user%rmaxfe) - log10(user%rminfe))
+   bfe = 0.5_DP * ((user%femax + user%femin) - mfe * (log10(user%rmaxfe) + log10(user%rminfe)))
+
+   crater%fe = mfe * log10(crater%frad) + bfe
+   crater%fe = min(user%femax,crater%fe) 
+   !^^^^^^^^^^^^^^^^^^^^^^^^^^
+
    kdiffmax = user%Kd1 * crater%frad**user%psi
-   inc = int(min(user%fe * crater%frad / user%pix,SQRT2 * user%gridsize)) + 3 
+   inc = int(min(crater%fe * crater%frad / user%pix,SQRT2 * user%gridsize)) + 3 
    maxhits = (1 + (inc / (user%gridsize / 2)))**2
    crater%maxinc = max(crater%maxinc,inc)
    incsq = (inc - 2)**2
@@ -78,7 +88,7 @@ subroutine crater_soften(user,surf,crater,domain)
             xbar = xp - crater%xl 
             ybar = yp - crater%yl
 
-            areafrac = util_area_intersection(user%fe * crater%frad,xbar,ybar,user%pix)
+            areafrac = util_area_intersection(crater%fe * crater%frad,xbar,ybar,user%pix)
              
             kdiff(i,j) = kdiffmax * areafrac  ! Apply user-defined diffusive degradation to degradation region
          !end if

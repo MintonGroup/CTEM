@@ -187,6 +187,13 @@ type usertype
    real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2019))
    real(DP) :: psi ! Degradation function exponent (from Minton et al. (2019))
    real(DP) :: fe  ! Scale factor for size of degradation region (from Minton et al. (2019))
+
+   ! Testing variable fe model
+   logical  :: dovariablefe ! Testing a variable fe model
+   real(DP) :: femin  ! fe at largest crater in linear interpolation
+   real(DP) :: femax  ! fe at smallest crate in linear interpolation
+   real(DP) :: rminfe   ! crater size with lowest fe 
+   real(DP) :: rmaxfe   ! crater size with highest fe 
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model

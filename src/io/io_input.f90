@@ -89,7 +89,12 @@ subroutine io_input(infile,user)
    user%Kd1 = 0.00_DP
    user%psi = 2.0_DP
    user%fe  = 1.0_DP
+   user%dovariablefe = .false.
    user%ejecta_truncation = 10.0_DP
+   user%femax = 10.0_DP
+   user%femin = 2.0_DP
+   user%rmaxfe = 100_DP
+   user%rminfe = 400e3_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -452,6 +457,40 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%fe
+
+!Used to test variable fe model
+         case ("DOVARIABLEFE")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%dovariablefe
+         case ("FEMIN")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%femin
+         case ("FEMAX")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%femax
+         case ("RMAXFE")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%rmaxfe
+         case ("RMINFE")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%rminfe
+
+
+
+
+
+
+
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
          !**************************************************************************
