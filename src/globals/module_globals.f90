@@ -14,7 +14,7 @@ module module_globals
 implicit none
 public
 
-character(len=*),parameter :: CTEMVER = "1.3 DEVELOPMENT"
+character(len=*),parameter :: CTEMVER = "1.4 DEVELOPMENT"
 
 ! Symbolic names for kind types of 4-, 2-, and 1-byte integers:
 integer, parameter :: I8B = selected_int_kind(17)
@@ -184,9 +184,9 @@ type usertype
    real(DP) :: regcoh  ! target surface regolith layer cohesion
 
    ! Crater diffusion input parameters
-   real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2018))
-   real(DP) :: psi ! Degradation function exponent (from Minton et al. (2018))
-   real(DP) :: fe  ! Scale factor for size of degradation region (from Minton et al. (2018))
+   real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2019))
+   real(DP) :: psi ! Degradation function exponent (from Minton et al. (2019))
+   real(DP) :: fe  ! Scale factor for size of degradation region (from Minton et al. (2019))
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model
