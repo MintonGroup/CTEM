@@ -14,7 +14,7 @@ module module_globals
 implicit none
 public
 
-character(len=*),parameter :: CTEMVER = "1.3 DEVELOPMENT"
+character(len=*),parameter :: CTEMVER = "1.5 DEVELOPMENT"
 
 ! Symbolic names for kind types of 4-, 2-, and 1-byte integers:
 integer, parameter :: I8B = selected_int_kind(17)
