@@ -184,9 +184,9 @@ type usertype
    real(DP) :: regcoh  ! target surface regolith layer cohesion
 
    ! Crater diffusion input parameters
-   real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2018))
-   real(DP) :: psi ! Degradation function exponent (from Minton et al. (2018))
-   real(DP) :: fe  ! Scale factor for size of degradation region (from Minton et al. (2018))
+   real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2019))
+   real(DP) :: psi ! Degradation function exponent (from Minton et al. (2019))
+   real(DP) :: fe  ! Scale factor for size of degradation region (from Minton et al. (2019))
    
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model
