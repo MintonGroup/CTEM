@@ -26,7 +26,7 @@ function crater_degradation_function(user,r) result(Kd)
    type(usertype),intent(in) :: user
    real(DP),intent(in) :: r
    real(DP) :: Kd
-   real(DP) :: A,r_break,alpha_1,alpha_2,delta,r
+   real(DP) :: A,r_break,alpha_1,alpha_2,delta
 
    ! Testing values that match both mare scale and highlands scale
    alpha_1 = user%psi
