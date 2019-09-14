@@ -209,7 +209,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          end do
       end if
 
-   end do
+   end do superloop
 
    kdiff(0,0) = kdiff(user%gridsize,user%gridsize)
    kdiff(user%gridsize + 1,user%gridsize + 1) = kdiff(1,1)
