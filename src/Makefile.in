@@ -149,6 +149,7 @@ am_CTEM_OBJECTS = globals/module_globals.$(OBJEXT) \
 	crater/crater_subpixel_diffusion.$(OBJEXT) \
 	crater/crater_make_list.$(OBJEXT) \
 	crater/crater_critical_slope.$(OBJEXT) \
+	crater/crater_degradation_function.$(OBJEXT) \
 	init/init_domain.$(OBJEXT) init/init_dist.$(OBJEXT) \
 	init/init_surf.$(OBJEXT) init/init_regolith_stack.$(OBJEXT) \
 	init/init_porosity_stack.$(OBJEXT) \
@@ -387,6 +388,7 @@ crater/crater_soften_accumulate.f90\
 crater/crater_subpixel_diffusion.f90\
 crater/crater_make_list.f90\
 crater/crater_critical_slope.f90\
+crater/crater_degradation_function.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\
@@ -684,6 +686,8 @@ crater/crater_subpixel_diffusion.$(OBJEXT): crater/$(am__dirstamp) \
 crater/crater_make_list.$(OBJEXT): crater/$(am__dirstamp) \
 	crater/$(DEPDIR)/$(am__dirstamp)
 crater/crater_critical_slope.$(OBJEXT): crater/$(am__dirstamp) \
+	crater/$(DEPDIR)/$(am__dirstamp)
+crater/crater_degradation_function.$(OBJEXT): crater/$(am__dirstamp) \
 	crater/$(DEPDIR)/$(am__dirstamp)
 init/init_domain.$(OBJEXT): init/$(am__dirstamp) \
 	init/$(DEPDIR)/$(am__dirstamp)

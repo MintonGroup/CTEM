@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiffin)
+subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    use module_globals
    use module_util
    use module_ejecta
@@ -29,7 +29,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   real(DP),dimension(:,:),intent(in) :: prod,nflux 
+   real(DP),dimension(:,:),intent(in) :: nflux 
    type(domaintype),intent(in) :: domain
    real(DP),intent(in) :: finterval
    real(DP),dimension(:,:),intent(inout) :: kdiffin
@@ -37,18 +37,19 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    ! Internal variables
    real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: cumulative_elchange,kdiff
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
-   integer(I4B) :: i,j,l,xpi,ypi,k,ktot,kk,ioerr,inc,incsq,iradsq,xi,xf,yi,yf,crat,imin,imax,jmin,jmax
+   integer(I4B) :: i,j,xpi,ypi,k,inc,incsq,imin,imax,jmin,jmax
    integer(I8B) :: m,N
    integer(I4B) :: maxhits = 1
    real(DP) :: dburial,lambda,dKdN,diam,radius,Area,avgejc
-   real(DP) :: dN,diam_regolith,diam_bedrock,RR
+   real(DP) :: dN,diam_regolith,diam_bedrock
    real(DP),dimension(3)    :: rn  
-   real(DP) :: superlen,rayfrac,cutout,fe,fd
+   real(DP) :: superlen,fe,fd
+   real(SP) :: cutout
    type(cratertype) :: crater
    real(DP),dimension(:,:),allocatable :: diffdistribution,ejdistribution
-   integer(I4B),dimension(:,:),allocatable :: ejisray
-   real(DP) :: xbar,ybar,dD,xp,yp,areafrac,krad,supersize,lrad
+   real(DP) :: xbar,ybar,dD,xp,yp,areafrac,krad,lrad,ebh
    integer(I8B),dimension(user%gridsize,user%gridsize) :: Ngrid
+   real(DP) ::  mfe,bfe
    
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
@@ -67,7 +68,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
    fe = FEPROX
    fd = user%ejecta_truncation
-   if (user%dosoftening) fe = user%fe
+   if (user%dosoftening) fe = crater%fe
 
    ! Generate both the subpixel and superdomain diffusive degradation
    do k = 1,domain%pnum - 1
@@ -86,13 +87,15 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
       if ((fd * diam < user%pix) .or. (dN * PI * (fe * radius)**2 > 0.1_DP)) then 
       !Do the average degradation per pixel for the subpixel component
+    
+         dKdN = 0.0_DP 
+         if (diam < user%pix)  dKdN = dKdN + KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
          if (user%dosoftening) then 
          ! User-defined degradation function
-            dKdN = user%Kd1 * PI * user%fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
-         else 
-         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
-            dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
+            !dKdN = dKdN + user%Kd1 * PI * fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
+            dKdN = dKdN + PI * fe**2 * radius**2 * crater_degradation_function(user,crater) / domain%parea
          end if
+         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
 
          lambda = dN * domain%parea
 
@@ -122,15 +125,15 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
       ! Do the degradation as individual circles
 
          superlen = fd * diam + domain%side
-         cutout = 0.0_DP
+         cutout = 0.0_SP
          crater%continuous = RCONT * radius**(EXPCONT) 
          if (diam > domain%smallest_crater) then
             if (.not.user%superdomain) exit
             ! Superdomain craters 
-            cutout = domain%side + crater%continuous
+            cutout = real(domain%side + crater%continuous, kind=SP)
          end if
          Area = superlen**2
-         if (diam < domain%biggest_crater) Area = Area - cutout**2
+         if (diam < domain%biggest_crater) Area = Area - (1._DP * cutout)**2
 
          lambda = dN * Area
          dD = nflux(2,k+1) - nflux(2,k)
@@ -148,9 +151,9 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             else
                ! Superdomain craters 
                crater%xl = real((superlen - cutout) * (rn(1) - 0.5_DP), kind=SP) 
-               if (crater%xl > 0.0_DP) crater%xl = crater%xl + cutout
+               if (crater%xl > 0.0_SP) crater%xl = crater%xl + cutout
                crater%yl = real((superlen - cutout) * (rn(2) - 0.5_DP), kind=SP) 
-               if (crater%yl > 0.0_DP) crater%yl = crater%yl + cutout
+               if (crater%yl > 0.0_SP) crater%yl = crater%yl + cutout
             end if
 
             crater%xlpx = nint(crater%xl / user%pix)
@@ -159,8 +162,21 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             crater%frad = 0.5_DP * (diam + dD * rn(3))
             crater%continuous = RCONT * crater%frad**(EXPCONT) 
             krad = fd * crater%frad
+
+            if (user%dovariablefe) then
+               !mfe = (user%femax - user%femin) / (log10(user%rmaxfe) - log10(user%rminfe))
+               !bfe = 0.5_DP * ((user%femax + user%femin) - mfe * (log10(user%rmaxfe) + log10(user%rminfe)))
+               !crater%fe = mfe * log10(crater%frad) + bfe
+               !crater%fe = max(min(user%femax,crater%fe),0.0_DP) 
+               crater%fe = max(user%femin * (crater%frad*1e-3_DP)**(0.27_DP),user%femin)
+               crater%fe = min(crater%fe * crater%frad, 3.08e6_DP) / crater%frad
+            else
+               crater%fe = user%fe
+            end if
+
           
-            dKdN = user%Kd1 * crater%frad**(user%psi)
+            !dKdN = user%Kd1 * crater%frad**(user%psi)
+            dKdN = crater_degradation_function(user,crater)
             inc  = int(krad / user%pix) + 2
             incsq = inc**2
 
@@ -185,13 +201,17 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
                do i = imin,imax
                   xpi = crater%xlpx + i
                   ypi = crater%ylpx + j
-                  kdiff(xpi,ypi) = kdiff(xpi,ypi) + dKdN * diffdistribution(i,j)
+                  xbar = xpi * user%pix - crater%xl 
+                  ybar = ypi * user%pix - crater%yl
+                  areafrac = util_area_intersection(crater%fe * crater%frad,xbar,ybar,user%pix)
+                  kdiff(xpi,ypi) = kdiff(xpi,ypi) + dKdN * diffdistribution(i,j) * areafrac
                   !TEMP
                   xp = xpi * user%pix
                   yp = ypi * user%pix
                   lrad = sqrt((xp - crater%xl)**2 + (yp - crater%yl)**2)
-                  surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ejdistribution(i,j) &
-                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
+                  ebh =  0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP) * ejdistribution(i,j)
+                  surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ebh
+                  kdiff(xpi,ypi) = kdiff(xpi,ypi) +  1.5_DP * ebh**2 * ejdistribution(i,j)
                end do
             end do
             !$OMP END PARALLEL DO
@@ -208,12 +228,12 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    kdiff(user%gridsize + 1,:) = kdiff(1,:)
    kdiff(:,user%gridsize + 1) = kdiff(:,1)  
 
-   write(*,*)
-   write(*,*) 'avgkdiff = ',sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   write(*,*)
-   open(unit=55,file='avgkdiff.dat',status='unknown',position='append')
-   write(55,*) sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   close(55)
+   !write(*,*)
+   !write(*,*) 'avgkdiff = ',sum(kdiff) / (user%gridsize + 2)**2 / finterval
+   !write(*,*)
+   !open(unit=55,file='avgkdiff.dat',status='unknown',position='append')
+   !write(55,*) sum(kdiff) / (user%gridsize + 2)**2 / finterval
+   !close(55)
 
 
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)

@@ -229,12 +229,12 @@ end interface
       end subroutine crater_soften_accumulate
    end interface
    interface
-      subroutine crater_subpixel_diffusion(user,surf,prod,crtscl,domain,finterval,kdiffin)
+      subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
-      real(DP),dimension(:,:),intent(in) :: prod,crtscl
+      real(DP),dimension(:,:),intent(in) :: nflux
       type(domaintype),intent(in)    :: domain
       real(DP),intent(in) :: finterval
       real(DP),dimension(:,:),intent(inout) :: kdiffin
@@ -261,5 +261,16 @@ end interface
       real(DP) :: critical
       end function crater_critical_slope
    end interface
+
+   interface
+      function crater_degradation_function(user,crater) result(Kd)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(cratertype),intent(in) :: crater
+      real(DP) :: Kd
+      end function crater_degradation_function
+   end interface
+
+
 
 end module

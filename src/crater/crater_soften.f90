@@ -42,15 +42,10 @@ subroutine crater_soften(user,surf,crater,domain)
 
    real(DP) :: mfe,bfe
 
-   ! TEST VARIABLE FE MODEL
-   mfe = (user%femax - user%femin) / (log10(user%rmaxfe) - log10(user%rminfe))
-   bfe = 0.5_DP * ((user%femax + user%femin) - mfe * (log10(user%rmaxfe) + log10(user%rminfe)))
 
-   crater%fe = mfe * log10(crater%frad) + bfe
-   crater%fe = min(user%femax,crater%fe) 
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   kdiffmax = user%Kd1 * crater%frad**user%psi
+   !kdiffmax = user%Kd1 * crater%frad**user%psi
+   kdiffmax = crater_degradation_function(user,crater)
    inc = int(min(crater%fe * crater%frad / user%pix,SQRT2 * user%gridsize)) + 3 
    maxhits = (1 + (inc / (user%gridsize / 2)))**2
    crater%maxinc = max(crater%maxinc,inc)
@@ -101,12 +96,12 @@ subroutine crater_soften(user,surf,crater,domain)
       write(*,*) 'crater kdiff '
       write(*,*) maxval(kdiff)
       call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kdiff,cumulative_elchange,maxhits)
-      write(16,*) crater%frad
+      !write(16,*) crater%frad
       do j = -inc,inc
          do i = -inc,inc
             xpi = indarray(1,i,j)
             ypi = indarray(2,i,j)
-            write(16,*) i,j,xpi,ypi,kdiff(i,j),surf(xpi,ypi)%dem,cumulative_elchange(i,j)
+            !write(16,*) i,j,xpi,ypi,kdiff(i,j),surf(xpi,ypi)%dem,cumulative_elchange(i,j)
             !surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cumulative_elchange(i,j)
             !surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j),0.0_DP)
          end do

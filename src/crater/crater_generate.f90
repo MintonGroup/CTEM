@@ -39,6 +39,10 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
    integer(I4B)             :: k,khi,klo,Nk
    integer(I8B)             :: random_index,numremaining,nabove,nabovep1
 
+   !TESTING FOR VARIABLE FE MODERL
+   real(DP) :: mfe,bfe
+
+
    ! Get all six random numbers we need in one call
    if (.not.domain%initialize) call random_number(rn)
 
@@ -190,6 +194,20 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
    
    ! Get pixel space values
    crater%fcratpx = nint(crater%fcrat / user%pix)
+
+   ! TEST VARIABLE FE MODEL
+   if (user%dovariablefe) then
+      !mfe = (user%femax - user%femin) / (log10(user%rmaxfe) - log10(user%rminfe))
+      !bfe = 0.5_DP * ((user%femax + user%femin) - mfe * (log10(user%rmaxfe) + log10(user%rminfe)))
+
+      !crater%fe = mfe * log10(crater%frad) + bfe
+      !crater%fe = max(min(user%femax,crater%fe),0.d0)
+      crater%fe = max(user%femin * (crater%frad*1e-3_DP)**(0.27_DP),user%femin)
+      crater%fe = min(crater%fe * crater%frad, 3.08e6_DP) / crater%frad
+   else
+      crater%fe = user%fe
+   end if
+   !^^^^^^^^^^^^^^^^^^^^^^^^^^
    return
 end subroutine crater_generate
 

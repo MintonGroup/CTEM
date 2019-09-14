@@ -274,7 +274,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call io_updatePbar(message)
             craters_since_subpixel = icrater - icrater_last_subpixel
             finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
-            call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff)
+            call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
             icrater_last_subpixel = icrater
          end if
          ! Intermediate tally step 

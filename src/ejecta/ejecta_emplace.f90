@@ -134,13 +134,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    ! Increase the box a bit to take into account possible ejecta pattern distortion due to topography
    inc = ceiling(inc * 1.5_DP)
+   krad = user%ejecta_truncation * crater%frad
+   dradsq = int(krad / user%pix) + 3
+   inc = max(inc,dradsq)
+   dradsq = dradsq**2
 
    if (user%dosoftening) then
-      krad = user%ejecta_truncation * crater%frad
-      kdiffmax = user%Kd1 * crater%frad**(user%psi)
-      dradsq = int(krad / user%pix) + 3
-      inc = max(inc,dradsq)
-      dradsq = dradsq**2
+      !kdiffmax = user%Kd1 * crater%frad**(user%psi)
+      kdiffmax = crater_degradation_function(user,crater)
    end if
 
    crater%maxinc = max(crater%maxinc,inc)
@@ -259,6 +260,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region
             areafrac =  (1.0_DP - util_area_intersection(crater%frad,xbar,ybar,user%pix)) 
+            areafrac = areafrac * util_area_intersection(crater%fe * crater%frad,xbar,ybar,user%pix)
             kdiff(i,j) = areafrac * diffdistribution(idistorted,jdistorted) * kdiffmax
          end if
 
