@@ -8,7 +8,7 @@ AM_FCFLAGS =  -O3 -qopenmp -parallel -xHost -ipo -assume byterecl -m64 -heap-arr
 #gfortran optimized flags
 #AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
-AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
+#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
 CTEM_SOURCES = globals/module_globals.f90\
 util/module_util.f90\
