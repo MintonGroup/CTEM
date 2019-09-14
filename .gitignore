@@ -1,5 +1,7 @@
 
 autom4te.cache/
+autom4te.cache/*
+Makefile.in
 
 *.o
 
@@ -27,3 +29,5 @@ __pycache__/
 *.png
 
 *.DS_Store
+
+alocal.m4
