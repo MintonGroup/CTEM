@@ -32,9 +32,9 @@ function crater_degradation_function(user,crater) result(Kd)
 
    ! Testing values that match both mare scale and highlands scale
    alpha_1 = user%psi
-   alpha_2 = 1.1_DP
+   alpha_2 = user%psi2
 
-   r_break = 0.10e3_DP
+   r_break = user%rbreak
    delta = 1.0_DP
 
    A = user%Kd1 * r_break**(alpha_1) / (1_DP + (alpha_1 - alpha_2) / alpha_1)**2 

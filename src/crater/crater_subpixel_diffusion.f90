@@ -160,19 +160,12 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
             crater%ylpx = nint(crater%yl / user%pix)
 
             crater%frad = 0.5_DP * (diam + dD * rn(3))
-            crater%continuous = RCONT * crater%frad**(EXPCONT) 
-            krad = fd * crater%frad
 
-            if (user%dovariablefe) then
-               !mfe = (user%femax - user%femin) / (log10(user%rmaxfe) - log10(user%rminfe))
-               !bfe = 0.5_DP * ((user%femax + user%femin) - mfe * (log10(user%rmaxfe) + log10(user%rminfe)))
-               !crater%fe = mfe * log10(crater%frad) + bfe
-               !crater%fe = max(min(user%femax,crater%fe),0.0_DP) 
-               crater%fe = max(user%femin * (crater%frad*1e-3_DP)**(0.27_DP),user%femin)
-               crater%fe = min(crater%fe * crater%frad, 3.08e6_DP) / crater%frad
-            else
-               crater%fe = user%fe
-            end if
+            crater%continuous = RCONT * crater%frad**(EXPCONT) 
+            crater%fe = user%fe
+            krad = max(fd * crater%frad,crater%fe * crater%frad)
+
+            crater%fe = user%fe
 
           
             !dKdN = user%Kd1 * crater%frad**(user%psi)
