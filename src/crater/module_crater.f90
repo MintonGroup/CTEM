@@ -263,11 +263,10 @@ end interface
    end interface
 
    interface
-      function crater_degradation_function(user,crater) result(Kd)
+      function crater_degradation_function(user,r) result(Kd)
       use module_globals
       type(usertype),intent(in) :: user
-      type(cratertype),intent(in) :: crater
-      real(DP) :: Kd
+      real(DP),intent(in) :: r
       end function crater_degradation_function
    end interface
 

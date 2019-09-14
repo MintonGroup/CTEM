@@ -31,3 +31,5 @@ __pycache__/
 *.DS_Store
 
 alocal.m4
+
+*.m4

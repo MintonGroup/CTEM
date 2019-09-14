@@ -16,7 +16,7 @@
 !**********************************************************************************************************************************
 
 
-function crater_degradation_function(user,crater) result(Kd)
+function crater_degradation_function(user,r) result(Kd)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_degradation_function
@@ -24,11 +24,9 @@ function crater_degradation_function(user,crater) result(Kd)
 
   ! Arguments
    type(usertype),intent(in) :: user
-   type(cratertype),intent(in) :: crater
+   real(DP),intent(in) :: r
    real(DP) :: Kd
    real(DP) :: A,r_break,alpha_1,alpha_2,delta,r
-
-   r = crater%frad
 
    ! Testing values that match both mare scale and highlands scale
    alpha_1 = user%psi

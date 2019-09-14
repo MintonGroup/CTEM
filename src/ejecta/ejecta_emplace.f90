@@ -141,7 +141,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    if (user%dosoftening) then
       !kdiffmax = user%Kd1 * crater%frad**(user%psi)
-      kdiffmax = crater_degradation_function(user,crater)
+      kdiffmax = crater_degradation_function(user,crater%frad)
    end if
 
    crater%maxinc = max(crater%maxinc,inc)

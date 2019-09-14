@@ -71,7 +71,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    if (user%dosoftening) fe = crater%fe
 
    ! Generate both the subpixel and superdomain diffusive degradation
-   do k = 1,domain%pnum - 1
+   superloop: do k = 1,domain%pnum - 1
       dN = nflux(3,k) * user%interval * finterval
 
       diam_bedrock = nflux(1,k)
@@ -93,7 +93,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          if (user%dosoftening) then 
          ! User-defined degradation function
             !dKdN = dKdN + user%Kd1 * PI * fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
-            dKdN = dKdN + PI * fe**2 * radius**2 * crater_degradation_function(user,crater) / domain%parea
+            dKdN = dKdN + PI * fe**2 * radius**2 * crater_degradation_function(user,radius) / domain%parea
          end if
          !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
 
@@ -124,11 +124,11 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
       else if (user%dosoftening) then
       ! Do the degradation as individual circles
 
-         superlen = fd * diam + domain%side
+         superlen = fe * diam + domain%side
          cutout = 0.0_SP
          crater%continuous = RCONT * radius**(EXPCONT) 
          if (diam > domain%smallest_crater) then
-            if (.not.user%superdomain) exit
+            if (.not.user%superdomain) exit superloop
             ! Superdomain craters 
             cutout = real(domain%side + crater%continuous, kind=SP)
          end if
@@ -164,12 +164,9 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
             crater%continuous = RCONT * crater%frad**(EXPCONT) 
             crater%fe = user%fe
             krad = max(fd * crater%frad,crater%fe * crater%frad)
-
-            crater%fe = user%fe
-
           
             !dKdN = user%Kd1 * crater%frad**(user%psi)
-            dKdN = crater_degradation_function(user,crater)
+            dKdN = crater_degradation_function(user,crater%frad)
             inc  = int(krad / user%pix) + 2
             incsq = inc**2
 

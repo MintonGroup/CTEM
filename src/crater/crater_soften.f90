@@ -45,7 +45,7 @@ subroutine crater_soften(user,surf,crater,domain)
 
 
    !kdiffmax = user%Kd1 * crater%frad**user%psi
-   kdiffmax = crater_degradation_function(user,crater)
+   kdiffmax = crater_degradation_function(user,crater%frad)
    inc = int(min(crater%fe * crater%frad / user%pix,SQRT2 * user%gridsize)) + 3 
    maxhits = (1 + (inc / (user%gridsize / 2)))**2
    crater%maxinc = max(crater%maxinc,inc)
