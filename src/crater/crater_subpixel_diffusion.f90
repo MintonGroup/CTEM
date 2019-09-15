@@ -159,8 +159,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             crater%continuous = RCONT * crater%frad**(EXPCONT) 
             krad = fd * crater%frad
           
-            dKdN = user%Kd1 * crater%frad**(user%psi)
-            dKdN = crater_degradation_function(user,crater)
+            dKdN = crater_degradation_function(user,crater%frad)
             inc  = int(krad / user%pix) + 2
             incsq = inc**2
 
