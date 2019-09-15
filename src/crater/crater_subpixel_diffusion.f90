@@ -86,12 +86,11 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
       if ((fd * diam < user%pix) .or. (dN * PI * (fe * radius)**2 > 0.1_DP)) then 
       !Do the average degradation per pixel for the subpixel component
+         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
+         dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
          if (user%dosoftening) then 
          ! User-defined degradation function
-            dKdN = user%Kd1 * PI * user%fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
-         else 
-         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
-            dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
+            dKdN = dKdN + PI * user%fe**2 * radius**2 * crater_degradation_function(user,radius) / domain%parea
          end if
 
          lambda = dN * domain%parea
@@ -161,6 +160,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             krad = fd * crater%frad
           
             dKdN = user%Kd1 * crater%frad**(user%psi)
+            dKdN = crater_degradation_function(user,crater)
             inc  = int(krad / user%pix) + 2
             incsq = inc**2
 
