@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiffin)
+subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    use module_globals
    use module_util
    use module_ejecta
@@ -29,7 +29,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   real(DP),dimension(:,:),intent(in) :: prod,nflux 
+   real(DP),dimension(:,:),intent(in) :: nflux 
    type(domaintype),intent(in) :: domain
    real(DP),intent(in) :: finterval
    real(DP),dimension(:,:),intent(inout) :: kdiffin
