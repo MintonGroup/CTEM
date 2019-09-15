@@ -49,7 +49,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    real(DP),dimension(:,:),allocatable :: diffdistribution,ejdistribution
    real(DP) :: xbar,ybar,dD,xp,yp,areafrac,krad,lrad,ebh
    integer(I8B),dimension(user%gridsize,user%gridsize) :: Ngrid
-   real(DP) ::  mfe,bfe
+   real(DP) ::  mfe,bfe,dKdNtest
    
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
@@ -68,7 +68,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
 
    fe = FEPROX
    fd = user%ejecta_truncation
-   if (user%dosoftening) fe = crater%fe
+   if (user%dosoftening) fe = user%fe
 
    ! Generate both the subpixel and superdomain diffusive degradation
    superloop: do k = 1,domain%pnum - 1
@@ -87,12 +87,9 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
 
       if ((fd * diam < user%pix) .or. (dN * PI * (fe * radius)**2 > 0.1_DP)) then 
       !Do the average degradation per pixel for the subpixel component
-    
-         dKdN = 0.0_DP 
-         if (diam < user%pix)  dKdN = dKdN + KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
+         dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
          if (user%dosoftening) then 
          ! User-defined degradation function
-            !dKdN = dKdN + user%Kd1 * PI * fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
             dKdN = dKdN + PI * fe**2 * radius**2 * crater_degradation_function(user,radius) / domain%parea
          end if
          !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
@@ -124,7 +121,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
       else if (user%dosoftening) then
       ! Do the degradation as individual circles
 
-         superlen = fe * diam + domain%side
+         superlen = fd * diam + domain%side
          cutout = 0.0_SP
          crater%continuous = RCONT * radius**(EXPCONT) 
          if (diam > domain%smallest_crater) then
