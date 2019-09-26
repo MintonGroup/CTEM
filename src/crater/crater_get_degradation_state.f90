@@ -82,7 +82,7 @@ function crater_get_degradation_state(user,surf,crater,dd) result(Kval)
    bowl = bowl / nbowl 
    outer = outer / nouter
    dd = max((rim - bowl) / crater%fcrat,SMALLFAC)
-   Kval = - 1._DP / Bconst * log(real(dd,kind=DP) / ddinit)
+   Kval = - (1._DP / Bconst * log(real(dd,kind=DP) / ddinit)) * crater%frad**2
    return
 
 end function crater_get_degradation_state
