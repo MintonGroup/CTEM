@@ -6,9 +6,9 @@ bin_PROGRAMS = CTEM
 #AM_FCFLAGS = -O3 -p -g -openmp -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
 
 #gfortran optimized flags
-AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
+#AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
-#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
+AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
 
 CTEM_SOURCES = globals/module_globals.f90\
 util/module_util.f90\
@@ -82,6 +82,8 @@ crater/crater_subpixel_diffusion.f90\
 crater/crater_make_list.f90\
 crater/crater_critical_slope.f90\
 crater/crater_degradation_function.f90\
+crater/crater_visibility.f90\
+crater/crater_get_degradation_state.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\

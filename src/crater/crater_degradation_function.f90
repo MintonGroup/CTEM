@@ -36,8 +36,8 @@ function crater_degradation_function(user,r) result(Kd)
    delta = 1.0_DP
 
    A = user%Kd1 * r_break**(alpha_1) / (1_DP + (1.d0 / delta) * (alpha_1 - alpha_2) / alpha_1)**2 
-
    Kd =  A * (r / r_break)**(alpha_1) * (0.5_DP * (1.0_DP + (r / r_break)**(1.0_DP / delta)))**((alpha_2 - alpha_1 ) / delta)
+
    return
 
 end function crater_degradation_function

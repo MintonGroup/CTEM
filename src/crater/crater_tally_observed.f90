@@ -45,6 +45,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(SP),dimension(:,:),allocatable :: mposlist
    real(SP),dimension(:),allocatable :: tmp_depthdiam
    logical,dimension(:),allocatable :: countable
+   real(DP),dimension(:),allocatable :: Kval
    integer(I4B),dimension(:,:),allocatable:: mpxlist
    integer(I4B),dimension(:),allocatable :: ind,mlayerlist
    integer(I4B) :: q,mnum,imnum,maxpix,npix,ntot
@@ -55,17 +56,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(DP),dimension(:),allocatable :: dis,elev
    integer(I4B),dimension(:),allocatable :: totpix,istart,iend
    integer(I4B) :: tnum ! True number and observed number
-   integer(I4B) :: inc,xpi,ypi
-   logical :: killable
-   integer(I4B) :: nrim,nbowl,nouter
-   real(DP) :: rim,bowl,outer,rad,baseline,dd
-   ! Counting parameters from Howl study
-   real(DP),parameter :: DDCUTOFF = 5.0e-2_DP
-   real(DP),parameter :: OCUTOFF = 5.5e-2_DP
-   real(DP),parameter :: RIMDI = 1.0_DP
-   real(DP),parameter :: RIMDO = 1.2_DP
-   real(DP),parameter :: BOWLD = 0.2_DP
-   real(DP),parameter :: OUTERD = 2.0_DP
+
 
    ! Executable code
 
@@ -148,17 +139,18 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    allocate(tlist(tnum))
    allocate(tmp_depthdiam(tnum))
    allocate(countable(tnum))
+   allocate(Kval(tnum))
    countable = .false.
    nkilled = 0
    onum = 0
+   ! Here we go through the list of craters and take the measures of each one to
+   ! be used by the tally subroutine in the next pass
    !$OMP PARALLEL DEFAULT(PRIVATE) IF(tnum > INCPAR) &
    !$OMP SHARED(user,surf) &
    !$OMP SHARED(domain,maxpix,istart,iend,ind,mlist,mposlist,mpxlist,mlayerlist) &
-   !$OMP SHARED(tnum,totpix,poslist,tlist,tmp_depthdiam,countable) &
+   !$OMP SHARED(tnum,totpix,poslist,tlist,tmp_depthdiam,countable,Kval) &
    !$OMP REDUCTION(+:nkilled) &
    !$OMP REDUCTION(+:onum) 
-   ! Here we go through the list of craters and take the measures of each one to
-   ! be used by the tally subroutine in the next pass
    !$OMP DO 
    do craternum = 1,tnum
       ! This is the first pixel of this crater, so record the appropriate values
@@ -170,71 +162,28 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       crater%fradpx = int(crater%frad / user%pix) + 1
       crater%xlpx = int(poslist(1,craternum) / user%pix)
       crater%ylpx = int(poslist(2,craternum) / user%pix)
+
       call crater_averages(user,surf,crater)
-      nrim = 0
-      nbowl = 0
-      nouter = 0
-      bowl = 0.0_DP
-      rim = 0.0_DP
-      outer = 0.0_DP
-      inc = int(OUTERD * crater%frad / user%pix) + 1 
-      do j = -inc, inc
-         do i = -inc, inc
-            rad = sqrt((i**2 + j**2)*1._DP) * user%pix / crater%frad
-            baseline = crater%melev + ((i * crater%xslp) + (j * crater%yslp)) * user%pix 
-            xpi = crater%xlpx + i
-            ypi = crater%ylpx + j
-            call util_periodic(xpi,ypi,user%gridsize)
-            if (rad <= BOWLD) then
-               bowl = bowl + surf(xpi,ypi)%dem - baseline
-               nbowl = nbowl + 1 
-            else if ((rad >= RIMDI).and.(rad < RIMDO)) then
-               rim = rim + surf(xpi,ypi)%dem - baseline
-               nrim = nrim + 1 
-            else if (rad > RIMDO) then
-               outer = outer + surf(xpi,ypi)%dem - baseline
-               nouter = nouter + 1 
-            end if
-         end do
-      end do
-      rim = rim / nrim 
-      bowl = bowl / nbowl 
-      outer = outer / nouter
-      tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
 
-      !if (crater%fcrat < 20e3_DP) then
-      !   dd = DDCUTOFF
-      !else
-      !   dd = DDCUTOFF - (crater%fcrat - 20e3_DP) * 2e-7
-      !end if
-      dd = min(DDCUTOFF, 24.897 * crater%fcrat ** (-0.632545))
-
-      if (((tmp_depthdiam(craternum) > dd).and.((outer - rim) / crater%fcrat < OCUTOFF)).and.&
-          (nrim /= 0).and.(nbowl /= 0).and.(nouter /= 0)) then
-         countable(craternum) = .true.
-         killable = .false.
-      else  
-         countable(craternum) = .false.
-         killable = .true.
-      end if   
       if ((crater%fcrat < domain%smallest_counted_crater) .or. &
          (totpix(craternum) < int(0.1_DP * 0.25_DP * PI * crater%fcrat / user%pix))) then
          countable(craternum) = .false.
-         killable = .true.
+      else 
+         Kval(craternum) = crater_get_degradation_state(user,surf,crater,tmp_depthdiam(craternum))
+         countable(craternum) = crater_visibility(user,crater,Kval(craternum))
       end if
-      ! TESTING
-      if (user%testtally) then
-         countable = .true.
-         killable = .false.
+
+      if (user%testtally) then ! used for testing the tally system
+         countable(craternum) = .true.
       end if
-      if (killable) then ! Obliterate the crater from the record
+
+      if (.not.countable(craternum)) then ! Obliterate the crater from the record
          do i=istart(craternum),iend(craternum)
             call util_remove_from_layer(surf(mpxlist(1,ind(i)),mpxlist(2,ind(i))),mlayerlist(ind(i)))
          end do
          nkilled = nkilled + 1
       end if
       if (countable(craternum)) onum = onum + 1
-      !deallocate(csurf)
    end do
    !$OMP END DO
    !$OMP END PARALLEL
@@ -293,6 +242,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    deallocate(tmp_depthdiam)
    deallocate(ind)
    deallocate(countable)
+   deallocate(Kval)
 
    return
 end subroutine crater_tally_observed

@@ -271,6 +271,32 @@ end interface
       end function crater_degradation_function
    end interface
 
+   interface
+      function crater_get_degradation_state(user,surf,crater,dd) result(Kval)
+      use module_globals
+      implicit none
+      ! Arguments
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
+      type(cratertype),intent(in) :: crater
+      real(SP),intent(out) :: dd
+      ! Return value
+      real(DP) :: Kval
+      end function crater_get_degradation_state
+   end interface
+
+   interface
+      function crater_visibility(user,crater,Kval) result(iscountable)
+      use module_globals
+      implicit none
+      ! Arguments
+      type(usertype),intent(in) :: user
+      type(cratertype),intent(in) :: crater
+      real(DP),intent(in) :: Kval
+      ! Result variable
+      logical :: iscountable       
+      end function crater_visibility
+   end interface
 
 
 end module
