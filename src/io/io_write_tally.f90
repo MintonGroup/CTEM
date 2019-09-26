@@ -18,7 +18,7 @@
 !**********************************************************************************************************************************
 
 
-subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
+subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam,degradation_state)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_write_tally
    implicit none
@@ -28,6 +28,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
    real(DP),dimension(:),intent(in) :: olist
    real(SP),dimension(:,:),intent(in) :: oposlist
    real(SP),dimension(:),intent(in) :: depthdiam
+   real(DP),dimension(:),intent(in) :: degradation_state
 
    ! Internals
    integer(I4B)  :: i,distl,distc,ioerr,onum
@@ -42,7 +43,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
    distl = size(tdist,2)
    allocate(oldtdist(distc,distl))
 1000 format(3F16.4,2F15.0,F15.6)
-2000 format(ES23.15,1X,7(ES14.6,1X,:))
+2000 format(ES23.15,1X,8(ES14.6,1X,:))
    oldtdist = 0._DP
 
    inquire(file=tdistfile, exist=file_exists)
@@ -74,10 +75,10 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
    close(LUN)
 
    open(LUN, FILE=OLISTFILE, status='REPLACE')
-   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        time(y)        depth/diam")'  )
+   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        time(y)        depth/diam        deg_state(m^2)")' )
    do i=1,onum
 
-      write(LUN,2000) olist(i),oposlist(:,i),depthdiam(i)
+      write(LUN,2000) olist(i),oposlist(:,i),depthdiam(i),degradation_state(i)
    end do
    close(LUN)
 

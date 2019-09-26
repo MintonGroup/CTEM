@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam)
+subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
    use module_globals
    use module_io
    use module_util
@@ -34,6 +34,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    real(DP),dimension(:),intent(out),allocatable,optional :: obslist
    real(SP),dimension(:,:),intent(out),allocatable,optional :: oposlist
    real(SP),dimension(:),intent(out),allocatable,optional :: depthdiam
+   real(DP),dimension(:),intent(out),allocatable,optional :: degradation_state
 
    ! Internal variables
    integer(I4B)                               :: i,j,layer,n,m,craternum,obstot
@@ -191,6 +192,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    ! Bin the observed craters if required 
    if (present(obsdist)) then
       allocate(depthdiam(onum))
+      allocate(degradation_state(onum))
       allocate(obslist(onum))
       allocate(oposlist(3,onum))
       ! Reset all the distribution bins
@@ -214,6 +216,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
             obslist(obstot) = tlist(craternum)
             oposlist(:,obstot) = poslist(:,craternum)
             depthdiam(obstot) = tmp_depthdiam(craternum)
+            degradation_state(obstot)  = Kval(craternum)
             obstot = obstot - 1
          end if
       end do

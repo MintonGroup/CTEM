@@ -180,7 +180,7 @@ end interface
    end interface
 
    interface
-      subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam)
+      subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -191,6 +191,7 @@ end interface
       real(DP),dimension(:),intent(out),allocatable,optional :: obslist
       real(SP),dimension(:,:),intent(out),allocatable,optional :: oposlist
       real(SP),dimension(:),intent(out),allocatable,optional :: depthdiam
+      real(DP),dimension(:),intent(out),allocatable,optional :: degradation_state
       end subroutine crater_tally_observed
    end interface
 
