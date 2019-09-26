@@ -75,7 +75,7 @@ subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam,degradation
    close(LUN)
 
    open(LUN, FILE=OLISTFILE, status='REPLACE')
-   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        time(y)        depth/diam        deg_state(m^2)")' )
+   write(LUN,'("#Dcrat(m)                 xpos(m)        ypos(m)        time(y)        depth/diam     deg_state(m^2)")' )
    do i=1,onum
 
       write(LUN,2000) olist(i),oposlist(:,i),depthdiam(i),degradation_state(i)
