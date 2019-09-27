@@ -5,6 +5,7 @@ Makefile.in
 
 *.o
 
+
 build/src/CTEM
 
 *.mod
@@ -33,3 +34,15 @@ __pycache__/
 alocal.m4
 
 *.m4
+
+*.eps
+
+*.jpg
+
+examples/mare-with-rays-model2/CTEM
+
+examples/global-lunar-bombardment/CTEM
+
+examples/*/*.o*
+
+*.out
