@@ -151,7 +151,6 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    !$OMP SHARED(domain,maxpix,istart,iend,ind,mlist,mposlist,mpxlist,mlayerlist) &
    !$OMP SHARED(tnum,totpix,poslist,tlist,tmp_depthdiam,countable,Kval) &
    !$OMP REDUCTION(+:nkilled) &
-   !$OMP REDUCTION(+:onum) 
    !$OMP DO 
    do craternum = 1,tnum
       ! This is the first pixel of this crater, so record the appropriate values
@@ -184,10 +183,10 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
          end do
          nkilled = nkilled + 1
       end if
-      if (countable(craternum)) onum = onum + 1
    end do
    !$OMP END DO
-   !$OMP END PARALLEL
+   !$OMP END PARALLEL   
+   onum = tnum - nkilled
 
    ! Bin the observed craters if required 
    if (present(obsdist)) then

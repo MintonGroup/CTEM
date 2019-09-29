@@ -1,5 +1,5 @@
 #gnuplot 5.0 script
-do for [ii=78:78] {
+do for [ii=119:119] {
 reset
 
 
@@ -37,7 +37,7 @@ set label 1 "100 m" at 800+50e0/pix,100 tc rgb "white" front center
 
 set style line 1 lt 1 lc rgb "white" lw 0.1
 
-surf = sprintf("/Users/daminton/work/Projects/Lunar-Saturation/Diffusion/CTEMsims2/ray-fe10-narrow/surf/surf%06d.jpg",ii)
+surf = sprintf("surf/surf%06d.jpg",ii)
 
 plot surf binary filetype=auto w rgbimage notitle
 
