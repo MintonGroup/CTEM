@@ -22,8 +22,12 @@ The executable that is generated is build/src/CTEM
 
 Running CTEM
 ************************************
-An example CTEM simulation is included in the idl directory. You can execute the
-CTEM run using the IDL frontend using:
+Example CTEM simulations are included in the examples directory. 
+The run parameters are controlled by the ctem.in file.
+
+You can execute the CTEM run using the IDL frontend using:
 $ idl < start.in
 
-The run parameters are controlled by the ctem.in file.
+or with the Python frontend using:
+$ python ctem_driver.py
+
