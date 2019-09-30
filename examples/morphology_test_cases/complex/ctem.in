@@ -32,9 +32,9 @@ runtype      single                             ! Run type: options are normal /
 
 ! CTEM required inputs
 seed         33790                    ! Random number generator seed
-gridsize     2000                          ! Size of grid in pixels
+gridsize     1000                          ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
-pix          2.0e2                           ! Pixel size (m)
+pix          4.0e2                           ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
 ! Bedrock scaling parameters
 mu_b         0.55e0                             ! Experimentally derived parameter for bedrock crater scaling law 
