@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
+subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newelev,deltaMi)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_form_interior
@@ -28,7 +28,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
    type(cratertype),intent(in) :: crater
-   real(DP),intent(in) :: lradsq
+   real(DP),intent(in) :: x_relative, y_relative 
    real(DP),intent(in) :: newelev
    real(DP),intent(out) :: deltaMi
 
@@ -42,7 +42,7 @@ subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
    ! Executable code
 
    !change digital elevation map
-   r = sqrt(lradsq) / crater%frad
+   r = sqrt(x_relative**2+y_relative**2) / crater%frad
    ! Use empirical crater form from Fassett et al. 2014
    if (r < 0.2_DP) then
       cform = -0.181_DP * crater%fcrat
