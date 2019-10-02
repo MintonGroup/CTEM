@@ -33,7 +33,7 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
-   real(DP) :: cform,newdem,elchange,pikeD,r,h,circrad,polymodel,f,HH
+   real(DP) :: cform,newdem,elchange,pikeD,r
    integer(I4B) :: layer
 
    ! A list for poped data 

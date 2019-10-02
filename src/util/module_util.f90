@@ -225,5 +225,15 @@ interface
    end function util_poisson
 end interface
 
+interface
+   function util_perlin_noise(x,y,z) result (noise)
+   use module_globals
+   implicit none
+   real(DP),intent(in) :: x,y
+   real(DP),intent(in),optional :: z
+   real(DP) :: noise
+   end function util_perlin_noise
+end interface
+
 end module
 
