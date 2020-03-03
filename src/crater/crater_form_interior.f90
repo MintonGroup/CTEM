@@ -56,6 +56,9 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
    if ((crater%fcrat > crater%cxtran * 2) .and. newdem < (crater%melev - pikeD)) then
       newdem = crater%melev - pikeD ! Flatten out the bottom of the crater
+      !write(*,*) x_relative,y_relative,util_perlin_noise(x_relative,y_relative)*1e3_DP
+      !newdem = newdem + max(util_perlin_noise(x_relative/crater%fcrat,y_relative/crater%fcrat)*1e3_DP,0.0_DP)
+      !newdem = newdem + abs(util_perlin_noise(x_relative,y_relative)*1e3_DP)
    end if
    if (newdem < (crater%melev - user%deplimit)) then
       newdem = crater%melev - user%deplimit ! Flatten out the bottom of the crater
