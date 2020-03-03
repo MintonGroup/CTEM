@@ -79,13 +79,13 @@ function util_perlin_noise(xx,yy,zz) result (noise)
    w = fade(z)
 
    A = p(xi) + yi
-   B = p(xi + 1) + yi
+   B = p(xi+1) + yi
 
    AA = p(A) + zi
    BA = p(B) + zi
 
-   AB = p(A + 1) + zi
-   BB = p(B + 1) + zi
+   AB = p(A+1) + zi
+   BB = p(B+1) + zi
    
    noise = lerp(w,   lerp(v,  lerp(u,  grad(p(AA  ), x  , y,   z),&
                                        grad(p(BA  ), x-1, y,   z)),& 
