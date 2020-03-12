@@ -79,22 +79,22 @@ function util_perlin_noise(xx,yy,zz) result (noise)
    w = fade(z)
 
    A = p(xi) + yi
-   B = p(xi+1) + yi
+   B = p(xi + 1) + yi
 
    AA = p(A) + zi
    BA = p(B) + zi
 
-   AB = p(A+1) + zi
-   BB = p(B+1) + zi
+   AB = p(A + 1) + zi
+   BB = p(B + 1) + zi
    
-   noise = lerp(w,   lerp(v,  lerp(u,  grad(p(AA  ), x  , y,   z),&
-                                       grad(p(BA  ), x-1, y,   z)),& 
-                              lerp(u,  grad(p(AB  ), x  , y-1, z),&  
-                                       grad(p(BB  ), x-1, y-1, z))),&
-                     lerp(v,  lerp(u,  grad(p(AA+1), x  , y,   z-1),&
-                                       grad(p(BA+1), x-1, y,   z-1)),& 
-                              lerp(u,  grad(p(AB+1), x  , y-1, z-1),&  
-                                       grad(p(BB+1), x-1, y-1, z-1))))
+   noise = lerp(w,   lerp(v,  lerp(u,  grad(p(AA    ), x    , y,     z    ),&
+                                       grad(p(BA    ), x - 1, y,     z    )),& 
+                              lerp(u,  grad(p(AB    ), x    , y - 1, z    ),&  
+                                       grad(p(BB    ), x - 1, y - 1, z    ))),&
+                     lerp(v,  lerp(u,  grad(p(AA + 1), x    , y    , z - 1),&
+                                       grad(p(BA + 1), x - 1, y    , z - 1)),& 
+                              lerp(u,  grad(p(AB + 1), x    , y - 1, z - 1),&  
+                                       grad(p(BB + 1), x - 1, y - 1, z - 1))))
    return
    contains
       function fade(t) result(f)
@@ -135,12 +135,12 @@ function util_perlin_noise(xx,yy,zz) result (noise)
       else
          v = z
       end if
-      if (iand(h,1) == 0) then
+      if (iand(h,1 ) == 0) then
          g = u
       else 
          g = -u
       end if
-      if (iand(h,2) == 0) then
+      if (iand(h, 2) == 0) then
          g = g + v
       else
          g = g - v

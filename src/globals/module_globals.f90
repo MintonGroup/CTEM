@@ -150,10 +150,10 @@ type usertype
    integer(I4B)      :: gridsize  ! Resolution
    integer(I4B)      :: numlayers ! Number of perched layers
    real(DP)          :: pix       ! Pixel size (m)
-   real(DP)          :: mu_b        ! Crater scaling exponential constant (ignored for basins)
-   real(DP)          :: kv_b        ! Crater scaling linear constant
-   real(DP)          :: mu_r        ! Crater scaling exponential constant (ignored for basins)
-   real(DP)          :: kv_r        ! Crater scaling linear constant
+   real(DP)          :: mu_b      ! Crater scaling exponential constant (ignored for basins)
+   real(DP)          :: kv_b      ! Crater scaling linear constant
+   real(DP)          :: mu_r      ! Crater scaling exponential constant (ignored for basins)
+   real(DP)          :: kv_r      ! Crater scaling linear constant
    integer(I4B)      :: seed      ! Random number generator seed (only used in non-IDL driven mode)
    real(DP)          :: trho_b    ! Target bedrock density
    real(DP)          :: trho_r    ! Target surface regolith layer density
@@ -165,23 +165,24 @@ type usertype
    real(DP)          :: prho      ! Projectile density
    character(STRMAX) :: sfdfile   ! Name of size distribution file
    character(STRMAX) :: velfile   ! Name of velocity distribution file
-   real(DP) :: seisk,cohaccel      ! seismic keff, cohesion breaking acceleration
+   real(DP) :: seisk,cohaccel     ! seismic keff, cohesion breaking acceleration
    
    ! Optional input variables
-   logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
-   logical           :: doangle    ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
-   logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
-   real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
-   real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
-   real(DP)          :: deplimit  ! complex crater depth limit
+   logical           :: docollapse  ! Set T to use the slope collapse model (turning off speeds up the code for testing)
+   logical           :: doangle     ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
+   logical           :: doporosity  ! Porosity on/off flg. Set to F to turn the model off. Default F. 
+   real(DP)          :: basinimp    ! Impactor size to switch to multiring basin
+   real(DP)          :: maxcrat     ! fraction that maximum crater can be relative to grid
+   real(DP)          :: deplimit    ! complex crater depth limit
+   logical           :: dorealistic ! Set to T to enable realistic crater morphology. Default is F.
 
    ! Seismic input variables 
-   logical ::  doseismic ! Set to T if you want to do the seismic shaking model
-   real(DP) :: seisq    ! Seismic energy attenuation quality factor (Q)
-   real(DP) :: neff     ! impact seismic energy efficiency factor
-   real(DP) :: tvel    ! target P-wave (body wave) speed (m/s)
-   real(DP) :: tfrac     ! mean free path for seismic wave scattering in medium
-   real(DP) :: regcoh  ! target surface regolith layer cohesion
+   logical ::  doseismic   ! Set to T if you want to do the seismic shaking model
+   real(DP) :: seisq       ! Seismic energy attenuation quality factor (Q)
+   real(DP) :: neff        ! impact seismic energy efficiency factor
+   real(DP) :: tvel        ! target P-wave (body wave) speed (m/s)
+   real(DP) :: tfrac       ! mean free path for seismic wave scattering in medium
+   real(DP) :: regcoh      ! target surface regolith layer cohesion
 
    ! Crater diffusion input parameters
    real(DP) :: Kd1 ! Degradation function coefficient (from Minton et al. (2019))
@@ -230,6 +231,8 @@ type usertype
    real(DP)          :: shadedminh   ! Minimum height for shaded relief map (m)
    real(DP)          :: shadedmaxh   ! Maximum height for shaded relief map (m)
    character(STRMAX) :: sfdcompare   ! Type of run: 0 for normal, 1 for statistical (domain is reset between intervals)
+
+   
 end type usertype
 
 ! Derived data type for the ejecta blanket table elements

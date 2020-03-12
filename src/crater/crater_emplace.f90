@@ -71,6 +71,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
 
    ! Executable code
 
+
    ! determine area to effect
    ! First make the interior of the crater
    inc = max(min(crater%fradpx,PBCLIM*user%gridsize),1) + 1

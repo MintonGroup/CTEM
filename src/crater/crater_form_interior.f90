@@ -33,39 +33,59 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
-   real(DP) :: cform,newdem,elchange,pikeD,r
+   real(DP) :: cform,newdem,elchange,pikeD,r, Hpeak
    integer(I4B) :: layer
 
-   ! A list for poped data 
+   ! A list for popped data 
    type(regolisttype),pointer :: poppedlist
+
+
+   ! Empirical crater shape parameters from Fassett et al. (2014)
+   real(DP),parameter :: r_floor = 0.2_DP
+   real(DP),parameter :: simple_depth_diam = 0.181_DP
+   real(DP),parameter :: r_rim = 0.98_DP
+   real(DP),parameter :: inner_c0 = -0.229_DP 
+   real(DP),parameter :: inner_c1 =  0.228_DP 
+   real(DP),parameter :: inner_c2 =  0.083_DP 
+   real(DP),parameter :: inner_c3 = -0.039_DP
+
+   real(DP),parameter :: outer_c0 =  0.188_DP
+   real(DP),parameter :: outer_c1 = -0.187_DP
+   real(DP),parameter :: outer_c2 =  0.018_DP 
+   real(DP),parameter :: outer_c3 =  0.015_DP
+
 
    ! Executable code
 
    !change digital elevation map
    r = sqrt(x_relative**2+y_relative**2) / crater%frad
    ! Use empirical crater form from Fassett et al. 2014
-   if (r < 0.2_DP) then
-      cform = -0.181_DP * crater%fcrat
-   else if (r < 0.98_DP) then
-      cform =  (-0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3) * crater%fcrat 
+   if (r < r_floor) then
+      cform = -simple_depth_diam  * crater%fcrat
+   else if (r < r_rim) then
+      cform =  (inner_c0 + inner_c1 * r + inner_c2 * r**2 + inner_c3 * r**3) * crater%fcrat 
    else 
-      cform =  (0.188_DP - 0.187_DP * r + 0.018_DP * r**2 + 0.015_DP * r**3) * crater%fcrat
+      cform =  (outer_c0 + outer_c1 * r + outer_c2 * r**2 + outer_c3 * r**3) * crater%fcrat
    end if      
    newdem = newelev + cform 
 
-   pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
-   if ((crater%fcrat > crater%cxtran * 2) .and. newdem < (crater%melev - pikeD)) then
-      newdem = crater%melev - pikeD ! Flatten out the bottom of the crater
-      !write(*,*) x_relative,y_relative,util_perlin_noise(x_relative,y_relative)*1e3_DP
-      !newdem = newdem + max(util_perlin_noise(x_relative/crater%fcrat,y_relative/crater%fcrat)*1e3_DP,0.0_DP)
-      !newdem = newdem + abs(util_perlin_noise(x_relative,y_relative)*1e3_DP)
+   pikeD = min(1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP), user%deplimit) ! Pike (1977) depth/diameter ratio of complex craters
+   if (crater%fcrat > crater%cxtran * 2) then 
+      ! Make this crater complex
+
+      !if (r < r_rim) then
+         if (newdem < (crater%melev - pikeD)) then ! Flatten out the bottom of the crater
+            do layer = 1,user%numlayers ! Remove all pre-existing craters from this current pixel
+               call util_remove_from_layer(surfi,layer)
+            end do
+            newdem = crater%melev - pikeD 
+
+            
+         end if
+      !end if
+
    end if
-   if (newdem < (crater%melev - user%deplimit)) then
-      newdem = crater%melev - user%deplimit ! Flatten out the bottom of the crater
-      do layer = 1,user%numlayers ! Remove all pre-existing craters from this current pixel
-         call util_remove_from_layer(surfi,layer)
-      end do
-   end if
+
 
    newdem = min(newdem,surfi%dem) ! Only allow excavation, no deposition
    elchange  = newdem - surfi%dem

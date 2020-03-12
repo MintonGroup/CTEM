@@ -195,6 +195,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass)
+
+
+         if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejbmass)
+
          
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance

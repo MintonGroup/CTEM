@@ -92,6 +92,7 @@ subroutine io_input(infile,user)
    user%rbreak = 0.1e3_DP
    user%fe  = 5.0_DP
    user%ejecta_truncation = 5.0_DP
+   user%dorealistic = .false.
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -465,6 +466,12 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%fe
+
+         case ("DOREALISTIC")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%dorealistic
 
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
