@@ -164,7 +164,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ! Stamp the current time onto the crater
          crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
          ! Find the visible crater parameters
-         call crater_find_visible(user,crater,domain)
+         call crater_dimensions(user,crater,domain)
 
          ! Crater is big enough to keep, so record it into the true distribution 
          ntrue = ntrue + 1

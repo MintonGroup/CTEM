@@ -94,7 +94,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    real(DP),intent(in) :: deltaMtot
 
    ! Internal variables
-   real(DP) :: lrad,lradsq,cdepth
+   real(DP) :: lrad,lradsq
    integer(I4B),parameter :: MAXLOOP = 100 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq,idistorted,jdistorted
    real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,ejbmass,fmasscons,areafrac,xbar,ybar,krad,kdiffmax
@@ -121,9 +121,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
 
    !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
 
-   cdepth = DDRATIO * crater%fcrat
-   crater%vdepth = crater%ejrim + cdepth
-   crater%vrim   = crater%ejrim + crater%rheight
+   crater%vdepth = crater%ejrim + crater%floordepth
+   crater%vrim   = crater%ejrim + crater%rimheight
    
    if (crater%ejdis <= crater%rad) return
 

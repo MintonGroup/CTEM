@@ -101,7 +101,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
          lradsq = x_relative**2 + y_relative**2
 
          if (lradsq > crater%frad**2) cycle
-         call crater_form_interior(user,surf(xpi,ypi),crater,x_relative, y_relative,newelev,deltaMi)
+         call crater_form_interior(user,surf(xpi,ypi),crater,x_relative,y_relative,newelev,deltaMi)
          deltaMtot = deltaMtot + deltaMi
 
          ! do porosity computation if (user%doporosity)
