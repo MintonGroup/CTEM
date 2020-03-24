@@ -68,7 +68,7 @@ ejecta/ejecta_distance_estimate.f90\
 crater/crater_populate.f90\
 crater/crater_scale.f90\
 crater/crater_generate.f90\
-crater/crater_find_visible.f90\
+crater/crater_dimensions.f90\
 crater/crater_averages.f90\
 crater/crater_emplace.f90\
 crater/crater_realistic_topography.f90\

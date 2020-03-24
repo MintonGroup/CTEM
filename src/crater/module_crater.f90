@@ -76,13 +76,13 @@ end interface
    end interface
 
    interface
-      subroutine crater_find_visible(user,crater,domain)
+      subroutine crater_dimensions(user,crater,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in)    :: domain
-      end subroutine crater_find_visible
+      end subroutine crater_dimensions
    end interface
 
    interface
@@ -115,7 +115,7 @@ end interface
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),intent(out) :: deltaMtot
+      real(DP),intent(inout) :: deltaMtot
       end subroutine crater_realistic_topography
    end interface
 

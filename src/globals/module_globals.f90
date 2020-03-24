@@ -98,7 +98,7 @@ type cratertype
    real(DP) :: frad                ! Final crater radius
    real(DP) :: fcrat               ! Final crater diameter
    real(DP) :: vdepth,vrim,vcorr   ! parameter for parabolic crater form
-   real(DP) :: frim,parab,rheight  ! parameter for parabolic crater form
+   real(DP) :: frim,parab          ! parameter for parabolic crater form
    real(DP) :: rimdis              ! crater form radius (bowl + upturned rim)
    real(DP) :: ejdis               ! ejecta max distance
    real(DP) :: ejrim               ! ejecta height at crater rim
@@ -112,6 +112,13 @@ type cratertype
    integer(I4B) :: maxinc          ! Maximum area affected 
    integer(I4B) :: strflag         ! 0 for regolith, 1 for bedrock
    real(DP) :: melev,xslp,yslp     ! Mean elevation and slopes at pre-existing impact site
+
+   !Crater dimension information  - See Pike (1977) Impact and Explosion Cratering, Fig. 1
+   real(DP) :: rimheight
+   real(DP) :: rimwidth 
+   real(DP) :: floordepth
+   real(DP) :: floordiam
+   real(DP) :: peakheight
 end type cratertype
 
 ! Derived data type for domain variables (sizes and dimensions)
@@ -290,10 +297,8 @@ integer(I4B),parameter :: INCPAR = 1   ! Minimum size of inc variables before pa
 real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see Richardson 2009 eqs. 15 & 20)
 !real(DP),parameter :: CT = KT * 1.0077158813689795507466256218613060723322903283648264_DP ! KT * (PI*THIRD)**(SIXTH) 
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
-real(DP),parameter :: DDRATIO = 0.19_DP        ! ?
-real(DP),parameter :: RDRATIO = 0.030_DP       ! Rim height to diameter ratio
+
 real(DP),parameter :: RIMDROP = 4.20_DP        ! Power law index for rim profile 
-real(DP),parameter :: RIMFAC = 1.5_DP          ! ?
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
 real(DP),parameter :: CXEXPS = 1._DP / 0.885_DP - 1.0_DP ! Complex crater scaling exponent (see Croft 1985)

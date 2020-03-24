@@ -1,12 +1,11 @@
 !**********************************************************************************************************************************
 !
-!  Unit Name   : crater_find_visible
+!  Unit Name   : crater_dimensions
 !  Unit Type   : subroutine
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
-!  Description : Finds the visible crater parabolic parameters, rim, and rim upturn distance
-!  
+!  Description : Calculates the physical dimensions of the crater
 !
 !  Input
 !    Arguments : 
@@ -18,9 +17,9 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_find_visible(user,crater,domain)
+subroutine crater_dimensions(user,crater,domain)
    use module_globals
-   use module_crater, EXCEPT_THIS_ONE => crater_find_visible
+   use module_crater, EXCEPT_THIS_ONE => crater_dimensions
    implicit none
 
    ! Arguments
@@ -29,18 +28,23 @@ subroutine crater_find_visible(user,crater,domain)
    type(domaintype),intent(in)    :: domain
 
    ! Internal variables
-   real(DP) :: cdepth,lrad,cform
+   real(DP) :: lrad,cform
+
+   real(DP),parameter :: DDRATIO = 0.19_DP        ! Depth-diameter ratio
+   real(DP),parameter :: RDRATIO = 0.030_DP       ! Rim height to diameter ratio
+   real(DP),parameter :: RIMFAC = 1.5_DP          ! Ratio of radius used for counting craters to the final rim radius
+
 
    ! Executable code
-   cdepth = DDRATIO * crater%fcrat
+   crater%floordepth = DDRATIO * crater%fcrat
    if (crater%fcrat <= crater%cxtran) then
-      crater%rheight = RDRATIO * crater%fcrat
+      crater%rimheight = RDRATIO * crater%fcrat
    else
-      crater%rheight = (RDRATIO*crater%cxtran)+(RDRATIO*((crater%fcrat-crater%cxtran)**(0.399_DP)))
+      crater%rimheight = (RDRATIO*crater%cxtran)+(RDRATIO*((crater%fcrat-crater%cxtran)**(0.399_DP)))
    endif
 
-   crater%vcorr  = cdepth - crater%rheight
-   crater%parab  = cdepth / ((crater%frad)**2)
+   crater%vcorr  = crater%floordepth - crater%rimheight
+   crater%parab  = crater%floordepth / ((crater%frad)**2)
 
    !find rim for counting purposes
    crater%frim = RIMFAC * crater%frad
@@ -49,7 +53,7 @@ subroutine crater_find_visible(user,crater,domain)
    lrad = crater%frad
    crater%rimdis = domain%side
    do while (lrad <= domain%side)
-      cform = crater%rheight * ((crater%frad/lrad)**RIMDROP)
+      cform = crater%rimheight * ((crater%frad/lrad)**RIMDROP)
       if (cform < domain%small) then
          crater%rimdis = lrad
          exit
@@ -61,5 +65,5 @@ subroutine crater_find_visible(user,crater,domain)
    crater%rimdispx = int(crater%rimdis/user%pix)  + 1
 
    return
-end subroutine crater_find_visible
+end subroutine crater_dimensions
 
