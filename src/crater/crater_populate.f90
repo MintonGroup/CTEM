@@ -243,7 +243,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             imax = crater%imp
             cmax = crater%fcrat
             rhmax = crater%vrim
-            if (crater%vcorr <= user%deplimit) then
+            if (crater%floordepth <= user%deplimit) then
                rmax = crater%vdepth
             else
                rmax = user%deplimit + crater%vrim 
@@ -254,7 +254,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             imin = crater%imp
             cmin = crater%fcrat
             rhmin = crater%vrim
-            if (crater%vcorr <= user%deplimit) then
+            if (crater%floordepth <= user%deplimit) then
                rmin = crater%vdepth
             else
                rmin = user%deplimit + crater%vrim

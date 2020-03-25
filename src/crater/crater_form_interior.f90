@@ -33,7 +33,7 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
-   real(DP) :: cform,newdem,elchange,pikeD,r, Hpeak
+   real(DP) :: cform,newdem,elchange,r
    integer(I4B) :: layer
 
    ! A list for popped data 
@@ -54,31 +54,49 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    real(DP),parameter :: outer_c2 =  0.018_DP 
    real(DP),parameter :: outer_c3 =  0.015_DP
 
+   real(DP) :: c0,c1,c2,c3,flrad,rh,fld
+
 
    ! Executable code
-
-   !change digital elevation map
    r = sqrt(x_relative**2+y_relative**2) / crater%frad
-   ! Use empirical crater form from Fassett et al. 2014
-   if (r < r_floor) then
-      cform = -simple_depth_diam  * crater%fcrat
-   else if (r < r_rim) then
-      cform =  (inner_c0 + inner_c1 * r + inner_c2 * r**2 + inner_c3 * r**3) * crater%fcrat 
-   else 
-      cform =  (outer_c0 + outer_c1 * r + outer_c2 * r**2 + outer_c3 * r**3) * crater%fcrat
-   end if      
+
+   rh = crater%rimheight 
+   fld = -crater%floordepth 
+   flrad = 0.5_DP * crater%floordiam / crater%frad 
+
+   
+   ! Use polynomial crater profile similar to that of Fassett et al. (2014), but the parameters are set by the crater dimensions
+
+   c1 = (fld - rh) / (flrad + flrad**2 / 3._DP - flrad**3 / 6._DP - 7._DP / 6._DP)
+   c0 = rh - (7._DP / 6._DP) * c1
+   c2 = c1 / 3._DP
+   c3 = -c2 / 2._DP
+
+   if (r < flrad) then
+      cform = fld 
+   else
+      cform = c0 + c1 * r + c2 * r**2 + c3 * r**3 
+   end if
+
+   !if (r < r_floor) then
+   !   cform = -simple_depth_diam  * crater%fcrat
+   !else if (r < r_rim) then
+   !   cform =  (inner_c0 + inner_c1 * r + inner_c2 * r**2 + inner_c3 * r**3) * crater%fcrat 
+   !else 
+   !   cform =  (outer_c0 + outer_c1 * r + outer_c2 * r**2 + outer_c3 * r**3) * crater%fcrat
+   !end if      
    newdem = newelev + cform 
 
-   pikeD = min(1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP), user%deplimit) ! Pike (1977) depth/diameter ratio of complex craters
-   if (crater%fcrat > crater%cxtran * 2) then 
+   !if (crater%fcrat > crater%cxtran * 2) then 
+   if (crater%morphtype == "COMPLEX") then
       ! Make this crater complex
 
       !if (r < r_rim) then
-         if (newdem < (crater%melev - pikeD)) then ! Flatten out the bottom of the crater
+         if (newdem < (crater%melev - crater%floordepth)) then ! Flatten out the bottom of the crater
             do layer = 1,user%numlayers ! Remove all pre-existing craters from this current pixel
                call util_remove_from_layer(surfi,layer)
             end do
-            newdem = crater%melev - pikeD 
+            newdem = crater%melev - crater%floordepth
 
             
          end if

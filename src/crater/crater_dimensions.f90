@@ -30,21 +30,38 @@ subroutine crater_dimensions(user,crater,domain)
    ! Internal variables
    real(DP) :: lrad,cform
 
-   real(DP),parameter :: DDRATIO = 0.19_DP        ! Depth-diameter ratio
-   real(DP),parameter :: RDRATIO = 0.030_DP       ! Rim height to diameter ratio
+!   real(DP),parameter :: DDRATIO = 0.19_DP        ! Depth-diameter ratio
+!   real(DP),parameter :: RDRATIO = 0.030_DP       ! Rim height to diameter ratio
    real(DP),parameter :: RIMFAC = 1.5_DP          ! Ratio of radius used for counting craters to the final rim radius
+
+   !TODO: Add in transitional and multi-ringed basin crater morphology
+   !TODO: Implement Monte Carlo model for standard errors for all dimension parameters
+
+   ! Set the crater morphology
+   select case(crater%morphtype)
+      case("SIMPLE","TRANSITION") ! Following Pike (1977)
+         crater%rimheight  = 0.036_DP * (crater%fcrat * 1e-3_DP)**(1.014_DP) * 1e3_DP !* crater%fcrat
+         crater%rimwidth   = 0.257_DP * (crater%fcrat * 1e-3_DP)**(1.011_DP) * 1e3_DP !* crater%fcrat
+         crater%floordepth = 0.196_DP * (crater%fcrat * 1e-3_DP)**(1.010_DP) * 1e3_DP !* crater%fcrat
+         crater%floordiam  = 0.031_DP * (crater%fcrat * 1e-3_DP)**(1.765_DP) * 1e3_DP !* crater%fcrat
+      case("COMPLEX","PEAKRING","MULTIRING") ! Following Pike (1977)
+         crater%rimheight  = 0.236_DP * (crater%fcrat * 1e-3_DP)**(0.399_DP) * 1e3_DP !* crater%fcrat
+         crater%rimwidth   = 0.467_DP * (crater%fcrat * 1e-3_DP)**(0.836_DP) * 1e3_DP !* crater%fcrat
+         crater%floordepth = 1.044_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) * 1e3_DP !* crater%fcrat
+         crater%floordiam  = 0.187_DP * (crater%fcrat * 1e-3_DP)**(1.249_DP) * 1e3_DP !* crater%fcrat
+         crater%peakheight = 0.032_DP * (crater%fcrat * 1e-3_DP)**(0.900_DP) * 1e3_DP !* crater%fcrat
+   end select
 
 
    ! Executable code
-   crater%floordepth = DDRATIO * crater%fcrat
-   if (crater%fcrat <= crater%cxtran) then
-      crater%rimheight = RDRATIO * crater%fcrat
-   else
-      crater%rimheight = (RDRATIO*crater%cxtran)+(RDRATIO*((crater%fcrat-crater%cxtran)**(0.399_DP)))
-   endif
+   !crater%floordepth = DDRATIO * crater%fcrat
+   !if (crater%fcrat <= crater%cxtran) then
+   !else
+   !   crater%rimheight = (RDRATIO*crater%cxtran)+(RDRATIO*((crater%fcrat-crater%cxtran)**(0.399_DP)))
+   !endif
 
-   crater%vcorr  = crater%floordepth - crater%rimheight
-   crater%parab  = crater%floordepth / ((crater%frad)**2)
+   ! Adjust the floor depth to measure from the pre-existing level surface, rather than the rim
+   crater%floordepth  = crater%floordepth - crater%rimheight
 
    !find rim for counting purposes
    crater%frim = RIMFAC * crater%frad
@@ -63,6 +80,7 @@ subroutine crater_dimensions(user,crater,domain)
    ! Get pixel space values
    crater%fradpx = int(crater%frad/user%pix) + 1
    crater%rimdispx = int(crater%rimdis/user%pix)  + 1
+
 
    return
 end subroutine crater_dimensions

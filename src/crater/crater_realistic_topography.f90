@@ -154,7 +154,7 @@ subroutine complex_peak(user,surfi,crater,r,x_relative,y_relative,rn,deltaMi)
    real(DP), parameter :: complex_peak_pers = 0.80_DP  ! The relative size scaling at each octave level
 
    ! Internal variables
-   real(DP) :: newdem,elchange,pikeD,Hpeak
+   real(DP) :: newdem,elchange
 
    ! Topographic noise parameters
    real(DP) :: xynoise, znoise
@@ -164,11 +164,10 @@ subroutine complex_peak(user,surfi,crater,r,x_relative,y_relative,rn,deltaMi)
    if (r > complex_peak_rad) return
    ! Add in "noisy" central peak
    newdem = surfi%dem
-   Hpeak = 0.032e3_DP * (crater%fcrat * 1e-3_DP)**(0.900_DP) ! Pike (1977)
    noise = 0.0_DP
    do octave = 1, complex_peak_num_octaves 
       xynoise = complex_peak_xy_noise_fac * complex_peak_freq ** octave / crater%fcrat
-      znoise = Hpeak * (1.0_DP - r / complex_peak_rad) * complex_peak_pers ** (octave - 1)
+      znoise = crater%peakheight * (1.0_DP - r / complex_peak_rad) * complex_peak_pers ** (octave - 1)
       noise = noise + util_perlin_noise(xynoise * x_relative + complex_peak_offset * rn(1), &
                                         xynoise * y_relative + complex_peak_offset * rn(2)) * znoise
    end do 
@@ -203,7 +202,7 @@ subroutine complex_floor(user,surfi,crater,r,x_relative,y_relative,rn,deltaMi)
    real(DP), parameter :: complex_floor_pers = 0.80_DP  ! The relative size scaling at each octave level
 
    ! Internal variables
-   real(DP) :: newdem,elchange,pikeD,Hpeak
+   real(DP) :: newdem,elchange
 
    ! Topographic noise parameters
    real(DP) :: xynoise, znoise
@@ -243,7 +242,7 @@ subroutine complex_wall(user,surfi,crater,r,x_relative,y_relative,rn,deltaMi)
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
-   real(DP) :: newdem,elchange,pikeD,pikeFloor,Hpeak
+   real(DP) :: newdem,elchange
 
    ! Topographic noise parameters
    real(DP) :: xynoise, znoise
@@ -251,22 +250,18 @@ subroutine complex_wall(user,surfi,crater,r,x_relative,y_relative,rn,deltaMi)
    real(DP) :: noise
 
    ! Complex crater wall
-   integer(I4B), parameter :: complex_wall_num_octaves  = 3   ! Number of Perlin noise octaves
+   integer(I4B), parameter :: complex_wall_num_octaves  = 4   ! Number of Perlin noise octaves
    integer(I4B), parameter :: complex_wall_offset = 2000 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: complex_wall_xy_noise_fac = 2.0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: complex_wall_xy_noise_fac = 1.5_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: complex_wall_freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
-   real(DP), parameter :: complex_wall_pers = 0.80_DP  ! The relative size scaling at each octave level
-   real(DP), parameter :: complex_wall_noise_height = 0.10_DP ! Vertical height of noise features as a function of crater radius at the first octave
-   real(DP), parameter :: complex_wall_slope = 25._DP * DEG2RAD
-   integer(I4B), parameter :: complex_wall_terracefac = 32 ! Spatial size factor for terraces relative to crater radius
+   real(DP), parameter :: complex_wall_pers = 0.70_DP  ! The relative size scaling at each octave level
+   real(DP), parameter :: complex_wall_noise_height = 0.02_DP ! Vertical height of noise features as a function of crater radius at the first octave
+   integer(I4B), parameter :: complex_wall_terracefac = 8 ! Spatial size factor for terraces relative to crater radius
    integer(I4B) :: complex_wall_terrace_num
 
 
    newdem = surfi%dem
-   pikeD = min(1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP), user%deplimit) ! Pike (1977) depth/diameter ratio of complex craters
-   !pikeFloor = 
-   pikeFloor = 0.7_DP
-   if (r < pikeFloor) return
+   if (r < crater%floordiam / crater%fcrat) return
    complex_wall_terrace_num = int(complex_wall_terracefac * r) + 1
    noise = 0.0_DP
    do octave = 1, complex_wall_num_octaves
@@ -276,7 +271,7 @@ subroutine complex_wall(user,surfi,crater,r,x_relative,y_relative,rn,deltaMi)
                                         xynoise * y_relative + complex_wall_terrace_num * complex_wall_offset * rn(2)) &
                                         * znoise
    end do
-   newdem = max(newdem + noise,crater%melev - pikeD) !/ cos(complex_wall_slope)
+   newdem = max(newdem + noise,crater%melev - crater%floordepth) 
 
 
    elchange  = newdem - surfi%dem

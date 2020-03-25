@@ -97,8 +97,8 @@ type cratertype
    real(DP) :: grad                ! Strengthless material transient crater radius
    real(DP) :: frad                ! Final crater radius
    real(DP) :: fcrat               ! Final crater diameter
-   real(DP) :: vdepth,vrim,vcorr   ! parameter for parabolic crater form
-   real(DP) :: frim,parab          ! parameter for parabolic crater form
+   real(DP) :: vdepth,vrim         ! parameter for parabolic crater form
+   real(DP) :: frim                ! parameter for parabolic crater form
    real(DP) :: rimdis              ! crater form radius (bowl + upturned rim)
    real(DP) :: ejdis               ! ejecta max distance
    real(DP) :: ejrim               ! ejecta height at crater rim
@@ -114,6 +114,7 @@ type cratertype
    real(DP) :: melev,xslp,yslp     ! Mean elevation and slopes at pre-existing impact site
 
    !Crater dimension information  - See Pike (1977) Impact and Explosion Cratering, Fig. 1
+   character(STRMAX) :: morphtype ! Type of crater. One of: "SIMPLE", "TRANSITION", "COMPLEX", "PEAKRING", "MULTIRING"
    real(DP) :: rimheight
    real(DP) :: rimwidth 
    real(DP) :: floordepth
