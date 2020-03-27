@@ -208,13 +208,14 @@ end interface
    end interface
 
    interface
-      subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
+      subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
+      real(DP),intent(in) :: critical
       real(DP),intent(inout) :: deltaMtot
       end subroutine crater_slope_collapse
    end interface

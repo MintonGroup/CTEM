@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
+subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
    use module_globals
    use module_util
    use module_io
@@ -28,12 +28,13 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
+   real(DP),intent(in) :: critical
    real(DP),intent(inout) :: deltaMtot
    
    ! Internal variables
    real(DP) :: diffmax,difflim
    real(DP) :: slpmax,slpsq
-   real(DP) :: elchgmax,critical
+   real(DP) :: elchgmax
    real(DP) :: xslp1,xslp2,yslp1,yslp2
    real(DP) :: tslp1sq,tslp2sq,tslp3sq,tslp4sq
    real(DP) :: xgrad,ygrad,tgrad,gradmax
@@ -55,10 +56,10 @@ subroutine crater_slope_collapse(user,surf,crater,domain,deltaMtot)
    ! Some preliminary setup
    diffmax = 0.25_DP * user%pix**2
    looplim = 100 * crater%fcratpx
-   critical = (CRITSLP * user%pix)**2
+   !critical = (CRITSLP * user%pix)**2
 
    !     determine area to effect
-   inc = max(min(crater%fcratpx,ceiling(SQRT2*user%gridsize)),1) + 1
+   inc = max(min(nint(1.5_DP * crater%frad / user%pix),ceiling(SQRT2*user%gridsize)),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
    incsq = inc**2
 

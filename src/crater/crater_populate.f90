@@ -219,7 +219,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejbmass)
          
          ! Collapse any remaining unstable slopes
-         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,ejbmass)
+         if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,(CRITSLP * user%pix)**2,ejbmass)
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater)
