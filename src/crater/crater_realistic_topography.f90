@@ -272,7 +272,7 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
    integer(I4B), parameter :: num_octaves  = 8   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
    real(DP), parameter :: xy_noise_fac = 32.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 1.0e-3_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 1.0e-4_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 0.80_DP  ! The relative size scaling at each octave level
 
@@ -441,7 +441,7 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
    ! Create diffusion noise for terraces
    num_octaves = 4
    xy_noise_fac = 4.00_DP
-   diff_height = 8e-5_DP * (crater%fcrat)**2
+   diff_height = 6e-5_DP * (crater%fcrat)**2
    noise_height = 0.02_DP
    freq = 2.0_DP
    pers = 0.80_DP 
