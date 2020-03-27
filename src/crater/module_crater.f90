@@ -125,7 +125,7 @@ end interface
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
-      type(cratertype),intent(in) :: crater
+      type(cratertype),intent(inout) :: crater
       real(DP),intent(in) :: x_relative, y_relative 
       real(DP),intent(in) :: newelev
       real(DP),intent(out) :: deltaMi

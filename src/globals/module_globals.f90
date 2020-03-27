@@ -97,6 +97,7 @@ type cratertype
    real(DP) :: grad                ! Strengthless material transient crater radius
    real(DP) :: frad                ! Final crater radius
    real(DP) :: fcrat               ! Final crater diameter
+   real(DP) :: ejrad               ! Radius to begin ejecta/raised rim
    real(DP) :: vdepth,vrim         ! parameter for parabolic crater form
    real(DP) :: frim                ! parameter for parabolic crater form
    real(DP) :: rimdis              ! crater form radius (bowl + upturned rim)

@@ -33,7 +33,7 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+      type(ejbtype),dimension(ejtble),intent(inout)   :: ejb
       real(DP),intent(in) :: deltaMtot
       end subroutine ejecta_emplace
    end interface

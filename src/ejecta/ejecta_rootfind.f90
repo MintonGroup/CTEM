@@ -78,7 +78,7 @@ subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
                f2=ejecta_blanket_func(user,crater,domain,x2,lrad,vejsq,ejang,firstrun)
             end if
          end do
-         if ((erad<=crater%rad).and.(erad>0._DP)) exit
+         if ((erad<=crater%ejrad).and.(erad>0._DP)) exit
          factor=0.5_DP*(factor+1._DP)
       end do bracket
 
@@ -153,7 +153,7 @@ subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       end if
       niter = i
       erad = resultat
-      if ((erad <= crater%rad).and.(lrad >= crater%rad).and.(erad >= 0._DP)) exit
+      if ((erad <= crater%ejrad).and.(lrad >= crater%ejrad).and.(erad >= 0._DP)) exit
       factor = 0.5_DP  * (factor + 1.0_DP) ! Failed. Try again with a new factor
    end do everything
 

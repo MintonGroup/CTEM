@@ -39,15 +39,26 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    ! Regotrack internal variables
    real(DP) :: rmelt,depthb,dimp,vimp
 
+   ! This will be replaced by its own function
+   real(DP) :: c0,c1,c2,c3,flrad,rh,fld,r
+   rh = crater%rimheight 
+   fld = -crater%floordepth 
+   flrad = 0.5_DP * crater%floordiam / crater%frad 
+   c1 = (fld - rh) / (flrad + flrad**2 / 3._DP - flrad**3 / 6._DP - 7._DP / 6._DP)
+   c0 = rh - (7._DP / 6._DP) * c1
+   c2 = c1 / 3._DP
+   c3 = -c2 / 2._DP
+   !^^^^^^^^^^^^^^^
+
    ! Executable code
 
    ! Get estimate of size of ejb table
    crater%continuous = RCONT * crater%frad**(EXPCONT)  ! Continuous ejecta distance From Moore (1974) eq. 1
    crater%ejdis = DISEJB * crater%continuous
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
-   domain%ejbres = (log(crater%ejdis) - log(crater%rad)) / EJBTABSIZE
-   lrad = crater%rad !exp(log(crater%rad) !+ domain%ejbres)
-   erad = crater%rad 
+   domain%ejbres = (log(crater%ejdis) - log(crater%ejrad)) / EJBTABSIZE
+   lrad = crater%ejrad !exp(log(crater%rad) !+ domain%ejbres)
+   erad = crater%ejrad 
    ejtble = EJBTABSIZE
    firstrun = .true.
    thick = 0._DP
@@ -73,11 +84,14 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
       if (k >= 1) then
          !call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
          ejb(k)%lrad = log(lrad)
-         ! Use McGetchin et al. 1973 for ejecta thickness 
+
+         ! This will be replaced 
+         r = lrad / crater%frad
          if (lrad >= crater%frad) then
-            thick = 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
+            thick = crater%rimheight * r**(-3.0_DP)
          else
-            thick = 0.14_DP * crater%frad**(0.74_DP) / (crater%frad - crater%rad) * (lrad - crater%rad)
+            !thick = 0.14_DP * crater%frad**(0.74_DP) / (crater%frad - crater%ejrad) * (lrad - crater%ejrad)
+            thick = c0 + c1 * r + c2 * r**2 + c3 * r**3
          end if
          ejb(k)%thick = log(thick) 
          ejb(k)%vesq = vejsq

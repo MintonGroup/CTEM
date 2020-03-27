@@ -39,8 +39,8 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
    ! Executable code
 
    ! Locate ourselves in the table
-   inneredge = crater%rad 
-   outeredge = crater%rad * exp(domain%ejbres * EJBTABSIZE)
+   inneredge = crater%ejrad 
+   outeredge = crater%ejrad * exp(domain%ejbres * EJBTABSIZE)
    k = max(min(1 + int((log(lrad) - log(inneredge)) / (log(outeredge) - log(inneredge)) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
    loglrad = log(lrad)
    logtablerad = ejb(k)%lrad 

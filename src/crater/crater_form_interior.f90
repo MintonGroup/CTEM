@@ -27,7 +27,7 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
-   type(cratertype),intent(in) :: crater
+   type(cratertype),intent(inout) :: crater
    real(DP),intent(in) :: x_relative, y_relative 
    real(DP),intent(in) :: newelev
    real(DP),intent(out) :: deltaMi
@@ -66,7 +66,6 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
 
    
    ! Use polynomial crater profile similar to that of Fassett et al. (2014), but the parameters are set by the crater dimensions
-
    c1 = (fld - rh) / (flrad + flrad**2 / 3._DP - flrad**3 / 6._DP - 7._DP / 6._DP)
    c0 = rh - (7._DP / 6._DP) * c1
    c2 = c1 / 3._DP
@@ -77,6 +76,8 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    else
       cform = c0 + c1 * r + c2 * r**2 + c3 * r**3 
    end if
+   ! TEMP UNTIL I WRITE THE SOLUTION PROPERLY
+   if (cform > 0.0_DP .and. r * crater%frad < crater%ejrad) crater%ejrad = r * crater%frad
 
    !if (r < r_floor) then
    !   cform = -simple_depth_diam  * crater%fcrat
