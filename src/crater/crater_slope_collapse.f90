@@ -47,9 +47,6 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
    logical  :: failflag
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
 
-   ! testing
-   !character(STRMAX) :: filename
-   !integer(I4B) :: ioerr
 
    ! Executable Code
 

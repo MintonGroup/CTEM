@@ -423,7 +423,7 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
    real(DP),intent(inout) :: deltaMtot
 
    ! Internal variables
-   real(DP) :: newdem,elchange,rad,xbar,ybar,r,flr
+   real(DP) :: newdem,elchange,rad,xbar,ybar,r,flr,hprof,tprof
    integer(I4B) :: xpi,ypi,i,j,inc,maxhits
 
    ! Topographic noise parameters
@@ -516,6 +516,16 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
                                               xynoise * ybar + terrace_num * offset * rn(2))* znoise
 
             noise = sqrt(sqrt(dnoise**2))
+
+            !TODO: USE SCALLOPS TO MAKE TERRACES
+            !if (r >= (flr - 1._DP)terrace_num / terracefac) then
+               !hprof = crater%ejrim * r**(-3) + crater%melev
+               !tprof = 0.5_DP * crater%ejrim + crater%melev 
+            !else
+               !hprof = crater%ejrim * (2.0_DP - r)**(-2) + crater%melev
+               !tprof = 0.5_DP * crater%ejrim + crater%melev 
+            !end if
+            
             newdem = max(newdem + noise,crater%melev - crater%floordepth)
          end if
          elchange  = newdem - surf(xpi,ypi)%dem
