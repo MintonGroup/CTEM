@@ -106,7 +106,7 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
    
    call complex_rim(user,surf,crater,rn,deltaMtot)
    !call complex_terrace(user,surf,crater,rn,deltaMtot)
-   call crater_slope_collapse(user,surf,crater,domain,(0.35_DP * user%pix)**2,deltaMtot)
+   !call crater_slope_collapse(user,surf,crater,domain,(0.35_DP * user%pix)**2,deltaMtot)
    !call complex_wall_texture(user,surf,crater,rn,deltaMtot)
    call complex_floor(user,surf,crater,rn,deltaMtot)
    call complex_peak(user,surf,crater,rn,deltaMtot)
@@ -343,22 +343,22 @@ subroutine complex_rim(user,surf,crater,rn,deltaMtot)
    real(DP) :: xynoise, znoise
    real(DP) :: noise,dnoise
 
-   ! Complex crater wall
-   integer(I4B)        :: offset       ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP)            :: xy_noise_fac ! Spatial "size" of noise features at the first octave
-   real(DP)            :: freq         ! Spatial size scale factor multiplier at each octave level
-   real(DP)            :: pers         ! The relative size scaling at each octave level
-   real(DP)            :: noise_height ! Vertical height of noise features as a function of crater radius at the first octave
+   ! Complex crater rim
 
+   integer(I4B)            :: nscallops             ! Approximate number of scallop features on edge of crater
+   integer(I4B),parameter  :: offset = 3000         ! Scales the random xy-offset so that each crater's random noise is unique 
+   real(DP),parameter      :: noise_height = 0.15_DP ! Vertical height of noise features as a function of crater radius at the first octave
+                                                    ! Higher values make the scallop features broader
+   real(DP),parameter      :: noise_slope = 0.6_DP  ! The slope of the power law function that defines the noise shape for scallop features
+                                                    ! Higher values makes the inner sides of the scallop features more rounded, lower values 
+                                                    ! make them have sharper points at the inflections
+
+   nscallops = 16
    ! determine area to effect
    ! First make the interior of the crater
    rad = 1.25_DP * crater%frad
  
    ! Create diffusion noise for scalloped rim
-   offset = 3000
-   xy_noise_fac = 5.00_DP
-   noise_height = 1.00_DP
-
 
    inc = max(min(nint(rad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
@@ -378,28 +378,22 @@ subroutine complex_rim(user,surf,crater,rn,deltaMtot)
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          ! Make scalloped rim
-         znoise = noise_height * crater%fcrat
-         xynoise = xy_noise_fac / crater%fcrat
+         znoise = noise_height**(1._DP / (2 * noise_slope))
+         xynoise = (nscallops / PI) / crater%fcrat
          dnoise = util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                     xynoise * ybar + offset * rn(2)) * znoise
-         noise = sqrt(sqrt(dnoise**2))
+         noise = (dnoise**2)**noise_slope
 
+         hprof = r**(-1)
+         tprof = 0.5_DP * crater%ejrim + crater%melev 
 
-         if (r >= 1.0) then
-            hprof = crater%ejrim * r**(-3) + crater%melev
-            tprof = 0.5_DP * crater%ejrim + crater%melev !* ((2.0_DP - r)**(-4) - 1.0_DP) + crater%melev
-         else
-            hprof = crater%ejrim * (2.0_DP - r)**(-2) + crater%melev
-            tprof = 0.5_DP * crater%ejrim + crater%melev ! (r**(-4) - 1.0_DP) + crater%melev
+         if (1.0_DP - noise < hprof) then
+            newdem = min(tprof,newdem) 
+            elchange  = newdem - surf(xpi,ypi)%dem
+            deltaMtot = deltaMtot + elchange
+            surf(xpi,ypi)%dem = newdem
          end if
 
-         if (crater%melev + crater%ejrim - noise < hprof) then
-            newdem = tprof - noise
-         end if
-
-         elchange  = newdem - surf(xpi,ypi)%dem
-         deltaMtot = deltaMtot + elchange
-         surf(xpi,ypi)%dem = newdem
       end do
    end do
 

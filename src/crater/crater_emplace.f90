@@ -80,8 +80,6 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    deltaMtot = 0.0_DP !ejbmass
    incsq = inc**2
 
-   ! TEMP UNTIL BETTER FORMULA
-   crater%ejrad = crater%frad
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space
       do i=-inc,inc

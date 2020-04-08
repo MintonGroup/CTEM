@@ -39,11 +39,14 @@ subroutine crater_dimensions(user,crater,domain)
 
    ! Set the crater morphology
    select case(crater%morphtype)
-      case("SIMPLE","TRANSITION") ! Following Pike (1977)
-         crater%rimheight  = 0.036_DP * (crater%fcrat * 1e-3_DP)**(1.014_DP) * 1e3_DP !* crater%fcrat
-         crater%rimwidth   = 0.257_DP * (crater%fcrat * 1e-3_DP)**(1.011_DP) * 1e3_DP !* crater%fcrat
-         crater%floordepth = 0.196_DP * (crater%fcrat * 1e-3_DP)**(1.010_DP) * 1e3_DP !* crater%fcrat
-         crater%floordiam  = 0.031_DP * (crater%fcrat * 1e-3_DP)**(1.765_DP) * 1e3_DP !* crater%fcrat
+      case("SIMPLE","TRANSITION") ! A hybrid model between Pike (1977) and Fassett & Thomson (2014) 
+         !crater%rimheight  = 0.036_DP * (crater%fcrat * 1e-3_DP)**(1.014_DP) * 1e3_DP !* crater%fcrat ! Pike model
+         crater%rimheight  = 0.043_DP * (crater%fcrat * 1e-3_DP)**(1.014_DP) * 1e3_DP !* crater%fcrat  ! Closer to Fassett & Thomson
+         crater%rimwidth   = 0.257_DP * (crater%fcrat * 1e-3_DP)**(1.011_DP) * 1e3_DP !* crater%fcrat  ! Pike model
+         !crater%floordepth = 0.196_DP * (crater%fcrat * 1e-3_DP)**(1.010_DP) * 1e3_DP !* crater%fcrat ! Pike model
+         crater%floordepth = 0.224_DP * (crater%fcrat * 1e-3_DP)**(1.010_DP) * 1e3_DP !* crater%fcrat  ! Closer to Fassett & Thomson
+         !crater%floordiam  = 0.031_DP * (crater%fcrat * 1e-3_DP)**(1.765_DP) * 1e3_DP !* crater%fcrat ! Pike model
+         crater%floordiam  = 0.200_DP * (crater%fcrat * 1e-3_DP)**(1.143_DP) * 1e3_DP !* crater%fcrat  ! Fassett & Thomson for D~1km, Pike for D~20km
       case("COMPLEX","PEAKRING","MULTIRING") ! Following Pike (1977)
          crater%rimheight  = 0.236_DP * (crater%fcrat * 1e-3_DP)**(0.399_DP) * 1e3_DP !* crater%fcrat
          crater%rimwidth   = 0.467_DP * (crater%fcrat * 1e-3_DP)**(0.836_DP) * 1e3_DP !* crater%fcrat
@@ -62,6 +65,10 @@ subroutine crater_dimensions(user,crater,domain)
 
    ! Adjust the floor depth to measure from the pre-existing level surface, rather than the rim
    crater%floordepth  = crater%floordepth - crater%rimheight
+
+   ! Calculate the radius where the inner wall meets the original pre-existing surface
+   ! This is used to demark the location where excavation transitions to deposition
+   crater%ejrad = crater_profile_find_r_inner_wall(user,crater) * crater%frad
 
    !find rim for counting purposes
    crater%frim = RIMFAC * crater%frad

@@ -86,6 +86,7 @@ crater/crater_critical_slope.f90\
 crater/crater_degradation_function.f90\
 crater/crater_visibility.f90\
 crater/crater_get_degradation_state.f90\
+crater/crater_profile.f90\
 init/init_domain.f90\
 init/init_dist.f90\
 init/init_surf.f90\

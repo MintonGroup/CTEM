@@ -17,15 +17,15 @@ implicit none
 public 
 save
 
-interface
-   subroutine crater_mass_conservation(user,surf,crater)
-   use module_globals
-   implicit none
-   type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(inout) :: surf
-   type(cratertype),intent(in)  :: crater
-   end subroutine crater_mass_conservation
-end interface
+   interface
+      subroutine crater_mass_conservation(user,surf,crater)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(in)  :: crater
+      end subroutine crater_mass_conservation
+   end interface
 
 
    interface
@@ -312,5 +312,27 @@ end interface
       end function crater_visibility
    end interface
 
+
+   interface
+      function crater_profile(user,crater,r) result(h)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(cratertype),intent(in) :: crater
+      real(DP),intent(in) :: r
+      real(DP) :: h
+      end function crater_profile
+   end interface
+
+
+   interface
+      function crater_profile_find_r_inner_wall(user,crater) result(r_inner_wall)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(cratertype),intent(in) :: crater
+      real(DP) :: r_inner_wall
+      end function crater_profile_find_r_inner_wall
+   end interface
 
 end module

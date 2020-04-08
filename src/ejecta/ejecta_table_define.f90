@@ -20,6 +20,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    use module_globals
    use module_util
    use module_regolith 
+   use module_crater
    use module_ejecta, EXCEPT_THIS_ONE => ejecta_table_define
    implicit none
 
@@ -33,22 +34,11 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
 
    ! Internal variables
    integer(I4B) :: k
-   real(DP) :: erad,eradold,thick,vejsq,ejang,lrad
+   real(DP) :: erad,eradold,thick,vejsq,ejang,lrad,r
    logical :: firstrun
 
    ! Regotrack internal variables
    real(DP) :: rmelt,depthb,dimp,vimp
-
-   ! This will be replaced by its own function
-   real(DP) :: c0,c1,c2,c3,flrad,rh,fld,r
-   rh = crater%rimheight 
-   fld = -crater%floordepth 
-   flrad = 0.5_DP * crater%floordiam / crater%frad 
-   c1 = (fld - rh) / (flrad + flrad**2 / 3._DP - flrad**3 / 6._DP - 7._DP / 6._DP)
-   c0 = rh - (7._DP / 6._DP) * c1
-   c2 = c1 / 3._DP
-   c3 = -c2 / 2._DP
-   !^^^^^^^^^^^^^^^
 
    ! Executable code
 
@@ -90,8 +80,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
          if (lrad >= crater%frad) then
             thick = crater%rimheight * r**(-3.0_DP)
          else
-            !thick = 0.14_DP * crater%frad**(0.74_DP) / (crater%frad - crater%ejrad) * (lrad - crater%ejrad)
-            thick = c0 + c1 * r + c2 * r**2 + c3 * r**3
+            thick = max(crater_profile(user,crater,r),VSMALL)
          end if
          ejb(k)%thick = log(thick) 
          ejb(k)%vesq = vejsq
