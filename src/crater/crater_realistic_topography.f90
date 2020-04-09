@@ -97,7 +97,7 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
    
    call complex_terrace(user,surf,crater,rn,deltaMtot)
    call complex_wall_texture(user,surf,crater,rn,deltaMtot)
-   call crater_slope_collapse(user,surf,crater,domain,(0.35_DP * user%pix)**2,deltaMtot)
+   call crater_slope_collapse(user,surf,crater,domain,(0.33_DP * user%pix)**2,deltaMtot)
    call complex_floor(user,surf,crater,rn,deltaMtot)
    call complex_peak(user,surf,crater,rn,deltaMtot)
 
@@ -191,7 +191,7 @@ subroutine complex_floor(user,surf,crater,rn,deltaMtot)
    integer(I4B), parameter :: num_octaves  = 8   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 10000 ! Scales the random xy-offset so that each crater's random noise is unique 
    real(DP), parameter :: xy_noise_fac = 4.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 1e-3_DP ! Vertical height of noise features as a function of crater radius at the first octave
+   real(DP), parameter :: noise_height = 2e-3_DP ! Vertical height of noise features as a function of crater radius at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 0.80_DP  ! The relative size scaling at each octave level
 
@@ -265,12 +265,12 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
    integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
    real(DP), parameter :: xy_noise_fac = 4.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 5.0e-3_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 8.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
 
 
-   inc = max(min(nint(2.0_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
+   inc = max(min(nint(2.1_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
@@ -290,8 +290,9 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
-         areafrac = areafrac * util_area_intersection(2.0_DP * crater%frad,xbar,ybar,user%pix)
-         areafrac = areafrac * min(min(r**(-8),1.0_DP),(r / flr)**12,1.0_DP)
+         areafrac = areafrac * util_area_intersection(2.1_DP * crater%frad,xbar,ybar,user%pix)
+         areafrac = areafrac * min((r / flr)**12,1.0_DP) ! Smooth out interface between wall and floor
+         areafrac = areafrac * max(min(2._DP - 1 * r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
 
          ! Add some roughness to the walls
          noise = 0.0_DP
@@ -302,6 +303,7 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
          newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
+         if (r > 1.0_DP) newdem = max(newdem,crater%melev + crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
          deltaMtot = deltaMtot + elchange
