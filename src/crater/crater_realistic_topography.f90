@@ -90,26 +90,17 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
       real(DP),intent(inout) :: deltaMtot
       end subroutine complex_terrace
 
-      subroutine complex_rim(user,surf,crater,rn,deltaMtot)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(inout) :: surf
-      type(cratertype),intent(inout) :: crater
-      real(DP),dimension(:),intent(in) :: rn
-      real(DP),intent(inout) :: deltaMtot
-      end subroutine complex_rim
    end interface
 
    ! Executable code
    call random_number(rn)
    
-   call complex_rim(user,surf,crater,rn,deltaMtot)
-   !call complex_terrace(user,surf,crater,rn,deltaMtot)
-   !call crater_slope_collapse(user,surf,crater,domain,(0.35_DP * user%pix)**2,deltaMtot)
-   !call complex_wall_texture(user,surf,crater,rn,deltaMtot)
+   call complex_terrace(user,surf,crater,rn,deltaMtot)
+   call complex_wall_texture(user,surf,crater,rn,deltaMtot)
+   call crater_slope_collapse(user,surf,crater,domain,(0.35_DP * user%pix)**2,deltaMtot)
    call complex_floor(user,surf,crater,rn,deltaMtot)
    call complex_peak(user,surf,crater,rn,deltaMtot)
+
 
 
    return
@@ -271,15 +262,15 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
 
    ! Complex crater all texture parameters
    real(DP), parameter :: rad = 0.20_DP      ! Radial size of central peak relative to frad
-   integer(I4B), parameter :: num_octaves  = 8   ! Number of Perlin noise octaves
+   integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: xy_noise_fac = 32.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 1.0e-5_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: xy_noise_fac = 4.0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 5.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
-   real(DP), parameter :: pers = 0.80_DP  ! The relative size scaling at each octave level
+   real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
 
 
-   inc = max(min(nint(1.5_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
+   inc = max(min(nint(2.0_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
@@ -298,19 +289,19 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
-         areafrac = 1.0 - util_area_intersection(0.4_DP * crater%floordiam,xbar,ybar,user%pix)
-         areafrac = areafrac * util_area_intersection(1.5_DP * crater%frad,xbar,ybar,user%pix)
-         areafrac = areafrac / max(((r - flr) / flr)**2,0.1_DP)
+         areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
+         areafrac = areafrac * util_area_intersection(2.0_DP * crater%frad,xbar,ybar,user%pix)
+         areafrac = areafrac * min(min(r**(-8),1.0_DP),(r / flr)**12,1.0_DP)
 
          ! Add some roughness to the walls
          noise = 0.0_DP
          do octave = 1, num_octaves 
             xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat
-            znoise = noise_height  * pers ** (octave - 1) * crater%fcrat
+            znoise = noise_height  * (pers * min(flr / r, r / flr)) ** (octave - 1) * crater%fcrat
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
-         newdem = newdem + noise * areafrac
+         newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
 
          elchange  = newdem - surf(xpi,ypi)%dem
          deltaMtot = deltaMtot + elchange
@@ -320,86 +311,6 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
 
    return
 end subroutine complex_wall_texture
-
-subroutine complex_rim(user,surf,crater,rn,deltaMtot)
-   !Makes terraced walls by applying noisy topographic diffusion in discrete radial zones along the wall
-   use module_globals
-   use module_util
-   use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
-   implicit none
-
-   ! Arguments
-   type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(inout) :: surf
-   type(cratertype),intent(inout) :: crater
-   real(DP),dimension(:),intent(in) :: rn
-   real(DP),intent(inout) :: deltaMtot
-
-   ! Internal variables
-   real(DP) :: newdem,elchange,rad,xbar,ybar,r,areafrac,hprof,tprof
-   integer(I4B) :: xpi,ypi,i,j,inc,maxhits
-
-   ! Topographic noise parameters
-   real(DP) :: xynoise, znoise
-   real(DP) :: noise,dnoise
-
-   ! Complex crater rim
-
-   integer(I4B)            :: nscallops             ! Approximate number of scallop features on edge of crater
-   integer(I4B),parameter  :: offset = 3000         ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP),parameter      :: noise_height = 0.15_DP ! Vertical height of noise features as a function of crater radius at the first octave
-                                                    ! Higher values make the scallop features broader
-   real(DP),parameter      :: noise_slope = 0.6_DP  ! The slope of the power law function that defines the noise shape for scallop features
-                                                    ! Higher values makes the inner sides of the scallop features more rounded, lower values 
-                                                    ! make them have sharper points at the inflections
-
-   nscallops = 16
-   ! determine area to effect
-   ! First make the interior of the crater
-   rad = 1.25_DP * crater%frad
- 
-   ! Create diffusion noise for scalloped rim
-
-   inc = max(min(nint(rad / user%pix),PBCLIM*user%gridsize),1) + 1
-   crater%maxinc = max(crater%maxinc,inc)
-
-   do j = -inc,inc
-      do i = -inc,inc
-         xpi = crater%xlpx + i
-         ypi = crater%ylpx + j
-
-         ! periodic boundary conditions
-         call util_periodic(xpi,ypi,user%gridsize)
-         newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
-
-         r = sqrt(xbar**2 + ybar**2) / crater%frad
-
-         ! Make scalloped rim
-         znoise = noise_height**(1._DP / (2 * noise_slope))
-         xynoise = (nscallops / PI) / crater%fcrat
-         dnoise = util_perlin_noise(xynoise * xbar + offset * rn(1), &
-                                    xynoise * ybar + offset * rn(2)) * znoise
-         noise = (dnoise**2)**noise_slope
-
-         hprof = r**(-1)
-         tprof = 0.5_DP * crater%ejrim + crater%melev 
-
-         if (1.0_DP - noise < hprof) then
-            newdem = min(tprof,newdem) 
-            elchange  = newdem - surf(xpi,ypi)%dem
-            deltaMtot = deltaMtot + elchange
-            surf(xpi,ypi)%dem = newdem
-         end if
-
-      end do
-   end do
-
-   return
-
-end subroutine complex_rim
 
 
 subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
@@ -422,59 +333,80 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
 
    ! Topographic noise parameters
    real(DP) :: xynoise, znoise
-   integer(I4B) :: octave
    real(DP) :: noise,dnoise
 
    ! Complex crater wall
-   integer(I4B)        :: num_octaves  ! Number of Perlin noise octaves
-   integer(I4B)        :: offset       ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP)            :: xy_noise_fac ! Spatial "size" of noise features at the first octave
-   real(DP)            :: freq         ! Spatial size scale factor multiplier at each octave level
-   real(DP)            :: pers         ! The relative size scaling at each octave level
-   real(DP)            :: noise_height ! Vertical height of noise features as a function of crater radius at the first octave
-   real(DP)            :: scal_height ! Vertical height of noise features as a function of crater radius at the first octave
-   real(DP)            :: diff_height  ! Magnitude of diffusion noise 
-   integer(I4B)        :: terracefac   ! Spatial size factor for terraces relative to crater radius
-   integer(I4B)        :: terrace_num  ! The size of each terrace will be crater radius / terrace_num
+   integer(I4B)            :: nscallops             ! Approximate number of scallop features on edge of crater
+   integer(I4B),parameter  :: offset = 3000         ! Scales the random xy-offset so that each crater's random noise is unique 
+   real(DP),parameter      :: noise_height = 0.15_DP ! Vertical height of noise features as a function of crater radius at the first octave
+                                                    ! Higher values make the scallop features broader
+   real(DP),parameter      :: noise_slope = 0.6_DP  ! The slope of the power law function that defines the noise shape for scallop features
+                                                    ! Higher values makes the inner sides of the scallop features more rounded, lower values 
+                                                    ! make them have sharper points at the inflections
+   integer(I4B),parameter        :: nterraces = 6   ! Number of terraces
+   real(DP),parameter            :: terracefac = 2.0_DP ! Power law scaling for relative terrace sizes
+   integer(I4B)                  :: terrace         ! The current terrace
+   real(DP)                      :: router          ! The radius of the terrace outer edge
+   real(DP)                      :: rinner          ! The radius of the terrace outer edge
+   real(DP)                      :: upshift,dfloor
+   
 
    ! Internal variables
    real(DP),dimension(:,:),allocatable :: kdiff,cumulative_elchange,areafrac
    integer(I4B),dimension(:,:,:),allocatable :: indarray
 
 
-   ! determine area to effect
-   ! First make the interior of the crater
-   rad = 1.25_DP * crater%frad
+   nscallops = 16
+   rad = 2.0_DP * crater%frad
+   upshift = 0._DP
  
-
-   ! Create diffusion noise for terraces
-   num_octaves = 8
-   xy_noise_fac = 4.00_DP
-   diff_height = 1e-5_DP * (crater%fcrat)**2
-   noise_height = 0.01_DP
-   freq = 2.0_DP
-   pers = 0.50_DP 
-   terracefac = 8
-   flr = crater%floordiam / crater%fcrat
-
-
-   !Borrow from scallops
-   xy_noise_fac = 5.00_DP
-   noise_height = 1.00_DP
-
    inc = max(min(nint(rad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
-   allocate(cumulative_elchange(-inc:inc,-inc:inc))
-   allocate(kdiff(-inc:inc,-inc:inc))
-   allocate(areafrac(-inc:inc,-inc:inc))
-   allocate(indarray(2,-inc:inc,-inc:inc))
+   flr = crater%floordiam / crater%fcrat
+   do terrace = 1, nterraces 
+      router = flr + (1._DP - flr) * (terrace / real(nterraces,kind=DP))**(terracefac) ! The radius of the outer edge of the terrace
+      rinner = flr + (1._DP - flr) * ((terrace - 1) / real(nterraces,kind=DP))**(terracefac) ! The radius of the inner edge of the terrace
 
-   cumulative_elchange = 0.0_DP
-   kdiff = 0.0_DP
-   indarray = inc - 1
-   areafrac = 0.0_DP
+      do j = -inc,inc
+         do i = -inc,inc
+            xpi = crater%xlpx + i
+            ypi = crater%ylpx + j
 
+            ! periodic boundary conditions
+            call util_periodic(xpi,ypi,user%gridsize)
+            newdem = surf(xpi,ypi)%dem
+
+            xbar = xpi * user%pix - crater%xl 
+            ybar = ypi * user%pix - crater%yl
+
+            r = sqrt(xbar**2 + ybar**2) / crater%frad
+
+            znoise = noise_height**(1._DP / (2 * noise_slope)) 
+            xynoise = (nscallops / PI) / crater%fcrat
+            dnoise = util_perlin_noise(xynoise * xbar + terrace * offset * rn(1), &
+                                       xynoise * ybar + terrace * offset * rn(2)) * znoise
+            noise = (dnoise**2)**noise_slope
+
+            hprof = (r / router)**(-1)
+            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2
+
+            if (1.0_DP - noise < hprof) then
+               newdem = min(tprof,newdem) 
+               elchange  = newdem - surf(xpi,ypi)%dem
+               deltaMtot = deltaMtot + elchange
+               surf(xpi,ypi)%dem = newdem
+               ! Save the minimum elevation below the floor
+               dfloor = crater%melev - crater%floordepth - newdem
+               if (dfloor > 0.0_DP) upshift = max(upshift,dfloor) 
+            end if
+
+         end do
+      end do
+
+   end do
+
+   ! Now make the scalloped rim
    do j = -inc,inc
       do i = -inc,inc
          xpi = crater%xlpx + i
@@ -484,79 +416,54 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
 
-         indarray(1,i,j) = xpi
-         indarray(2,i,j) = ypi
-
-         ! Cut a hole out from the floor and also outside the rim of the crater
          xbar = xpi * user%pix - crater%xl 
          ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
-         areafrac(i,j) =  (1.0_DP - util_area_intersection(0.95_DP * crater%floordiam / 2,xbar,ybar,user%pix)) 
-         areafrac(i,j) = areafrac(i,j) * util_area_intersection(2.0_DP*crater%frad,xbar,ybar,user%pix)
+         ! Make scalloped rim
+         znoise = noise_height**(1._DP / (2 * noise_slope))
+         xynoise = (nscallops / PI) / crater%fcrat
+         dnoise = util_perlin_noise(xynoise * xbar + offset * rn(1), &
+                                    xynoise * ybar + offset * rn(2)) * znoise
+         noise = (dnoise**2)**noise_slope
 
-         areafrac(i,j) = areafrac(i,j) / max(r**4,1._DP)
+         hprof = r**(-1)
+         tprof = crater%melev 
 
-         ! Make the terraces
-         ! This shifts the Perlin noise pattern at discrete radial distances, simulating terraces
-         terrace_num = int(terracefac * ((r - 1._DP) / (flr - 1._DP))**(1.5_DP)) 
-         noise = 0.0_DP
-         if ((r <= 1.0_DP).and.(r >= flr)) then
-            offset = 2000
-            xynoise = xy_noise_fac / crater%fcrat
-            znoise  = noise_height * crater%fcrat 
-            dnoise = util_perlin_noise(xynoise * xbar + terrace_num * offset * rn(1), &
-                                              xynoise * ybar + terrace_num * offset * rn(2))* znoise
-
-            noise = sqrt(sqrt(dnoise**2))
-
-            !TODO: USE SCALLOPS TO MAKE TERRACES
-            !if (r >= (flr - 1._DP)terrace_num / terracefac) then
-               !hprof = crater%ejrim * r**(-3) + crater%melev
-               !tprof = 0.5_DP * crater%ejrim + crater%melev 
-            !else
-               !hprof = crater%ejrim * (2.0_DP - r)**(-2) + crater%melev
-               !tprof = 0.5_DP * crater%ejrim + crater%melev 
-            !end if
-            
-            newdem = max(newdem + noise,crater%melev - crater%floordepth)
+         if (1.0_DP - noise < hprof) then
+            newdem = min(tprof,newdem) 
+            elchange  = newdem - surf(xpi,ypi)%dem
+            deltaMtot = deltaMtot + elchange
+            surf(xpi,ypi)%dem = newdem
          end if
-         elchange  = newdem - surf(xpi,ypi)%dem
-         deltaMtot = deltaMtot + elchange
-         surf(xpi,ypi)%dem = newdem
-
-         ! Now smooth out the sharp edges of the terraces with noisy diffusion
-         noise = 0.0_DP
-         offset = 1500
-         do octave = 1, num_octaves
-            xynoise = 4 * xy_noise_fac * freq ** (octave - 1) / crater%fcrat
-            znoise  = diff_height * pers ** (octave - 1) / max(r,0.3_DP)
-            noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
-                                              xynoise * ybar + offset * rn(2)) * znoise
-         end do
-         kdiff(i,j) = noise 
 
       end do
    end do
-   kdiff(:,:) = kdiff(:,:) - minval(kdiff(:,:))
 
-   ! Cut out the holes
-   kdiff(:,:) = kdiff(:,:) * areafrac(:,:) !* 0.0_DP
+   ! Compensate for any slumping and lift everything up
+   do j = -inc,inc
+      do i = -inc,inc
+         xpi = crater%xlpx + i
+         ypi = crater%ylpx + j
 
-   maxhits = 1
-   !call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kdiff,cumulative_elchange,maxhits)
+         ! periodic boundary conditions
+         call util_periodic(xpi,ypi,user%gridsize)
+         newdem = surf(xpi,ypi)%dem
 
-   !do j = -inc,inc
-   !   do i = -inc,inc
-   !      xpi = indarray(1,i,j)
-   !      ypi = indarray(2,i,j)
-   !      surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cumulative_elchange(i,j)
-   !      surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j),0.0_DP)
-   !   end do
-   !end do
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
 
-   deallocate(cumulative_elchange,kdiff,indarray,areafrac)
+         r = sqrt(xbar**2 + ybar**2) / crater%frad
+         
+         if (r > flr) then
+            newdem = newdem + upshift * max(min(3.0_DP - 2 * r,1.0_DP),0.0_DP)
+            elchange  = newdem - surf(xpi,ypi)%dem
+            deltaMtot = deltaMtot + elchange
+            surf(xpi,ypi)%dem = newdem
+         end if
+      end do 
+   end do
 
    return
 end subroutine complex_terrace
