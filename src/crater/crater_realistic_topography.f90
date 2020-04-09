@@ -28,7 +28,7 @@
 ! Notes
 !
 !**********************************************************************************************************************************
-subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
+subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
@@ -39,14 +39,12 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
-   real(DP),intent(inout) :: deltaMtot
+   real(DP),dimension(:,:),intent(inout) :: ejecta_dem
 
    ! Internal variables
-   real(DP) :: lradsq,xbar, ybar 
-   integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
-   real(DP) :: r,xp,yp,deltaMi,rimheight,rad
-   logical :: lastloop
+   real(DP) :: deltaMtot
    real(DP), dimension(2) :: rn
+   integer(I4B) :: inc
 
    interface
       subroutine complex_floor(user,surf,crater,rn,deltaMtot)
@@ -91,6 +89,18 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
       real(DP),intent(inout) :: deltaMtot
       end subroutine complex_terrace
 
+      subroutine ejecta_texture(user,surf,crater,rn,deltaMtot,inc,ejecta_dem)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      real(DP),dimension(:),intent(in) :: rn
+      real(DP),intent(in) :: deltaMtot
+      integer(I4B),intent(in) :: inc
+      real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
+      end subroutine ejecta_texture
+
    end interface
 
    ! Executable code
@@ -102,11 +112,17 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
    call complex_peak(user,surf,crater,rn,deltaMtot)
 
 
+   ! Retrieve the size of the ejecta dem and correct for indexing
+   inc = (size(ejecta_dem,1) - 1) / 2
+  
+   call ejecta_texture(user,surf,crater,rn,deltaMtot,inc,ejecta_dem)
+   call crater_slope_collapse(user,surf,crater,domain,(0.33_DP * user%pix)**2,deltaMtot)
 
    return
 end subroutine crater_realistic_topography
 
 subroutine complex_peak(user,surf,crater,rn,deltaMtot)
+   ! Makes the central peak or peak ring, depending on the crater size
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
@@ -183,6 +199,7 @@ subroutine complex_peak(user,surf,crater,rn,deltaMtot)
 end subroutine complex_peak
 
 subroutine complex_floor(user,surf,crater,rn,deltaMtot)
+   ! Makes the flat floor with the appearance of blocks and smooth melts
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
@@ -249,6 +266,7 @@ end subroutine complex_floor
 
 
 subroutine complex_wall_texture(user,surf,crater,domain,rn,deltaMtot)
+   ! Gives the terraced slopes some rough texture to increase realism
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
@@ -314,7 +332,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,rn,deltaMtot)
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
          newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
-         if (r > 1.0_DP) newdem = max(newdem,crater%melev + crater%ejrim * r**(-3))
+         if (r > 1.1_DP) newdem = max(newdem,crater%melev + crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
          deltaMtot = deltaMtot + elchange
@@ -322,7 +340,6 @@ subroutine complex_wall_texture(user,surf,crater,domain,rn,deltaMtot)
       end do
    end do
 
-   call crater_slope_collapse(user,surf,crater,domain,(0.33_DP * user%pix)**2,deltaMtot)
 
    return
 end subroutine complex_wall_texture
@@ -483,4 +500,118 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
    return
 end subroutine complex_terrace
 
+
+subroutine ejecta_texture(user,surf,crater,rn,deltaMtot,inc,ejecta_dem)
+   use module_globals
+   use module_util
+   use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
+   implicit none
+
+   ! Arguments
+   type(usertype),intent(in) :: user
+   type(surftype),dimension(:,:),intent(inout) :: surf
+   type(cratertype),intent(inout) :: crater
+   real(DP),dimension(:),intent(in) :: rn
+   real(DP),intent(in) :: deltaMtot
+   integer(I4B),intent(in) :: inc
+   real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
+
+   ! Internal variables
+   real(DP) :: newdem,elchange,xbar,ybar,ejbmass,ejbmassnew,fmasscons,r,phi,areafrac
+   integer(I4B) :: i,j,xpi,ypi
+   integer(I4B),dimension(2,-inc:inc,-inc:inc) :: indarray
+   real(DP),dimension(-inc:inc,-inc:inc)  :: noise_dem
+
+   ! Topographic noise parameters
+   real(DP) :: xynoise, znoise
+   integer(I4B) :: octave
+   real(DP) :: noise,dnoise
+
+   ! Complex crater all texture parameters
+   integer(I4B), parameter :: num_octaves  = 4   ! Number of Perlin noise octaves
+   integer(I4B), parameter :: offset = 7800 ! Scales the random xy-offset so that each crater's random noise is unique 
+   real(DP), parameter :: xy_noise_fac = 14.0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 1.0e0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
+   real(DP), parameter :: pers = 0.50_DP  ! The relative size scaling at each octave level
+
+
+   ! Get the ejecta mass
+   ejbmass = sum(ejecta_dem)
+
+   ! First strip away the original ejecta from the surface
+
+   do j = -inc,inc
+      do i = -inc,inc
+         xpi = crater%xlpx + i
+         ypi = crater%ylpx + j
+
+         ! periodic boundary conditions
+         call util_periodic(xpi,ypi,user%gridsize)
+         surf(xpi,ypi)%dem = surf(xpi,ypi)%dem - ejecta_dem(i,j)
+
+         ! Save index map
+         indarray(1,i,j) = xpi
+         indarray(2,i,j) = ypi
+      end do
+   end do
+
+
+   ! Now add texture to the ejecta
+   noise_dem = 0.0_DP
+
+   do j = -inc,inc
+      do i = -inc,inc
+
+         xpi = indarray(1,i,j)
+         ypi = indarray(2,i,j)
+
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
+         r = sqrt(xbar**2 + ybar**2) / crater%frad
+  
+         areafrac = util_area_intersection(inc * user%pix,xbar,ybar,user%pix) 
+         areafrac = areafrac * (1.0_DP - util_area_intersection(crater%frad,xbar,ybar,user%pix))
+      
+         areafrac = areafrac * (1.0_DP - max(min(2._DP - 1 * r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
+
+         noise = 0.0_DP
+         ! Make this noise in polar coordinates
+         do octave = 1, num_octaves 
+            xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat 
+            znoise = noise_height  * pers ** (octave - 1) * ejecta_dem(i,j) 
+            noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+                                              xynoise * ybar + offset * rn(2))* znoise
+         end do
+         noise_dem(i,j) = noise_dem(i,j) + noise * areafrac
+
+      end do
+   end do
+
+
+   ejecta_dem(-inc:inc,-inc:inc) = ejecta_dem(-inc:inc,-inc:inc) + noise_dem(-inc:inc,-inc:inc)
+
+
+   ! Save new total mass for mass conservation calculation
+   ejbmassnew = sum(ejecta_dem)
+
+   ! Rescale ejecta blanket to conserve mass
+   fmasscons = (ejbmass - deltaMtot) / ejbmassnew
+   ejecta_dem(:,:) = ejecta_dem(:,:) * fmasscons
+
+   !Put the ejecta back onto the surface
+   do j = -inc,inc
+      do i = -inc,inc
+
+         xpi = indarray(1,i,j)
+         ypi = indarray(2,i,j)
+
+         surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + ejecta_dem(i,j)
+
+      end do
+   end do
+
+   return
+end subroutine ejecta_texture
 

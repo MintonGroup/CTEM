@@ -108,14 +108,14 @@ save
    end interface
 
    interface
-      subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
+      subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),intent(inout) :: deltaMtot
+      real(DP),dimension(:,:),intent(inout) :: ejecta_dem
       end subroutine crater_realistic_topography
    end interface
 

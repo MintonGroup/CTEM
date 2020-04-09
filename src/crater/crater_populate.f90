@@ -35,7 +35,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
    real(DP),dimension(:,:),intent(in)              :: prod,vdist
-   integer(I8B),dimension(:),intent(inout)            :: production_list
+   integer(I8B),dimension(:),intent(inout)         :: production_list
    integer(I4B),intent(out)                        :: ntrue
    integer(I4B),intent(out)                        :: vistrue
    integer(I4B),intent(out)                        :: ntotkilled
@@ -75,6 +75,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),dimension(user%gridsize,user%gridsize) :: kdiff 
    TARGET :: surf
    integer(I4B)            :: oldpbarpos
+   real(DP),dimension(:,:),allocatable   :: ejecta_dem
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -211,12 +212,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
                call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
-            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass)
+            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,ejecta_dem)
          else
             ejtble = 0
          end if
 
-         if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejbmass)
+         if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejecta_dem) 
+         deallocate(ejecta_dem)
          
          ! Collapse any remaining unstable slopes
          if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,(CRITSLP * user%pix)**2,ejbmass)

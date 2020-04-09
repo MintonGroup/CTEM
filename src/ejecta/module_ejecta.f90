@@ -25,7 +25,7 @@ public
 save
 
    interface
-      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
+      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -35,6 +35,7 @@ save
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(inout)   :: ejb
       real(DP),intent(in) :: deltaMtot
+      real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
       end subroutine ejecta_emplace
    end interface
 

@@ -75,7 +75,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange)
    use module_globals
    use module_util
    use module_io
@@ -92,13 +92,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
+   real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
 
    ! Internal variables
    real(DP) :: lrad,lradsq
    integer(I4B),parameter :: MAXLOOP = 100 ! Maximum number of times to loop the ejecta angle correction calculation
    integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq,idistorted,jdistorted
    real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,ejbmass,fmasscons,areafrac,xbar,ybar,krad,kdiffmax
-   real(DP),dimension(:,:),allocatable :: cumulative_elchange,big_cumulative_elchange,kdiff,big_kdiff,cel,big_cel
+   real(DP),dimension(:,:),allocatable :: big_cumulative_elchange,kdiff,big_kdiff,cel,big_cel
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    real(DP),dimension(:,:),allocatable :: ejdistribution,diffdistribution
    integer(I4B) :: bigi,bigj,maxhits,nin,nnot,dradsq
@@ -156,6 +157,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
          call io_updatePbar(message)
        end if
    endif
+
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(cel(-inc:inc,-inc:inc))
    allocate(kdiff(-inc:inc,-inc:inc))
@@ -371,9 +373,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot)
       deallocate(big_cumulative_elchange,big_indarray,big_kdiff,big_cel)
    end if
 
-   !if (user%doregotrack) call regolith_rays(user,crater,domain,ejtble,ejb)
-
-   deallocate(cumulative_elchange,indarray,diffdistribution,ejdistribution,kdiff,cel)
+   deallocate(indarray,diffdistribution,ejdistribution,kdiff,cel)
 
    return
 end subroutine ejecta_emplace
