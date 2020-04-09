@@ -69,12 +69,13 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
       real(DP),intent(inout) :: deltaMtot
       end subroutine complex_peak
 
-      subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
+      subroutine complex_wall_texture(user,surf,crater,domain,rn,deltaMtot)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
+      type(domaintype),intent(in) :: domain
       real(DP),dimension(:),intent(in) :: rn
       real(DP),intent(inout) :: deltaMtot
 
@@ -96,8 +97,7 @@ subroutine crater_realistic_topography(user,surf,crater,domain,deltaMtot)
    call random_number(rn)
    
    call complex_terrace(user,surf,crater,rn,deltaMtot)
-   call complex_wall_texture(user,surf,crater,rn,deltaMtot)
-   call crater_slope_collapse(user,surf,crater,domain,(0.33_DP * user%pix)**2,deltaMtot)
+   call complex_wall_texture(user,surf,crater,domain,rn,deltaMtot)
    call complex_floor(user,surf,crater,rn,deltaMtot)
    call complex_peak(user,surf,crater,rn,deltaMtot)
 
@@ -122,20 +122,28 @@ subroutine complex_peak(user,surf,crater,rn,deltaMtot)
    integer(I4B) :: i,j,inc,xpi,ypi
 
    ! Complex crater peak
-   real(DP), parameter :: rad = 0.20_DP      ! Radial size of central peak relative to frad
-   integer(I4B), parameter :: num_octaves  = 8   ! Number of Perlin noise octaves
+   integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 1000 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: xy_noise_fac = 16.0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: xy_noise_fac = 14.0_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
-   real(DP), parameter :: pers = 0.80_DP  ! The relative size scaling at each octave level
+   real(DP), parameter :: pers = 0.50_DP  ! The relative size scaling at each octave level
+
+   real(DP) :: FWHM,a,b,c,z ! Gaussian parameters
 
    ! Topographic noise parameters
    real(DP) :: xynoise, znoise
    integer(I4B) :: octave
    real(DP) :: noise
 
+   !Preliminary empirical fits based on a handful of complex craters
+   !More work needs to be done to make these models more robust
+   FWHM = 0.1_DP 
+   a = crater%peakheight
+   b = 0.003_DP * ((1e-3_DP * crater%fcrat)**(1.75_DP)) / (1e-3_DP * crater%fcrat) ! Make peak rings for sufficiently large craters
+   c = FWHM / (2 * sqrt(2 * log(2._DP)))
+   !*********************
 
-   inc = max(min(nint(rad * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
+   inc = max(min(nint(0.5_DP * crater%floordiam / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    do j = -inc,inc
@@ -150,14 +158,16 @@ subroutine complex_peak(user,surf,crater,rn,deltaMtot)
          xbar = xpi * user%pix - crater%xl 
          ybar = ypi * user%pix - crater%yl
 
-         areafrac = util_area_intersection(rad * crater%frad,xbar,ybar,user%pix)
+         areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
+         ! Model central peak / peak ring as Gaussian function
+         z = a * exp(-(r - b)**2 / (2 * c**2))
 
          noise = 0.0_DP
          do octave = 1, num_octaves 
             xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat
-            znoise = crater%peakheight * (1.0_DP - r / rad) * pers ** (octave - 1)
+            znoise = z * pers ** (octave - 1)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2)) * znoise
          end do 
@@ -238,7 +248,7 @@ subroutine complex_floor(user,surf,crater,rn,deltaMtot)
 end subroutine complex_floor
 
 
-subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
+subroutine complex_wall_texture(user,surf,crater,domain,rn,deltaMtot)
    use module_globals
    use module_util
    use module_crater, EXCEPT_THIS_ONE => crater_realistic_topography
@@ -248,6 +258,7 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
+   type(domaintype),intent(in) :: domain
    real(DP),dimension(:),intent(in) :: rn
    real(DP),intent(inout) :: deltaMtot
 
@@ -265,7 +276,7 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
    integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
    real(DP), parameter :: xy_noise_fac = 4.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 8.0e-3_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 7.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
 
@@ -311,6 +322,8 @@ subroutine complex_wall_texture(user,surf,crater,rn,deltaMtot)
       end do
    end do
 
+   call crater_slope_collapse(user,surf,crater,domain,(0.33_DP * user%pix)**2,deltaMtot)
+
    return
 end subroutine complex_wall_texture
 
@@ -340,13 +353,13 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
    ! Complex crater wall
    integer(I4B)            :: nscallops             ! Approximate number of scallop features on edge of crater
    integer(I4B),parameter  :: offset = 3000         ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP),parameter      :: noise_height = 0.15_DP ! Vertical height of noise features as a function of crater radius at the first octave
+   real(DP),parameter      :: noise_height = 0.20_DP ! Vertical height of noise features as a function of crater radius at the first octave
                                                     ! Higher values make the scallop features broader
    real(DP),parameter      :: noise_slope = 0.6_DP  ! The slope of the power law function that defines the noise shape for scallop features
                                                     ! Higher values makes the inner sides of the scallop features more rounded, lower values 
                                                     ! make them have sharper points at the inflections
-   integer(I4B),parameter        :: nterraces = 6   ! Number of terraces
-   real(DP),parameter            :: terracefac = 2.0_DP ! Power law scaling for relative terrace sizes
+   integer(I4B),parameter        :: nterraces = 8   ! Number of terraces
+   real(DP),parameter            :: terracefac = 3.0_DP ! Power law scaling for relative terrace sizes
    integer(I4B)                  :: terrace         ! The current terrace
    real(DP)                      :: router          ! The radius of the terrace outer edge
    real(DP)                      :: rinner          ! The radius of the terrace outer edge
