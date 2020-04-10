@@ -41,19 +41,17 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
    integer(I4B) :: iradsq
    integer(I4B) :: i,j,inc,incsq,mx1,mx2,mx3,my1,my2,my3,xpi,ypi
    integer(I4B) :: loopcnt,looplim,mult
-   real(DP),dimension(:,:),allocatable :: elevarray
+   real(DP),dimension(:,:),allocatable :: elevarray,critarray
    real(DP),dimension(:,:),allocatable :: cumulative_elchange,kappat
    integer(I4B),dimension(:,:,:),allocatable :: indarray
    logical  :: failflag
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
-
 
    ! Executable Code
 
    ! Some preliminary setup
    diffmax = 0.25_DP * user%pix**2
    looplim = 100 * crater%fcratpx
-   !critical = (CRITSLP * user%pix)**2
 
    !     determine area to effect
    inc = max(min(nint(1.5_DP * crater%frad / user%pix),ceiling(SQRT2*user%gridsize)),1) + 1
@@ -73,6 +71,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
    endif
 
    allocate(elevarray(-inc:inc,-inc:inc))
+   allocate(critarray(-inc:inc,-inc:inc))
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(indarray(6,-inc:inc,-inc:inc))
    allocate(kappat(-inc:inc,-inc:inc))
@@ -80,14 +79,24 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
 
    cumulative_elchange = 0._DP
 
+
+
+   if (user%dorealistic) then
+      call crater_realistic_slope_texture(user,critical,inc,critarray)
+      write(*,*) 'critical, max min, ',critical,minval(critarray),maxval(critarray)
+   else
+      critarray(:,:) = critical
+   end if
+
    !  begin downslope motion loop
    do loopcnt=1,looplim
       failflag = .false.
-      kappat = 0.0_DP
+      kappat(:,:) = 0.0_DP
+
 
       ! loop over affected matrix area
       !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-      !$OMP SHARED(inc,loopcnt,incsq,failflag,elevarray,indarray,kappat,diffmax,critical) &
+      !$OMP SHARED(inc,loopcnt,incsq,failflag,elevarray,indarray,kappat,diffmax,critarray) &
       !$OMP SHARED(crater,user,surf) 
       do j=-inc,inc 
          do i=-inc,inc
@@ -134,7 +143,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
                tslp3sq = (xslp2*xslp2 + yslp1*yslp1)
                tslp4sq = (xslp2*xslp2 + yslp2*yslp2)
                slpsq = max(tslp1sq,tslp2sq,tslp3sq,tslp4sq)
-               if (slpsq > critical) then
+               if (slpsq > critarray(i,j)) then
                   kappat(i,j) = diffmax
                   failflag = .true.
                else
@@ -147,7 +156,7 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
 
       if (.not.failflag) exit
      
-      elevarray = 0._DP
+      elevarray(:,:) = 0._DP
       
       call util_diffusion_solver(user,surf,2 * inc + 1,indarray(1:2,:,:),kappat,elevarray,mult)
 
@@ -193,6 +202,6 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
    end do  ! end downslope motion loops
    
    deltaMtot = deltaMtot + sum(cumulative_elchange)
-   deallocate(elevarray,cumulative_elchange,indarray,kappat)
+   deallocate(elevarray,critarray,cumulative_elchange,indarray,kappat)
    return
    end subroutine crater_slope_collapse
