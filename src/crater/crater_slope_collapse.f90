@@ -83,7 +83,6 @@ subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
 
    if (user%dorealistic) then
       call crater_realistic_slope_texture(user,critical,inc,critarray)
-      write(*,*) 'critical, max min, ',critical,minval(critarray),maxval(critarray)
    else
       critarray(:,:) = critical
    end if
