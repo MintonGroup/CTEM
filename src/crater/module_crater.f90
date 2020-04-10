@@ -267,16 +267,6 @@ save
    end interface
 
    interface
-      function crater_critical_slope(user,crater,lrad) result(critical)
-      use module_globals
-      type(usertype),intent(in) :: user
-      type(cratertype),intent(in) :: crater
-      real(DP),intent(in) :: lrad
-      real(DP) :: critical
-      end function crater_critical_slope
-   end interface
-
-   interface
       function crater_degradation_function(user,r) result(Kd)
       use module_globals
       type(usertype),intent(in) :: user

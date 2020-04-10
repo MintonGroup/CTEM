@@ -82,7 +82,6 @@ crater/crater_soften.f90\
 crater/crater_soften_accumulate.f90\
 crater/crater_subpixel_diffusion.f90\
 crater/crater_make_list.f90\
-crater/crater_critical_slope.f90\
 crater/crater_degradation_function.f90\
 crater/crater_visibility.f90\
 crater/crater_get_degradation_state.f90\

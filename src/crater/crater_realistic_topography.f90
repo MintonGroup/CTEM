@@ -44,6 +44,7 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
    ! Internal variables
    real(DP) :: deltaMtot
    integer(I4B) :: inc
+   real(DP),parameter :: complex_collapse_slope = 0.33_DP  ! Complex craters and basins undergo an extra strong slope collapse
 
    interface
       subroutine complex_floor(user,surf,crater,deltaMtot)
@@ -108,18 +109,26 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
    end interface
 
    ! Executable code
-   call complex_terrace(user,surf,crater,deltaMtot)
-   call complex_wall_texture(user,surf,crater,domain,deltaMtot)
-   call complex_floor(user,surf,crater,deltaMtot)
-   call complex_peak(user,surf,crater,deltaMtot)
+
+   if (crater%morphtype .eq. 'COMPLEX') then
+      call complex_terrace(user,surf,crater,deltaMtot)
+      call complex_wall_texture(user,surf,crater,domain,deltaMtot)
+      call complex_floor(user,surf,crater,deltaMtot)
+      call complex_peak(user,surf,crater,deltaMtot)
+
+   else if (crater%morphtype .eq. 'SIMPLE') then
+      call complex_floor(user,surf,crater,deltaMtot)
+   end if
 
    ! Retrieve the size of the ejecta dem and correct for indexing
    inc = (size(ejecta_dem,1) - 1) / 2
    call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
+   if (crater%morphtype .eq. 'COMPLEX') then
+      ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
+      call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
+   end if
 
-   ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
-   call crater_slope_collapse(user,surf,crater,domain,(0.33_DP * user%pix)**2,deltaMtot)
 
    return
 end subroutine crater_realistic_topography
@@ -633,7 +642,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
             if (insplat) noise = noise + (1.0_DP + splatnoise - hprof) * ejecta_dem(i,j) * splatmag
          end do
 
-         noise_dem(i,j) = noise_dem(i,j) + noise * areafrac
+         noise_dem(i,j) = noise_dem(i,j) + noise * areafrac 
 
       end do
    end do
@@ -683,10 +692,10 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
    real(DP), dimension(2) :: rn
 
    ! Topographic noise parameters
-   integer(I4B), parameter :: num_octaves  = 8   ! Number of Perlin noise octaves
+   integer(I4B), parameter :: num_octaves  = 4   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: xy_noise_fac = 0.05_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 0.3e0_DP  ! Magnitude of noise features at the first octave
+   real(DP), parameter :: xy_noise_fac = 0.125_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 0.4e0_DP  ! Magnitude of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.00_DP  ! The relative size scaling at each octave level
 
