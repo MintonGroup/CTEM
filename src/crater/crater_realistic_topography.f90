@@ -117,7 +117,7 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       call complex_peak(user,surf,crater,deltaMtot)
 
    else if (crater%morphtype .eq. 'SIMPLE') then
-      call complex_floor(user,surf,crater,deltaMtot)
+      call complex_floor(user,surf,crater,deltaMtot) ! Temp until I make a simple crater version
    end if
 
    ! Retrieve the size of the ejecta dem and correct for indexing
