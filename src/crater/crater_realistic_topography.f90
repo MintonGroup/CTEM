@@ -383,11 +383,6 @@ subroutine complex_terrace(user,surf,crater,rn,deltaMtot)
    real(DP)                      :: upshift,dfloor
    
 
-   ! Internal variables
-   real(DP),dimension(:,:),allocatable :: kdiff,cumulative_elchange,areafrac
-   integer(I4B),dimension(:,:,:),allocatable :: indarray
-
-
    nscallops = 16
    rad = 2.0_DP * crater%frad
    upshift = 0._DP
@@ -517,24 +512,38 @@ subroutine ejecta_texture(user,surf,crater,rn,deltaMtot,inc,ejecta_dem)
    real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
 
    ! Internal variables
-   real(DP) :: newdem,elchange,xbar,ybar,ejbmass,ejbmassnew,fmasscons,r,phi,areafrac
+   real(DP) :: newdem,elchange,xbar,ybar,xstretch,ystretch,ejbmass,ejbmassnew,fmasscons,r,phi,areafrac
    integer(I4B) :: i,j,xpi,ypi
    integer(I4B),dimension(2,-inc:inc,-inc:inc) :: indarray
    real(DP),dimension(-inc:inc,-inc:inc)  :: noise_dem
 
    ! Topographic noise parameters
-   real(DP) :: xynoise, znoise
+   real(DP) :: xynoise, znoise, hprof,xysplat,zsplat,dsplat,splatnoise
    integer(I4B) :: octave
    real(DP) :: noise,dnoise
 
-   ! Complex crater all texture parameters
-   integer(I4B), parameter :: num_octaves  = 4   ! Number of Perlin noise octaves
+   ! Ejecta base texture parameters
+   integer(I4B), parameter :: num_octaves  = 5   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 7800 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: xy_noise_fac = 14.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 1.0e0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: xy_noise_fac = 6.0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 4.0e0_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 0.50_DP  ! The relative size scaling at each octave level
 
+
+   ! Splat pattern
+   integer(I4B)            :: nsplats             ! Approximate number of scallop features on edge of crater
+   real(DP),parameter      :: splat_height = 14.00_DP ! Vertical height of noise features as a function of crater radius at the first octave
+                                                    ! Higher values make the splat features broader
+   real(DP),parameter      :: splat_slope = 0.8_DP  ! The slope of the power law function that defines the noise shape for scallop features
+                                                    ! Higher values makes the inner sides of the scallop features more rounded, lower values 
+                                                    ! make them have sharper points at the inflections
+   real(DP),parameter      :: splat_stretch = 16.0_DP ! Power law factor that stretches the splat pattern out
+                                                     ! Higher values make the splat more stretched
+   logical                       :: insplat
+   real(DP),parameter            :: splatmag = 0.15_DP ! The magnitude of the splat features relative to the ejecta thickness
+
+   nsplats = 32
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
@@ -557,7 +566,7 @@ subroutine ejecta_texture(user,surf,crater,rn,deltaMtot,inc,ejecta_dem)
    end do
 
 
-   ! Now add texture to the ejecta
+   ! Add the base texture to the ejecta proportional to the thickness
    noise_dem = 0.0_DP
 
    do j = -inc,inc
@@ -570,28 +579,50 @@ subroutine ejecta_texture(user,surf,crater,rn,deltaMtot,inc,ejecta_dem)
          ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
+         phi = atan2(ybar,xbar)
+
+         ! Apply stretch to splats
+         xstretch = r**(1.0_DP / splat_stretch) * cos(phi) * crater%frad
+         ystretch = r**(1.0_DP / splat_stretch) * sin(phi) * crater%frad
   
          areafrac = util_area_intersection(inc * user%pix,xbar,ybar,user%pix) 
          areafrac = areafrac * (1.0_DP - util_area_intersection(crater%frad,xbar,ybar,user%pix))
       
          areafrac = areafrac * (1.0_DP - max(min(2._DP - 1 * r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
 
+
+         ! Make the splat pattern
+
+         splatnoise = 0.0_DP
+         do octave = 1,num_octaves
+            xysplat = (nsplats / PI) * freq ** (octave -1) / crater%fcrat 
+            zsplat= splat_height**(1._DP / (2 * splat_slope)) * (pers ) ** (octave - 1)
+            dsplat = util_perlin_noise(xysplat * xstretch + offset * rn(1), &
+                                       xysplat * ystretch + offset * rn(2)) * zsplat
+            dsplat = (dsplat**2)**(splat_slope)
+            splatnoise = splatnoise + dsplat
+         end do
+         hprof = (1.0_DP * r)**(1.5_DP)
+         insplat = 1.0_DP + splatnoise > hprof
+
+         ! make base texture and then add extra layers if we are in one
          noise = 0.0_DP
-         ! Make this noise in polar coordinates
          do octave = 1, num_octaves 
             xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat 
-            znoise = noise_height  * pers ** (octave - 1) * ejecta_dem(i,j) 
+            znoise = noise_height  * (pers ) ** (octave - 1) * ejecta_dem(i,j)  
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2))* znoise
+
+            if (insplat) noise = noise + (1.0_DP + splatnoise - hprof) * ejecta_dem(i,j) * splatmag
          end do
+
          noise_dem(i,j) = noise_dem(i,j) + noise * areafrac
 
       end do
    end do
 
 
-   ejecta_dem(-inc:inc,-inc:inc) = ejecta_dem(-inc:inc,-inc:inc) + noise_dem(-inc:inc,-inc:inc)
-
+   ejecta_dem(-inc:inc,-inc:inc) = max(ejecta_dem(-inc:inc,-inc:inc) + noise_dem(-inc:inc,-inc:inc),0.0_DP)
 
    ! Save new total mass for mass conservation calculation
    ejbmassnew = sum(ejecta_dem)
