@@ -311,7 +311,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
    real(DP), parameter :: rad = 0.20_DP      ! Radial size of central peak relative to frad
    integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: xy_noise_fac = 4.0_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: xy_noise_fac = 3.0_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: noise_height = 7.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
@@ -341,7 +341,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
          areafrac = areafrac * util_area_intersection(2.1_DP * crater%frad,xbar,ybar,user%pix)
          areafrac = areafrac * min((r / flr)**12,1.0_DP) ! Smooth out interface between wall and floor
-         areafrac = areafrac * max(min(2._DP - 1 * r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
+         areafrac = areafrac * max(min(2._DP - r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
 
          ! Add some roughness to the walls
          noise = 0.0_DP
@@ -438,7 +438,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
             noise = (dnoise**2)**noise_slope
 
             hprof = (r / router)**(-1)
-            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2
+            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 ! This is the floor profile that replaces the old one at each terrace
 
             if (1.0_DP - noise < hprof) then
                newdem = min(tprof,newdem) 
@@ -537,7 +537,6 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    real(DP) :: newdem,elchange,xbar,ybar,xstretch,ystretch,ejbmass,ejbmassnew,fmasscons,r,phi,areafrac
    integer(I4B) :: i,j,xpi,ypi
    integer(I4B),dimension(2,-inc:inc,-inc:inc) :: indarray
-   real(DP),dimension(-inc:inc,-inc:inc)  :: noise_dem
    real(DP), dimension(2) :: rn
 
    ! Topographic noise parameters
@@ -593,7 +592,6 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
 
    ! Add the base texture to the ejecta proportional to the thickness
-   noise_dem = 0.0_DP
 
    do j = -inc,inc
       do i = -inc,inc
@@ -614,7 +612,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
          areafrac = util_area_intersection(inc * user%pix,xbar,ybar,user%pix) 
          areafrac = areafrac * (1.0_DP - util_area_intersection(crater%frad,xbar,ybar,user%pix))
       
-         areafrac = areafrac * (1.0_DP - max(min(2._DP - 1 * r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
+         areafrac = areafrac * (1.0_DP - max(min(2._DP - r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
 
 
          ! Make the splat pattern
@@ -628,7 +626,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
             dsplat = (dsplat**2)**(splat_slope)
             splatnoise = splatnoise + dsplat
          end do
-         hprof = (1.0_DP * r)**(1.5_DP)
+         hprof =  r**(1.0_DP)
          insplat = 1.0_DP + splatnoise > hprof
 
          ! make base texture and then add extra layers if we are in one
@@ -642,13 +640,10 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
             if (insplat) noise = noise + (1.0_DP + splatnoise - hprof) * ejecta_dem(i,j) * splatmag
          end do
 
-         noise_dem(i,j) = noise_dem(i,j) + noise * areafrac 
+         ejecta_dem(i,j) = max(ejecta_dem(i,j) + noise * areafrac,0.0_DP)
 
       end do
    end do
-
-
-   ejecta_dem(-inc:inc,-inc:inc) = max(ejecta_dem(-inc:inc,-inc:inc) + noise_dem(-inc:inc,-inc:inc),0.0_DP)
 
    ! Save new total mass for mass conservation calculation
    ejbmassnew = sum(ejecta_dem)
