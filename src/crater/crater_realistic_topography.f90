@@ -115,16 +115,13 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       call complex_wall_texture(user,surf,crater,domain,deltaMtot)
       call complex_floor(user,surf,crater,deltaMtot)
       call complex_peak(user,surf,crater,deltaMtot)
-
-   else if (crater%morphtype .eq. 'SIMPLE') then
-      call complex_floor(user,surf,crater,deltaMtot) ! Temp until I make a simple crater version
    end if
 
    ! Retrieve the size of the ejecta dem and correct for indexing
    inc = (size(ejecta_dem,1) - 1) / 2
    call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
-   if (crater%morphtype .eq. 'COMPLEX') then
+   if ((crater%morphtype .eq. 'COMPLEX').and.(user%docollapse)) then
       ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
       call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
    end if
@@ -169,7 +166,8 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
 
    !Preliminary empirical fits based on a handful of complex craters
    !More work needs to be done to make these models more robust
-   FWHM = 0.1_DP 
+   FWHM = 0.1_DP !Copernicus
+   !FWHM = 0.3_DP !Lansberg 
    a = crater%peakheight
    b = 0.003_DP * ((1e-3_DP * crater%fcrat)**(1.75_DP)) / (1e-3_DP * crater%fcrat) ! Make peak rings for sufficiently large craters
    c = FWHM / (2 * sqrt(2 * log(2._DP)))
@@ -380,32 +378,67 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
 
    ! Internal variables
    real(DP) :: newdem,elchange,rad,xbar,ybar,r,flr,hprof,tprof
-   integer(I4B) :: xpi,ypi,i,j,inc,maxhits
+   integer(I4B) :: xpi,ypi,i,j,inc,octave
    real(DP), dimension(2) :: rn
 
    ! Topographic noise parameters
    real(DP) :: xynoise, znoise
-   real(DP) :: noise,dnoise
+   real(DP) :: noise,dnoise,tnoise
 
    ! Complex crater wall
    integer(I4B)            :: nscallops             ! Approximate number of scallop features on edge of crater
    integer(I4B),parameter  :: offset = 3000         ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP),parameter      :: noise_height = 0.20_DP ! Vertical height of noise features as a function of crater radius at the first octave
+   real(DP)                :: scallop_width          ! Vertical height of noise features as a function of crater radius at the first octave
                                                     ! Higher values make the scallop features broader
-   real(DP),parameter      :: noise_slope = 0.6_DP  ! The slope of the power law function that defines the noise shape for scallop features
+   real(DP)                :: scallop_p           ! The slope of the power law function that defines the noise shape for scallop features
                                                     ! Higher values makes the inner sides of the scallop features more rounded, lower values 
                                                     ! make them have sharper points at the inflections
-   integer(I4B),parameter        :: nterraces = 8   ! Number of terraces
-   real(DP),parameter            :: terracefac = 3.0_DP ! Power law scaling for relative terrace sizes
+   integer(I4B)                  :: nterraces       ! Number of terraces
+   real(DP)                      :: terracefac      ! Power law scaling for relative terrace sizes
    integer(I4B)                  :: terrace         ! The current terrace
    real(DP)                      :: router          ! The radius of the terrace outer edge
    real(DP)                      :: rinner          ! The radius of the terrace outer edge
    real(DP)                      :: upshift,dfloor
+   integer(I4B)                  :: num_oct_tfloor 
+   real(DP)                      :: noise_height_tfloor
+   real(DP)                      :: freq_tfloor
+   real(DP)                      :: pers_tfloor
+   real(DP)                      :: xy_size_tfloor
+   real(DP)                      :: rimfloor
+   logical                       :: isterrace
    
    !Executable code
    call random_number(rn)
 
-   nscallops = 16
+
+   
+   ! Copernicus values
+   terracefac = 3.0_DP
+   nterraces = 8
+   nscallops = 16 
+   scallop_p = 0.6_DP 
+   scallop_width = 0.20_DP 
+   rimfloor = crater%melev
+
+   num_oct_tfloor  = 4
+   noise_height_tfloor = crater%floordepth / nterraces
+   freq_tfloor = 1.5_DP
+   pers_tfloor = 0.5_DP
+   xy_size_tfloor = 5.0_DP / crater%fcrat 
+
+
+   ! Lansberg values
+   !terracefac = 1.0_DP
+   !nterraces = 16
+   !nscallops = 8  
+   !scallop_p = 0.6_DP
+   !scallop_width = 0.10_DP 
+   !^^^^^^^^^^^^^^^
+
+
+
+
+
    rad = 2.0_DP * crater%frad
    upshift = 0._DP
  
@@ -431,16 +464,30 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
 
             r = sqrt(xbar**2 + ybar**2) / crater%frad
 
-            znoise = noise_height**(1._DP / (2 * noise_slope)) 
+            ! Make scalloped terraces
+            znoise = scallop_width**(1._DP / (2 * scallop_p)) 
             xynoise = (nscallops / PI) / crater%fcrat
             dnoise = util_perlin_noise(xynoise * xbar + terrace * offset * rn(1), &
                                        xynoise * ybar + terrace * offset * rn(2)) * znoise
-            noise = (dnoise**2)**noise_slope
-
+            noise = (dnoise**2)**scallop_p
             hprof = (r / router)**(-1)
-            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 ! This is the floor profile that replaces the old one at each terrace
 
-            if (1.0_DP - noise < hprof) then
+            ! Make textured floor of terrace 
+            tnoise = 0.0_DP
+            do octave = 1, num_oct_tfloor
+               xynoise = xy_size_tfloor * freq_tfloor ** (octave - 1) 
+               znoise = noise_height_tfloor  * (pers_tfloor ) ** (octave - 1) 
+               tnoise = tnoise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+                                                 xynoise * ybar + offset * rn(2))* znoise
+            end do
+
+
+            isterrace = 1.0_DP - noise < hprof
+
+
+            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 + tnoise ! This is the floor profile that replaces the old one at each terrace
+
+            if (isterrace) then
                newdem = min(tprof,newdem) 
                elchange  = newdem - surf(xpi,ypi)%dem
                deltaMtot = deltaMtot + elchange
@@ -471,16 +518,27 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          ! Make scalloped rim
-         znoise = noise_height**(1._DP / (2 * noise_slope))
+         znoise = scallop_width**(1._DP / (2 * scallop_p))
          xynoise = (nscallops / PI) / crater%fcrat
          dnoise = util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                     xynoise * ybar + offset * rn(2)) * znoise
-         noise = (dnoise**2)**noise_slope
+         noise = (dnoise**2)**scallop_p
 
          hprof = r**(-1)
-         tprof = crater%melev 
+         isterrace = 1.0_DP - noise < hprof
 
-         if (1.0_DP - noise < hprof) then
+         ! Make textured floor of rim
+         tnoise = 0.0_DP
+         do octave = 1, num_oct_tfloor
+            xynoise = xy_size_tfloor * freq_tfloor ** (octave - 1) 
+            znoise = noise_height_tfloor  * (pers_tfloor ) ** (octave - 1) 
+            tnoise = tnoise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+                                              xynoise * ybar + offset * rn(2))* znoise
+         end do
+
+         tprof = rimfloor + tnoise
+
+         if (isterrace) then
             newdem = min(tprof,newdem) 
             elchange  = newdem - surf(xpi,ypi)%dem
             deltaMtot = deltaMtot + elchange
@@ -545,30 +603,45 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    real(DP) :: noise,dnoise
 
    ! Ejecta base texture parameters
-   integer(I4B), parameter :: num_octaves  = 5   ! Number of Perlin noise octaves
-   integer(I4B), parameter :: offset = 7800 ! Scales the random xy-offset so that each crater's random noise is unique 
-   real(DP), parameter :: xy_noise_fac = 6.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 4.0e0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
-   real(DP), parameter :: pers = 0.50_DP  ! The relative size scaling at each octave level
+   integer(I4B)        :: num_octaves        ! Number of Perlin noise octaves
+   integer(I4B)        :: offset        ! Scales the random xy-offset so that each crater's random noise is unique 
+   real(DP)            :: xy_noise_fac           ! Spatial "size" of noise features at the first octave
+   real(DP)            :: noise_height             ! Spatial "size" of noise features at the first octave
+   real(DP)            :: freq              ! Spatial size scale factor multiplier at each octave level
+   real(DP)            :: pers            ! The relative size scaling at each octave level
 
 
    ! Splat pattern
    integer(I4B)            :: nsplats             ! Approximate number of scallop features on edge of crater
-   real(DP),parameter      :: splat_height = 14.00_DP ! Vertical height of noise features as a function of crater radius at the first octave
+   real(DP)                :: splat_height            ! Vertical height of noise features as a function of crater radius at the first octave
                                                     ! Higher values make the splat features broader
-   real(DP),parameter      :: splat_slope = 0.8_DP  ! The slope of the power law function that defines the noise shape for scallop features
-                                                    ! Higher values makes the inner sides of the scallop features more rounded, lower values 
+   real(DP)                :: splat_slope           ! The slope of the power law function that defines the noise shape for splat features
+                                                    ! Higher values makes the inner sides of the splat features more rounded, lower values 
                                                     ! make them have sharper points at the inflections
-   real(DP),parameter      :: splat_stretch = 16.0_DP ! Power law factor that stretches the splat pattern out
+   real(DP)                :: splat_stretch           ! Power law factor that stretches the splat pattern out
                                                      ! Higher values make the splat more stretched
    logical                       :: insplat
-   real(DP),parameter            :: splatmag = 0.15_DP ! The magnitude of the splat features relative to the ejecta thickness
+   real(DP)                      :: splatmag           ! The magnitude of the splat features relative to the ejecta thickness
+   integer(I4B)         :: nsplat_octaves
 
    !Executable code
    call random_number(rn)
 
+
+   ! Copernicus values
+   num_octaves = 5
+   offset = 7800
+   xy_noise_fac = 6.0_DP
+   noise_height = 4.0_DP
+   freq = 2.0_DP
+   pers = 0.5_DP
+
    nsplats = 32
+   nsplat_octaves = 4
+   splat_height = 14.0_DP
+   splat_slope = 0.8_DP
+   splat_stretch = 16.0_DP
+   splatmag = 0.10_DP
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
@@ -618,7 +691,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
          ! Make the splat pattern
 
          splatnoise = 0.0_DP
-         do octave = 1,num_octaves
+         do octave = 1,nsplat_octaves
             xysplat = (nsplats / PI) * freq ** (octave -1) / crater%fcrat 
             zsplat= splat_height**(1._DP / (2 * splat_slope)) * (pers ) ** (octave - 1)
             dsplat = util_perlin_noise(xysplat * xstretch + offset * rn(1), &

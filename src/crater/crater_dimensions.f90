@@ -52,7 +52,7 @@ subroutine crater_dimensions(user,crater,domain)
          crater%rimwidth   = 0.467_DP * (crater%fcrat * 1e-3_DP)**(0.836_DP) * 1e3_DP !* crater%fcrat
          crater%floordepth = 1.044_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) * 1e3_DP !* crater%fcrat
          crater%floordiam  = 0.187_DP * (crater%fcrat * 1e-3_DP)**(1.249_DP) * 1e3_DP !* crater%fcrat
-         crater%peakheight = 0.032_DP * (crater%fcrat * 1e-3_DP)**(0.900_DP) * 1e3_DP !* crater%fcrat
+         crater%peakheight = 0.032_DP * (crater%fcrat * 1e-3_DP)**(0.900_DP) * 1e3_DP !* crater%fcrat 
    end select
 
 
