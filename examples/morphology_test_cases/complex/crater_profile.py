@@ -24,7 +24,7 @@ def image_dem(filename,gridsize,pix,CTEM_dem):
     # Create surface dem map
     solar_angle = 20.0
     dem_map = np.copy(CTEM_dem) - np.roll(CTEM_dem, 1, 0)
-    dem_map = (0.5 * np.pi) + np.arctan2
+    dem_map = (0.5 * np.pi) + np.arctan2(dem_map, pix)
     dem_map = dem_map - np.radians(solar_angle) * (0.5 * np.pi)
     np.place(dem_map, dem_map > (0.5 * np.pi), 0.5 * np.pi)
     dem_map = np.absolute(dem_map)
@@ -121,8 +121,10 @@ for jdx,p in enumerate(phi):
 
 
 #Compare with CTEM output
+gridsize = 2000
 dem_file = 'surface_dem.dat'
 CTEM_dem = np.fromfile(dem_file , dtype = np.float64)
+CTEM_dem.shape = (gridsize,gridsize)
 CTEM_dem *= 1e-3
 pix = 0.200
 gridsize = 2000
@@ -152,7 +154,7 @@ for jdx,p in enumerate(phi):
 
 
 plt.savefig(f'{crater_name}_profile.png',dpi=300,bbox_inches='tight')
-#os.system(f'open {crater_name}_profile.png')
+os.system(f'open {crater_name}_profile.png')
 
 imgfile = f'{crater_name}.png'
 image_dem(imgfile,gridsize,pix,orig_dem)
