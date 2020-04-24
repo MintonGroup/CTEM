@@ -15,6 +15,8 @@ import os
 import shutil
 import scipy
 from scipy import signal
+from matplotlib.colors import LightSource
+import matplotlib.cm as cm
 
 #Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
@@ -79,27 +81,31 @@ def copy_dists(parameters):
 #Possible references
 #http://nbviewer.jupyter.org/github/ThomasLecocq/geophysique.be/blob/master/2014-02-25%20Shaded%20Relief%20Map%20in%20Python.ipynb   
    
-def image_dem(parameters, surface_dem):
-    
-    #Create surface dem map
-    solar_angle = 20.0
-    dem_map = numpy.copy(surface_dem) - numpy.roll(surface_dem, 1, 0)
-    dem_map = (0.5 * numpy.pi) + numpy.arctan2(dem_map, parameters['pix'])
-    dem_map = dem_map - numpy.radians(solar_angle) * (0.5 * numpy.pi)
-    numpy.place(dem_map, dem_map > (0.5 * numpy.pi), 0.5  *numpy.pi)
-    dem_map = numpy.absolute(dem_map)
-    dem_map = 254.0 * numpy.cos(dem_map)
-    
-    #Save image to file
+def image_dem(parameters, DEM):
+    dpi = 300.0  # 72.0
+    pix = parameters['pix']
+    gridsize = parameters['gridsize']
+    ve = 1.0
+    azimuth = 300.0 #parameters['azimuth']
+    solar_angle = 20.0 #parameters['solar_angle']
+
+    ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
+
+    dem_img = ls.hillshade(DEM, vert_exag=ve, dx=pix, dy=pix)
+
+    # Generate image to put into an array
+    height = gridsize / dpi
+    width = gridsize / dpi
+    fig = matplotlib.pyplot.figure(figsize=(width, height), dpi=dpi)
+    ax = matplotlib.pyplot.axes([0, 0, 1, 1])
+    ax.imshow(dem_img, interpolation="nearest", cmap='gray')
+    matplotlib.pyplot.axis('off')
+    # Save image to file
     filename = parameters['workingdir'] + 'surf' + os.sep + "surf%06d.png" % parameters['ncount']
-    height = parameters['gridsize'] / dpi
-    width = height
-    fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)
-    fig.figimage(dem_map, cmap = matplotlib.cm.gray, origin = 'lower')
-    matplotlib.pyplot.savefig(filename)    
+    matplotlib.pyplot.savefig(filename,dpi=dpi,bbox_inches=0)
+
+    return
     
-    return   
-   
 def image_regolith(parameters, regolith):
     
     #Create scaled regolith image
@@ -122,67 +128,53 @@ def image_regolith(parameters, regolith):
    
     return
     
-def image_shaded_relief(parameters, surface_dem):
-    #The color scale and appearance of this do not quite match the IDL version
+def image_shaded_relief(parameters, DEM):
+    dpi = 300.0 #72.0
+    pix = parameters['pix']
+    gridsize = parameters['gridsize']
+    ve = 1.0
+    mode = 'overlay'
+    azimuth = 300.0 #parameters['azimuth']
+    solar_angle = 20.0  #parameters['solar_angle']
 
-    #Create image by convolving DEM with 3x3 illumination matrix
-    light = numpy.array([[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [-1.0, -1.0, -1.0]])
-    convolved_map = scipy.signal.convolve2d(surface_dem, light, mode = 'same')
-    
-    #Adjust output to resemble IDL (north slopes illuminated, south in shadow)
-    convolved_map = convolved_map * -1.0
-    convolved_map[0,:]=0.0
-    convolved_map[-1,:] =0.0
-    convolved_map[:,0]=0.0
-    convolved_map[:,-1]=0.0    
+    ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
+    cmap = cm.cividis
 
-    #If no shadedmin/max parameters are read in from ctem.dat, determine the values from the data
-    if (parameters['shadedminhdefault'] == 1): shadedminh = numpy.amin(surface_dem)
-    if (parameters['shadedmaxhdefault'] == 1): shadedmaxh = numpy.amax(surface_dem)
-
-    #If min and max appear to be reversed, then fix them
+    # If min and max appear to be reversed, then fix them
     if (parameters['shadedminh'] > parameters['shadedmaxh']):
         temp = parameters['shadedminh']
-        shadedminh = parameters['shadedmaxh']
-        shadedmaxh = temp
+        parameters['shadedminh'] = parameters['shadedmaxh']
+        parameters['shadedmaxh'] = temp
+    else:
+        parameters['shadedminh'] = parameters['shadedminh']
+        parameters['shadedmaxh'] = parameters['shadedmaxh']
+
+    # If no shadedmin/max parameters are read in from ctem.dat, determine the values from the data
+    if (parameters['shadedminhdefault'] == 1):
+        shadedminh = numpy.amin(DEM)
     else:
         shadedminh = parameters['shadedminh']
-        shadedmaxh = parameters['shadedmaxh']
-            
-    #If dynamic range is valid, construct a shaded DEM
-    dynamic_range = shadedmaxh - shadedminh
-    if  (dynamic_range != 0):
-        dem_scaled = numpy.copy(surface_dem) - shadedminh
-        numpy.place(dem_scaled, dem_scaled < 0.0, 0.0)
-        numpy.place(dem_scaled, dem_scaled > dynamic_range, dynamic_range)
-        dem_scaled = dem_scaled / dynamic_range
+    if (parameters['shadedmaxhdefault'] == 1):
+        shadedmaxh = numpy.amax(DEM)
     else:
-        dem_scaled = numpy.copy(surface_dem) * 0.0
-        
-    #Generate shaded depth map with surface_dem color scaling (RGBA)
-    shaded = scipy.misc.bytescale(convolved_map)
-    if numpy.amax(shaded) == 0:  shaded=255
-    shadedscl = shaded / 255.0
-    
-    #shaded_imagearr = matplotlib.cm.jet(dem_scaled)
-    #print dem_scaled[0:4,0:4]
-    #shaded_imagearr[:,:,0] = shaded_imagearr[:,:,0] * shadedscl
-    #shaded_imagearr[:,:,1] = shaded_imagearr[:,:,1] * shadedscl
-    #shaded_imagearr[:,:,2] = shaded_imagearr[:,:,2] * shadedscl
-    #shaded_imagearr[:,:,3] = shaded_imagearr[:,:,3] * shadedscl
-    
-    #Delivers nearly proper coloring, but no shaded relief    
-    shaded_imagearr = dem_scaled * shadedscl
-    shaded_imagearr = matplotlib.cm.jet(shaded_imagearr)
-    shaded_imagearr = numpy.around(shaded_imagearr, decimals = 1)
-        
-    #Save image to file
+        shadedmaxh = parameters['shadedmaxh']
+
+
+
+    dem_img = ls.shade(DEM, cmap=cmap,blend_mode=mode,
+                       vert_exag=ve, dx=pix, dy=pix,
+                       vmin=shadedminh, vmax=shadedmaxh)
+
+    #Generate image to put into an array
+    height = gridsize / dpi
+    width = gridsize / dpi
+    fig = matplotlib.pyplot.figure(figsize=(width, height), dpi=dpi)
+    ax = matplotlib.pyplot.axes([0, 0, 1, 1])
+    ax.imshow(dem_img,interpolation="nearest")
+    matplotlib.pyplot.axis('off')
+    # Save image to file
     filename = parameters['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % parameters['ncount']
-    height = parameters['gridsize'] / dpi
-    width = height
-    fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)
-    fig.figimage(shaded_imagearr, cmap = matplotlib.cm.jet, origin = 'lower')
-    matplotlib.pyplot.savefig(filename)    
+    matplotlib.pyplot.savefig(filename,dpi=dpi,bbox_inches=0)
     return
     
 def create_rplot(parameters,odist,pdist,tdist,ph1):
