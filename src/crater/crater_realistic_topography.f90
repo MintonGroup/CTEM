@@ -647,6 +647,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    read(12,*) num_octaves
    read(12,*) xy_noise_fac
    read(12,*) noise_height
+   close(12)
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
