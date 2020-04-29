@@ -28,8 +28,6 @@ __pycache__/
 
 *.dat
 
-*.png
-
 *.DS_Store
 
 alocal.m4
@@ -37,8 +35,6 @@ alocal.m4
 *.m4
 
 *.eps
-
-*.jpg
 
 examples/mare-with-rays-model2/CTEM
 
