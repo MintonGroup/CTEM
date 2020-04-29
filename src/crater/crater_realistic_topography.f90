@@ -642,6 +642,11 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    splat_slope = 0.8_DP
    splat_stretch = 16.0_DP
    splatmag = 0.10_DP
+   
+   open(unit=12,file='params.txt',status='old')
+   read(12,*) num_octaves
+   read(12,*) xy_noise_fac
+   read(12,*) noise_height
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
