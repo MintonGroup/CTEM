@@ -557,4 +557,173 @@ end subroutine realistic_perlin_noise
 end function realistic_perlin_noise3D
 
 
+subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
+   ! Adds realistic texture to the ejecta
+   use module_globals
+   use module_util
+   use module_realistic, EXCEPT_THIS_ONE => realistic_ejecta_texture
+   implicit none
+
+   ! Arguments
+   type(usertype),intent(in) :: user
+   type(surftype),dimension(:,:),intent(inout) :: surf
+   type(cratertype),intent(inout) :: crater
+   real(DP),intent(in) :: deltaMtot
+   integer(I4B),intent(in) :: inc
+   real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
+
+   ! Internal variables
+   real(DP) :: newdem,elchange,xbar,ybar,xstretch,ystretch,ejbmass,ejbmassnew,fmasscons,r,phi,areafrac
+   integer(I4B) :: i,j,xpi,ypi
+   integer(I4B),dimension(2,-inc:inc,-inc:inc) :: indarray
+   real(DP), dimension(2) :: rn
+
+   ! Topographic noise parameters
+   real(DP) :: xynoise, znoise, hprof,xysplat,zsplat,dsplat,splatnoise
+   integer(I4B) :: octave
+   real(DP) :: noise,dnoise
+
+   ! Ejecta base texture parameters
+   integer(I4B)        :: num_octaves        ! Number of Perlin noise octaves
+   integer(I4B)        :: offset        ! Scales the random xy-offset so that each crater's random noise is unique 
+   real(DP)            :: xy_noise_fac           ! Spatial "size" of noise features at the first octave
+   real(DP)            :: noise_height             ! Spatial "size" of noise features at the first octave
+   real(DP)            :: freq              ! Spatial size scale factor multiplier at each octave level
+   real(DP)            :: pers            ! The relative size scaling at each octave level
+
+
+   ! Splat pattern
+   integer(I4B)            :: nsplats             ! Approximate number of scallop features on edge of crater
+   real(DP)                :: splat_height            ! Vertical height of noise features as a function of crater radius at the first octave
+                                                    ! Higher values make the splat features broader
+   real(DP)                :: splat_slope           ! The slope of the power law function that defines the noise shape for splat features
+                                                    ! Higher values makes the inner sides of the splat features more rounded, lower values 
+                                                    ! make them have sharper points at the inflections
+   real(DP)                :: splat_stretch           ! Power law factor that stretches the splat pattern out
+                                                     ! Higher values make the splat more stretched
+   logical                       :: insplat
+   real(DP)                      :: splatmag           ! The magnitude of the splat features relative to the ejecta thickness
+   integer(I4B)         :: nsplat_octaves
+
+   !Executable code
+   call random_number(rn)
+
+
+   ! Copernicus values
+   num_octaves = 5
+   offset = 7800
+   xy_noise_fac = 6.0_DP
+   noise_height = 4.0_DP
+   freq = 2.0_DP
+   pers = 0.5_DP
+
+   nsplats = 32
+   nsplat_octaves = 4
+   splat_height = 14.0_DP
+   splat_slope = 0.8_DP
+   splat_stretch = 16.0_DP
+   splatmag = 0.10_DP
+   
+   open(unit=12,file='params.txt',status='old')
+   read(12,*) num_octaves
+   read(12,*) xy_noise_fac
+   read(12,*) noise_height
+   close(12)
+
+   ! Get the ejecta mass
+   ejbmass = sum(ejecta_dem)
+
+   ! First strip away the original ejecta from the surface
+
+   do j = -inc,inc
+      do i = -inc,inc
+         xpi = crater%xlpx + i
+         ypi = crater%ylpx + j
+
+         ! periodic boundary conditions
+         call util_periodic(xpi,ypi,user%gridsize)
+         surf(xpi,ypi)%dem = surf(xpi,ypi)%dem - ejecta_dem(i,j)
+
+         ! Save index map
+         indarray(1,i,j) = xpi
+         indarray(2,i,j) = ypi
+      end do
+   end do
+
+
+   ! Add the base texture to the ejecta proportional to the thickness
+
+   do j = -inc,inc
+      do i = -inc,inc
+
+         xpi = indarray(1,i,j)
+         ypi = indarray(2,i,j)
+
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
+         r = sqrt(xbar**2 + ybar**2) / crater%frad
+         phi = atan2(ybar,xbar)
+
+         ! Apply stretch to splats
+         xstretch = r**(1.0_DP / splat_stretch) * cos(phi) * crater%frad
+         ystretch = r**(1.0_DP / splat_stretch) * sin(phi) * crater%frad
+  
+         areafrac = util_area_intersection(inc * user%pix,xbar,ybar,user%pix) 
+         areafrac = areafrac * (1.0_DP - util_area_intersection(crater%frad,xbar,ybar,user%pix))
+      
+         areafrac = areafrac * (1.0_DP - max(min(2._DP - r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
+
+
+         ! Make the splat pattern
+
+         splatnoise = 0.0_DP
+         do octave = 1,nsplat_octaves
+            xysplat = (nsplats / PI) * freq ** (octave -1) / crater%fcrat 
+            zsplat= splat_height**(1._DP / (2 * splat_slope)) * (pers ) ** (octave - 1)
+            dsplat = util_perlin_noise(xysplat * xstretch + offset * rn(1), &
+                                       xysplat * ystretch + offset * rn(2)) * zsplat
+            dsplat = (dsplat**2)**(splat_slope)
+            splatnoise = splatnoise + dsplat
+         end do
+         hprof =  r**(1.0_DP)
+         insplat = 1.0_DP + splatnoise > hprof
+
+         ! make base texture and then add extra layers if we are in one
+         noise = 0.0_DP
+         do octave = 1, num_octaves 
+            xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat 
+            znoise = noise_height  * (pers ) ** (octave - 1) * ejecta_dem(i,j)  
+            noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+                                              xynoise * ybar + offset * rn(2))* znoise
+
+            if (insplat) noise = noise + (1.0_DP + splatnoise - hprof) * ejecta_dem(i,j) * splatmag
+         end do
+
+         ejecta_dem(i,j) = max(ejecta_dem(i,j) + noise * areafrac,0.0_DP)
+
+      end do
+   end do
+
+   ! Save new total mass for mass conservation calculation
+   ejbmassnew = sum(ejecta_dem)
+
+   ! Rescale ejecta blanket to conserve mass
+   fmasscons = (ejbmass - deltaMtot) / ejbmassnew
+   ejecta_dem(:,:) = ejecta_dem(:,:) * fmasscons
+
+   !Put the ejecta back onto the surface
+   do j = -inc,inc
+      do i = -inc,inc
+
+         xpi = indarray(1,i,j)
+         ypi = indarray(2,i,j)
+
+         surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + ejecta_dem(i,j)
+
+      end do
+   end do
+
+   return
+end subroutine realistic_ejecta_texture
 

@@ -93,5 +93,18 @@ interface
 end interface
 
 
+interface
+      subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      real(DP),intent(in) :: deltaMtot
+      integer(I4B),intent(in) :: inc
+      real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
+      end subroutine realistic_ejecta_texture
+end interface
+
 end module module_realistic
 
