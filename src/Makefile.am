@@ -19,6 +19,7 @@ init/module_init.f90\
 seismic/module_seismic.f90\
 regolith/module_regolith.f90\
 porosity/module_porosity.f90\
+realistic/module_realistic.f90\
 util/util_toupper.f90\
 util/util_mrgrnk.f90\
 util/util_add_to_layer.f90\
@@ -111,5 +112,6 @@ regolith/regolith_transport.f90\
 regolith/regolith_traverse_streamtube.f90\
 regolith/regolith_subcrater_mix.f90\
 porosity/porosity_form_interior.f90\
+realistic/realistic_perlin_noise.f90\
 main/CTEM.f90
 CLEANFILES = *.mod
