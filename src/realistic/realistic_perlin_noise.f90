@@ -604,18 +604,21 @@ subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    logical                       :: insplat
    real(DP)                      :: splatmag           ! The magnitude of the splat features relative to the ejecta thickness
    integer(I4B)         :: nsplat_octaves
+   integer(I4B)         :: nseed
+   integer(I4B),dimension(:),allocatable :: seed 
+   real(DP),dimension(:),allocatable :: Sarr,Aarr
+   real(DP),dimension(:,:),allocatable :: anchor
+
 
    !Executable code
-   call random_number(rn)
-
+   call random_seed(size = nseed)
+   allocate(seed(nseed))
+   seed = 42 * (/ (i - 1, i = 1, nseed) /)
+   call random_seed(put = seed)
+   deallocate(seed)
 
    ! Copernicus values
-   num_octaves = 5
-   offset = 7800
-   xy_noise_fac = 6.0_DP
-   noise_height = 4.0_DP
-   freq = 2.0_DP
-   pers = 0.5_DP
+   num_octaves = 20
 
    nsplats = 32
    nsplat_octaves = 4
@@ -623,12 +626,59 @@ subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    splat_slope = 0.8_DP
    splat_stretch = 16.0_DP
    splatmag = 0.10_DP
+   allocate(anchor(3,num_octaves))
+   allocate(Sarr(num_octaves))
+   allocate(Aarr(num_octaves))
+   call random_number(anchor)
+   Sarr = (/&
+   4.504474507376779e-05 ,&
+   5.60668603876148e-05 ,&
+   6.978600563897823e-05 ,&
+   8.686212406713068e-05 ,&
+   0.00010811664213146219 ,&
+   0.00013457198325876482 ,&
+   0.0001675007503116611 ,&
+   0.00020848694264258828 ,&
+   0.0002595021525072406 ,&
+   0.0003230004061757253 ,&
+   0.00040203621196079493 ,&
+   0.0005004114937237885 ,&
+   0.0006228584779206224 ,&
+   0.0007752673317526397 ,&
+   0.0009649695026860566 ,&
+   0.001201090389052119 ,&
+   0.0014949883065296338 ,&
+   0.001860800866472805 ,&
+   0.0023161250489669347 ,&
+   0.00288286368472114 &
+   /)
+   Aarr = (/&
+   480.5553314156651 ,&
+   301.39834422653644 ,&
+   231.2353012259284 ,&
+   187.28767364041002 ,&
+   171.24096801821952 ,&
+   156.18729084155638 ,&
+   135.08690333951336 ,&
+   126.26561550011449 ,&
+   120.36279796542874 ,&
+   98.88639784962167 ,&
+   81.63757958743275 ,&
+   68.54094673649962 ,&
+   48.33480615949967 ,&
+   36.350230909019736 ,&
+   28.031742462394078 ,&
+   19.438477479597548 ,&
+   14.081545651761388 ,&
+   11.836296171009655 ,&
+   10.33985080900508 ,&
+   9.16113638692019 &
+   /)
+
+   call random_number(rn)
+
+
    
-   open(unit=12,file='params.txt',status='old')
-   read(12,*) num_octaves
-   read(12,*) xy_noise_fac
-   read(12,*) noise_height
-   close(12)
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
@@ -689,16 +739,19 @@ subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
          hprof =  r**(1.0_DP)
          insplat = 1.0_DP + splatnoise > hprof
 
-         ! make base texture and then add extra layers if we are in one
-         noise = 0.0_DP
-         do octave = 1, num_octaves 
-            xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat 
-            znoise = noise_height  * (pers ) ** (octave - 1) * ejecta_dem(i,j)  
-            noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
-                                              xynoise * ybar + offset * rn(2))* znoise
+         !! make base texture and then add extra layers if we are in one
 
-            if (insplat) noise = noise + (1.0_DP + splatnoise - hprof) * ejecta_dem(i,j) * splatmag
-         end do
+         noise = 0.0_DP
+         noise = noise +  realistic_arrayinput(xbar, ybar, num_octaves, Sarr, Aarr, anchor)
+         !noise = 0.0_DP
+         !do octave = 1, num_octaves 
+         !   xynoise = xy_noise_fac * freq ** (octave - 1) / crater%fcrat 
+         !   znoise = noise_height  * (pers ) ** (octave - 1) * ejecta_dem(i,j)  
+         !   noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+!                                              xynoise * ybar + offset * rn(2))* znoise
+!
+         !   if (insplat) noise = noise + (1.0_DP + splatnoise - hprof) * ejecta_dem(i,j) * splatmag
+         !end do
 
          ejecta_dem(i,j) = max(ejecta_dem(i,j) + noise * areafrac,0.0_DP)
 
@@ -724,6 +777,7 @@ subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
       end do
    end do
 
+   deallocate(Sarr,Aarr,anchor)
    return
 end subroutine realistic_ejecta_texture
 
