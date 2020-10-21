@@ -20,6 +20,8 @@ examples/global-lunar-bombardment/.DS_Store
 
 examples/mare-with-rays-model2/.DS_Store
 
+testing/
+
 __pycache__/
 
 *.dat
