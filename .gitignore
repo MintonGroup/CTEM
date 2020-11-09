@@ -30,12 +30,12 @@ __pycache__/
 
 *.DS_Store
 
-examples/mare-with-rays-model2/CTEM
-
 *.json
 
 *.xml
 
 *.iml
 
-examples/global-lunar-bombardment/
+examples/mare-with-rays-model2/CTEM
+
+examples/global-lunar-bombardment/CTEM
