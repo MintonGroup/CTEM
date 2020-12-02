@@ -39,3 +39,6 @@ __pycache__/
 examples/mare-with-rays-model2/CTEM
 
 examples/global-lunar-bombardment/CTEM
+
+!LOLA*.dat
+!lunar*.dat
