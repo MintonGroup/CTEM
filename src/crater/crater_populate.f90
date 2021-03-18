@@ -132,6 +132,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    do while (icrater < ntotcrat)
       makecrater = .true.
       icrater = icrater + 1
+      crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
@@ -162,7 +163,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       if (makecrater) then
          ! Stamp the current time onto the crater
-         crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
          ! Find the visible crater parameters
          call crater_find_visible(user,crater,domain)
 
