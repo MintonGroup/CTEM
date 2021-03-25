@@ -17,6 +17,7 @@ import shutil
 #Import CTEM modules
 import ctem_io_readers
 import ctem_io_writers
+import craterproduction #craterproduction had to be cp'd to example dir
 
 #Create and initialize data dictionaries for parameters and options from CTEM.in
 notset = '-NOTSET-'
@@ -50,7 +51,9 @@ parameters={'restart': notset,
             'datfile': 'ctem.dat',
             'impfile': notset,
             'sfdcompare': notset,
-            'sfdfile': notset}
+            'sfdfile': notset,
+            'quasimc': notset,
+            'realcraterlist': notset}
 
 #Read ctem.in to initialize parameter values based on user input
 ctem_io_readers.read_ctemin(parameters,notset)
@@ -71,6 +74,14 @@ regolith = numpy.zeros([parameters['gridsize'], parameters['gridsize']], dtype =
 #Read production function file
 impfile = parameters['workingdir'] + parameters['impfile']
 prodfunction = ctem_io_readers.read_formatted_ascii(impfile, skip_lines = 0)
+
+#Read list of real craters and export to dat file for Fortran code
+if (parameters['quasimc'] == 'T'):
+    print("quasi-MC mode is ON")
+    craterlistfile = parameters['workingdir'] + parameters['realcraterlist']
+    rclist = ctem_io_readers.read_formatted_ascii(craterlistfile, skip_lines = 0)
+    rclist[:,5] = parameters['interval'] - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+    ctem_io_writers.write_realcraters(parameters, rclist)
 
 #Create impactor production population
 area = (parameters['gridsize'] * parameters['pix'])**2

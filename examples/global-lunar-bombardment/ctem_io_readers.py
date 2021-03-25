@@ -42,6 +42,8 @@ def read_ctemin(parameters,notset):
          if ('savetruelist' == fields[0].lower()): parameters['savetruelist']=fields[1]
          if ('runtype' == fields[0].lower()): parameters['runtype']=fields[1]
          if ('restart' == fields[0].lower()): parameters['restart']=fields[1]
+         if ('quasimc' == fields[0].lower()): parameters['quasimc']=fields[1]
+         if ('realcraterlist' == fields[0].lower()): parameters['realcraterlist']=fields[1]
          if ('shadedminh' == fields[0].lower()):
             parameters['shadedminh'] = float(fields[1])
             parameters['shadedminhdefault'] = 0
