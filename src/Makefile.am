@@ -38,6 +38,7 @@ util/util_init_list.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
+io/io_read_craterlist.f90\
 io/io_read_prod.f90\
 io/io_read_regotrack.f90\
 io/io_read_porotrack.f90\

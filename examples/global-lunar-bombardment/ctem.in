@@ -10,14 +10,14 @@ testxoffset  0.0e0                             ! x-axis offset of crater center 
 testyoffset  0.0e0                             ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F   
-quasimc      F                                 ! MC run constrained by non-MC 'real' craters given in a list
+quasimc      T                                 ! MC run constrained by non-MC 'real' craters given in a list
 realcraterlist    craterlist.in                ! list of 'real' craters for Quasi-MC runs
 
 
 
 ! IDL driver in uts
-interval     3.0  
-numintervals 1                                ! Total number of intervals
+interval     5.86055  
+numintervals 100                                ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
 popupconsole F                                  ! Pop up console window every output interval 

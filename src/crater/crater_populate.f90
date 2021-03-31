@@ -134,6 +134,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
+      !if in quasiMC mode: check to see if it's time for a real crater
+      !if (user%doquasimc) then
+         
+      !end if
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat

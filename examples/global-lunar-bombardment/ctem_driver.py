@@ -80,7 +80,7 @@ if (parameters['quasimc'] == 'T'):
     print("quasi-MC mode is ON")
     craterlistfile = parameters['workingdir'] + parameters['realcraterlist']
     rclist = ctem_io_readers.read_formatted_ascii(craterlistfile, skip_lines = 0)
-    rclist[:,5] = parameters['interval'] - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+    rclist[:,5] = (parameters['interval'] * parameters['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
     ctem_io_writers.write_realcraters(parameters, rclist)
 
 #Create impactor production population

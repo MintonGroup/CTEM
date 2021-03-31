@@ -115,12 +115,13 @@ am_CTEM_OBJECTS = globals/module_globals.$(OBJEXT) \
 	util/util_push.$(OBJEXT) util/util_traverse_pop.$(OBJEXT) \
 	util/util_destroy_list.$(OBJEXT) util/util_init_list.$(OBJEXT) \
 	io/io_read_const.$(OBJEXT) io/io_get_token.$(OBJEXT) \
-	io/io_input.$(OBJEXT) io/io_read_prod.$(OBJEXT) \
-	io/io_read_regotrack.$(OBJEXT) io/io_read_porotrack.$(OBJEXT) \
-	io/io_read_vdist.$(OBJEXT) io/io_read_surf.$(OBJEXT) \
-	io/io_ejecta_table.$(OBJEXT) io/io_write_dist.$(OBJEXT) \
-	io/io_write_tally.$(OBJEXT) io/io_write_surf.$(OBJEXT) \
-	io/io_write_const.$(OBJEXT) io/io_write_regotrack.$(OBJEXT) \
+	io/io_input.$(OBJEXT) io/io_read_craterlist.$(OBJEXT) \
+	io/io_read_prod.$(OBJEXT) io/io_read_regotrack.$(OBJEXT) \
+	io/io_read_porotrack.$(OBJEXT) io/io_read_vdist.$(OBJEXT) \
+	io/io_read_surf.$(OBJEXT) io/io_ejecta_table.$(OBJEXT) \
+	io/io_write_dist.$(OBJEXT) io/io_write_tally.$(OBJEXT) \
+	io/io_write_surf.$(OBJEXT) io/io_write_const.$(OBJEXT) \
+	io/io_write_regotrack.$(OBJEXT) \
 	io/io_write_porotrack.$(OBJEXT) io/io_crater_profile.$(OBJEXT) \
 	io/io_updatePbar.$(OBJEXT) io/io_resetPbar.$(OBJEXT) \
 	io/io_splash.$(OBJEXT) ejecta/ejecta_emplace.$(OBJEXT) \
@@ -339,6 +340,7 @@ util/util_init_list.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
+io/io_read_craterlist.f90\
 io/io_read_prod.f90\
 io/io_read_regotrack.f90\
 io/io_read_porotrack.f90\
@@ -594,6 +596,8 @@ io/io_read_const.$(OBJEXT): io/$(am__dirstamp) \
 io/io_get_token.$(OBJEXT): io/$(am__dirstamp) \
 	io/$(DEPDIR)/$(am__dirstamp)
 io/io_input.$(OBJEXT): io/$(am__dirstamp) io/$(DEPDIR)/$(am__dirstamp)
+io/io_read_craterlist.$(OBJEXT): io/$(am__dirstamp) \
+	io/$(DEPDIR)/$(am__dirstamp)
 io/io_read_prod.$(OBJEXT): io/$(am__dirstamp) \
 	io/$(DEPDIR)/$(am__dirstamp)
 io/io_read_regotrack.$(OBJEXT): io/$(am__dirstamp) \

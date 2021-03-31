@@ -137,6 +137,7 @@ type domaintype
    real(DP)     :: ejbres    ! Ejecta blanket lookup table resolution
    integer(I4B) :: pnum      ! size of production function array
    integer(I4B) :: vnum      ! size of velocity distribution array
+   integer(I4B) :: rcnum      ! size of real crater list array for quasi-MC
    real(DP)     :: vescsq    ! Escape velocity at target
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
@@ -171,6 +172,7 @@ type usertype
    logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
    logical           :: doangle    ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
    logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
+   logical           :: doquasimc  ! set to T for quasi-MC run. Default F.
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
    real(DP)          :: deplimit  ! complex crater depth limit
@@ -212,6 +214,7 @@ type usertype
    real(DP)          :: testyoffset  ! Offset of test crater from center in y direction (m)   
    logical           :: tallyonly    ! Only run the tally routine (don't generate any new craters)
    logical           :: testtally    ! Set to T to count all non-cookie cut craters, regardless of score
+   real(DP)          :: rctime       ! time (in interval units) for emplacement of quasi-MC crater. Default 1E30 (aka never emplace real crater)
 
    ! IDL driver variables
    character(STRMAX) :: impfile      ! Name of impactor size distribution file (impacts per m^2 per y)
@@ -228,6 +231,7 @@ type usertype
    real(DP)          :: shadedminh   ! Minimum height for shaded relief map (m)
    real(DP)          :: shadedmaxh   ! Maximum height for shaded relief map (m)
    character(STRMAX) :: sfdcompare   ! Type of run: 0 for normal, 1 for statistical (domain is reset between intervals)
+   character(STRMAX) :: realcraterlist ! This is only included here so the terminal doesn't return "Unknown parameter"
 end type usertype
 
 ! Derived data type for the ejecta blanket table elements
@@ -272,6 +276,7 @@ character(*),parameter :: PDISTFILE  = 'pdistribution.dat'
 character(*),parameter :: CRTSCLFILE = 'craterscale.dat'
 character(*),parameter :: DATFILE    = 'ctem.dat'
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
+character(*),parameter :: RCFILE     = 'craterlist.dat' !not sure if this is where this line should go, but putting it here for now...
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

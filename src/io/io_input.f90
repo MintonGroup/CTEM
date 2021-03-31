@@ -90,6 +90,7 @@ subroutine io_input(infile,user)
    user%psi = 2.0_DP
    user%fe  = 1.0_DP
    user%ejecta_truncation = 10.0_DP
+   user%doquasimc = .false.
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -251,6 +252,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%docollapse
+         case ("QUASIMC")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%doquasimc
          case ("TESTXOFFSET")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
@@ -426,6 +432,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%sfdcompare
+         case ("REALCRATERLIST")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%realcraterlist
          case ("SHADEDMINH")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
