@@ -214,7 +214,7 @@ type usertype
    real(DP)          :: testyoffset  ! Offset of test crater from center in y direction (m)   
    logical           :: tallyonly    ! Only run the tally routine (don't generate any new craters)
    logical           :: testtally    ! Set to T to count all non-cookie cut craters, regardless of score
-   real(DP)          :: rctime       ! time (in interval units) for emplacement of quasi-MC crater. Default 1E30 (aka never emplace real crater)
+   real(DP)          :: rctime       ! time (in interval units) for emplacement of quasi-MC crater
 
    ! IDL driver variables
    character(STRMAX) :: impfile      ! Name of impactor size distribution file (impacts per m^2 per y)
@@ -330,5 +330,8 @@ real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
 real(DP),parameter :: rayp = 2.0_DP 
 integer(I4B),parameter :: rayq = 4
 real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
+
+! quasi-MC test variables
+integer(I4B) :: rccount !start line to be read for quasi-MC (should be 0)
 
 end module module_globals

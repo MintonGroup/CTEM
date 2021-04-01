@@ -30,7 +30,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    implicit none
 
    ! Arguments
-   type(usertype),intent(in)                       :: user
+   type(usertype),intent(inout)                       :: user
    type(surftype),dimension(:,:),intent(inout)     :: surf
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
@@ -98,6 +98,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       write(*,*) "Maximum crater diameter: ",domain%biggest_crater
    end if
 
+   ! read initial quasi-MC position
+   if (user%doquasimc) then
+      call io_read_craterlist(user,domain)
+      rccount = 1
+      write(*,*) user%rctime
+      write(*,*) domain%rcnum
+   end if
+
 
    ! create crater population
    cmin = domain%biggest_crater
@@ -135,9 +143,20 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
       !if in quasiMC mode: check to see if it's time for a real crater
-      !if (user%doquasimc) then
-         
-      !end if
+      if (user%doquasimc) then
+         if (crater%timestamp > user%rctime) then
+            write(*,*) "real crater @ ", crater%timestamp
+            ! add the code to emplace the test crater here
+            call io_read_craterlist(user, domain)
+            rccount = rccount + 1
+            write(*,*) user%rctime
+            write(*,*) rccount
+            if (rccount > domain%rcnum) then
+               write(*,*) "real crater list complete."
+               user%rctime = 1e30
+            end if
+         end if
+      end if
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat

@@ -11,9 +11,9 @@
 !    Arguments : 
 !
 !  Output
-!    Arguments : rclist   : List of 'real' craters to read in
+!    Arguments : 
 ! 
-!  Notes       :  
+!  Notes       :  only reads needed line [WIP]
 !
 !**********************************************************************************************************************************
 subroutine io_read_craterlist(user, domain)
@@ -40,13 +40,14 @@ subroutine io_read_craterlist(user, domain)
    end if 
 
 
-   do i=1,domain%rcnum
-      read(LUN,*,iostat=ierr) user%testimp, user%testvel, user%testang, user%testxoffset, user%testyoffset, user%rctime
-      if (ierr/=0) then
-         write(*,*) "Unable to read file ",trim(rcfile)
-         stop
-      end if
-   end do
+   !do i=0,rccount
+      !read(LUN,*)
+   read(LUN,*,iostat=ierr) user%testimp, user%testvel, user%testang, user%testxoffset, user%testyoffset, user%rctime
+   if (ierr/=0) then
+      write(*,*) "Unable to read file ",trim(rcfile)
+      stop
+   end if
+   !end do
 end subroutine io_read_craterlist
 
 
