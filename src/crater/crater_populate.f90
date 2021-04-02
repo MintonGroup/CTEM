@@ -144,7 +144,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if (crater%timestamp > user%rctime) then
-            write(*,*) "real crater at time ", rclist(6, rccount)
+            write(*,*) "Real crater at time ", rclist(6, rccount)
             user%testflag = .true.
             user%testimp = rclist(1, rccount)
             user%testvel = rclist(2, rccount)
@@ -162,7 +162,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             user%testflag = .false.
             rccount = rccount + 1
             if (rccount > domain%rcnum) then
-               write(*,*) "real crater list complete."
+               write(*,*) "Real crater list complete."
                user%rctime = 1e30
             else
                user%rctime = rclist(6,rccount)
