@@ -122,9 +122,10 @@ save
    end interface
 
    interface
-      subroutine io_read_craterlist(user,domain)
+      subroutine io_read_craterlist(rclist, user,domain)
       use module_globals
       implicit none
+      real(DP),dimension(:,:),intent(out) :: rclist
       type(usertype),intent(in) :: user
       type(domaintype),intent(in) :: domain
       end subroutine io_read_craterlist

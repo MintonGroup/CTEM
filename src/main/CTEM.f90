@@ -38,7 +38,7 @@ type(surftype),dimension(:,:),allocatable :: surf
 type(cratertype) :: crater
 
 ! Distribution arrays
-real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist
+real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist,rclist
 real(DP),dimension(:),allocatable :: obslist
 real(SP),dimension(:),allocatable :: depthdiam
 real(SP),dimension(:,:),allocatable :: oposlist
@@ -77,6 +77,7 @@ allocate(prod(4,domain%pnum))
 allocate(nflux(3,domain%pnum))
 allocate(crtscl(2,domain%pnum))
 allocate(vdist(3,domain%vnum))
+allocate(rclist(6,domain%rcnum))
 allocate(surf(user%gridsize,user%gridsize))
 allocate(production_list(domain%pnum))
 
@@ -85,6 +86,10 @@ call io_read_prod(prod,user,domain)
 
 ! Read in impactor velocity distribution
 call io_read_vdist(vdist,user,domain)
+
+! Read in real crater list for quasi-MC run
+call io_read_craterlist(rclist,user,domain)
+write(*,*) rclist
 
 write(*,*) "Initializing simulation domain and determining minimum impactor size"
 call init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
@@ -115,7 +120,7 @@ if (.not.user%tallyonly) then
       call crater_make_list(domain,prod,ntotcrat,production_list)
    end if
    call crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
-                        fracdone,nflux,ntotcrat,curyear)
+                        fracdone,nflux,ntotcrat,curyear,rclist)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)

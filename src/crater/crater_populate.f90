@@ -18,7 +18,7 @@
 !
 !**********************************************************************************************************************************
 subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
-                           fracdone,nflux,ntotcrat,curyear)
+                           fracdone,nflux,ntotcrat,curyear,rclist)
    use module_globals
    use module_seismic
    use module_io
@@ -45,6 +45,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),dimension(:,:),intent(in)              :: nflux 
    integer(I8B),intent(in)                         :: ntotcrat  ! Total number of attempted impacts
    real(DP),intent(in)                             :: curyear
+   real(DP),dimension(:,:), intent(in)             :: rclist !array of 'real' craters for quasiMC
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -100,10 +101,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
    ! read initial quasi-MC position
    if (user%doquasimc) then
-      call io_read_craterlist(user,domain)
       rccount = 1
-      write(*,*) user%rctime
-      write(*,*) domain%rcnum
+      user%rctime = rclist(6,rccount)
    end if
 
 
@@ -145,22 +144,31 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if (crater%timestamp > user%rctime) then
-            write(*,*) "real crater @ ", crater%timestamp
-            ! add the code to emplace the test crater here
-            call io_read_craterlist(user, domain)
-            rccount = rccount + 1
-            write(*,*) user%rctime
-            write(*,*) rccount
-            if (rccount > domain%rcnum) then
-               write(*,*) "real crater list complete."
-               user%rctime = 1e30
-            end if
+            write(*,*) "real crater at time ", rclist(6, rccount)
+            user%testflag = .true.
+            user%testimp = rclist(1, rccount)
+            user%testvel = rclist(2, rccount)
+            user%testang = rclist(3, rccount)
+            user%testxoffset = rclist(4, rccount)
+            user%testyoffset = rclist(5, rccount)
          end if
       end if
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat
       if (user%testflag) write(*,*) 'Dtrans = ',crater%rad*2
+      if (user%doquasimc) then
+         if (crater%timestamp > user%rctime) then
+            user%testflag = .false.
+            rccount = rccount + 1
+            if (rccount > domain%rcnum) then
+               write(*,*) "real crater list complete."
+               user%rctime = 1e30
+            else
+               user%rctime = rclist(6,rccount)
+            end if
+         end if
+      end if
       if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
          if (user%killatmaxcrater) then 
             fracdone = real(icrater,kind=DP) / real(ntotcrat,kind=DP)
