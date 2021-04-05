@@ -81,6 +81,7 @@ if (parameters['quasimc'] == 'T'):
     craterlistfile = parameters['workingdir'] + parameters['realcraterlist']
     rclist = ctem_io_readers.read_formatted_ascii(craterlistfile, skip_lines = 0)
     rclist[:,5] = (parameters['interval'] * parameters['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+    rclist = rclist[rclist[:,5].argsort()]
     ctem_io_writers.write_realcraters(parameters, rclist)
 
 #Create impactor production population
