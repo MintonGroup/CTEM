@@ -88,7 +88,7 @@ call io_read_prod(prod,user,domain)
 call io_read_vdist(vdist,user,domain)
 
 ! Read in real crater list for quasi-MC run
-call io_read_craterlist(rclist,user,domain)
+if (user%doquasimc) call io_read_craterlist(rclist,user,domain)
 !write(*,*) rclist
 
 write(*,*) "Initializing simulation domain and determining minimum impactor size"
