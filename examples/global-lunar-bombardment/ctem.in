@@ -3,8 +3,8 @@
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      6.444e3 ! 100km crater            ! Diameter of test impactor (m)
-testvel      15.0e3                            ! Velocity of test crater (m/s)
+testimp      90856.5           ! Diameter of test impactor (m)
+testvel      18.3e3                            ! Velocity of test crater (m/s)
 testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0e0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
 testyoffset  0.0e0                             ! y-axis offset of crater center from grid center (m) - Default 0.0

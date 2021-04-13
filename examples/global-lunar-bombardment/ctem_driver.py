@@ -13,6 +13,8 @@ import numpy
 import os
 import subprocess
 import shutil
+import pandas
+from scipy.interpolate import interp1d
 
 #Import CTEM modules
 import ctem_io_readers
@@ -77,9 +79,22 @@ prodfunction = ctem_io_readers.read_formatted_ascii(impfile, skip_lines = 0)
 
 #Read list of real craters and export to dat file for Fortran code
 if (parameters['quasimc'] == 'T'):
+
+    #Read list of real craters
     print("quasi-MC mode is ON")
     craterlistfile = parameters['workingdir'] + parameters['realcraterlist']
     rclist = ctem_io_readers.read_formatted_ascii(craterlistfile, skip_lines = 0)
+
+    #Interpolate craterscale.dat to get impactor sizes from crater sizes given
+    df = pandas.read_csv('craterscale.dat', sep='\s+')
+    df['log(Dc)'] = numpy.log(df['Dcrat(m)'])
+    df['log(Di)'] = numpy.log(df['#Dimp(m)'])
+    xnew = df['log(Dc)'].values
+    ynew = df['log(Di)'].values
+    interp = interp1d(xnew, ynew)
+    rclist[:,0] = numpy.exp(interp(numpy.log(rclist[:,0])))
+
+    #Convert age in Ga to "interval time"
     rclist[:,5] = (parameters['interval'] * parameters['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
     rclist = rclist[rclist[:,5].argsort()]
     ctem_io_writers.write_realcraters(parameters, rclist)
