@@ -91,7 +91,7 @@ if (parameters['quasimc'] == 'T'):
     df['log(Di)'] = numpy.log(df['#Dimp(m)'])
     xnew = df['log(Dc)'].values
     ynew = df['log(Di)'].values
-    interp = interp1d(xnew, ynew)
+    interp = interp1d(xnew, ynew, fill_value='extrapolate')
     rclist[:,0] = numpy.exp(interp(numpy.log(rclist[:,0])))
 
     #Convert age in Ga to "interval time"
