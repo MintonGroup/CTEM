@@ -99,7 +99,7 @@ if (parameters['quasimc'] == 'T'):
             print("non-physical latitude on line %i of craterlist.in. Please enter a value between -90 and 90 degrees." %(lat+1))
             quit()
         else:
-            rclist[lat,3] = rclist[lat,3] * 3.42222222e4 #this calculation assumes the area being modeled is equal to the surface area of the Moon
+            rclist[lat,3] = rclist[lat,3] * ((parameters['pix'] * (parameters['gridsize']/2)) / 90.0)
     
     for lon in range(0, len(rclist[:,4])):
         if numpy.abs(rclist[lon,4]) > 360.0:
@@ -113,7 +113,7 @@ if (parameters['quasimc'] == 'T'):
             else:
                 rclist[lon,4] = rclist[lon,4]
             
-    rclist[:,4] = rclist[:,4] * 1.71111111e4 #this calculation assumes the area being modeled is equal to the surface area of the Moon
+    rclist[:,4] = rclist[:,4] * ((parameters['pix'] * (parameters['gridsize']/2)) / 180.0)
 
     #Convert age in Ga to "interval time"
     rclist[:,5] = (parameters['interval'] * parameters['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
