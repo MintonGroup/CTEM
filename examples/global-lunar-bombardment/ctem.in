@@ -3,11 +3,11 @@
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      192832.5674475569           ! Diameter of test impactor (m)
+testimp      186296.7168337693          ! Diameter of test impactor (m)
 testvel      18.3e3                            ! Velocity of test crater (m/s)
 testang      45.0                              ! Impact angle of test crater (deg) - Default 90.0
-testxoffset  0.0e0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
-testyoffset  0.0e0                             ! y-axis offset of crater center from grid center (m) - Default 0.0
+testxoffset  -5.124646221681263e6                             ! x-axis offset of crater center from grid center (m) - Default 0.0
+testyoffset  -1.6071375724799227e6                             ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F   
 quasimc      T                                 ! MC run constrained by non-MC 'real' craters given in a list
@@ -16,7 +16,7 @@ realcraterlist    craterlist.in                ! list of 'real' craters for Quas
 
 
 ! IDL driver in uts
-interval     0.6  
+interval     0.1  
 numintervals 1                                  ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))

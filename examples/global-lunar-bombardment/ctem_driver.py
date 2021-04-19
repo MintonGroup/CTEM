@@ -77,7 +77,6 @@ regolith = numpy.zeros([parameters['gridsize'], parameters['gridsize']], dtype =
 impfile = parameters['workingdir'] + parameters['impfile']
 prodfunction = ctem_io_readers.read_formatted_ascii(impfile, skip_lines = 0)
 
-#Read list of real craters and export to dat file for Fortran code
 if (parameters['quasimc'] == 'T'):
 
     #Read list of real craters
@@ -94,9 +93,33 @@ if (parameters['quasimc'] == 'T'):
     interp = interp1d(xnew, ynew, fill_value='extrapolate')
     rclist[:,0] = numpy.exp(interp(numpy.log(rclist[:,0])))
 
+    #Convert latitude and longitude to y- and x-offset
+    for lat in range(0, len(rclist[:,3])):
+        if numpy.abs(rclist[lat,3]) > 90.0:
+            print("non-physical latitude on line %i of craterlist.in. Please enter a value between -90 and 90 degrees." %(lat+1))
+            quit()
+        else:
+            rclist[lat,3] = rclist[lat,3] * 3.42222222e4 #this calculation assumes the area being modeled is equal to the surface area of the Moon
+    
+    for lon in range(0, len(rclist[:,4])):
+        if numpy.abs(rclist[lon,4]) > 360.0:
+            print("Non-physical longitude on line %i of craterlist.in. Please enter a value between -360 and 360 degrees." %(lon+1))
+            quit()
+        else:
+            if rclist[lon,4] < -180.0:
+                rclist[lon,4] = 360.0 - numpy.abs(rclist[lon,4])
+            elif rclist[lon,4] > 180.0:
+                rclist[lon,4] = -(360.0 - rclist[lon,4])
+            else:
+                rclist[lon,4] = rclist[lon,4]
+            
+    rclist[:,4] = rclist[:,4] * 1.71111111e4 #this calculation assumes the area being modeled is equal to the surface area of the Moon
+
     #Convert age in Ga to "interval time"
     rclist[:,5] = (parameters['interval'] * parameters['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
     rclist = rclist[rclist[:,5].argsort()]
+
+    #Export to dat file for Fortran use
     ctem_io_writers.write_realcraters(parameters, rclist)
 
 #Create impactor production population

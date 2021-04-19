@@ -149,8 +149,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             user%testimp = rclist(1, rccount)
             user%testvel = rclist(2, rccount)
             user%testang = rclist(3, rccount)
-            user%testxoffset = rclist(4, rccount)
-            user%testyoffset = rclist(5, rccount)
+            user%testxoffset = rclist(5, rccount) !x-offset is longitude
+            user%testyoffset = rclist(4, rccount) !y-offset is latitude 
          end if
       end if
       ! generate random crater
