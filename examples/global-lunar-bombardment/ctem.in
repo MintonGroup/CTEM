@@ -16,7 +16,7 @@ realcraterlist    craterlist.in                ! list of 'real' craters for Quas
 
 
 ! IDL driver in uts
-interval     0.1  
+interval     0.432  
 numintervals 1                                  ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
