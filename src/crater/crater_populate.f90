@@ -157,6 +157,18 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat
       if (user%testflag) write(*,*) 'Dtrans = ',crater%rad*2
+      if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
+         if ( user%testflag .eqv. .false. ) then
+            if (user%killatmaxcrater) then 
+               fracdone = real(icrater,kind=DP) / real(ntotcrat,kind=DP)
+               write(*,*)
+               write(*,'("Ended run at ",F7.2,"% due to crater of size: ",ES13.4)') fracdone * 100,crater%fcrat
+               exit
+            else
+               makecrater = .false. ! Ignore this big crater
+            end if
+         end if
+      end if 
       if (user%doquasimc) then
          if (crater%timestamp > user%rctime) then
             user%testflag = .false.
@@ -169,16 +181,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             end if
          end if
       end if
-      if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
-         if (user%killatmaxcrater) then 
-            fracdone = real(icrater,kind=DP) / real(ntotcrat,kind=DP)
-            write(*,*)
-            write(*,'("Ended run at ",F7.2,"% due to crater of size: ",ES13.4)') fracdone * 100,crater%fcrat
-            exit
-         else
-            makecrater = .false. ! Ignore this big crater
-         end if
-      end if 
       if (crater%fcrat > 0.8_DP * domain%side) then
          surf%ejcov  = 0.0_DP
          surf%dem    = 0.0_DP
