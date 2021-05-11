@@ -60,6 +60,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: rhpmin = -1.0_DP  ! Smallest rim height to diameter ratio
    real(DP)                :: ddmax    ! Maximum depth/diameter 
    real(DP)                :: ddmin    ! Maximum depth/diameter 
+   real(DP)                :: timestamp_old
    integer(I8B)            :: icrater  ! Loop counters
    integer(I4B)            :: nkilled  ! Number of craters killed in a tally step
    integer(I4B)            :: onum     ! Number of craters observed in a tally step
@@ -138,12 +139,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    oldpbarpos = 0
    do while (icrater < ntotcrat)
       makecrater = .true.
+      timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
-         if (crater%timestamp > user%rctime) then
+         if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
             write(*,*) "Real crater at ", crater%timestamp
             user%testflag = .true.
             user%testimp = rclist(1, rccount)
