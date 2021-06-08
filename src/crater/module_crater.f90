@@ -33,22 +33,23 @@ end interface
                                  mass,fracdone,nflux,ntotcrat,curyear, rclist)
       use module_globals
       implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(inout)  :: surf
-      type(cratertype),intent(inout)               :: crater
-      type(domaintype),intent(inout)               :: domain
-      real(DP),dimension(:,:),intent(in)           :: prod,vdist
-      integer(I8B),dimension(:),intent(inout)         :: production_list            
-      integer(I4B),intent(out)                     :: ntrue
-      integer(I4B),intent(out)                     :: vistrue
-      integer(I4B),intent(out)                     :: ntotkilled
-      real(DP),dimension(:,:),intent(out)          :: truelist
-      real(DP),intent(out)                         :: mass
-      real(DP),intent(out)                         :: fracdone
-      real(DP),dimension(:,:),intent(in)           :: nflux 
-      integer(I8B),intent(in)                      :: ntotcrat
-      real(DP),intent(in)                          :: curyear
-      real(DP), dimension(:,:), INTENT(in)         :: rclist
+      type(usertype),intent(inout)                     :: user
+      type(surftype),dimension(:,:),intent(inout)      :: surf
+      type(cratertype),intent(inout)                   :: crater
+      type(domaintype),intent(inout)                   :: domain
+      real(DP),dimension(:,:),intent(in)               :: prod,vdist
+      integer(I8B),dimension(:),intent(inout)          :: production_list            
+      integer(I4B),intent(out)                         :: ntrue
+      integer(I4B),intent(out)                         :: vistrue
+      integer(I4B),intent(out)                         :: ntotkilled
+      real(DP),dimension(:,:),allocatable, intent(out) :: truelist
+      real(DP),intent(out)                             :: mass
+      real(DP),intent(out)                             :: fracdone
+      real(DP),dimension(:,:),intent(in)               :: nflux 
+      integer(I8B),intent(in)                          :: ntotcrat  ! Total number of attempted impacts
+      real(DP),intent(in)                              :: curyear
+      real(DP),dimension(:,:), intent(in)              :: rclist !array of 'real' craters for quasiMC
+      target :: surf
       end subroutine crater_populate
    end interface
 

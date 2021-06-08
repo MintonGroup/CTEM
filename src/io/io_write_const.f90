@@ -23,7 +23,8 @@ subroutine io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,s
    implicit none
    
    ! Arguments
-   integer(I4B),intent(in) :: totalimpacts,ncount
+   integer(I8B),intent(in) :: totalimpacts
+   integer(I4B),intent(in) :: ncount
    logical,intent(in) :: restart
    real(DP),intent(in) :: curyear,fracdone,masstot
    integer(I4B),dimension(:),intent(in) :: seedarr

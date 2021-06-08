@@ -30,22 +30,23 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    implicit none
 
    ! Arguments
-   type(usertype),intent(inout)                       :: user
-   type(surftype),dimension(:,:),intent(inout)     :: surf
-   type(cratertype),intent(inout)                  :: crater
-   type(domaintype),intent(inout)                  :: domain
-   real(DP),dimension(:,:),intent(in)              :: prod,vdist
-   integer(I8B),dimension(:),intent(inout)            :: production_list
-   integer(I4B),intent(out)                        :: ntrue
-   integer(I4B),intent(out)                        :: vistrue
-   integer(I4B),intent(out)                        :: ntotkilled
-   real(DP),dimension(:,:),allocatable,intent(out) :: truelist
-   real(DP),intent(out)                            :: mass
-   real(DP),intent(out)                            :: fracdone
-   real(DP),dimension(:,:),intent(in)              :: nflux 
-   integer(I8B),intent(in)                         :: ntotcrat  ! Total number of attempted impacts
-   real(DP),intent(in)                             :: curyear
-   real(DP),dimension(:,:), intent(in)             :: rclist !array of 'real' craters for quasiMC
+   type(usertype),intent(inout)                     :: user
+   type(surftype),dimension(:,:),intent(inout)      :: surf
+   type(cratertype),intent(inout)                   :: crater
+   type(domaintype),intent(inout)                   :: domain
+   real(DP),dimension(:,:),intent(in)               :: prod,vdist
+   integer(I8B),dimension(:),intent(inout)          :: production_list            
+   integer(I4B),intent(out)                         :: ntrue
+   integer(I4B),intent(out)                         :: vistrue
+   integer(I4B),intent(out)                         :: ntotkilled
+   real(DP),dimension(:,:),allocatable, intent(out) :: truelist
+   real(DP),intent(out)                             :: mass
+   real(DP),intent(out)                             :: fracdone
+   real(DP),dimension(:,:),intent(in)               :: nflux 
+   integer(I8B),intent(in)                          :: ntotcrat  ! Total number of attempted impacts
+   real(DP),intent(in)                              :: curyear
+   real(DP),dimension(:,:), intent(in)              :: rclist !array of 'real' craters for quasiMC
+   target :: surf
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -75,7 +76,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: ejbmass
    logical                 :: makecrater
    real(DP),dimension(user%gridsize,user%gridsize) :: kdiff 
-   TARGET :: surf
    integer(I4B)            :: oldpbarpos
 
    ! ejecta blanket array

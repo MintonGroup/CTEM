@@ -43,3 +43,8 @@ examples/global-lunar-bombardment/CTEM
 !NPF*.dat
 
 examples/global-lunar-bombardment/scale.ipynb
+*~
+
+*.m4
+
+Makefile.in

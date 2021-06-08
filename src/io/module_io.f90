@@ -126,7 +126,7 @@ save
       use module_globals
       implicit none
       real(DP),dimension(:,:),intent(out) :: rclist
-      type(usertype),intent(in) :: user
+      type(usertype),intent(inout) :: user
       type(domaintype),intent(in) :: domain
       end subroutine io_read_craterlist
    end interface
