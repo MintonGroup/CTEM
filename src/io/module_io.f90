@@ -66,15 +66,6 @@ save
       end subroutine io_read_regotrack
   end interface  
 
-  interface
-      subroutine io_read_porotrack(user,surf)
-		use module_globals
-		implicit none
-		type(usertype),intent(in) :: user
-		type(surftype),dimension(:,:),intent(out) :: surf  
-      end subroutine io_read_porotrack
-  end interface  
-
   interface   
       subroutine io_write_surf(user,surf)
       use module_globals
@@ -91,15 +82,6 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf      
       end subroutine io_write_regotrack
-  end interface 
-
-  interface 
-      subroutine io_write_porotrack(user,surf)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(in) :: surf      
-      end subroutine io_write_porotrack
   end interface 
 
   interface   
@@ -197,13 +179,41 @@ save
       end subroutine io_splash
    end interface
 
-  !interface
-  !    subroutine io_write_regodist(user,surf)
-  !    use module_globals
-  !    implicit none
-  !    type(usertype),intent(in) :: user
-  !    type(surftype),dimension(:,:),intent(in) :: surf
-  !    end subroutine io_write_regodist
-  !end interface
+  interface
+      subroutine io_write_age(user,surf,n_size,icrater,ncrat)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
+      integer(I2B),intent(in)                  :: n_size
+      integer(I8B),intent(in)                  :: icrater
+      integer(I8B),intent(in)                  :: ncrat
+      end subroutine io_write_age
+  end interface
+
+  interface
+      subroutine io_write_pindex_map(user,pindex,icrater,ncrat)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                 :: user
+      integer(I2B),dimension(:,:),intent(inout) :: pindex
+      integer(I8B),intent(in)                   :: icrater
+      integer(I8B),intent(in)                   :: ncrat
+      end subroutine io_write_pindex_map
+  end interface
+
+  interface
+      subroutine io_write_age_depth(user,surf,n_size,icrater,ncrat,age,age_2_depth)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
+      integer(I2B),intent(in)                  :: n_size
+      integer(I8B),intent(in)                  :: icrater
+      integer(I8B),intent(in)                  :: ncrat
+      real(DP),intent(in)                      :: age
+      real(SP),dimension(:,:,:),intent(inout)  :: age_2_depth
+      end subroutine io_write_age_depth
+  end interface
 
 end module module_io

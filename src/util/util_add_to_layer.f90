@@ -47,7 +47,6 @@ if (layer>0) then
    surfi%diam(layer) = crater%fcrat
    surfi%xl(layer) = crater%xl
    surfi%yl(layer) = crater%yl
-   surfi%timestamp(layer) = crater%timestamp
 else
    write(*,*)
    write(*,*) 'WARNING! No free layer to add crater pixel. Consider increasing NUMLAYERS'

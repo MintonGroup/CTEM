@@ -18,7 +18,8 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,vseg,newlayer,rm)
+subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
+           age_collector,xmints,xsfints,depthb)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_streamtube
    implicit none
@@ -26,12 +27,25 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,vs
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
-   real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado,vseg,rm
+   real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
    type(regodatatype),intent(inout) :: newlayer
+   real(DP),intent(out)            :: vmare,totseb
+   real(SP),dimension(:),intent(inout) :: age_collector
+   real(DP),intent(in)             :: xmints
+   real(DP),intent(in)             :: xsfints, depthb
 
    ! Traversing a linked list 
    real(DP) :: zri,zrip1,cosi,coso,rzmax
-   real(DP) :: erad,z,zmin,zmax,thetast
+   real(DP) :: erad,z,zmin,zmax,thetast,vseg
+
+   real(DP),parameter :: a = 0.936457
+   real(DP),parameter :: b = 1.12368
+
+   ! Melt zone 
+   real(DP) :: recyratio
+
+   ! Shock zone
+   real(DP) :: vsh
 
    erad = (eradi + erado)/2.0
    rzmax = erad * sqrt(3.0)/4.0
@@ -50,17 +64,24 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,vs
    end if
 
    z = surfi%regolayer%regodata%thickness
+   vmare  = 0._DP
+   totseb = 0._DP
 
    if (z>=zmax) then 
 
-      newlayer%thickness = vseg
-      newlayer%comp      = vseg * surfi%regolayer%regodata%comp
+      vmare = newlayer%thickness * user%pix**2 * surfi%regolayer%regodata%comp
+      totseb = newlayer%thickness * user%pix**2 
+      if (rip1 > xmints .and. ri < xmints) then
+         vseg             = regolith_streamtube_volume_func(eradi,max(xmints,ri),rip1,deltar)
+         vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
+         recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer%regodata%thickness
+         age_collector(:) = age_collector(:) + surfi%regolayer%regodata%age(:) * recyratio
+      end if
 
    else 
 
-     newlayer%thickness  = 0._DP
-     newlayer%comp       = 0._DP
-     call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,vseg,newlayer,rm)
+     call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,&
+          newlayer,vmare,totseb,age_collector,xmints,xsfints,depthb)
 
    end if
 

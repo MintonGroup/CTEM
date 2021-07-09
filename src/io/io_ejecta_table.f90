@@ -41,7 +41,7 @@ subroutine io_ejecta_table(crater,domain,ejb,ejtble,filename)
       write(LUN,'(A63)') '# "r (m)"     "h (m)"      "v (m/s)"    "ang (deg)"  "erad (m)"'
       do k=1,ejtble 
          write(LUN,'(5(ES13.5E3,1X))') exp(ejb(k)%lrad),exp(ejb(k)%thick),sqrt(ejb(k)%vesq),ejb(k)%angle/DEG2RAD, &
-                                     exp(ejb(k)%erad)
+                                     ejb(k)%erad
       end do
    close(LUN)
 

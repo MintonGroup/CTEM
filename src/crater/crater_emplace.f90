@@ -64,7 +64,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    real(DP),intent(out) :: deltaMtot
 
    ! Internal variables
-   real(DP) :: lradsq,newelev, x_relative, y_relative 
+   real(DP) :: lradsq,newelev
    integer(I4B) :: xpi,ypi,i,j,inc,incsq,iradsq
    real(DP) :: xp,yp,fradsq,deltaMi,rimheight
    logical :: lastloop
@@ -94,13 +94,10 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
          
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
-         x_relative = (crater%xl - xp)
-         y_relative = (crater%yl - yp)
-         
-         lradsq = x_relative**2 + y_relative**2
+         lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
 
          if (lradsq > crater%frad**2) cycle
-         call crater_form_interior(user,surf(xpi,ypi),crater,x_relative, y_relative,newelev,deltaMi)
+         call crater_form_interior(user,surf(xpi,ypi),crater,lradsq,newelev,deltaMi)
          deltaMtot = deltaMtot + deltaMi
 
          ! do porosity computation if (user%doporosity)

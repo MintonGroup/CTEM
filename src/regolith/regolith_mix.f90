@@ -36,14 +36,16 @@ subroutine regolith_mix(surfi,mixing_depth)
    call util_traverse_pop(surfi%regolayer,mixing_depth,poppedlist_top)
 
    newlayer%thickness = 0.0_DP
-   newlayer%comp = 0.0_DP
-   newlayer%meltfrac = 0.0_DP
+   newlayer%comp      = 0.0_DP
+   newlayer%meltfrac  = 0.0_DP
+   newlayer%age(:)    = 0.0_DP
 
    poppedlist => poppedlist_top
    do while(associated(poppedlist%next))
       newlayer%thickness = newlayer%thickness + poppedlist%regodata%thickness
-      newlayer%comp = newlayer%comp + poppedlist%regodata%thickness * poppedlist%regodata%comp       
-      newlayer%meltfrac = newlayer%meltfrac + poppedlist%regodata%thickness * poppedlist%regodata%meltfrac
+      newlayer%comp      = newlayer%comp + poppedlist%regodata%thickness * poppedlist%regodata%comp       
+      newlayer%meltfrac  = newlayer%meltfrac + poppedlist%regodata%thickness * poppedlist%regodata%meltfrac
+      newlayer%age(:)    = newlayer%age(:) + poppedlist%regodata%age(:)
       poppedlist => poppedlist%next
    end do
 

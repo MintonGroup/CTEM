@@ -153,7 +153,7 @@ subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       end if
       niter = i
       erad = resultat
-      if ((erad <= crater%rad).and.(lrad >= crater%rad).and.(erad >= 0._DP)) exit
+      if ((erad <= crater%frad).and.(lrad >= crater%frad).and.(erad >= 0._DP)) exit
       factor = 0.5_DP  * (factor + 1.0_DP) ! Failed. Try again with a new factor
    end do everything
 

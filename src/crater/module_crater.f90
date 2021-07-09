@@ -30,7 +30,7 @@ end interface
 
    interface
       subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
-                                 mass,fracdone,nflux,ntotcrat,curyear)
+                                 mass,fracdone,nflux,ntotcrat)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -47,7 +47,6 @@ end interface
       real(DP),intent(out)                         :: fracdone
       real(DP),dimension(:,:),intent(in)           :: nflux 
       integer(I8B),intent(in)                      :: ntotcrat
-      real(DP),intent(in)                          :: curyear
       end subroutine crater_populate
    end interface
 
@@ -108,13 +107,13 @@ end interface
    end interface
 
    interface
-      subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative, newelev,deltaMi)
+      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       type(cratertype),intent(in) :: crater
-      real(DP),intent(in) :: x_relative, y_relative 
+      real(DP),intent(in) :: lradsq
       real(DP),intent(in) :: newelev
       real(DP),intent(out) :: deltaMi
       end subroutine crater_form_interior
@@ -260,6 +259,20 @@ end interface
       real(DP),intent(in) :: lrad
       real(DP) :: critical
       end function crater_critical_slope
+   end interface
+
+   interface
+      subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval,kdiff)
+      use module_globals
+      type(usertype),intent(in)                           :: user
+      type(surftype),dimension(:,:),intent(inout)         :: surf
+      real(DP),intent(in)                                 :: age
+      real(DP),intent(in)                                 :: age_resolution
+      real(DP),dimension(:,:),intent(in)                  :: prod,nflux
+      type(domaintype),intent(in)                         :: domain
+      real(DP),intent(in)                                 :: finterval
+      real(DP),dimension(:,:),intent(inout),optional      :: kdiff
+      end subroutine crater_superdomain
    end interface
 
 end module
