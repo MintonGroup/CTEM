@@ -110,13 +110,13 @@ end interface
    end interface
 
    interface
-      subroutine crater_form_interior(user,surfi,crater,lradsq,newelev,deltaMi)
+      subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative, newelev,deltaMi)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       type(cratertype),intent(in) :: crater
-      real(DP),intent(in) :: lradsq
+      real(DP),intent(in) :: x_relative, y_relative 
       real(DP),intent(in) :: newelev
       real(DP),intent(out) :: deltaMi
       end subroutine crater_form_interior
