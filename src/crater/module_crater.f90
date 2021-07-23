@@ -265,7 +265,7 @@ end interface
    end interface
 
    interface
-      subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval,kdiff)
+      subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
       use module_globals
       type(usertype),intent(in)                           :: user
       type(surftype),dimension(:,:),intent(inout)         :: surf
@@ -274,7 +274,6 @@ end interface
       real(DP),dimension(:,:),intent(in)                  :: prod,nflux
       type(domaintype),intent(in)                         :: domain
       real(DP),intent(in)                                 :: finterval
-      real(DP),dimension(:,:),intent(inout),optional      :: kdiff
       end subroutine crater_superdomain
    end interface
 

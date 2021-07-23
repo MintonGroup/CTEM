@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval,kdiff)
+subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
    use module_globals
    use module_util
    use module_ejecta
@@ -35,7 +35,6 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
    real(DP),dimension(:,:),intent(in)                  :: prod,nflux 
    type(domaintype),intent(in)                         :: domain
    real(DP),intent(in)                                 :: finterval
-   real(DP),dimension(:,:),intent(inout),optional      :: kdiff
 
    ! Internal variables
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
@@ -177,19 +176,6 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
                end do
             end do
 
-         end if
-
-         if (user%dosoftening .and. present(kdiff)) then
-            do j = 1, user%gridsize
-               do i = 1, user%gridsize
-                  xpi = i - crater%xlpx
-                  ypi = j - crater%ylpx
-                  if ((abs(xpi) > inc) .or. (abs(ypi) > inc)) cycle
-                  if (ejisray(xpi,ypi) == 0) cycle
-                  kdiff(i,j) = kdiff(i,j) + rayfrac * user%soften_factor / (PI * &
-                  user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
-               end do
-            end do
          end if
 
          deallocate(ejdistribution,ejisray)
