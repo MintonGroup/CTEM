@@ -58,10 +58,12 @@ real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to 
 real(DP),parameter :: ALPHA = 0.125_DP
 real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
-real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponentt of continuous ejecta size power law from Moore et al. (1974) 
+real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
+integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
 
 
 type regodatatype 
+   real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
    real(DP) :: meltfrac 
    real(DP) :: comp 
