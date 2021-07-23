@@ -53,12 +53,6 @@ subroutine io_write_surf(user,surf)
    end do
    close(LUN)
 
-   open(LUN,file=TIMEFILE,status='replace',form='unformatted',recl=recsize,access='direct')
-   do i=1,user%numlayers 
-      write(LUN,rec=i) surf%timestamp(i)
-   end do
-   close(LUN)
-
    recsize = sizeof(stmp) * user%gridsize * user%gridsize
    open(LUN,file=POSFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    do i=1,user%numlayers 
@@ -71,10 +65,6 @@ subroutine io_write_surf(user,surf)
       !call io_write_regodist(user,surf)
       call io_write_regotrack(user,surf) 
    end if
-   
-   ! write data from porosity analysis
-   if (user%doporosity) call io_write_porotrack(user, surf)
-   
 !   if (user%docrustal_thinning) then
 !      recsize = sizeof(itmp) * user%gridsize * user%gridsize
 !      open(LUN,file=THICKFILE,status='replace',form='unformatted',recl=recsize,access='direct')

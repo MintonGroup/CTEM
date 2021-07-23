@@ -1,4 +1,4 @@
-pro ctem_io_read_input,infilename,interval,numintervals,gridsize,pix,seed,numlayers,sfdfile,impfile,maxcrat,ph1,shadedmaxhdefault,shadedminhdefault,shadedminh,shadedmaxh,restart,runtype,popupconsole,saveshaded,saverego,savepres,savetruelist,tallycadence
+pro ctem_io_read_input,infilename,interval,numintervals,gridsize,pix,seed,numlayers,sfdfile,impfile,maxcrat,ph1,shadedmaxhdefault,shadedminhdefault,shadedminh,shadedmaxh,restart,runtype,popupconsole,saveshaded,saverego,savepres,savetruelist
 Compile_Opt DEFINT32
 print, 'Reading input file'
 openr,infile,infilename, /GET_LUN
@@ -14,7 +14,6 @@ shadedmaxhdefault = 1
 shadedminhdefault = 1
 shadedminh = 0.d0
 shademaxnh = 0.d0
-tallycadence = long64(5000)
 
 
 ; Set required strings to unset value
@@ -49,7 +48,6 @@ while (not EOF(infile)) do begin
 		if strmatch(substrings(0),'savetruelist',/fold_case) then reads,substrings(1),savetruelist
 		if strmatch(substrings(0),'runtype',/fold_case) then reads,substrings(1),runtype
 		if strmatch(substrings(0),'restart',/fold_case) then reads,substrings(1),restart
-		if strmatch(substrings(0),'tallystart',/fold_case) then reads,substrings(1),tallycadence
 		if strmatch(substrings(0),'shadedminh',/fold_case) then begin
 			reads,substrings(1),shadedminh
 			shadedminhdefault = 0

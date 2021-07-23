@@ -48,7 +48,7 @@ character(STRMAX)       :: infile   ! Input file name
 logical                 :: restart  ! F = new run (start with a fresh surface)
 integer(I8B)            :: totalimpacts ! Total number of impacts ever produced 
 integer(I4B)            :: ncount   ! Current count in ctem_driver IDL run
-integer(I4B)            :: n, xp, yp        ! Size of random number generator seed array
+integer(I4B)            :: n, xp, yp, i        ! Size of random number generator seed array
 integer(I4B),dimension(:),allocatable :: seedarr ! Random number generator seed array
 real(DP)                :: curyear
 real(DP)                :: mass
@@ -60,6 +60,7 @@ integer(I4B)            :: nkilled
 integer(I4B)            :: ntotkilled 
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
+real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
 
@@ -155,15 +156,6 @@ if (user%doregotrack) then
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
          call util_destroy_list(surf(xp,yp)%regolayer)
-      end do
-   end do
-end if
-
-! If doporosity is true, then destroy the linked list for porosity
-if (user%doporosity) then
-   do yp = 1, user%gridsize
-      do xp = 1, user%gridsize
-         call util_destroy_list(surf(xp,yp)%porolayer)
       end do
    end do
 end if

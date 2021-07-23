@@ -31,11 +31,13 @@ subroutine io_read_regotrack(user,surf)
    integer(I4B), parameter :: LUM=8
    integer(I4B), parameter :: LUP=9
    integer(I4B), parameter :: LUC=10
+   integer(I4B), parameter :: LUA=11
    real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp
+   real(SP),dimension(user%gridsize,user%gridsize,60) :: age
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
-   real(DP), dimension(:),allocatable :: regotopi,melti,compi
+   real(DP), dimension(:),allocatable :: regotopi,melti,compi,agei
    type(regodatatype) :: newsurfi
-   integer(I4B) :: ioerr,i,j,k,itmp
+   integer(I4B) :: ioerr,i,j,k,q,itmp
    integer(kind=8) :: recsize
    logical :: initstat 
       
@@ -71,6 +73,12 @@ subroutine io_read_regotrack(user,surf)
        stop
    end if   
 
+   open(LUA,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
+   if (ioerr/=0) then
+       write(*,*) 'Error! Cannot read file ',trim(adjustl(MELTFILE))
+       stop
+   end if
+
    ! Start pushing regolith thickness and melt fraction of each layer in FILO manner
 
    do j=1,user%gridsize
@@ -81,7 +89,8 @@ subroutine io_read_regotrack(user,surf)
          allocate(regotopi(stacks_num(i,j)))
          allocate(compi(stacks_num(i,j)))
          allocate(melti(stacks_num(i,j)))    
-      
+         allocate(agei(60 * stacks_num(i,j)))
+        
          do k=1,stacks_num(i,j)
             read(LUN) regotop(i,j)
             regotopi(k) = regotop(i,j)       
@@ -89,16 +98,23 @@ subroutine io_read_regotrack(user,surf)
             compi(k) = comp(i,j)
             read(LUM) melt(i,j) 
             melti(k) = melt(i,j)
+            read(LUA) age(i,j,:)
+            do q=1,60
+               agei(60*k - (60-q)) = age(i,j,q)
+            end do
          end do
 
          do k=max(stacks_num(i,j)-1,1),1,-1
             newsurfi%thickness = regotopi(k)
             newsurfi%comp = compi(k)
             newsurfi%meltfrac  = melti(k)
+            do q=1,60
+               newsurfi%age(q) = agei(60*k-(60-q))
+            end do
             call util_push(surf(i,j)%regolayer,newsurfi)
          end do 
 
-         deallocate(regotopi,compi,melti)
+         deallocate(regotopi,compi,melti,agei)
 
       end do
    end do

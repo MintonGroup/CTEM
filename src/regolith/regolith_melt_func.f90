@@ -75,5 +75,5 @@ if (yints <= ymax) then
 else if (yints > ymax) then 
         vol = vol0 + PI/6.0 * erad**3 * (1.0 - 4.0*xints/erad)**1.5  
 end if
-
+ 
 end function regolith_melt_func

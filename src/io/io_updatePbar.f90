@@ -39,20 +39,20 @@ end if
 perc=floor(100*real(pbarpos)/real(PBARRES))
 write(unit=bar(1:3),fmt="(i3)") perc
 endpoint = min(ceiling(real(pbarpos*PBARSIZE)/real(PBARRES)),PBARSIZE)
-do k = 1,endpoint !- 1 
+do k = 1,endpoint - 1 
    bar(6+k:6+k)=pbarchar(k:k)
 end do
-!select case(flip)
-!case(1)
-!   bar(6+endpoint:6+endpoint)="/"
-!case(2)
-!   bar(6+endpoint:6+endpoint)="-"
-!case(3)
-!   bar(6+endpoint:6+endpoint)="\"
-!case(4)
-!   bar(6+endpoint:6+endpoint)="|"
-!end select
-!flip = flip + 1
+select case(flip)
+case(1)
+   bar(6+endpoint:6+endpoint)="/"
+case(2)
+   bar(6+endpoint:6+endpoint)="-"
+case(3)
+   bar(6+endpoint:6+endpoint)="\"
+case(4)
+   bar(6+endpoint:6+endpoint)="|"
+end select
+flip = flip + 1
 if (flip > 4) flip = 1
 ! print the progress bar.  
 write(fmtlabel,'("(A1,A",I2.2,",1X,A",I2.2,",$)")') PBARSIZE+7,MESSAGESIZE

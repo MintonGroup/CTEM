@@ -31,7 +31,7 @@ subroutine util_sort_layer(user,surf,crater)
    ! Internal variables
    integer(I4B),dimension(user%numlayers) :: ind
    real(DP),dimension(user%numlayers) :: tempdiam
-   real(SP),dimension(user%numlayers) :: tempxpos,tempypos,temptime
+   real(SP),dimension(user%numlayers) :: tempxpos,tempypos
    integer(I4B) :: i,j,k,inc,incsq,mx,my,iradsq
 
    inc = min(crater%rimdispx,(user%gridsize - 1)/2)
@@ -54,7 +54,6 @@ subroutine util_sort_layer(user,surf,crater)
             tempdiam = surf(mx,my)%diam(1:user%numlayers)
             tempxpos = surf(mx,my)%xl(1:user%numlayers)
             tempypos = surf(mx,my)%yl(1:user%numlayers)
-            temptime = surf(mx,my)%timestamp(1:user%numlayers)
 
             ! Sort the layers by crater diameter
             call util_mrgrnk(surf(mx,my)%diam(1:user%numlayers),ind)
@@ -63,7 +62,6 @@ subroutine util_sort_layer(user,surf,crater)
                surf(mx,my)%diam(k)=tempdiam(ind(k))
                surf(mx,my)%xl(k)=tempxpos(ind(k))
                surf(mx,my)%yl(k)=tempypos(ind(k))
-               surf(mx,my)%timestamp(k)=temptime(ind(k))
             end do
          end if
       end do

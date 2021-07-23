@@ -77,8 +77,6 @@ subroutine io_input(infile,user)
    user%doscour = .false.
    user%tallyonly = .false.
    user%dosoftening = .true.
-   user%dorays = .false.
-   user%superdomain = .true.
    user%doregotrack = .false.
    user%basinimp = huge(0._DP)
    user%maxcrat = 1.00_DP
@@ -86,11 +84,12 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%doporosity = .false.
-   user%Kd1 = 0.00_DP
-   user%psi = 2.0_DP
-   user%fe  = 1.0_DP
+   user%soften_factor = 0.9_DP
+   user%soften_slope = 1.8_DP
+   user%soften_size  = 30.0_DP
    user%ejecta_truncation = 10.0_DP
    user%doquasimc = .false.
+   user%discontinuous = .true.
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -282,16 +281,6 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%dosoftening
-         case ("DORAYS")
-            ifirst = ilast + 1
-            call io_get_token(line, ilength, ifirst, ilast, ierr)
-            token = line(ifirst:ilast)
-            read(token, *) user%dorays
-         case ("SUPERDOMAIN")
-            ifirst = ilast + 1
-            call io_get_token(line, ilength, ifirst, ilast, ierr)
-            token = line(ifirst:ilast)
-            read(token, *) user%superdomain
          case ("DOREGOTRACK")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
@@ -323,10 +312,15 @@ subroutine io_input(infile,user)
             token = line(ifirst:ilast)
             read(token, *) user%testtally
          case ("EJECTA_TRUNCATION") ! Radius of ejecta blankets to model in terms of crater radius
+              ifirst = ilast + 1
+              call io_get_token(line, ilength, ifirst, ilast, ierr)
+              token = line(ifirst:ilast)
+              read(token, *) user%ejecta_truncation
+         case ("DISCONTINUOUS") ! Do discontinuous ejecta blanket
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%ejecta_truncation
+            read(token, *) user%discontinuous
          ! Porosity model
          case ("POROSITYFLG")
             ifirst = ilast + 1
@@ -448,21 +442,21 @@ subroutine io_input(infile,user)
             token = line(ifirst:ilast)
             read(token, *) user%shadedmaxh
             read(token, *) user%shadedminh
-         case ("KD1")
+         case ("SOFTEN_FACTOR")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%Kd1
-         case ("PSI")
+            read(token, *) user%soften_factor
+         case ("SOFTEN_SLOPE")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%psi
-         case ("FE")
+            read(token, *) user%soften_slope
+         case ("SOFTEN_SIZE")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%fe
+            read(token, *) user%soften_size
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
          !**************************************************************************

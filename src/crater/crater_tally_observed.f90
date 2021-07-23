@@ -88,7 +88,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
 
 
    allocate(mlist(max(mnum,1)))
-   allocate(mposlist(3,max(mnum,1)))
+   allocate(mposlist(2,max(mnum,1)))
    allocate(mpxlist(2,max(mnum,1)))
    allocate(mlayerlist(max(mnum,1)))
    allocate(ind(max(mnum,1)))
@@ -111,7 +111,6 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
                ! Save the crater center coordinates
                mposlist(1,imnum) = surf(m,n)%xl(layer) 
                mposlist(2,imnum) = surf(m,n)%yl(layer) 
-               mposlist(3,imnum) = surf(m,n)%timestamp(layer) 
                ! Save the pixel index location
                mpxlist(1,imnum) = m 
                mpxlist(2,imnum) = n 
@@ -144,7 +143,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    iend(tnum) = mnum
 
    allocate(totpix(tnum))
-   allocate(poslist(3,tnum))
+   allocate(poslist(2,tnum))
    allocate(tlist(tnum))
    allocate(tmp_depthdiam(tnum))
    allocate(countable(tnum))
@@ -201,14 +200,11 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
       bowl = bowl / nbowl 
       outer = outer / nouter
       tmp_depthdiam(craternum) = (rim - bowl) / crater%fcrat
-
-      !if (crater%fcrat < 20e3_DP) then
-      !   dd = DDCUTOFF
-      !else
-      !   dd = DDCUTOFF - (crater%fcrat - 20e3_DP) * 2e-7
-      !end if
-      dd = min(DDCUTOFF, 24.897 * crater%fcrat ** (-0.632545))
-
+      if (crater%fcrat < 20e3_DP) then
+         dd = DDCUTOFF
+      else
+         dd = DDCUTOFF - (crater%fcrat - 20e3_DP) * 2e-7
+      end if
       if (((tmp_depthdiam(craternum) > dd).and.((outer - rim) / crater%fcrat < OCUTOFF)).and.&
           (nrim /= 0).and.(nbowl /= 0).and.(nouter /= 0)) then
          countable(craternum) = .true.
@@ -243,7 +239,7 @@ subroutine crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,o
    if (present(obsdist)) then
       allocate(depthdiam(onum))
       allocate(obslist(onum))
-      allocate(oposlist(3,onum))
+      allocate(oposlist(2,onum))
       ! Reset all the distribution bins
       do i=1,domain%distl
          obsdist(1,i) = 1e3_DP*SQRT2**(domain%plo+(i-1))

@@ -37,18 +37,15 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    ! Internal variables
    real(DP),dimension(0:user%gridsize + 1,0:user%gridsize + 1) :: cumulative_elchange,kdiff
    integer(I4B),dimension(2,0:user%gridsize + 1,0:user%gridsize + 1) :: indarray
-   integer(I4B) :: i,j,l,xpi,ypi,k,ktot,kk,ioerr,inc,incsq,iradsq,xi,xf,yi,yf,crat,imin,imax,jmin,jmax
-   integer(I8B) :: m,N
+   integer(I4B) :: i,j,k,l,m,xpi,ypi,n,ntot,ioerr,inc,xi,xf,yi,yf
    integer(I4B) :: maxhits = 1
-   real(DP) :: dburial,lambda,dKdN,diam,radius,Area,avgejc
-   real(DP) :: dN,diam_regolith,diam_bedrock,RR
-   real(DP),dimension(3)    :: rn  
-   real(DP) :: superlen,rayfrac,cutout,fe,fd
+   real(DP) :: lamleft,dburial,lambda,Kbar,diam,radius,Area,avgejc,sf
+   real(DP),dimension(domain%pnum) :: dN,lambda_regolith,Kbar_regolith,lambda_bedrock,Kbar_bedrock
+   real(DP),dimension(2)    :: rn  
+   real(DP) :: superlen,rayfrac
    type(cratertype) :: crater
-   real(DP),dimension(:,:),allocatable :: diffdistribution,ejdistribution
+   real(DP),dimension(:,:),allocatable :: ejdistribution
    integer(I4B),dimension(:,:),allocatable :: ejisray
-   real(DP) :: xbar,ybar,dD,xp,yp,areafrac,krad,supersize,lrad
-   integer(I8B),dimension(user%gridsize,user%gridsize) :: Ngrid
    
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
@@ -63,158 +60,165 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
       end do
    end do
 
-   avgejc = sum(surf%ejcov) / domain%parea
+   ntot = 1
+   ! calculate the subpixel diffusion probability function
+   Area = user%pix**2
 
-   fe = FEPROX
-   fd = user%ejecta_truncation
-   if (user%dosoftening) fe = user%fe
+   do i = 1,domain%pnum
+      if ((nflux(1,i) > domain%smallest_crater).and.(nflux(2,i) > domain%smallest_crater)) exit
+      ntot = i
+      dN(i) = nflux(3,i) * user%interval * finterval
 
-   ! Generate both the subpixel and superdomain diffusive degradation
-   do k = 1,domain%pnum - 1
-      dN = nflux(3,k) * user%interval * finterval
+      lambda_bedrock(i) = dN(i) * Area
+      lambda_regolith(i) = dN(i) * Area
 
-      diam_bedrock = nflux(1,k)
-      diam_regolith = nflux(2,k)
-
-      dburial = 0.5_DP * EXFAC * max(diam_bedrock,diam_regolith)
-      if (dburial > avgejc) then
-         diam = diam_bedrock
-      else
-         diam = diam_regolith
-      end if
-      radius = 0.5_DP * diam
-
-      if ((fd * diam < user%pix) .or. (dN * PI * (fe * radius)**2 > 0.1_DP)) then 
-      !Do the average degradation per pixel for the subpixel component
-         if (user%dosoftening) then 
-         ! User-defined degradation function
-            dKdN = user%Kd1 * PI * user%fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
-         else 
-         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
-            dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
-         end if
-
-         lambda = dN * domain%parea
-
-         ! Don't parallelize the random
-         do j = 1,user%gridsize
-            do i = 1,user%gridsize
-               Ngrid(i,j) = util_poisson(lambda)
-            end do
-         end do
-
-         !$OMP PARALLEL DO DEFAULT(PRIVATE) &
-         !$OMP SHARED(user) &
-         !$OMP SHARED(Ngrid,dKdN,kdiff,dN,lambda) 
-         do j = 1,user%gridsize
-            do i = 1,user%gridsize
-               if ((Ngrid(i,j)) == 0) cycle
-               if ((Ngrid(i,j) > 0).and.(Ngrid(i,j) == Ngrid(i,j))) then
-                  kdiff(i,j) = kdiff(i,j) + dKdN * Ngrid(i,j)
-               else ! In case of integer overflow
-                  kdiff(i,j) = kdiff(i,j) + dKdN * lambda
-               end if
-            end do
-         end do
-         !$OMP END PARALLEL DO
-
-      else if (user%dosoftening) then
-      ! Do the degradation as individual circles
-
-         superlen = fd * diam + domain%side
-         cutout = 0.0_DP
-         crater%continuous = RCONT * radius**(EXPCONT) 
-         if (diam > domain%smallest_crater) then
-            if (.not.user%superdomain) exit
-            ! Superdomain craters 
-            cutout = domain%side + crater%continuous
-         end if
-         Area = superlen**2
-         if (diam < domain%biggest_crater) Area = Area - cutout**2
-
-         lambda = dN * Area
-         dD = nflux(2,k+1) - nflux(2,k)
-
-         N = util_poisson(lambda)
-         do m = 1, N
-            call random_number(rn)
-
-            if (diam < domain%smallest_crater) then
-               ! Subpixel craters with large degradation region
-               crater%xl = real(superlen * (rn(1) - 0.5_DP) + 0.5_DP * domain%side, kind=SP) 
-               crater%yl = real(superlen * (rn(2) - 0.5_DP) + 0.5_DP * domain%side, kind=SP) 
-            else if (.not.user%superdomain) then
-               cycle
-            else
-               ! Superdomain craters 
-               crater%xl = real((superlen - cutout) * (rn(1) - 0.5_DP), kind=SP) 
-               if (crater%xl > 0.0_DP) crater%xl = crater%xl + cutout
-               crater%yl = real((superlen - cutout) * (rn(2) - 0.5_DP), kind=SP) 
-               if (crater%yl > 0.0_DP) crater%yl = crater%yl + cutout
-            end if
-
-            crater%xlpx = nint(crater%xl / user%pix)
-            crater%ylpx = nint(crater%yl / user%pix)
-
-            crater%frad = 0.5_DP * (diam + dD * rn(3))
-            crater%continuous = RCONT * crater%frad**(EXPCONT) 
-            krad = fd * crater%frad
-          
-            dKdN = user%Kd1 * crater%frad**(user%psi)
-            inc  = int(krad / user%pix) + 2
-            incsq = inc**2
-
-            xpi = max(crater%xlpx - inc,1)
-            imin = xpi - crater%xlpx
-            xpi = min(crater%xlpx + inc,user%gridsize)
-            imax = xpi - crater%xlpx
-            ypi = max(crater%ylpx - inc,1)
-            jmin = ypi - crater%ylpx
-            ypi = min(crater%ylpx + inc,user%gridsize)
-            jmax = ypi - crater%ylpx
- 
-         
-            allocate(diffdistribution(imin:imax,jmin:jmax))
-            allocate(ejdistribution(imin:imax,jmin:jmax))
-            call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,diffdistribution,ejdistribution)
-            ! Loop over affected matrix area
-            !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-            !$OMP SHARED(jmin,jmax,imin,imax,kdiff,dKdN,krad,diffdistribution,ejdistribution) &
-            !$OMP SHARED(crater,user,surf) 
-            do j = jmin,jmax
-               do i = imin,imax
-                  xpi = crater%xlpx + i
-                  ypi = crater%ylpx + j
-                  kdiff(xpi,ypi) = kdiff(xpi,ypi) + dKdN * diffdistribution(i,j)
-                  !TEMP
-                  xp = xpi * user%pix
-                  yp = ypi * user%pix
-                  lrad = sqrt((xp - crater%xl)**2 + (yp - crater%yl)**2)
-                  surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ejdistribution(i,j) &
-                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
-               end do
-            end do
-            !$OMP END PARALLEL DO
-            deallocate(diffdistribution,ejdistribution)
-         end do
+      Kbar_bedrock(i)  = 0.84_DP * (0.5_DP * nflux(1,i))**4 ! Intrinsic degradation function
+      Kbar_regolith(i) = 0.84_DP * (0.5_DP * nflux(2,i))**4
+       
+      if (user%dosoftening) then
+         Kbar_bedrock(i) = Kbar_bedrock(i) + user%soften_factor * (0.5_DP * nflux(1,i))**(user%soften_slope) 
+         Kbar_regolith(i) = Kbar_regolith(i) + user%soften_factor * (0.5_DP * nflux(2,i))**(user%soften_slope)
       end if
 
    end do
 
+   do j = 1,user%gridsize
+      do i = 1,user%gridsize
+         do n = 1,ntot
+            dburial = EXFAC * 0.5_DP * nflux(1,n)
+            if (surf(i,j)%ejcov > dburial) then
+               lambda = lambda_regolith(n)
+               Kbar = Kbar_regolith(n)
+               diam = nflux(2,n)
+            else
+               lambda = lambda_bedrock(n)
+               Kbar = Kbar_bedrock(n)
+               diam = nflux(1,n)
+            end if 
+            if (diam > domain%smallest_crater) exit
+            k = util_poisson(lambda)
+            kdiff(i,j) = kdiff(i,j) + k * Kbar / Area
+         end do
+      end do
+   end do
    kdiff(0,0) = kdiff(user%gridsize,user%gridsize)
    kdiff(user%gridsize + 1,user%gridsize + 1) = kdiff(1,1)
    kdiff(0,:) = kdiff(user%gridsize,:)
    kdiff(:,0) = kdiff(:,user%gridsize)
    kdiff(user%gridsize + 1,:) = kdiff(1,:)
-   kdiff(:,user%gridsize + 1) = kdiff(:,1)  
+   kdiff(:,user%gridsize + 1) = kdiff(:,1)
 
-   write(*,*)
-   write(*,*) 'avgkdiff = ',sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   write(*,*)
-   open(unit=55,file='avgkdiff.dat',status='unknown',position='append')
-   write(55,*) sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   close(55)
+   ! Now add the superdomain contribution to crater degradation 
+   if (user%dosoftening) then
+      crater%ejdis = user%gridsize * user%pix * 0.5_DP
+      crater%continuous = crater%ejdis / DISEJB
+      radius = (crater%continuous / 2.348_DP)**(1.0_DP / 1.006_DP)
+      crater%frad = radius
+      crater%rad = radius
+      inc = nint(min(crater%ejdis / user%pix, crater%frad * user%ejecta_truncation / user%pix)) + 1
+      crater%xl = user%gridsize * user%pix * 0.5_DP
+      crater%yl = user%gridsize * user%pix * 0.5_DP
+      crater%xlpx = nint(crater%xl / user%pix)
+      crater%ylpx = nint(crater%yl / user%pix)
+      allocate(ejdistribution(-inc:inc,-inc:inc))
+      allocate(ejisray(-inc:inc,-inc:inc))
+      call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,ejdistribution)
+      do j = -inc,inc
+         do i = -inc,inc
+            if (ejdistribution(i,j) > 0.0001_DP) then
+               ejisray(i,j) = 1
+            else
+               ejisray(i,j) = 0
+            end if
+         end do
+      end do
+      rayfrac = PI * inc**2 / (1.0_DP * count(ejisray == 1))
+      deallocate(ejisray,ejdistribution)
 
+      avgejc = sum(surf%ejcov) / user%gridsize**2
+      do l = 1,domain%pnum
+         if ((PI * (user%soften_size * nflux(1,l) * 0.5_DP)**2 <= (user%gridsize)**2 ).and.&
+             (PI * (user%soften_size * nflux(2,l) * 0.5_DP)**2 <= (user%gridsize)**2 )) cycle
+
+         dburial = EXFAC * 0.5_DP * nflux(1,n)
+         if (avgejc > dburial) then
+            radius = nflux(2,l) * 0.5_DP
+         else
+            radius = nflux(1,l) * 0.5_DP
+         end if
+
+         dN(l) = nflux(3,l) * user%interval * finterval
+         Area = min(PI * (user%soften_size * radius)**2 , 4 * PI * user%trad**2)
+         Area = max(Area - (user%pix * user%gridsize)**2,0.0_DP)
+         if (Area == 0.0_DP) cycle
+         superlen = 0.5_DP * (sqrt(Area) - user%pix * user%gridsize)
+
+         lambda = dN(l) * Area
+         if (lambda == 0.0_DP) cycle
+         k = util_poisson(lambda)
+         do m = 1, k
+            
+            ! generate random crater on the superdomain
+            ! Set up size of crater and ejecta blanket
+            crater%frad = radius
+            crater%rad = radius
+            crater%continuous = 2.348_DP * crater%frad**(1.006_DP) 
+            crater%ejdis = DISEJB * crater%continuous
+            inc = nint(min(crater%ejdis / user%pix, crater%frad * user%ejecta_truncation / user%pix)) + 1
+
+            ! find the x and y position of the crater
+            call random_number(rn)
+            crater%xl = real(superlen * (2 * rn(1) - 1.0_DP), kind=SP)
+            crater%yl = real(superlen * (2 * rn(2) - 1.0_DP), kind=SP)
+
+            if (crater%xl > 0.0_SP) then
+               crater%xl = crater%xl + user%pix * user%gridsize
+            else
+               crater%xl = crater%xl - user%pix * user%gridsize
+            end if
+            if (crater%yl > 0.0_SP) then
+               crater%yl = crater%yl + user%pix * user%gridsize
+            else
+               crater%yl = crater%yl - user%pix * user%gridsize
+            end if
+
+            crater%xlpx = nint(crater%xl / user%pix)
+            crater%ylpx = nint(crater%yl / user%pix)
+
+            xi = 1 - crater%xlpx
+            xf = user%gridsize - crater%xlpx
+            yi = 1 - crater%ylpx
+            yf = user%gridsize - crater%ylpx
+
+            allocate(ejdistribution(xi:xf,yi:yf))
+            allocate(ejisray(xi:xf,yi:yf))
+            ! Now generate ray pattern
+            call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,ejdistribution)
+            do j = yi,yf
+               do i = xi,xf
+                  if (ejdistribution(i,j) > 0.0001_DP) then
+                     ejisray(i,j) = 1
+                  else
+                     ejisray(i,j) = 0
+                  end if
+               end do
+            end do
+
+            do j = 1, user%gridsize
+               do i = 1, user%gridsize
+                  xpi = i - crater%xlpx 
+                  ypi = j - crater%ylpx 
+                  if ((abs(xpi) > inc) .or. (abs(ypi) > inc)) cycle
+                  if (ejisray(xpi,ypi) == 0) cycle 
+                  kdiff(i,j) = kdiff(i,j) + &
+                         rayfrac * user%soften_factor / (PI * user%soften_size**2) * crater%frad**(user%soften_slope - 2.0_DP)
+               end do
+            end do
+            deallocate(ejdistribution,ejisray)
+         end do
+      end do
+   end if
+   
 
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
    do j = 1,user%gridsize

@@ -24,7 +24,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    implicit none
 
    ! Arguments
-   type(usertype),intent(inout)                    :: user
+   type(usertype),intent(in)                       :: user
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
    real(DP),dimension(:,:),intent(inout)           :: prod,vdist
@@ -59,9 +59,9 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    domain%parea = user%pix**2
    domain%area = domain%side**2
    domain%biggest_crater = domain%side * user%maxcrat
-   domain%smallest_crater =  user%pix
+   domain%smallest_crater = user%pix
    domain%smallest_ejecta = SMALLESTEJECTA * user%pix
-   domain%smallest_counted_crater = SMALLESTCOUNTABLE * user%pix 
+   domain%smallest_counted_crater = 2._DP / (1._DP + COUNTINGRIM) * sqrt(SMALLESTCOUNTABLE / PI) * user%pix 
    domain%vescsq = 2 * user%gaccel * user%trad
 
    ! Set up transition values
@@ -73,10 +73,6 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
       crater%cxexp = CXEXPI
       crater%cxtran = SIMCOMKI*(user%gaccel**SIMCOMPI)
    end select
-
-   ! Preliminary seismic property calculations
-   user%seisk = THIRD * user%tvel * user%tfrac
-   user%cohaccel = user%regcoh / user%trho_r
 
    ! Now we build an idealized production population
    domain%initialize = .true.
@@ -95,6 +91,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    end do
    domain%vhi = min(domain%vhi + 1,domain%vnum)
    rmsvel = sqrt(rmsvel/numvel) 
+   domain%rmsvel = rmsvel
 
    domain%smallest_impactor_index = 1
    ! Find the smallest impactor that produces a crater at least 1 pixel wide at the maximum possible impact velocity and angle
@@ -176,7 +173,6 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
       pdist(4,i) = pdist(4,i) + diffnum      ! Differential number
       
       nflux(3,k) = diffnum / domain%area / user%interval
-
    end do
 
    do i = 1,domain%pdistl

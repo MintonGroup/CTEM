@@ -7,7 +7,7 @@ thisDevice = !D.Name
 Set_Plot, 'Z'
 Erase
 Device, Set_Resolution=[gridsize,gridsize],Set_Pixel_Depth=24, Decomposed=0 
-loadct, 33
+loadct, 61;72; 17 ;33
 TVLCT, red, green, blue, /GET
 
 light=[[1,1,1],[0,0,0],[-1,-1,-1]]
