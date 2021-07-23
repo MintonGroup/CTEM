@@ -55,12 +55,13 @@ real(DP),parameter :: TALLYCOVERAGE = 0.01_DP  ! The total area coverage to reac
 real(DP),parameter :: SUBPIXELCOVERAGE = 0.025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
+integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
 real(DP),parameter :: ALPHA = 0.125_DP
 real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
 real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
-integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
-
+real(DP),parameter :: PF     = 5.0e9          ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa. (5 GPa)
+real(DP),parameter :: RAD_GP = 20.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
