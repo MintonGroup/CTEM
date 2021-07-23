@@ -77,7 +77,6 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-
    recsize = sizeof(stmp) * user%gridsize * user%gridsize
    open(LUN,file=POSFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
