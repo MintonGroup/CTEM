@@ -25,7 +25,7 @@ public
 save
 
    interface
-      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,ejbmass,age,age_resolution)
+      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,ejbmass,age,age_resolution)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -34,8 +34,10 @@ save
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+      real(DP),intent(in) :: deltaMtot
       real(DP),intent(out) :: ejbmass
-      real(DP),intent(in) :: age, age_resolution
+      real(DP),intent(in)  :: age
+      real(DP),intent(in)  :: age_resolution
       end subroutine ejecta_emplace
    end interface
 
