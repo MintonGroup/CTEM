@@ -119,9 +119,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    real(DP)      :: vsq, ejtheta
    integer(I4B) :: ind,klo
 
+   ! Age
+   real(SP) :: age_mean
+
+
    ! Executable code
 
-   !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
+   call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
 
    cdepth = DDRATIO * crater%fcrat
    crater%vdepth = crater%ejrim + cdepth
