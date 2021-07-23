@@ -75,7 +75,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,ejbmass,age,age_resolution)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution)
    use module_globals
    use module_util
    use module_io
@@ -92,7 +92,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,ejbmass,a
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(ejtble),intent(in)    :: ejb
    real(DP),intent(in) :: deltaMtot
-   real(DP),intent(out) :: ejbmass
    real(DP),intent(in)  :: age
    real(DP),intent(in)  :: age_resolution
 
