@@ -31,7 +31,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
    ! Arguments
    type(usertype),intent(inout)                     :: user
-   type(surftype),dimension(:,:),intent(inout)      :: surf
+   type(surftype),dimension(:,:),target,intent(inout) :: surf
    type(cratertype),intent(inout)                   :: crater
    type(domaintype),intent(inout)                   :: domain
    real(DP),dimension(:,:),intent(in)               :: prod,vdist
@@ -46,7 +46,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I8B),intent(in)                          :: ntotcrat  ! Total number of attempted impacts
    real(DP),intent(in)                              :: curyear
    real(DP),dimension(:,:), intent(in)              :: rclist !array of 'real' craters for quasiMC
-   target :: surf
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m)
@@ -76,7 +75,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: ejbmass
    logical                 :: makecrater
    real(DP),dimension(user%gridsize,user%gridsize) :: kdiff 
-   TARGET :: surf
    integer(I4B)            :: oldpbarpos
 
    ! ejecta blanket array

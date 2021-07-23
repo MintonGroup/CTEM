@@ -34,7 +34,7 @@ end interface
       use module_globals
       implicit none
       type(usertype),intent(inout)                     :: user
-      type(surftype),dimension(:,:),intent(inout)      :: surf
+      type(surftype),dimension(:,:),intent(inout),target :: surf
       type(cratertype),intent(inout)                   :: crater
       type(domaintype),intent(inout)                   :: domain
       real(DP),dimension(:,:),intent(in)               :: prod,vdist
@@ -49,7 +49,6 @@ end interface
       integer(I8B),intent(in)                          :: ntotcrat  ! Total number of attempted impacts
       real(DP),intent(in)                              :: curyear
       real(DP),dimension(:,:), intent(in)              :: rclist !array of 'real' craters for quasiMC
-      target :: surf
       end subroutine crater_populate
    end interface
 

@@ -44,7 +44,7 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
    real(DP),dimension(2)    :: rn  
    real(DP) :: superlen,rayfrac
    type(cratertype) :: crater
-   real(DP),dimension(:,:),allocatable :: ejdistribution
+   real(DP),dimension(:,:),allocatable :: ejdistribution, diffdistribution
    integer(I4B),dimension(:,:),allocatable :: ejisray
 
    ! Melt or glassy ray test
@@ -73,8 +73,8 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
    avgejc = sum(surf%ejcov) / user%gridsize**2
    maxgcrat = 0.0_DP
    do l = 1,domain%pnum
-      if ((PI * (user%soften_size * nflux(1,l) * 0.5_DP)**2 <= (user%gridsize)**2 ).and.&
-         (PI * (user%soften_size * nflux(2,l) * 0.5_DP)**2 <= (user%gridsize)**2 )) cycle
+      if ((PI * (user%fe * nflux(1,l) * 0.5_DP)**2 <= (user%gridsize)**2 ).and.&
+         (PI * (user%fe * nflux(2,l) * 0.5_DP)**2 <= (user%gridsize)**2 )) cycle
 
       dburial = EXFAC * 0.5_DP * nflux(1,n)
       if (avgejc > dburial) then
@@ -84,7 +84,7 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
       end if
 
       dN(l) = nflux(3,l) * user%interval * finterval
-      Area = min(PI * (user%soften_size * radius)**2 , 4 * PI * user%trad**2)
+      Area = min(PI * (user%fe * radius)**2 , 4 * PI * user%trad**2)
       Area = max(Area - (user%pix * user%gridsize)**2,0.0_DP)
       if (Area == 0.0_DP) cycle
       ! Center at the local domain, and calculate the maximum distance from the super
@@ -109,7 +109,7 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
          ! find the x and y position of the crater
          ! When a superdomain crater's center is at the edge of a space that
          ! superlen defines, it has least ejecta delivering to the local domain.
-         ! Soften_size should be the maximum ray extennt (beyond visible rays)
+         ! fe should be the maximum ray extennt (beyond visible rays)
          ! to account for cold and hot ejecta. 
          ! Note for age data: new stream lines overlapped with melts needs to
          ! calculate here, and one can check out regolith_streamtube: lines 251 - 292.  
@@ -147,9 +147,10 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
          if (lrad > crater%ejdis) cycle
 
          allocate(ejdistribution(xi:xf,yi:yf))
+         allocate(diffdistribution(xi:xf,yi:yf))
          allocate(ejisray(xi:xf,yi:yf))
          ! Now generate ray pattern
-         call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,ejdistribution)
+         call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,ejdistribution)
          ! Now if doregotrack is on, do melt zone calculation
          if (user%doregotrack) call regolith_melt_zone_superdomain(user,crater,domain,rm,depthb)
 
@@ -178,7 +179,7 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
 
          end if
 
-         deallocate(ejdistribution,ejisray)
+         deallocate(ejdistribution,diffdistribution,ejisray)
 
        end do
 
