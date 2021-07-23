@@ -87,7 +87,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)                      :: craters_since_subpixel_mix, icrater_last_subpixel_mix
 
    ! doregotrack & age simulation test
-   real(DP)              :: melt, age, thick
+   real(DP)              :: melt, clock, age, thick
    real(SP),dimension(user%gridsize, user%gridsize)  :: agetop
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
@@ -130,13 +130,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! begin cratering loop
    if (.not.user%testflag)  then
       pbarival = floor(real(ntrue)/real(PBARRES))
-      !call io_resetPbar()
+      call io_resetPbar()
    end if
 
    icrater_last_tally = 0
    icrater_last_subpixel = 0
    icrater = 0
    ! Reset age
+   clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
    age     = user%interval
    age_resolution = age / real(MAXAGEBINS)
@@ -145,6 +146,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    domain%tallycoverage = 0
    domain%subpixelcoverage = 0
    kdiff = 0.0_DP
+   pbarpos = 0
+   call io_updatePbar("")
+   oldpbarpos = 0
    do while (icrater < ntotcrat)
       makecrater = .true.
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
@@ -226,6 +230,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          truelist(4,ntrue) = crater%yl
          truelist(5,ntrue) = crater%impvel
          truelist(6,ntrue) = crater%sinimpang
+         truelist(7,ntrue) = crater%timestamp
          mass = mass + crater%impmass
 
          crater%maxinc = 0
@@ -273,7 +278,12 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call util_sort_layer(user,surf,crater)
          vistrue = vistrue + 1
          nsincetally = nsincetally + 1
-         !if (.not.user%testflag) call io_updatePbar("")
+         if (.not.user%testflag) then
+            if (pbarpos /= oldpbarpos) then
+               call io_updatePbar("")
+               oldpbarpos = pbarpos
+            end if
+         end if
 
          !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
          
@@ -312,31 +322,29 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if 
 
       ! Do periodic subpixel processes on the whole grid
-      if (.not.user%doregotrack) then ! Disable whole grid subpixel if doregotrack flag is on
-         if (.not.user%testflag) then
-            if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
-               domain%subpixelcoverage = 0
-               write(message,*) "Subpixel"
-               call io_updatePbar(message)
-               craters_since_subpixel = icrater - icrater_last_subpixel
-               finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
-               call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff)
-               icrater_last_subpixel = icrater
-            end if
-            ! Intermediate tally step 
-            if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
-               domain%tallycoverage = 0
-               write(message,*) "Tally"
-               call io_updatePbar(message)
-               craters_since_tally = icrater - icrater_last_tally
-               finterval = craters_since_tally / real(ntotcrat,kind=DP)
-               icrater_last_tally = icrater
-               call crater_tally_observed(user,surf,domain,nkilled,onum)
-               write(message,*) "Tally killed ",nkilled
-               call io_updatePbar(message)
-               ntotkilled = ntotkilled + nkilled
-               nsincetally = 0
-            end if
+      if (.not.user%testflag) then
+         if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+            domain%subpixelcoverage = 0
+            write(message,*) "Subpixel"
+            call io_updatePbar(message)
+            craters_since_subpixel = icrater - icrater_last_subpixel
+            finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
+            call crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff)
+            icrater_last_subpixel = icrater
+         end if
+         ! Intermediate tally step 
+         if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
+            domain%tallycoverage = 0
+            write(message,*) "Tally"
+            call io_updatePbar(message)
+            craters_since_tally = icrater - icrater_last_tally
+            finterval = craters_since_tally / real(ntotcrat,kind=DP)
+            icrater_last_tally = icrater
+            call crater_tally_observed(user,surf,domain,nkilled,onum)
+            write(message,*) "Tally killed ",nkilled
+            call io_updatePbar(message)
+            ntotkilled = ntotkilled + nkilled
+            nsincetally = 0
          end if
       end if
 
