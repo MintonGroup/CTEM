@@ -15,6 +15,7 @@ import os
 import shutil
 import scipy
 from scipy import signal
+import skimage
 
 #Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
@@ -160,7 +161,7 @@ def image_shaded_relief(parameters, surface_dem):
         dem_scaled = numpy.copy(surface_dem) * 0.0
         
     #Generate shaded depth map with surface_dem color scaling (RGBA)
-    shaded = scipy.misc.bytescale(convolved_map)
+    shaded = skimage.img_as_ubyte(convolved_map)
     if numpy.amax(shaded) == 0:  shaded=255
     shadedscl = shaded / 255.0
     
