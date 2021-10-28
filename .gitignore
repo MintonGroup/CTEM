@@ -43,3 +43,4 @@ examples/global-lunar-bombardment/CTEM
 examples/*/*.o*
 
 *.out
+.vscode/*
