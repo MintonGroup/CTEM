@@ -46,7 +46,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    crater%ejdis = DISEJB * crater%continuous
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
    domain%ejbres = (log(crater%ejdis) - log(crater%rad)) / EJBTABSIZE
-   lrad = crater%rad !exp(log(crater%rad) !+ domain%ejbres)
+   lrad = crater%rad 
    erad = crater%rad 
    ejtble = EJBTABSIZE
    firstrun = .true.
@@ -66,12 +66,9 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
       call regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
    end if
  
-   !write(*,*) '     lrad/Df                   vej                       ebh                       melt & 
-   !           fraction              melt thickness'
    do k = 0,EJBTABSIZE
       call ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       if (k >= 1) then
-         !call ejecta_thickness(user,crater,eradold,erad,lrad - domain%ejbres,lrad,thick)
          ejb(k)%lrad = log(lrad)
          ! Use McGetchin et al. 1973 for ejecta thickness 
          if (lrad >= crater%frad) then
@@ -87,7 +84,6 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
             call regolith_melt_fraction(dimp,depthb,erad,eradold,rmelt,melt)
             ejb(k)%meltfrac = melt
          end if
-         !write(*,*) lrad/crater%rad,erad/crater%rad,sqrt(vejsq),thick !,melt,thick*melt
          if ((thick <= VSMALL) .or. (abs(eradold - erad) < VSMALL)) then
             ejtble = k
             crater%ejdis = lrad
@@ -97,7 +93,6 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
       lrad = exp(log(lrad) + domain%ejbres)
       eradold = erad
    end do
-   !write(*,*) 'A MELT ZONE of ',crater%frad,' meter-sized crater: ',rmelt,'at a rim',ejb(1)%meltfrac
    ! Get pixel space distance
    crater%ejdispx = nint(crater%ejdis / user%pix)
 
