@@ -1,9 +1,9 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
-AM_FCFLAGS =  -O3 -qopenmp -parallel -xHost -assume byterecl -m64 -heap-arrays -FR 
+#AM_FCFLAGS =  -O3 -qopenmp -parallel -xHost -assume byterecl -m64 -heap-arrays -FR 
 #AM_FCFLAGS =  -O3 -qopenmp -parallel -assume byterecl -m64 -heap-arrays -FR 
 #ifort debug flags
-#AM_FCFLAGS = -O3 -p -g -openmp -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
+AM_FCFLAGS = -O0 -p -g -qopenmp -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
 
 #gfortran optimized flags
 #AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
