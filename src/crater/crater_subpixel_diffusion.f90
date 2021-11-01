@@ -177,9 +177,9 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
             allocate(ejdistribution(imin:imax,jmin:jmax))
             call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,diffdistribution,ejdistribution)
             ! Loop over affected matrix area
-            !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-            !$OMP SHARED(jmin,jmax,imin,imax,kdiff,dKdN,krad,diffdistribution,ejdistribution) &
-            !$OMP SHARED(crater,user,surf) 
+            !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
+            !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &
+            !!$OMP PRIVATE(i, xp, yp, xpi, ypi, lrad)
             do j = jmin,jmax
                do i = imin,imax
                   xpi = crater%xlpx + i
@@ -190,10 +190,10 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
                   yp = ypi * user%pix
                   lrad = sqrt((xp - crater%xl)**2 + (yp - crater%yl)**2)
                   surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ejdistribution(i,j) &
-                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
+                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3)
                end do
             end do
-            !$OMP END PARALLEL DO
+            !!$OMP END PARALLEL DO
             deallocate(diffdistribution,ejdistribution)
          end do
       end if

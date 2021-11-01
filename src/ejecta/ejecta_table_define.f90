@@ -28,7 +28,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    type(usertype),intent(in) :: user
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout)    :: domain
-   type(ejbtype),dimension(EJBTABSIZE),intent(out) :: ejb
+   type(ejbtype),dimension(:),intent(inout) :: ejb
    integer(I4B),intent(out) :: ejtble
    real(DP),intent(out),optional :: melt
 
@@ -48,7 +48,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
    domain%ejbres = (log(crater%ejdis) - log(crater%ejrad)) / EJBTABSIZE
    lrad = crater%ejrad 
-   erad = crater%ejrad 
+   erad = crater%ejrad / 2
    ejtble = EJBTABSIZE
    firstrun = .true.
    thick = 0._DP

@@ -27,7 +27,7 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
    type(domaintype),intent(in) :: domain
    real(DP),intent(in)  :: lrad
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(in) :: ejb
+   type(ejbtype),dimension(:),intent(in) :: ejb
    real(DP),intent(out) :: ebh
    real(DP),intent(out),optional :: vsq,theta,erad
    real(DP),intent(out),optional :: melt

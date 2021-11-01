@@ -651,6 +651,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
+   if (ejbmass <= VSMALL) return
 
    ! First strip away the original ejecta from the surface
 

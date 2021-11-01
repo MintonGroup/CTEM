@@ -68,7 +68,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    type(cratertype),intent(in) :: crater
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+   type(ejbtype),dimension(:),intent(in)   :: ejb
    real(DP),intent(in)          :: xp,yp,lrad,ebh
    integer(I4B),intent(in)      :: xpi,ypi
    real(DP),intent(in)          :: rm

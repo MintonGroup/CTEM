@@ -170,7 +170,7 @@ save
       implicit none
       type(cratertype),intent(in) :: crater
       type(domaintype),intent(in) :: domain
-      type(ejbtype),dimension(EJBTABSIZE),intent(in) :: ejb
+      type(ejbtype),dimension(:),intent(in) :: ejb
       integer(I4B),intent(in) :: ejtble
       character(*),intent(in) :: filename
       end subroutine io_ejecta_table

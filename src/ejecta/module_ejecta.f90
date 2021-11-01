@@ -33,7 +33,7 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(inout)   :: ejb
+      type(ejbtype),dimension(:),intent(inout)   :: ejb
       real(DP),intent(in) :: deltaMtot
       real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
       end subroutine ejecta_emplace
@@ -111,7 +111,7 @@ save
       type(usertype),intent(in) :: user
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
-      type(ejbtype),dimension(EJBTABSIZE),intent(out) :: ejb
+      type(ejbtype),dimension(:),intent(inout) :: ejb
       integer(I4B),intent(out) :: ejtble
       real(DP),intent(out),optional :: melt
       end subroutine ejecta_table_define
@@ -125,7 +125,7 @@ save
       type(domaintype),intent(in) :: domain
       real(DP),intent(in)  :: lrad
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(in) :: ejb
+      type(ejbtype),dimension(:),intent(in) :: ejb
       real(DP),intent(out) :: ebh
       real(DP),intent(out),optional :: vsq,theta
       real(DP),intent(out),optional :: erad,melt

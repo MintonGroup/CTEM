@@ -38,11 +38,11 @@ save
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain
       real(DP),dimension(:,:),intent(in)           :: prod,vdist
-      integer(I8B),dimension(:),intent(inout)         :: production_list            
+      integer(I8B),dimension(:),intent(inout)      :: production_list            
       integer(I4B),intent(out)                     :: ntrue
       integer(I4B),intent(out)                     :: vistrue
       integer(I4B),intent(out)                     :: ntotkilled
-      real(DP),dimension(:,:),intent(out)          :: truelist
+      real(DP),dimension(:,:),allocatable,intent(inout) :: truelist
       real(DP),intent(out)                         :: mass
       real(DP),intent(out)                         :: fracdone
       real(DP),dimension(:,:),intent(in)           :: nflux 
@@ -186,7 +186,7 @@ save
       implicit none
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in)   :: ntrue
-      real(DP),dimension(TRUECOLS,ntrue),intent(inout)  :: truelist
+      real(DP),dimension(:,:),intent(inout)  :: truelist
       real(DP),dimension(:,:),intent(out) :: truedist
       end subroutine crater_tally_true
    end interface

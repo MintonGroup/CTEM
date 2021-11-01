@@ -33,7 +33,7 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+   type(ejbtype),dimension(:),intent(in)   :: ejb
    real(DP),intent(in)          :: lrad,ebh
    type(regodatatype), intent(inout) :: newlayer
 

@@ -164,10 +164,6 @@ if (user%doporosity) then
    end do
 end if
 
-! Deallocate all the allocatables
-deallocate(seedarr)
-deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux,production_list)
-deallocate(oposlist,depthdiam,degradation_state)
 
 !$ t2 = omp_get_wtime()
 !$ write(*,*) 'Timing information'

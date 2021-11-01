@@ -39,7 +39,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B),intent(out)                        :: ntrue
    integer(I4B),intent(out)                        :: vistrue
    integer(I4B),intent(out)                        :: ntotkilled
-   real(DP),dimension(:,:),allocatable,intent(out) :: truelist
+   real(DP),dimension(:,:),allocatable,intent(inout) :: truelist
    real(DP),intent(out)                            :: mass
    real(DP),intent(out)                            :: fracdone
    real(DP),dimension(:,:),intent(in)              :: nflux 
@@ -76,6 +76,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    TARGET :: surf
    integer(I4B)            :: oldpbarpos
    real(DP),dimension(:,:),allocatable   :: ejecta_dem
+   real(DP)                :: hmax, hmin
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -170,12 +171,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ! Crater is big enough to keep, so record it into the true distribution 
          ntrue = ntrue + 1
          if (ntrue > truesize) then  ! Resize the truelist array if necessary
-            allocate(tmptruelist(TRUECOLS,truesize))
-            tmptruelist = truelist
-            deallocate(truelist)
+            call move_alloc(truelist, tmptruelist)
             truesize = truesize + TRUECHUNK
             allocate(truelist(TRUECOLS,truesize))
-            truelist(:,1:truesize - TRUECHUNK) = tmptruelist
+            truelist(:,1:truesize - TRUECHUNK) = tmptruelist(:,:)
             deallocate(tmptruelist)
          end if
          truelist(1,ntrue) = crater%fcrat
@@ -219,7 +218,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)
-         
+
          ! Collapse any remaining unstable slopes
          if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,(CRITSLP * user%pix)**2,ejbmass)
 
@@ -296,7 +295,19 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
 
       end if
+
+      hmax = maxval(surf(:,:)%dem)
+      hmin = minval(surf(:,:)%dem)
+      if (any(surf(:,:)%dem /= surf(:,:)%dem)) then
+         write(*,*) 'Invalid surface elevation detected. Halting.'
+         exit
+      end if
    end do  ! end crater production loop 
+
+   call move_alloc(truelist, tmptruelist)
+   allocate(truelist(TRUECOLS,ntrue))
+   truelist(:,1:ntrue) = tmptruelist(:,1:ntrue)
+   deallocate(tmptruelist)
  
    ! Resize the true crater size array to the actual number of craters produced   
    ! Display stats

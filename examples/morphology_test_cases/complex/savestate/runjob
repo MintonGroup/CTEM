@@ -1,0 +1,14 @@
+#!/bin/sh -l 
+#PBS -q daminton
+#PBS -l walltime=48:00:00
+#PBS -l nodes=1:ppn=6,naccesspolicy=singleuser
+#PBS -N NPFglKD0.0001
+#PBS -j oe
+source /etc/profile
+module load intel
+module load idl
+cd $PBS_O_WORKDIR
+export OMP_NUM_THREADS=6
+date > time.out
+idl < start.in > term.out
+date >> time.out

@@ -1,14 +1,14 @@
 bin_PROGRAMS = CTEM 
 #ifort optimized flags
 #AM_FCFLAGS =  -O3 -qopenmp -parallel -xHost -assume byterecl -m64 -heap-arrays -FR 
-#AM_FCFLAGS =  -O3 -qopenmp -parallel -assume byterecl -m64 -heap-arrays -FR 
+#AM_FCFLAGS =  -g -traceback -O3 -qopenmp -parallel -assume byterecl -m64 -heap-arrays -FR 
 #ifort debug flags
-AM_FCFLAGS = -O0 -p -g -qopenmp -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
+AM_FCFLAGS = -O0 -p -g -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR
 
 #gfortran optimized flags
 #AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
-#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
+#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form -fsanitize-address-use-after-scope -fstack-check  -fsanitize=bounds-strict -fsanitize=undefined -fsanitize=signed-integer-overflow -fsanitize=object-size -fstack-protector-all
 
 CTEM_SOURCES = globals/module_globals.f90\
 util/module_util.f90\

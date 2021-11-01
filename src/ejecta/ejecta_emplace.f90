@@ -90,7 +90,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(inout)    :: ejb
+   type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
    real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
 
