@@ -211,7 +211,6 @@ type usertype
    real(DP)          :: ejecta_truncation ! Set the number of crater diameters to truncate the ejecta
    logical           :: dorays       ! Set T to use ray model
    logical           :: superdomain  ! Set T to include the superdomain
-   logical           :: discontinuous
 
    ! Regolith tracking variables
    logical           :: doregotrack ! Set T to use the regolith tracking model (EXPERIMENTAL)

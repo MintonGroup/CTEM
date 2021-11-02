@@ -70,7 +70,6 @@ doregotrack     T                               ! Regolith layers track flag. Se
 soften_factor  1.6
 soften_slope   1.8
 soften_size    200.0
-discontinuous   T
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties

@@ -126,7 +126,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
    ! Executable code
 
-   call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
+   if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
 
    crater%vdepth = crater%ejrim + crater%floordepth
    crater%vrim   = crater%ejrim + crater%rimheight

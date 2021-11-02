@@ -67,6 +67,11 @@ Kd1             0.0001
 psi             2.000
 fe              4.00
 ejecta_truncation 10.0
+doregotrack F
 dorays  F 
 superdomain F
 dorealistic T
+quasimc T
+realcraterlist    craterlist.in                ! list of 'real' craters for Quasi-MC runs
+
+

@@ -93,7 +93,6 @@ subroutine io_input(infile,user)
    user%fe  = 5.0_DP
    user%dorealistic = .false.
    user%doquasimc = .false.
-   user%discontinuous = .true.
    user%ejecta_truncation = 10.0_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
@@ -331,11 +330,6 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%ejecta_truncation
-         case ("DISCONTINUOUS") 
-            ifirst = ilast + 1
-            call io_get_token(line, ilength, ifirst, ilast, ierr)
-            token = line(ifirst:ilast)
-            read(token, *) user%discontinuous   
          ! Porosity model
          case ("POROSITYFLG")
             ifirst = ilast + 1
