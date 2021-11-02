@@ -350,7 +350,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
          newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
-         if (r > 1.1_DP) newdem = max(newdem,crater%melev + crater%ejrim * r**(-3))
+         if (r > 1.1_DP) newdem = max(newdem,newdem + areafrac * crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
          deltaMtot = deltaMtot + elchange
