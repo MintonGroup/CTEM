@@ -61,9 +61,7 @@ subroutine ejecta_distance_estimate(user,crater,domain,ejdis_estimate)
    ! Extrapolate in logspace out to the minimum thickness
    slope = log(lrad2 / lrad1) / log(thick2 / thick1)
    ejdis_estimate = exp(slope * log(domain%small / thick1) + log(lrad1))
-   if (.not.user%discontinuous) then
-      ejdis_estimate = min(ejdis_estimate, 2.3_DP * crater%frad**(1.006_DP))
-   end if
+   ejdis_estimate = min(ejdis_estimate, crater%frad * user%ejecta_truncation)
 
    return
 end subroutine ejecta_distance_estimate

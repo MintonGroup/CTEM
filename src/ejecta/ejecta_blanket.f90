@@ -89,7 +89,7 @@ subroutine ejecta_blanket(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
    ! lrad = erad + Psi * user%trad
 
    ! flat plane landing distance calculation
-   lrad = erad + vejsq*sin(2*ejang)/user%gaccel
+   lrad = erad + vejsq * sin(2 * ejang) / user%gaccel
 
    return
 end subroutine ejecta_blanket
