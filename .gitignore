@@ -66,3 +66,4 @@ examples/global-lunar-bombardment/scale.ipynb
 *~
 
 *.m4
+*.code-workspace
