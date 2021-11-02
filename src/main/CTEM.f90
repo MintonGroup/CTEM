@@ -41,6 +41,7 @@ type(cratertype) :: crater
 real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist,rclist
 real(DP),dimension(:),allocatable :: obslist
 real(SP),dimension(:),allocatable :: depthdiam
+real(DP),dimension(:),allocatable :: degradation_state
 real(SP),dimension(:,:),allocatable :: oposlist
 integer(I8B),dimension(:),allocatable :: production_list
 ! Miscellaneous variables
@@ -136,10 +137,10 @@ if (.not.user%tallyonly) then
    write(*,*) "Surface-affecting craters generated:   ",ntrue
    write(*,*) "Visible craters generated:             ",vistrue
 end if
-call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam)
+call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
 ntotkilled = ntotkilled + nkilled
 write(*,*) 'Craters killed during tally: ',ntotkilled
-call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam)
+call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
 if (.not.user%tallyonly) then
    write(*,*) "Writing surface files"
    call io_write_surf(user,surf)
@@ -160,10 +161,15 @@ if (user%doregotrack) then
    end do
 end if
 
-! Deallocate all the allocatables
-deallocate(seedarr)
-deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux,production_list)
-deallocate(oposlist,depthdiam)
+! If doporosity is true, then destroy the linked list for porosity
+if (user%doporosity) then
+   do yp = 1, user%gridsize
+      do xp = 1, user%gridsize
+         call util_destroy_list(surf(xp,yp)%porolayer)
+      end do
+   end do
+end if
+
 
 !$ t2 = omp_get_wtime()
 !$ write(*,*) 'Timing information'

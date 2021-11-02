@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiffin)
+subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    use module_globals
    use module_util
    use module_ejecta
@@ -29,7 +29,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   real(DP),dimension(:,:),intent(in) :: prod,nflux 
+   real(DP),dimension(:,:),intent(in) :: nflux 
    type(domaintype),intent(in) :: domain
    real(DP),intent(in) :: finterval
    real(DP),dimension(:,:),intent(inout) :: kdiffin
@@ -86,12 +86,11 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
 
       if ((fd * diam < user%pix) .or. (dN * PI * (fe * radius)**2 > 0.1_DP)) then 
       !Do the average degradation per pixel for the subpixel component
+         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
+         dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
          if (user%dosoftening) then 
          ! User-defined degradation function
-            dKdN = user%Kd1 * PI * user%fe**2 * (radius)**(2.0_DP + user%psi) / domain%parea
-         else 
-         !Empirically-derived "intrinsic" degradation function from proximal ejecta redistribution
-            dKdN = KD1PROX * PI * FEPROX**2 * (radius)**(2.0_DP + PSIPROX) / domain%parea
+            dKdN = dKdN + PI * user%fe**2 * radius**2 * crater_degradation_function(user,radius) / domain%parea
          end if
 
          lambda = dN * domain%parea
@@ -160,7 +159,7 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             crater%continuous = RCONT * crater%frad**(EXPCONT) 
             krad = fd * crater%frad
           
-            dKdN = user%Kd1 * crater%frad**(user%psi)
+            dKdN = crater_degradation_function(user,crater%frad)
             inc  = int(krad / user%pix) + 2
             incsq = inc**2
 
@@ -178,9 +177,9 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
             allocate(ejdistribution(imin:imax,jmin:jmax))
             call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,diffdistribution,ejdistribution)
             ! Loop over affected matrix area
-            !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-            !$OMP SHARED(jmin,jmax,imin,imax,kdiff,dKdN,krad,diffdistribution,ejdistribution) &
-            !$OMP SHARED(crater,user,surf) 
+            !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
+            !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &
+            !!$OMP PRIVATE(i, xp, yp, xpi, ypi, lrad)
             do j = jmin,jmax
                do i = imin,imax
                   xpi = crater%xlpx + i
@@ -191,10 +190,10 @@ subroutine crater_subpixel_diffusion(user,surf,prod,nflux,domain,finterval,kdiff
                   yp = ypi * user%pix
                   lrad = sqrt((xp - crater%xl)**2 + (yp - crater%yl)**2)
                   surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ejdistribution(i,j) &
-                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
+                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3)
                end do
             end do
-            !$OMP END PARALLEL DO
+            !!$OMP END PARALLEL DO
             deallocate(diffdistribution,ejdistribution)
          end do
       end if

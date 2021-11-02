@@ -86,12 +86,15 @@ subroutine io_input(infile,user)
    user%testtally = .false.
    user%killatmaxcrater = .false.
    user%doporosity = .false.
-   user%Kd1 = 0.00_DP
+   user%Kd1 = 0.0315151258095091_DP
    user%psi = 2.0_DP
-   user%fe  = 1.0_DP
-   user%ejecta_truncation = 10.0_DP
+   user%psi2 = 1.25_DP
+   user%rbreak = 0.1e3_DP
+   user%fe  = 5.0_DP
+   user%dorealistic = .false.
    user%doquasimc = .false.
    user%discontinuous = .true.
+   user%ejecta_truncation = 10.0_DP
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -464,11 +467,29 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%psi
+
+        case ("PSI2")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%psi2
+        case ("RBREAK")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%rbreak
          case ("FE")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%fe
+
+         case ("DOREALISTIC")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%dorealistic
+
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files
          !**************************************************************************

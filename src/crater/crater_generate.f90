@@ -39,6 +39,10 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
    integer(I4B)             :: k,khi,klo,Nk
    integer(I8B)             :: random_index,numremaining,nabove,nabovep1
 
+   !TESTING FOR VARIABLE FE MODERL
+   real(DP) :: mfe,bfe
+
+
    ! Get all six random numbers we need in one call
    if (.not.domain%initialize) call random_number(rn)
 
@@ -171,11 +175,14 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
 
    trfin = 2 * TRSIM * crater%rad
    if (trfin <= crater%cxtran) then
+      crater%morphtype = "SIMPLE"
       crater%fcrat = trfin   ! Simple Crater
    else  ! Complex crater
+      crater%morphtype = "COMPLEX"
       crater%fcrat = trfin * ((trfin/crater%cxtran)**crater%cxexp) ! Complex Crater
    end if
    if (crater%imp >= user%basinimp) then
+      crater%morphtype = "MULTIRING" 
       ! This section is temporary until a better basin scaling law can be implemented. Potter et al. (2012) GRL v39. p 18203
       if ((crater%xl < (0.5_DP * domain%side) ).or.(user%testflag).or.(domain%initialize)) then ! pick TP1 for left-hand hemisphere
          crater%fcrat = 0.1354e3_DP * (0.5_DP * trfin * 1e-3_DP)**(1.389_DP)  ! TP2
@@ -190,6 +197,7 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
    
    ! Get pixel space values
    crater%fcratpx = nint(crater%fcrat / user%pix)
+   crater%fe = user%fe
    return
 end subroutine crater_generate
 

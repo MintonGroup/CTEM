@@ -69,7 +69,7 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+      type(ejbtype),dimension(:),intent(in)   :: ejb
       real(DP),intent(in)          :: lrad,ebh
       type(regodatatype), intent(inout) :: newlayer
       end subroutine regolith_transport
@@ -85,7 +85,7 @@ save
       type(cratertype),intent(in) :: crater
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+      type(ejbtype),dimension(:),intent(in)   :: ejb
       real(DP),intent(in)          :: xp,yp,lrad,ebh
       integer(I4B),intent(in)      :: xpi,ypi
       real(DP),intent(in)          :: rm, vsq, age, age_resolution

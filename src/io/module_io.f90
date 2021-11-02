@@ -134,13 +134,14 @@ save
    end interface
 
    interface
-      subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
+      subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam,degradation_state)
       use module_globals
       implicit none
       real(DP),dimension(:,:),intent(in) :: tdist,tlist,odist
       real(DP),dimension(:),intent(in) :: olist
       real(SP),dimension(:,:),intent(in) :: oposlist
       real(SP),dimension(:),intent(in) :: depthdiam
+      real(DP),dimension(:),intent(in) :: degradation_state
       end subroutine io_write_tally
    end interface
 
@@ -161,7 +162,7 @@ save
       implicit none
       type(cratertype),intent(in) :: crater
       type(domaintype),intent(in) :: domain
-      type(ejbtype),dimension(EJBTABSIZE),intent(in) :: ejb
+      type(ejbtype),dimension(:),intent(in) :: ejb
       integer(I4B),intent(in) :: ejtble
       character(*),intent(in) :: filename
       end subroutine io_ejecta_table

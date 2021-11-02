@@ -71,6 +71,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
 
    ! Executable code
 
+
    ! determine area to effect
    ! First make the interior of the crater
    inc = max(min(crater%fradpx,PBCLIM*user%gridsize),1) + 1
@@ -78,6 +79,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    fradsq = crater%frad**2
    deltaMtot = 0.0_DP !ejbmass
    incsq = inc**2
+
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space
       do i=-inc,inc
@@ -100,7 +102,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
          lradsq = x_relative**2 + y_relative**2
 
          if (lradsq > crater%frad**2) cycle
-         call crater_form_interior(user,surf(xpi,ypi),crater,x_relative, y_relative,newelev,deltaMi)
+         call crater_form_interior(user,surf(xpi,ypi),crater,x_relative,y_relative,newelev,deltaMi)
          deltaMtot = deltaMtot + deltaMi
 
          ! do porosity computation if (user%doporosity)

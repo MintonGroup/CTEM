@@ -20,6 +20,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    use module_globals
    use module_util
    use module_regolith 
+   use module_crater
    use module_ejecta, EXCEPT_THIS_ONE => ejecta_table_define
    implicit none
 
@@ -27,13 +28,13 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    type(usertype),intent(in) :: user
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout)    :: domain
-   type(ejbtype),dimension(EJBTABSIZE),intent(out) :: ejb
+   type(ejbtype),dimension(:),intent(inout) :: ejb
    integer(I4B),intent(out) :: ejtble
    real(DP),intent(out),optional :: melt
 
    ! Internal variables
    integer(I4B) :: k
-   real(DP) :: erad,eradold,thick,vejsq,ejang,lrad
+   real(DP) :: erad,eradold,thick,vejsq,ejang,lrad,r
    logical :: firstrun
 
    ! Regotrack internal variables
@@ -45,9 +46,9 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    crater%continuous = RCONT * crater%frad**(EXPCONT)  ! Continuous ejecta distance From Moore (1974) eq. 1
    crater%ejdis = DISEJB * crater%continuous
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
-   domain%ejbres = (log(crater%ejdis) - log(crater%rad)) / EJBTABSIZE
-   lrad = crater%rad 
-   erad = crater%rad 
+   domain%ejbres = (log(crater%ejdis) - log(crater%ejrad)) / EJBTABSIZE
+   lrad = crater%ejrad 
+   erad = crater%ejrad / 2
    ejtble = EJBTABSIZE
    firstrun = .true.
    thick = 0._DP
@@ -70,11 +71,13 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
       call ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       if (k >= 1) then
          ejb(k)%lrad = log(lrad)
-         ! Use McGetchin et al. 1973 for ejecta thickness 
+
+         ! This will be replaced 
+         r = lrad / crater%frad
          if (lrad >= crater%frad) then
-            thick = 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
+            thick = crater%rimheight * r**(-3.0_DP)
          else
-            thick = 0.14_DP * crater%frad**(0.74_DP) / (crater%frad - crater%rad) * (lrad - crater%rad)
+            thick = max(crater_profile(user,crater,r),VSMALL)
          end if
          ejb(k)%thick = log(thick) 
          ejb(k)%vesq = vejsq

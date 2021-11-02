@@ -8,7 +8,7 @@ AM_FCFLAGS =  -O3 -qopenmp -parallel -assume byterecl -m64 -heap-arrays -FR
 #gfortran optimized flags
 #AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
-#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form
+#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form -fsanitize-address-use-after-scope -fstack-check  -fsanitize=bounds-strict -fsanitize=undefined -fsanitize=signed-integer-overflow -fsanitize=object-size -fstack-protector-all
 
 CTEM_SOURCES = globals/module_globals.f90\
 util/module_util.f90\
@@ -19,6 +19,7 @@ init/module_init.f90\
 seismic/module_seismic.f90\
 regolith/module_regolith.f90\
 porosity/module_porosity.f90\
+realistic/module_realistic.f90\
 util/util_toupper.f90\
 util/util_mrgrnk.f90\
 util/util_add_to_layer.f90\
@@ -35,6 +36,7 @@ util/util_push.f90\
 util/util_traverse_pop.f90\
 util/util_destroy_list.f90\
 util/util_init_list.f90\
+util/util_perlin_noise.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -69,9 +71,10 @@ ejecta/ejecta_distance_estimate.f90\
 crater/crater_populate.f90\
 crater/crater_scale.f90\
 crater/crater_generate.f90\
-crater/crater_find_visible.f90\
+crater/crater_dimensions.f90\
 crater/crater_averages.f90\
 crater/crater_emplace.f90\
+crater/crater_realistic_topography.f90\
 crater/crater_form_interior.f90\
 crater/crater_form_exterior.f90\
 crater/crater_form_exterior_func.f90\
@@ -83,7 +86,10 @@ crater/crater_slope_collapse.f90\
 crater/crater_soften.f90\
 crater/crater_subpixel_diffusion.f90\
 crater/crater_make_list.f90\
-crater/crater_critical_slope.f90\
+crater/crater_degradation_function.f90\
+crater/crater_visibility.f90\
+crater/crater_get_degradation_state.f90\
+crater/crater_profile.f90\
 crater/crater_superdomain.f90\
 init/init_domain.f90\
 init/init_dist.f90\
@@ -115,5 +121,6 @@ regolith/regolith_streamtube_volume_func.f90\
 regolith/regolith_shock_damage_zone.f90\
 regolith/regolith_shock_damage.f90\
 porosity/porosity_form_interior.f90\
+realistic/realistic_perlin_noise.f90\
 main/CTEM.f90
 CLEANFILES = *.mod

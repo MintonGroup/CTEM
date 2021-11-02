@@ -3,9 +3,9 @@
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      15000            ! Diameter of test impactor (m)
-testvel      18.3e3                            ! Velocity of test crater (m/s)
-testang      45.0                              ! Impact angle of test crater (deg) - Default 90.0
+testimp      5.934e3 ! 93km crater            ! Diameter of test impactor (m)
+testvel      15.0e3                            ! Velocity of test crater (m/s)
+testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0e0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
 testyoffset  0.0e0                             ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
@@ -33,10 +33,10 @@ runtype      single                             ! Run type: options are normal /
                                                 !    statistical: surface is reset between intervals
 
 ! CTEM required inputs
-seed         33790                    ! Random number generator seed
+seed         23790                    ! Random number generator seed
 gridsize     2000                          ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
-pix          3.08e3                           ! Pixel size (m)
+pix          2.0e2                           ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
 ! Bedrock scaling parameters
 mu_b         0.55e0                             ! Experimentally derived parameter for bedrock crater scaling law 
@@ -70,6 +70,8 @@ Kd1             0.0001
 psi             2.000
 fe              4.00
 ejecta_truncation 4.0
-dorays  T 
+dorays  F
 superdomain F
+doregotrack F
+dorealistic T
 
