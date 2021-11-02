@@ -1,2 +1,0 @@
-#!/bin/bash
-rsync -vah --progress "brown.rcac.purdue.edu:/scratch/brown/daminton/NPF-global-Kd0.0001/" ./
