@@ -172,6 +172,7 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
    !FWHM = 0.3_DP !Lansberg 
    a = crater%peakheight
    b = 0.003_DP * ((1e-3_DP * crater%fcrat)**(1.75_DP)) / (1e-3_DP * crater%fcrat) ! Make peak rings for sufficiently large craters
+   b = min(b, 0.5_DP)
    c = FWHM / (2 * sqrt(2 * log(2._DP)))
    !*********************
 
