@@ -184,12 +184,12 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
@@ -255,12 +255,12 @@ subroutine complex_floor(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
@@ -330,12 +330,12 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
@@ -429,7 +429,6 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    pers_tfloor = 0.5_DP
    xy_size_tfloor = 5.0_DP / crater%fcrat 
 
-
    ! Lansberg values
    !terracefac = 1.0_DP
    !nterraces = 16
@@ -437,10 +436,6 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    !scallop_p = 0.6_DP
    !scallop_width = 0.10_DP 
    !^^^^^^^^^^^^^^^
-
-
-
-
 
    rad = 2.0_DP * crater%frad
    upshift = 0._DP
@@ -458,12 +453,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
 
+            xbar = xpi * user%pix - crater%xl 
+            ybar = ypi * user%pix - crater%yl
+
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
             newdem = surf(xpi,ypi)%dem
-
-            xbar = xpi * user%pix - crater%xl 
-            ybar = ypi * user%pix - crater%yl
 
             r = sqrt(xbar**2 + ybar**2) / crater%frad
 
@@ -484,9 +479,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
                                                  xynoise * ybar + offset * rn(2))* znoise
             end do
 
-
             isterrace = 1.0_DP - noise < hprof
-
 
             tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 + tnoise ! This is the floor profile that replaces the old one at each terrace
 
@@ -511,12 +504,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
@@ -557,12 +550,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          
@@ -675,15 +668,14 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
 
    ! Add the base texture to the ejecta proportional to the thickness
-
    do j = -inc,inc
       do i = -inc,inc
 
          xpi = indarray(1,i,j)
          ypi = indarray(2,i,j)
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
+         xbar = (crater%xlpx + i) * user%pix - crater%xl 
+         ybar = (crater%ylpx + j) * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          phi = atan2(ybar,xbar)
@@ -697,9 +689,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
       
          areafrac = areafrac * (1.0_DP - max(min(2._DP - r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
 
-
          ! Make the splat pattern
-
          splatnoise = 0.0_DP
          do octave = 1,nsplat_octaves
             xysplat = (nsplats / PI) * freq ** (octave -1) / crater%fcrat 
@@ -795,7 +785,7 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2)) * znoise
          end do
-         !write(*,*) i,j,noise
+         
          critarray(i,j) = max(critical * (1.0_DP + noise),0.0_DP)
       end do
    end do
