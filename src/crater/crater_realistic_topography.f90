@@ -96,11 +96,11 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
       end subroutine ejecta_texture
 
-      subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
+      subroutine crater_realistic_slope_texture(user,critical_value,inc,critarray)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
-      real(DP),intent(in) :: critical
+      real(DP),intent(in) :: critical_value
       integer(I4B),intent(in) :: inc
       real(DP),dimension(-inc:inc,-inc:inc),intent(out) :: critarray
       end subroutine crater_realistic_slope_texture
@@ -741,7 +741,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 end subroutine ejecta_texture
 
 
-subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
+subroutine crater_realistic_slope_texture(user,critical_value,inc,critarray)
    ! Adds noise to the critical slope to give texture to regions that undergo slope collapse
    use module_globals
    use module_util
@@ -750,7 +750,7 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
 
    ! Arguments
    type(usertype),intent(in) :: user
-   real(DP),intent(in) :: critical
+   real(DP),intent(in) :: critical_value
    integer(I4B),intent(in) :: inc
    real(DP),dimension(-inc:inc,-inc:inc),intent(out) :: critarray
 
@@ -786,7 +786,7 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
                                               xynoise * ybar + offset * rn(2)) * znoise
          end do
          
-         critarray(i,j) = max(critical * (1.0_DP + noise),0.0_DP)
+         critarray(i,j) = max(critical_value * (1.0_DP + noise),0.0_DP)
       end do
    end do
 

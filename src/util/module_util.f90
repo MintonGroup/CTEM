@@ -165,7 +165,7 @@ interface util_search
 end interface util_search
 
 interface util_periodic
-   subroutine util_periodic(x,y,side)
+   pure subroutine util_periodic(x,y,side)
    use module_globals
    implicit none
    integer(I4B),intent(inout) :: x,y
