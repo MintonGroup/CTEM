@@ -108,24 +108,26 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
 
    end interface
 
-   ! Executable code
-
-   if (crater%morphtype .eq. 'COMPLEX') then
+   select case(crater%morphtype)
+   case("COMPLEX","PEAKRING","MULTIRING")
       call complex_terrace(user,surf,crater,deltaMtot)
       call complex_wall_texture(user,surf,crater,domain,deltaMtot)
       call complex_floor(user,surf,crater,deltaMtot)
       call complex_peak(user,surf,crater,deltaMtot)
-   end if
+   end select
 
    ! Retrieve the size of the ejecta dem and correct for indexing
    inc = (size(ejecta_dem,1) - 1) / 2
    call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
-   if ((crater%morphtype .eq. 'COMPLEX').and.(user%docollapse)) then
-      ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
-      call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
-   end if
+   ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
 
+   if (user%docollapse) then
+      select case(crater%morphtype)
+      case("COMPLEX","PEAKRING","MULTIRING")
+         call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
+      end select
+   end if
 
    return
 end subroutine crater_realistic_topography

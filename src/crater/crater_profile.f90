@@ -47,7 +47,7 @@ function crater_profile(user,crater,r) result(h)
 
    if (r < flrad) then
       h = -crater%floordepth 
-   else if (r > 1.0_DP) then
+   else if (r >= 1.0_DP) then
       h = crater%rimheight * (r**(-RIMDROP))
    else
       h = c0 + c1 * r + c2 * r**2 + c3 * r**3 
