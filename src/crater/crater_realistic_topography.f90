@@ -108,6 +108,7 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
 
    end interface
 
+   deltaMtot = 0.0_DP
    select case(crater%morphtype)
    case("COMPLEX","PEAKRING","MULTIRING")
       call complex_terrace(user,surf,crater,deltaMtot)
@@ -316,11 +317,12 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
    real(DP), parameter :: noise_height = 7.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
+   real(DP), parameter :: outer_wall_size = 2.1_DP
 
    !Executable code
    call random_number(rn)
 
-   inc = max(min(nint(2.1_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
+   inc = max(min(nint(outer_wall_size * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
@@ -340,7 +342,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
-         areafrac = areafrac * util_area_intersection(2.1_DP * crater%frad,xbar,ybar,user%pix)
+         areafrac = areafrac * util_area_intersection(outer_wall_size * crater%frad,xbar,ybar,user%pix)
          areafrac = areafrac * min((r / flr)**12,1.0_DP) ! Smooth out interface between wall and floor
          areafrac = areafrac * max(min(2._DP - r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
 
@@ -352,7 +354,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
-         newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
+         if (r < flr) newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
          if (r > 1.1_DP) newdem = max(newdem,newdem + areafrac * crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
