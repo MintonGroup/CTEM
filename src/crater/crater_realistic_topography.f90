@@ -354,7 +354,8 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
-         if (r < flr) newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
+         newdem = newdem + noise * areafrac
+         if (r < flr) newdem = max(newdem,crater%melev - crater%floordepth)
          if (r > 1.1_DP) newdem = max(newdem,newdem + areafrac * crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
