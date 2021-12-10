@@ -1,0 +1,20 @@
+#!/bin/csh
+
+#http://hamelot.io/visualization/using-ffmpeg-to-convert-a-set-of-images-into-a-video/
+module load idl
+
+@ count = 1
+set cnt = 1
+foreach file (agetop0*)
+@ cnt = $count
+sed '2 i\ncount='`printf %d $count`'' tem.pro > tem1.pro
+sed -e 's/INFILE/agetop'`printf %06d $cnt`'/' tem1.pro > tem2.pro
+idl < tem.in
+idl < run.in
+rm tem1.pro tem2.pro
+@ count++
+end 
+
+cd agetop
+module load ffmpeg
+ffmpeg -f image2 -r 10 -i ./agetop%06d.jpg ./out.mp4

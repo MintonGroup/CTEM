@@ -103,7 +103,7 @@ interface
    use module_globals
    implicit none
    type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(in) :: surf
+   type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(in) :: crater
    end subroutine util_sort_layer
 end interface
@@ -135,37 +135,37 @@ end interface
 
 
 interface util_search
-   subroutine util_search_double(arr,ind,n,val,k)
+   subroutine util_search_double(arr,ind,n,val,klo)
    use module_globals
    implicit none
    integer(I4B),intent(in) :: ind,n
    real(DP),dimension(:,:),intent(in) :: arr
    real(DP),intent(in) :: val
-   integer(I4B),intent(out) :: k
+   integer(I4B),intent(inout) :: klo
    end subroutine util_search_double
    
-   subroutine util_search_double_1(arr,ind,n,val,k)
+   subroutine util_search_double_1(arr,ind,n,val,klo)
    use module_globals
    implicit none
    integer(I4B),intent(in) :: ind,n
    real(DP),dimension(:),intent(in) :: arr
    real(DP),intent(in) :: val
-   integer(I4B),intent(out) :: k
+   integer(I4B),intent(inout) :: klo
    end subroutine util_search_double_1
 
-   subroutine util_search_int(arr,ind,n,val,k)
+   subroutine util_search_int(arr,ind,n,val,klo)
    use module_globals
    implicit none
    integer(I4B),intent(in) :: ind,n
    integer(I4B),dimension(:,:),intent(in) :: arr
    integer(I4B),intent(in) :: val
-   integer(I4B),intent(out) :: k
+   integer(I4B),intent(inout) :: klo
    end subroutine util_search_int
 
 end interface util_search
 
 interface util_periodic
-   subroutine util_periodic(x,y,side)
+   pure subroutine util_periodic(x,y,side)
    use module_globals
    implicit none
    integer(I4B),intent(inout) :: x,y
@@ -223,6 +223,16 @@ interface
    logical, intent(in),optional :: poisson_first
    integer(I8B)             :: ival
    end function util_poisson
+end interface
+
+interface
+   function util_perlin_noise(x,y,z) result (noise)
+   use module_globals
+   implicit none
+   real(DP),intent(in) :: x,y
+   real(DP),intent(in),optional :: z
+   real(DP) :: noise
+   end function util_perlin_noise
 end interface
 
 end module

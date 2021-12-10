@@ -66,15 +66,6 @@ save
       end subroutine io_read_regotrack
   end interface  
 
-  interface
-      subroutine io_read_porotrack(user,surf)
-		use module_globals
-		implicit none
-		type(usertype),intent(in) :: user
-		type(surftype),dimension(:,:),intent(out) :: surf  
-      end subroutine io_read_porotrack
-  end interface  
-
   interface   
       subroutine io_write_surf(user,surf)
       use module_globals
@@ -91,15 +82,6 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf      
       end subroutine io_write_regotrack
-  end interface 
-
-  interface 
-      subroutine io_write_porotrack(user,surf)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(in) :: surf      
-      end subroutine io_write_porotrack
   end interface 
 
   interface   
@@ -119,6 +101,16 @@ save
       type(usertype),intent(in) :: user
       type(domaintype),intent(in) :: domain
       end subroutine io_read_prod
+   end interface
+
+   interface
+      subroutine io_read_craterlist(rclist, user,domain)
+      use module_globals
+      implicit none
+      real(DP),dimension(:,:),intent(out) :: rclist
+      type(usertype),intent(inout) :: user
+      type(domaintype),intent(in) :: domain
+      end subroutine io_read_craterlist
    end interface
 
    interface
@@ -142,13 +134,14 @@ save
    end interface
 
    interface
-      subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam)
+      subroutine io_write_tally(tdist,tlist,odist,olist,oposlist,depthdiam,degradation_state)
       use module_globals
       implicit none
       real(DP),dimension(:,:),intent(in) :: tdist,tlist,odist
       real(DP),dimension(:),intent(in) :: olist
       real(SP),dimension(:,:),intent(in) :: oposlist
       real(SP),dimension(:),intent(in) :: depthdiam
+      real(DP),dimension(:),intent(in) :: degradation_state
       end subroutine io_write_tally
    end interface
 
@@ -169,7 +162,7 @@ save
       implicit none
       type(cratertype),intent(in) :: crater
       type(domaintype),intent(in) :: domain
-      type(ejbtype),dimension(EJBTABSIZE),intent(in) :: ejb
+      type(ejbtype),dimension(:),intent(in) :: ejb
       integer(I4B),intent(in) :: ejtble
       character(*),intent(in) :: filename
       end subroutine io_ejecta_table
@@ -197,13 +190,41 @@ save
       end subroutine io_splash
    end interface
 
-  !interface
-  !    subroutine io_write_regodist(user,surf)
-  !    use module_globals
-  !    implicit none
-  !    type(usertype),intent(in) :: user
-  !    type(surftype),dimension(:,:),intent(in) :: surf
-  !    end subroutine io_write_regodist
-  !end interface
+  interface
+      subroutine io_write_age(user,surf,n_size,icrater,ncrat)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
+      integer(I2B),intent(in)                  :: n_size
+      integer(I8B),intent(in)                  :: icrater
+      integer(I8B),intent(in)                  :: ncrat
+      end subroutine io_write_age
+  end interface
+
+  interface
+      subroutine io_write_pindex_map(user,pindex,icrater,ncrat)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                 :: user
+      integer(I2B),dimension(:,:),intent(inout) :: pindex
+      integer(I8B),intent(in)                   :: icrater
+      integer(I8B),intent(in)                   :: ncrat
+      end subroutine io_write_pindex_map
+  end interface
+
+  interface
+      subroutine io_write_age_depth(user,surf,n_size,icrater,ncrat,age,age_2_depth)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
+      integer(I2B),intent(in)                  :: n_size
+      integer(I8B),intent(in)                  :: icrater
+      integer(I8B),intent(in)                  :: ncrat
+      real(DP),intent(in)                      :: age
+      real(SP),dimension(:,:,:),intent(inout)  :: age_2_depth
+      end subroutine io_write_age_depth
+  end interface
 
 end module module_io

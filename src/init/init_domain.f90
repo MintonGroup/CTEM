@@ -30,7 +30,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    real(DP),dimension(:,:),intent(inout)           :: prod,vdist
    real(DP),dimension(:,:),intent(out)             :: crtscl
    real(DP),dimension(:,:),intent(out),allocatable :: pdist
-   real(DP),dimension(:,:),intent(out) :: nflux
+   real(DP),dimension(:,:),intent(out)             :: nflux
 
    ! Internals
    integer(I4B),parameter :: tistfac=100 ! Temporary storage array for crater tally is 100x larger than the displayed bin size
@@ -95,6 +95,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    end do
    domain%vhi = min(domain%vhi + 1,domain%vnum)
    rmsvel = sqrt(rmsvel/numvel) 
+   domain%rmsvel = rmsvel
 
    domain%smallest_impactor_index = 1
    ! Find the smallest impactor that produces a crater at least 1 pixel wide at the maximum possible impact velocity and angle

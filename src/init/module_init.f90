@@ -37,12 +37,13 @@ save
       subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
       use module_globals
       implicit none
-      type(usertype),intent(in) :: user
-      type(cratertype),intent(inout) :: crater
-      type(domaintype),intent(inout) :: domain
-      real(DP),dimension(:,:),intent(inout) :: prod,vdist
-      real(DP),dimension(:,:),intent(out) :: pdist,crtscl
-      real(DP),dimension(:,:),intent(out) :: nflux
+      type(usertype),intent(inout)                    :: user
+      type(cratertype),intent(inout)                  :: crater
+      type(domaintype),intent(inout)                  :: domain
+      real(DP),dimension(:,:),intent(inout)           :: prod,vdist
+      real(DP),dimension(:,:),intent(out)             :: crtscl
+      real(DP),dimension(:,:),intent(out),allocatable :: pdist
+      real(DP),dimension(:,:),intent(out)             :: nflux
       end subroutine init_domain
    end interface 
   
@@ -53,15 +54,6 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       end subroutine init_regolith_stack
-   end interface
-
-   interface
-      subroutine init_porosity_stack(user,surf)
-      use module_globals
-      implicit none
-      type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(inout) :: surf
-      end subroutine init_porosity_stack
    end interface
 
 end module module_init

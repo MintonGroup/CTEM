@@ -1,7 +1,11 @@
 
-autom4te.cache/
+autom4te.cache/output.*
+autom4te.cache/traces.*
+autom4te.cache/requests
+Makefile.in
 
 *.o
+
 
 build/src/CTEM
 
@@ -24,8 +28,6 @@ __pycache__/
 
 *.dat
 
-*.png
-
 *.DS_Store
 
 *.json
@@ -41,3 +43,27 @@ examples/global-lunar-bombardment/CTEM
 !LOLA*.dat
 !lunar*.dat
 !NPF*.dat
+alocal.m4
+
+*.m4
+
+*.eps
+examples/mare-with-rays-model2/CTEM
+
+
+examples/global-lunar-bombardment/CTEM
+
+
+examples/*/*.o*
+*.out
+
+!autogen.sh
+*.sh
+.vscode/*
+
+
+examples/global-lunar-bombardment/scale.ipynb
+*~
+
+*.m4
+*.code-workspace

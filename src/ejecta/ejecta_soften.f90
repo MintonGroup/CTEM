@@ -27,7 +27,7 @@ subroutine ejecta_soften(user,surf,N,indarray,cumulative_elchange)
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(in) :: surf
+   type(surftype),dimension(:,:),intent(inout) :: surf
    integer(I4B),intent(in) :: N
    integer(I4B),dimension(2,N,N),intent(in) :: indarray
    real(DP),dimension(N,N),intent(inout) :: cumulative_elchange 

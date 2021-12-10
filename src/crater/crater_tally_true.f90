@@ -28,7 +28,7 @@ subroutine crater_tally_true(domain,truelist,ntrue,truedist)
    ! Arguments
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ntrue
-   real(DP),dimension(TRUECOLS,ntrue),intent(inout) :: truelist
+   real(DP),dimension(:,:),intent(inout) :: truelist
    real(DP),dimension(:,:),intent(out)  :: truedist
 
    ! Internal variables

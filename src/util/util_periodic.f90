@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_periodic(x,y,side)
+pure subroutine util_periodic(x,y,side)
 use module_globals
 use module_util, EXCEPT_THIS_ONE => util_periodic
 implicit none

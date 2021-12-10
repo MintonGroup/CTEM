@@ -76,10 +76,6 @@ subroutine ejecta_blanket(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
    vej1sq = max(ce1sq * abs(user%gaccel * crater%grad) * (crater%grad / erad)**p,0._DP)
    gterm = ce1sq * (user%gaccel * erad)
    vejsq = max(vej1sq - gterm - yterm,0._DP)
-   !if (vejsq >= domain%vescsq) then 
-   !   lrad = VBIG
-   !   return
-   !end if
 
    ! Ejection angle
    ejang=DEG2RAD * (55._DP - 20 * (erad / crater%grad))

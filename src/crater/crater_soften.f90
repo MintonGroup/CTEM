@@ -40,8 +40,13 @@ subroutine crater_soften(user,surf,crater,domain)
    integer(I4B) :: inc,incsq,N,xpi,ypi,iradsq,i,j,ss,ioerr,bigi,bigj
    real(DP) :: xp,yp,fradsq,xbar,ybar,areafrac,kdiffmax,sf
 
-   kdiffmax = user%Kd1 * crater%frad**user%psi
-   inc = int(min(user%fe * crater%frad / user%pix,SQRT2 * user%gridsize)) + 3 
+   real(DP) :: mfe,bfe
+
+
+
+   !kdiffmax = user%Kd1 * crater%frad**user%psi
+   kdiffmax = crater_degradation_function(user,crater%frad)
+   inc = int(min(crater%fe * crater%frad / user%pix,SQRT2 * user%gridsize)) + 3 
    maxhits = (1 + (inc / (user%gridsize / 2)))**2
    crater%maxinc = max(crater%maxinc,inc)
    incsq = (inc - 2)**2
@@ -78,7 +83,7 @@ subroutine crater_soften(user,surf,crater,domain)
             xbar = xp - crater%xl 
             ybar = yp - crater%yl
 
-            areafrac = util_area_intersection(user%fe * crater%frad,xbar,ybar,user%pix)
+            areafrac = util_area_intersection(crater%fe * crater%frad,xbar,ybar,user%pix)
              
             kdiff(i,j) = kdiffmax * areafrac  ! Apply user-defined diffusive degradation to degradation region
          !end if
@@ -91,12 +96,12 @@ subroutine crater_soften(user,surf,crater,domain)
       write(*,*) 'crater kdiff '
       write(*,*) maxval(kdiff)
       call util_diffusion_solver(user,surf,2 * inc + 1,indarray,kdiff,cumulative_elchange,maxhits)
-      write(16,*) crater%frad
+      !write(16,*) crater%frad
       do j = -inc,inc
          do i = -inc,inc
             xpi = indarray(1,i,j)
             ypi = indarray(2,i,j)
-            write(16,*) i,j,xpi,ypi,kdiff(i,j),surf(xpi,ypi)%dem,cumulative_elchange(i,j)
+            !write(16,*) i,j,xpi,ypi,kdiff(i,j),surf(xpi,ypi)%dem,cumulative_elchange(i,j)
             !surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cumulative_elchange(i,j)
             !surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j),0.0_DP)
          end do

@@ -38,9 +38,10 @@ type(surftype),dimension(:,:),allocatable :: surf
 type(cratertype) :: crater
 
 ! Distribution arrays
-real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist
+real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist,rclist
 real(DP),dimension(:),allocatable :: obslist
 real(SP),dimension(:),allocatable :: depthdiam
+real(DP),dimension(:),allocatable :: degradation_state
 real(SP),dimension(:,:),allocatable :: oposlist
 integer(I8B),dimension(:),allocatable :: production_list
 ! Miscellaneous variables
@@ -48,7 +49,7 @@ character(STRMAX)       :: infile   ! Input file name
 logical                 :: restart  ! F = new run (start with a fresh surface)
 integer(I8B)            :: totalimpacts ! Total number of impacts ever produced 
 integer(I4B)            :: ncount   ! Current count in ctem_driver IDL run
-integer(I4B)            :: n, xp, yp        ! Size of random number generator seed array
+integer(I4B)            :: n, xp, yp, i        ! Size of random number generator seed array
 integer(I4B),dimension(:),allocatable :: seedarr ! Random number generator seed array
 real(DP)                :: curyear
 real(DP)                :: mass
@@ -60,6 +61,7 @@ integer(I4B)            :: nkilled
 integer(I4B)            :: ntotkilled 
 integer(I8B)            :: ntotcrat
 integer(I4B)            :: onum
+real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
 
@@ -77,6 +79,7 @@ allocate(prod(4,domain%pnum))
 allocate(nflux(3,domain%pnum))
 allocate(crtscl(2,domain%pnum))
 allocate(vdist(3,domain%vnum))
+allocate(rclist(6,domain%rcnum))
 allocate(surf(user%gridsize,user%gridsize))
 allocate(production_list(domain%pnum))
 
@@ -85,6 +88,10 @@ call io_read_prod(prod,user,domain)
 
 ! Read in impactor velocity distribution
 call io_read_vdist(vdist,user,domain)
+
+! Read in real crater list for quasi-MC run
+if (user%doquasimc) call io_read_craterlist(rclist,user,domain)
+!write(*,*) rclist
 
 write(*,*) "Initializing simulation domain and determining minimum impactor size"
 call init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
@@ -115,7 +122,7 @@ if (.not.user%tallyonly) then
       call crater_make_list(domain,prod,ntotcrat,production_list)
    end if
    call crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
-                        fracdone,nflux,ntotcrat,curyear)
+                        fracdone,nflux,ntotcrat,curyear,rclist)
 
    ! Get the last seed and save it to file
    call random_seed(get=seedarr)
@@ -130,10 +137,10 @@ if (.not.user%tallyonly) then
    write(*,*) "Surface-affecting craters generated:   ",ntrue
    write(*,*) "Visible craters generated:             ",vistrue
 end if
-call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam)
+call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
 ntotkilled = ntotkilled + nkilled
 write(*,*) 'Craters killed during tally: ',ntotkilled
-call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam)
+call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
 if (.not.user%tallyonly) then
    write(*,*) "Writing surface files"
    call io_write_surf(user,surf)
@@ -163,10 +170,6 @@ if (user%doporosity) then
    end do
 end if
 
-! Deallocate all the allocatables
-deallocate(seedarr)
-deallocate(surf,prod,vdist,pdist,crtscl,truedist,truelist,obsdist,obslist,nflux,production_list)
-deallocate(oposlist,depthdiam)
 
 !$ t2 = omp_get_wtime()
 !$ write(*,*) 'Timing information'

@@ -27,39 +27,45 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
-   type(cratertype),intent(in) :: crater
+   type(cratertype),intent(inout) :: crater
    real(DP),intent(in) :: x_relative, y_relative 
    real(DP),intent(in) :: newelev
    real(DP),intent(out) :: deltaMi
 
    ! Internal variables
-   real(DP) :: cform,newdem,elchange,pikeD,r,h,circrad,polymodel,f,HH
+   real(DP) :: cform,newdem,elchange,r
    integer(I4B) :: layer
 
-   ! A list for poped data 
+   ! A list for popped data 
    type(regolisttype),pointer :: poppedlist
 
-   ! Executable code
 
-   !change digital elevation map
+   ! Empirical crater shape parameters from Fassett et al. (2014)
+   real(DP),parameter :: r_floor = 0.2_DP
+   real(DP),parameter :: simple_depth_diam = 0.181_DP
+   real(DP),parameter :: r_rim = 0.98_DP
+   real(DP),parameter :: inner_c0 = -0.229_DP 
+   real(DP),parameter :: inner_c1 =  0.228_DP 
+   real(DP),parameter :: inner_c2 =  0.083_DP 
+   real(DP),parameter :: inner_c3 = -0.039_DP
+
+   real(DP),parameter :: outer_c0 =  0.188_DP
+   real(DP),parameter :: outer_c1 = -0.187_DP
+   real(DP),parameter :: outer_c2 =  0.018_DP 
+   real(DP),parameter :: outer_c3 =  0.015_DP
+
+   !real(DP) :: c0,c1,c2,c3,flrad,rh,fld
+
+
+   ! Executable code
    r = sqrt(x_relative**2+y_relative**2) / crater%frad
-   ! Use empirical crater form from Fassett et al. 2014
-   if (r < 0.2_DP) then
-      cform = -0.181_DP * crater%fcrat
-   else if (r < 0.98_DP) then
-      cform =  (-0.229_DP + 0.228_DP * r + 0.083_DP * r**2 - 0.039_DP * r**3) * crater%fcrat 
-   else 
-      cform =  (0.188_DP - 0.187_DP * r + 0.018_DP * r**2 + 0.015_DP * r**3) * crater%fcrat
-   end if      
+
+   cform = crater_profile(user,crater,r)
    newdem = newelev + cform 
 
-   pikeD = 1.044e3_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) ! Pike (1977)
-   if ((crater%fcrat > crater%cxtran * 2) .and. newdem < (crater%melev - pikeD)) then
-      newdem = crater%melev - pikeD ! Flatten out the bottom of the crater
-   end if
-   if (newdem < (crater%melev - user%deplimit)) then
-      newdem = crater%melev - user%deplimit ! Flatten out the bottom of the crater
-      do layer = 1,user%numlayers ! Remove all pre-existing craters from this current pixel
+   if (newdem < (crater%melev - crater%floordepth)) then 
+      newdem = crater%melev - crater%floordepth ! Flatten out the bottom of the crater regardless of the local slope
+      do layer = 1,user%numlayers ! Remove all pre-existing craters from the flat floor
          call util_remove_from_layer(surfi,layer)
       end do
    end if
