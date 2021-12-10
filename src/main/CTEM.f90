@@ -124,7 +124,6 @@ if (.not.user%tallyonly) then
                         fracdone,nflux,ntotcrat,curyear,rclist)
 
    ! Get the last seed and save it to file
-   call random_seed(get=crater%seedarr)
    totalimpacts = totalimpacts + ntotcrat
    call io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,crater%seedarr)
    call crater_tally_true(domain,truelist(:,1:ntrue),ntrue,truedist)
