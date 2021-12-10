@@ -124,6 +124,7 @@ type cratertype
    real(DP) :: floordepth
    real(DP) :: floordiam
    real(DP) :: peakheight
+   integer(I4B),dimension(:),allocatable :: seedarr ! Random number generator seed array
 end type cratertype
 
 ! Derived data type for domain variables (sizes and dimensions)
