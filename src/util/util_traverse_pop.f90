@@ -67,7 +67,8 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    ! Internal variables
    real(DP)                    :: z,depth,dz
    type(regodatatype)          :: oldregodata
-   logical :: initstat
+   logical                     :: initstat
+   real(DP)                    :: recyratio
 
    depth = regolayer%regodata%thickness
    dz = 0._DP
@@ -88,9 +89,12 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
 
        if (z <= depth) then
           dz = depth - z
+          oldregodata                  = regolayer%regodata
+          oldregodata%thickness        = z
+          oldregodata%age(:)           = z / regolayer%regodata%thickness * regolayer%regodata%age(:)
+          recyratio                    = dz / regolayer%regodata%thickness
+          regolayer%regodata%age(:)    = recyratio * regolayer%regodata%age(:)
           regolayer%regodata%thickness = dz
-          oldregodata = regolayer%regodata
-          oldregodata%thickness = z
           call util_push(poppedlist,oldregodata)
           exit
        else

@@ -90,6 +90,7 @@ def image_dem(parameters, DEM):
     solar_angle = 20.0 #parameters['solar_angle']
 
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
+
     dem_img = ls.hillshade(DEM, vert_exag=ve, dx=pix, dy=pix)
 
     # Generate image to put into an array
@@ -97,14 +98,36 @@ def image_dem(parameters, DEM):
     width = gridsize / dpi
     fig = matplotlib.pyplot.figure(figsize=(width, height), dpi=dpi)
     ax = matplotlib.pyplot.axes([0, 0, 1, 1])
-    ax.imshow(dem_img, interpolation="nearest", cmap='gray',vmin=0.0,vmax=1.0)
+    ax.imshow(dem_img, interpolation="nearest", cmap='gray')
     matplotlib.pyplot.axis('off')
     # Save image to file
     filename = parameters['workingdir'] + 'surf' + os.sep + "surf%06d.png" % parameters['ncount']
     matplotlib.pyplot.savefig(filename,dpi=dpi,bbox_inches=0)
 
     return
-
+    
+def image_regolith(parameters, regolith):
+    
+    #Create scaled regolith image
+    minref = parameters['pix'] * 1.0e-4
+    maxreg = numpy.amax(regolith)
+    minreg = numpy.amin(regolith)
+    if (minreg < minref): minreg = minref
+    if (maxreg < minref): maxreg = (minref + 1.0e3)
+    regolith_scaled = numpy.copy(regolith)
+    numpy.place(regolith_scaled, regolith_scaled < minref, minref)
+    regolith_scaled = 254.0 * ((numpy.log(regolith_scaled) - numpy.log(minreg)) / (numpy.log(maxreg) - numpy.log(minreg)))    
+    
+    #Save image to file
+    filename = parameters['workingdir'] + 'rego' + os.sep + "rego%06d.png" % parameters['ncount']
+    height = parameters['gridsize'] / dpi
+    width = height
+    fig = matplotlib.pyplot.figure(figsize = (width, height), dpi = dpi)
+    fig.figimage(regolith_scaled, cmap = matplotlib.cm.nipy_spectral, origin = 'lower')
+    matplotlib.pyplot.savefig(filename)   
+   
+    return
+    
 def image_shaded_relief(parameters, DEM):
     dpi = 300.0 #72.0
     pix = parameters['pix']
@@ -136,7 +159,9 @@ def image_shaded_relief(parameters, DEM):
     else:
         shadedmaxh = parameters['shadedmaxh']
 
-    dem_img = ls.shade(DEM, cmap=cmap,blend_mode=mode, fraction=1.0,
+
+
+    dem_img = ls.shade(DEM, cmap=cmap,blend_mode=mode,
                        vert_exag=ve, dx=pix, dy=pix,
                        vmin=shadedminh, vmax=shadedmaxh)
 
@@ -145,34 +170,11 @@ def image_shaded_relief(parameters, DEM):
     width = gridsize / dpi
     fig = matplotlib.pyplot.figure(figsize=(width, height), dpi=dpi)
     ax = matplotlib.pyplot.axes([0, 0, 1, 1])
-    ax.imshow(dem_img,interpolation="nearest",vmin=0.0,vmax=1.0)
+    ax.imshow(dem_img,interpolation="nearest")
     matplotlib.pyplot.axis('off')
     # Save image to file
     filename = parameters['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % parameters['ncount']
     matplotlib.pyplot.savefig(filename,dpi=dpi,bbox_inches=0)
-    return
-
-
-def image_regolith(parameters, regolith):
-    # Create scaled regolith image
-    minref = parameters['pix'] * 1.0e-4
-    maxreg = numpy.amax(regolith)
-    minreg = numpy.amin(regolith)
-    if (minreg < minref): minreg = minref
-    if (maxreg < minref): maxreg = (minref + 1.0e3)
-    regolith_scaled = numpy.copy(regolith)
-    numpy.place(regolith_scaled, regolith_scaled < minref, minref)
-    regolith_scaled = 254.0 * (
-                (numpy.log(regolith_scaled) - numpy.log(minreg)) / (numpy.log(maxreg) - numpy.log(minreg)))
-
-    # Save image to file
-    filename = parameters['workingdir'] + 'rego' + os.sep + "rego%06d.png" % parameters['ncount']
-    height = parameters['gridsize'] / dpi
-    width = height
-    fig = matplotlib.pyplot.figure(figsize=(width, height), dpi=dpi)
-    fig.figimage(regolith_scaled, cmap=matplotlib.cm.nipy_spectral, origin='lower')
-    matplotlib.pyplot.savefig(filename)
-
     return
 
 def create_rplot(parameters,odist,pdist,tdist,ph1):

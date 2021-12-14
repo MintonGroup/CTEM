@@ -69,6 +69,27 @@ subroutine init_dist(user,domain)
    end if
    close(LUN)
 
+   ! Get size of real crater list array
+   if (user%doquasimc) then
+      open(unit=LUN,file=rcfile,status="old",iostat=ierr)
+      if (ierr /= 0) then
+         write(*,*) "Unable to open file ", trim(rcfile)
+         stop
+      end if
+
+      domain%rcnum = 0
+      do
+         read(LUN,*,iostat=ierr) testreal,testreal,testreal,testreal,testreal,testreal
+         if (ierr/=0) exit
+         domain%rcnum = domain%rcnum + 1
+      end do
+
+      if (domain%rcnum == 0) then
+         write(*,*) "No valid entries in ",trim(rcfile)
+      end if
+      close(LUN)
+   end if
+
 
    return
 end subroutine init_dist

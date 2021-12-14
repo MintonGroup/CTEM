@@ -55,13 +55,16 @@ real(DP),parameter :: TALLYCOVERAGE = 0.01_DP  ! The total area coverage to reac
 real(DP),parameter :: SUBPIXELCOVERAGE = 0.025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
+integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
 real(DP),parameter :: ALPHA = 0.125_DP
 real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
-real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponentt of continuous ejecta size power law from Moore et al. (1974) 
-
+real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
+real(DP),parameter :: PF     = 5.0e9          ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa. (5 GPa)
+real(DP),parameter :: RAD_GP = 20.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
 type regodatatype 
+   real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
    real(DP) :: meltfrac 
    real(DP) :: comp 
@@ -121,6 +124,7 @@ type cratertype
    real(DP) :: floordepth
    real(DP) :: floordiam
    real(DP) :: peakheight
+   integer(I4B),dimension(:),allocatable :: seedarr ! Random number generator seed array
 end type cratertype
 
 ! Derived data type for domain variables (sizes and dimensions)
@@ -146,11 +150,13 @@ type domaintype
    real(DP)     :: ejbres    ! Ejecta blanket lookup table resolution
    integer(I4B) :: pnum      ! size of production function array
    integer(I4B) :: vnum      ! size of velocity distribution array
+   integer(I4B) :: rcnum      ! size of real crater list array for quasi-MC
    real(DP)     :: vescsq    ! Escape velocity at target
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
    integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
    integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
+   real(DP)     :: rmsvel            ! Root mean square impact velocity
 end type domaintype 
 
 ! Derived data type for user input variables
@@ -177,13 +183,14 @@ type usertype
    real(DP) :: seisk,cohaccel     ! seismic keff, cohesion breaking acceleration
    
    ! Optional input variables
-   logical           :: docollapse  ! Set T to use the slope collapse model (turning off speeds up the code for testing)
-   logical           :: doangle     ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
-   logical           :: doporosity  ! Porosity on/off flg. Set to F to turn the model off. Default F. 
-   real(DP)          :: basinimp    ! Impactor size to switch to multiring basin
-   real(DP)          :: maxcrat     ! fraction that maximum crater can be relative to grid
-   real(DP)          :: deplimit    ! complex crater depth limit
    logical           :: dorealistic ! Set to T to enable realistic crater morphology. Default is F.
+   logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
+   logical           :: doangle    ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
+   logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
+   logical           :: doquasimc  ! set to T for quasi-MC run. Default F.
+   real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
+   real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
+   real(DP)          :: deplimit  ! complex crater depth limit
 
    ! Seismic input variables 
    logical ::  doseismic   ! Set to T if you want to do the seismic shaking model
@@ -224,6 +231,7 @@ type usertype
    real(DP)          :: testyoffset  ! Offset of test crater from center in y direction (m)   
    logical           :: tallyonly    ! Only run the tally routine (don't generate any new craters)
    logical           :: testtally    ! Set to T to count all non-cookie cut craters, regardless of score
+   real(DP)          :: rctime       ! time (in interval units) for emplacement of quasi-MC crater
 
    ! IDL driver variables
    character(STRMAX) :: impfile      ! Name of impactor size distribution file (impacts per m^2 per y)
@@ -240,8 +248,7 @@ type usertype
    real(DP)          :: shadedminh   ! Minimum height for shaded relief map (m)
    real(DP)          :: shadedmaxh   ! Maximum height for shaded relief map (m)
    character(STRMAX) :: sfdcompare   ! Type of run: 0 for normal, 1 for statistical (domain is reset between intervals)
-
-   
+   character(STRMAX) :: realcraterlist ! This is only included here so the terminal doesn't return "Unknown parameter"
 end type usertype
 
 ! Derived data type for the ejecta blanket table elements
@@ -272,6 +279,7 @@ character(*),parameter :: REGOFILE   = 'surface_regotop.dat'
 character(*),parameter :: MELTFILE   = 'surface_melt.dat'
 character(*),parameter :: COMPFILE   = 'surface_comp.dat'
 character(*),parameter :: STACKNUMFILE = 'surface_stacknum.dat'
+character(*),parameter :: AGEFILE = 'surface_age.dat'
 character(*),parameter :: STACKPORFILE = 'porosity_stacknum.dat'
 character(*),parameter :: POROFILE     = 'porosity_porosity.dat'
 character(*),parameter :: DEPTHFILE    = 'porosity_depth.dat'
@@ -286,6 +294,7 @@ character(*),parameter :: PDISTFILE  = 'pdistribution.dat'
 character(*),parameter :: CRTSCLFILE = 'craterscale.dat'
 character(*),parameter :: DATFILE    = 'ctem.dat'
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
+character(*),parameter :: RCFILE     = 'craterlist.dat' !not sure if this is where this line should go, but putting it here for now...
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit
@@ -337,5 +346,8 @@ real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
 real(DP),parameter :: rayp = 2.0_DP 
 integer(I4B),parameter :: rayq = 4
 real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
+
+! quasi-MC test variables
+integer(I4B) :: rccount !start line to be read for quasi-MC (should be 0)
 
 end module module_globals

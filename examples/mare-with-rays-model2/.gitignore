@@ -1,1 +1,5 @@
+*.jpg
+*.png
+*.out
+surface_*
 *.idea

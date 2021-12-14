@@ -75,7 +75,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange)
    use module_globals
    use module_util
    use module_io
@@ -92,6 +92,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
+   real(DP),intent(in)  :: age
+   real(DP),intent(in)  :: age_resolution
    real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
 
    ! Internal variables
@@ -118,9 +120,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP)      :: vsq, ejtheta
    integer(I4B) :: ind,klo
 
+   ! Age
+   real(SP) :: age_mean
+
+
    ! Executable code
 
-   !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
+   if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
 
    crater%vdepth = crater%ejrim + crater%floordepth
    crater%vrim   = crater%ejrim + crater%rimheight
@@ -263,9 +269,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
          end if
 
 
-         !if (user%doregotrack .and. ebh>1.0e-8_DP) then
-         !   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
-         !end if
+         if (user%doregotrack .and. ebh>1.0e-8_DP) then
+            call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution)
+         end if
 
             
       end do

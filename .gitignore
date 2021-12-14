@@ -22,26 +22,48 @@ examples/global-lunar-bombardment/.DS_Store
 
 examples/mare-with-rays-model2/.DS_Store
 
+testing/
+
 __pycache__/
 
 *.dat
 
 *.DS_Store
 
-alocal.m4
+*.json
 
-*.m4
+*.xml
 
-*.eps
+*.iml
 
 examples/mare-with-rays-model2/CTEM
 
 examples/global-lunar-bombardment/CTEM
 
-examples/*/*.o*
+!LOLA*.dat
+!lunar*.dat
+!NPF*.dat
+alocal.m4
 
+*.m4
+
+*.eps
+examples/mare-with-rays-model2/CTEM
+
+
+examples/global-lunar-bombardment/CTEM
+
+
+examples/*/*.o*
 *.out
+
+!autogen.sh
+*.sh
 .vscode/*
 
-*.sh
-!autogen.sh
+
+examples/global-lunar-bombardment/scale.ipynb
+*~
+
+*.m4
+*.code-workspace

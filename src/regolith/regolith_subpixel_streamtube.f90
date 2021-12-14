@@ -50,38 +50,62 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,vseg,newlayer,rm)
+subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
+                                        age_collector,xmints,xsfints,vol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_subpixel_streamtube
    implicit none
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),intent(inout) :: surfi
-   real(DP),intent(in)            :: deltar,ri,rip1,eradi,vseg
-   type(regodatatype),intent(inout) :: newlayer
-   real(DP),intent(in) :: rm
+   type(surftype),intent(in) :: surfi
+   real(DP),intent(in)       :: deltar,ri,rip1,eradi
+   type(regodatatype),intent(inout)    :: newlayer
+   real(DP),intent(out)                :: vmare,totseb
+   real(SP),dimension(:),intent(inout) :: age_collector
+   real(DP),intent(in)                 :: xmints
+   real(DP),intent(in)                 :: xsfints
+   real(DP),intent(inout)              :: vol
+ 
 
    ! Traversing a linked list 
    real(DP),parameter :: a = 0.936457 
    real(DP),parameter :: b = 1.12368
    type(regolisttype),pointer :: current
-   real(DP) :: z,zmax,zstart,zend,rlefti,rleftf,rrighti,rrightf,rc,vsgly,x
+   real(DP) :: z,zmax,zstart,zend,rlefti,rleftf,rrighti,rrightf,rc,vsgly,vsgly1,vsgly2,x
+
+   ! Stream tube's distance from the edge of a melt zone 
+   real(DP) :: zm, recyratio, xmints1, vseg
+
+   ! Parameters for calculating shocked segment of stream tube   
+   real(DP) :: x_up_sh, x_low_sh, vsh
 
    ! The depth that a stream tube dips 
    zmax = rip1/4.0_DP
-
+   
    current => surfi%regolayer
    z = surfi%regolayer%regodata%thickness
    zstart = 0.0_DP
    zend = z 
+   vmare = 0._DP
+   totseb = 0._DP
+   vseg   = 0.0_DP
+   vsgly1  = 0.0_DP
+   vsgly2  = 0.0_DP
 
    ! Two cases: subpixel is inside the first layer, and its volume is simply the landing ejecta blanket.
    if (zend>=zmax) then 
-
-      newlayer%thickness = vseg
-      newlayer%comp      = vseg * surfi%regolayer%regodata%comp
-
+      vmare  = newlayer%thickness * user%pix**2 * surfi%regolayer%regodata%comp
+      totseb = newlayer%thickness * user%pix**2
+      if (eradi>xmints) then
+         vseg             = regolith_streamtube_volume_func(eradi,xmints,eradi,deltar)
+         vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,0.0_DP,eradi)
+         recyratio        = max(vseg-vsh,0.0 )/ (user%pix**2) / (surfi%regolayer%regodata%thickness)
+         age_collector(:) = age_collector(:) + surfi%regolayer%regodata%age(:) * recyratio
+         vol              = vol + sum(age_collector(:))
+!         write(*,*) '1',eradi, xmints, xsfints, &
+!                    vseg/user%pix**2, (vseg-vsh)/user%pix**2, recyratio
+      end if
    else
    ! The subpixel stream tube may dip deeper than the first layer. And we use the line segments approximation, but 
    ! the layer now intersects with both sides of a stream tube, so two intersection points between the layer and the 
@@ -92,7 +116,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,vseg,new
    !  ** |                                                        |    *                              *
    !-----*--------------------------------------------------------*----------------------------*--------------------- > z
    !    *|  *                                              *      |
-   !     |     *                                     *            |                    *
+   !     |     *                                     *            |                    *       rrightf
    !     |  *      *                         *                    |            *
    !     |                *     *     *                           |    * 
    !     |     *                                                  |
@@ -101,15 +125,14 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,vseg,new
    !     |               *                     *                  |
    !     |                      *     *                           |
    !^    ^                      ^                                 ^              ^
-   !0.0 rleftf                  rc                              rrighti        eradi
+   !0.0   rleftf                  rc                              rrighti        eradi
+   !rlefti
 
      rlefti  = 0.0_DP
      rleftf  = 0.0_DP
      rrighti = eradi
      rrightf = eradi
      rc      = rip1 * sqrt(3.0) / 4.0
-     newlayer%thickness = 0._DP
-     newlayer%comp      = 0._DP
 
      do 
 
@@ -120,12 +143,47 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,vseg,new
  
          rleftf  = regolith_quadratic_func(zend,rip1,rlefti,rc,rlefti)  
          rrighti = regolith_quadratic_func(zend,rip1,rc,rrightf,rrightf)
-         vsgly   = 0.25 * PI * deltar**2 * a**2 * eradi / b * (abs(tan(b/eradi * rleftf) + tan(b/eradi * rrightf)&
-                 - tan(b/eradi * rlefti) - tan(b/eradi * rrighti)) - abs(b/eradi * rleftf + b/eradi * rrightf &
-                 - b/eradi * rlefti - b/eradi * rrighti)) 
-       
-         newlayer%comp      = newlayer%comp + vsgly * current%regodata%comp
-         newlayer%thickness = newlayer%thickness + vsgly
+         vsgly1  = regolith_streamtube_volume_func(eradi,rlefti,rleftf,deltar) 
+         vsgly2  = regolith_streamtube_volume_func(eradi,rrighti,rrightf,deltar)
+         vsgly   = vsgly1 + vsgly2
+         vmare = vmare + (vsgly * current%regodata%comp)
+         totseb = totseb + vsgly
+          
+         ! If this segmentr, intersecting with layer, is beyond "xmints"
+         ! (melt-and-streamline intersection point), a streamtube will retain
+         ! whatever it is in the layer. However, if this segment is completely
+         ! within shock fragmentation zone, then it would not retain. 
+         ! Fragmentation subroutine only should place under the following two
+         ! if-then conditions for both segments. If a segment is not satisfied
+         ! with the following if-then conditions, it means that a segment is
+         ! inside the melt zone that is previously calculated in
+         ! "regolith_melt_glass" subroutine. Then next step is to examine how a
+         ! segment locates in our shock pressure decay zone. The rule of thumb
+         ! is a segment remaining the same volume no matter what it experiences
+         ! shock pressues. We should only examine how the ends of a streamtube's
+         ! segment locate inside our decay zone. In the first if-then condition,
+         ! it is to describe the segment closer to emerging location. Its ends
+         ! are "rrighti" and "rrightf". The volume is "vsgly2". The "xsh" is the
+         ! x-location of a current layer intersecting with shock pressure decay
+         ! zone.
+         ! 1) rrighti > xsh:           no damage, retaining ratio (recyratio) is 1.0
+         ! 2) rrighti < xsh < rrightf: partial damage, retaining ratio is
+         !                             affected to be (vsgly2 - v_shocked) / vsgly2.
+         ! 3) rrightf < xsh:           complete damage, retaining ratio is 0.0
+         !if (rrighti>max(xmints,sqrt(rm**2 - z**2))) then
+         if (rrighti > xmints) then
+            vsh                = regolith_shock_damage(eradi,deltar,xmints,xsfints,rrighti,rrightf)
+            recyratio          = max((vsgly2 -vsh),0.0)/ (user%pix**2) / current%regodata%thickness
+            age_collector(:)   = age_collector(:) + current%regodata%age(:) * recyratio
+            vol                = vol + sum(current%regodata%age(:)) * recyratio
+         end if
+
+         if (rlefti > xmints) then
+            vsh                = regolith_shock_damage(eradi,deltar,xmints,xsfints,rlefti,rleftf)
+            recyratio          = max((vsgly1-vsh),0.0) / (user%pix**2) / current%regodata%thickness
+            age_collector(:)   = age_collector(:) + current%regodata%age(:) * recyratio
+            vol                = vol + sum(current%regodata%age(:)) * recyratio
+         end if
 
          current => current%next
          z = z + current%regodata%thickness 
@@ -136,16 +194,14 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,vseg,new
       ! final part of a stream tube 
       else 
          vsgly   = 0.25 * PI * deltar**2 * a**2 * eradi / b * (abs(tan(b) - b)) 
-         newlayer%comp   = newlayer%comp + (vsgly - newlayer%thickness) * current%regodata%comp
-         newlayer%thickness  = vsgly 
+         vmare   = vmare + (vsgly - totseb) * current%regodata%comp
+         totseb  = vsgly 
          exit
       end if
-
      end do
-
    end if
 
-   call regolith_streamtube_head(user,surfi,deltar,newlayer,eradi,rm)
+   call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,age_collector)
 
    return
 end subroutine regolith_subpixel_streamtube

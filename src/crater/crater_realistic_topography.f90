@@ -96,11 +96,11 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
       end subroutine ejecta_texture
 
-      subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
+      subroutine crater_realistic_slope_texture(user,critical_value,inc,critarray)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
-      real(DP),intent(in) :: critical
+      real(DP),intent(in) :: critical_value
       integer(I4B),intent(in) :: inc
       real(DP),dimension(-inc:inc,-inc:inc),intent(out) :: critarray
       end subroutine crater_realistic_slope_texture
@@ -108,24 +108,27 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
 
    end interface
 
-   ! Executable code
-
-   if (crater%morphtype .eq. 'COMPLEX') then
+   deltaMtot = 0.0_DP
+   select case(crater%morphtype)
+   case("COMPLEX","PEAKRING","MULTIRING")
       call complex_terrace(user,surf,crater,deltaMtot)
       call complex_wall_texture(user,surf,crater,domain,deltaMtot)
       call complex_floor(user,surf,crater,deltaMtot)
       call complex_peak(user,surf,crater,deltaMtot)
-   end if
+   end select
 
    ! Retrieve the size of the ejecta dem and correct for indexing
    inc = (size(ejecta_dem,1) - 1) / 2
    call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
-   if ((crater%morphtype .eq. 'COMPLEX').and.(user%docollapse)) then
-      ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
-      call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
-   end if
+   ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
 
+   if (user%docollapse) then
+      select case(crater%morphtype)
+      case("COMPLEX","PEAKRING","MULTIRING")
+         call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
+      end select
+   end if
 
    return
 end subroutine crater_realistic_topography
@@ -170,6 +173,7 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
    !FWHM = 0.3_DP !Lansberg 
    a = crater%peakheight
    b = 0.003_DP * ((1e-3_DP * crater%fcrat)**(1.75_DP)) / (1e-3_DP * crater%fcrat) ! Make peak rings for sufficiently large craters
+   b = min(b, 0.5_DP)
    c = FWHM / (2 * sqrt(2 * log(2._DP)))
    !*********************
 
@@ -181,12 +185,12 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
@@ -252,12 +256,12 @@ subroutine complex_floor(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
@@ -313,11 +317,12 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
    real(DP), parameter :: noise_height = 7.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
+   real(DP), parameter :: outer_wall_size = 2.1_DP
 
    !Executable code
    call random_number(rn)
 
-   inc = max(min(nint(2.1_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
+   inc = max(min(nint(outer_wall_size * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
@@ -327,17 +332,17 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
-
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
-         areafrac = areafrac * util_area_intersection(2.1_DP * crater%frad,xbar,ybar,user%pix)
+         areafrac = areafrac * util_area_intersection(outer_wall_size * crater%frad,xbar,ybar,user%pix)
          areafrac = areafrac * min((r / flr)**12,1.0_DP) ! Smooth out interface between wall and floor
          areafrac = areafrac * max(min(2._DP - r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
 
@@ -349,7 +354,8 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
-         newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
+         newdem = newdem + noise * areafrac
+         if (r < flr) newdem = max(newdem,crater%melev - crater%floordepth)
          if (r > 1.1_DP) newdem = max(newdem,newdem + areafrac * crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
@@ -426,7 +432,6 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    pers_tfloor = 0.5_DP
    xy_size_tfloor = 5.0_DP / crater%fcrat 
 
-
    ! Lansberg values
    !terracefac = 1.0_DP
    !nterraces = 16
@@ -434,10 +439,6 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    !scallop_p = 0.6_DP
    !scallop_width = 0.10_DP 
    !^^^^^^^^^^^^^^^
-
-
-
-
 
    rad = 2.0_DP * crater%frad
    upshift = 0._DP
@@ -455,12 +456,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
 
+            xbar = xpi * user%pix - crater%xl 
+            ybar = ypi * user%pix - crater%yl
+
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
             newdem = surf(xpi,ypi)%dem
-
-            xbar = xpi * user%pix - crater%xl 
-            ybar = ypi * user%pix - crater%yl
 
             r = sqrt(xbar**2 + ybar**2) / crater%frad
 
@@ -481,9 +482,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
                                                  xynoise * ybar + offset * rn(2))* znoise
             end do
 
-
             isterrace = 1.0_DP - noise < hprof
-
 
             tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 + tnoise ! This is the floor profile that replaces the old one at each terrace
 
@@ -508,12 +507,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
@@ -554,12 +553,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          
@@ -672,15 +671,14 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
 
    ! Add the base texture to the ejecta proportional to the thickness
-
    do j = -inc,inc
       do i = -inc,inc
 
          xpi = indarray(1,i,j)
          ypi = indarray(2,i,j)
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
+         xbar = (crater%xlpx + i) * user%pix - crater%xl 
+         ybar = (crater%ylpx + j) * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          phi = atan2(ybar,xbar)
@@ -694,9 +692,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
       
          areafrac = areafrac * (1.0_DP - max(min(2._DP - r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
 
-
          ! Make the splat pattern
-
          splatnoise = 0.0_DP
          do octave = 1,nsplat_octaves
             xysplat = (nsplats / PI) * freq ** (octave -1) / crater%fcrat 
@@ -748,7 +744,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 end subroutine ejecta_texture
 
 
-subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
+subroutine crater_realistic_slope_texture(user,critical_value,inc,critarray)
    ! Adds noise to the critical slope to give texture to regions that undergo slope collapse
    use module_globals
    use module_util
@@ -757,7 +753,7 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
 
    ! Arguments
    type(usertype),intent(in) :: user
-   real(DP),intent(in) :: critical
+   real(DP),intent(in) :: critical_value
    integer(I4B),intent(in) :: inc
    real(DP),dimension(-inc:inc,-inc:inc),intent(out) :: critarray
 
@@ -792,8 +788,8 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2)) * znoise
          end do
-         !write(*,*) i,j,noise
-         critarray(i,j) = max(critical * (1.0_DP + noise),0.0_DP)
+         
+         critarray(i,j) = max(critical_value * (1.0_DP + noise),0.0_DP)
       end do
    end do
 

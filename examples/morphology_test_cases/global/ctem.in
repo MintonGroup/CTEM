@@ -3,7 +3,7 @@
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      15000.0       ! Diameter of test impactor (m)
+testimp      161325.44633884882       ! Diameter of test impactor (m)
 testvel      18.3e3                            ! Velocity of test crater (m/s)
 testang      45.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
@@ -13,8 +13,8 @@ testtally    F
 
 
 ! IDL driver in uts
-interval     6.28 
-numintervals 100                                ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
+interval     0.628 
+numintervals 1000                             ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
 popupconsole F                                  ! Pop up console window every output interval 
@@ -67,6 +67,9 @@ Kd1             0.0001
 psi             2.000
 fe              4.00
 ejecta_truncation 10.0
+doregotrack F
 dorays  F 
 superdomain F
 dorealistic T
+quasimc T
+realcraterlist    craterlist.in                ! list of 'real' craters for Quasi-MC runs

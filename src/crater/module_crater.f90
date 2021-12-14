@@ -30,7 +30,7 @@ save
 
    interface
       subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
-                                 mass,fracdone,nflux,ntotcrat,curyear)
+                                 mass,fracdone,nflux,ntotcrat,curyear,rclist)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -48,6 +48,7 @@ save
       real(DP),dimension(:,:),intent(in)           :: nflux 
       integer(I8B),intent(in)                      :: ntotcrat
       real(DP),intent(in)                          :: curyear
+      real(DP),dimension(:,:), intent(in)              :: rclist !array of 'real' craters for quasiMC
       end subroutine crater_populate
    end interface
 
@@ -208,14 +209,14 @@ save
    end interface
 
    interface
-      subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
+      subroutine crater_slope_collapse(user,surf,crater,domain,critical_value,deltaMtot)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),intent(in) :: critical
+      real(DP),intent(in) :: critical_value
       real(DP),intent(inout) :: deltaMtot
       end subroutine crater_slope_collapse
    end interface
@@ -323,6 +324,19 @@ save
       type(cratertype),intent(in) :: crater
       real(DP) :: r_inner_wall
       end function crater_profile_find_r_inner_wall
+   end interface
+
+   interface
+      subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+      use module_globals
+      type(usertype),intent(in)                           :: user
+      type(surftype),dimension(:,:),intent(inout)         :: surf
+      real(DP),intent(in)                                 :: age
+      real(DP),intent(in)                                 :: age_resolution
+      real(DP),dimension(:,:),intent(in)                  :: prod,nflux
+      type(domaintype),intent(in)                         :: domain
+      real(DP),intent(in)                                 :: finterval
+      end subroutine crater_superdomain
    end interface
 
 end module

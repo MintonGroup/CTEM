@@ -1,0 +1,9 @@
+#PBS -q daminton
+#PBS -l walltime=720:00:00
+#PBS -l nodes=1:ppn=2,naccesspolicy=shared
+#PBS -N plotya
+source /etc/profile
+csh
+module load idl
+cd $PBS_O_WORKDIR
+./Plottingya

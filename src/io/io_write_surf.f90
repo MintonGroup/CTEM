@@ -67,13 +67,7 @@ subroutine io_write_surf(user,surf)
    end do
    close(LUN)
 
-   if (user%doregotrack) then
-      !call io_write_regodist(user,surf)
-      call io_write_regotrack(user,surf) 
-   end if
-   
-   ! write data from porosity analysis
-   if (user%doporosity) call io_write_porotrack(user, surf)
+   if (user%doregotrack) call io_write_regotrack(user,surf) 
    
 !   if (user%docrustal_thinning) then
 !      recsize = sizeof(itmp) * user%gridsize * user%gridsize
