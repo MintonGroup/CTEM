@@ -5,9 +5,9 @@ PAR = -qopenmp -parallel
 HEAPARR = -heap-arrays 
 OPTREPORT = -qopt-report=5 
 IPRODUCTION = -g -traceback -no-wrap-margin -assume byterecl -O3 -qopt-prefetch=0 -sox $(PAR) $(SIMDVEC) $(HEAPARR)
-AM_FCFLAGS =  $(IPRODUCTION) $(OPTREPORT)
+IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-div -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
+AM_FCFLAGS =  $(IPRODUCTION)
 #ifort debug flags
-#AM_FCFLAGS = -O0 -p -g -debug all -traceback -CB -assume byterecl -m64 -heap-arrays -FR $(PAR) $(SIMDVEC)
 
 #gfortran optimized flags
 #AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace

@@ -50,7 +50,6 @@ logical                 :: restart  ! F = new run (start with a fresh surface)
 integer(I8B)            :: totalimpacts ! Total number of impacts ever produced 
 integer(I4B)            :: ncount   ! Current count in ctem_driver IDL run
 integer(I4B)            :: n, xp, yp, i        ! Size of random number generator seed array
-integer(I4B),dimension(:),allocatable :: seedarr ! Random number generator seed array
 real(DP)                :: curyear
 real(DP)                :: mass
 real(DP)                :: masstot
@@ -102,9 +101,9 @@ allocate(obsdist(6,domain%distl+1))
 ! Reset random number generator
 call random_seed
 call random_seed(size=n)
-allocate(seedarr(n))
-call io_read_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
-call random_seed(put=seedarr)
+allocate(crater%seedarr(n))
+call io_read_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,crater%seedarr)
+call random_seed(put=crater%seedarr)
 
 ! Read in old grid arrays, production function, and velocity distributions
 if (restart .or. user%tallyonly) then
@@ -125,9 +124,8 @@ if (.not.user%tallyonly) then
                         fracdone,nflux,ntotcrat,curyear,rclist)
 
    ! Get the last seed and save it to file
-   call random_seed(get=seedarr)
    totalimpacts = totalimpacts + ntotcrat
-   call io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,seedarr)
+   call io_write_const(totalimpacts,ncount,curyear,restart,fracdone,masstot,crater%seedarr)
    call crater_tally_true(domain,truelist(:,1:ntrue),ntrue,truedist)
 end if
 
