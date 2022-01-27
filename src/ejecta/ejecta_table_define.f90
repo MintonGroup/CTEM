@@ -48,7 +48,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
                                                         ! We go out a factor of 3 to get the discontinuous ejecta thickness 
    domain%ejbres = (log(crater%ejdis) - log(crater%ejrad)) / EJBTABSIZE
    lrad = crater%ejrad 
-   erad = crater%ejrad / 2
+   erad = crater%rad 
    ejtble = EJBTABSIZE
    firstrun = .true.
    thick = 0._DP
