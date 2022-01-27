@@ -1,4 +1,4 @@
-#Dcrat(m)   vel(m/s)   ang(deg)  xoffset(m)  yoffset(m)  t(Ga)
+#Dcrat(m)   vel(m/s)   ang(deg)  xoffset(km)  yoffset(km)  t(Ga)
 2050000 18300.0 45.0 -2908888.89 -1848000.0 4.31
 690000 18300.0 45.0 889777.778 -157422.222 4.309
 264656 18300.0 45.0 1186318.17 -534322.694 4.308
