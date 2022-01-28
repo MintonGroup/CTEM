@@ -68,7 +68,7 @@ subroutine crater_dimensions(user,crater,domain)
 
    ! Calculate the radius where the inner wall meets the original pre-existing surface
    ! This is used to demark the location where excavation transitions to deposition
-   crater%ejrad = crater_profile_find_r_inner_wall(user,crater) * crater%frad
+   crater%ejrad = max(crater_profile_find_r_inner_wall(user,crater) * crater%frad, crater%rad)
 
    !find rim for counting purposes
    crater%frim = RIMFAC * crater%frad
