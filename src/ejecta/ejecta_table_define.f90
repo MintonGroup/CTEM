@@ -49,7 +49,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    domain%ejbres = (log(crater%ejdis) - log(crater%ejrad)) / EJBTABSIZE
    lrad = crater%ejrad
    lrad = exp(log(lrad) + domain%ejbres)
-   erad = crater%ejrad 
+   erad = crater%rad
    ejtble = EJBTABSIZE
    firstrun = .true.
    thick = 0._DP
@@ -64,7 +64,6 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
          vimp = crater%impvel
       end if 
    
-
       call regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
    end if
  
