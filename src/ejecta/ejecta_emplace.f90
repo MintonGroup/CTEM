@@ -206,6 +206,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
          lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
          lrad = sqrt(lradsq)
+         if (lrad < crater%ejrad) cycle
 
          ! Estimate ejecta pattern distortion due to target surface angle and topography
          ! This must be done iteratively because the ejection distance and ejection angle vary
@@ -222,6 +223,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
             baseline = ((i * crater%xslp) + (j * crater%yslp)) * user%pix
             craterslope = atan(baseline / lrad)
+            if ((n == 1) .and. abs(craterslope) < epsilon(1._DP)) exit
             if (craterslope > maxslp) maxslp = craterslope
 
             ejheight = erad * sin(craterslope) + crater%melev
