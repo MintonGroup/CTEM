@@ -75,9 +75,9 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
          ! This will be replaced 
          r = lrad / crater%frad
          if (lrad >= crater%frad) then
-            thick = crater_profile(user, crater, r) + crater%ejrim * r**(-EJPROFILE)
+            thick = crater_profile(user, crater, r) + crater%ejrim * r**(-EJPROFILE) 
          else
-            thick = max(crater_profile(user,crater,r) + crater%ejrim,VSMALL)
+            thick = max(crater_profile(user,crater,r),VSMALL)
          end if
          ejb(k)%thick = log(thick) 
          ejb(k)%vesq = vejsq

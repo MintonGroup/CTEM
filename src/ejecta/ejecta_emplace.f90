@@ -128,8 +128,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
    if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
 
-   crater%vdepth = crater%ejrim + crater%floordepth
-   crater%vrim   = crater%ejrim + crater%rimheight
+   crater%vdepth = crater%rimheight + crater%floordepth
+   crater%vrim   = crater%rimheight
    
    if (crater%ejdis <= crater%ejrad) return
 
@@ -261,7 +261,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
          areafrac =  (1.0_DP - util_area_intersection(crater%ejrad,xbar,ybar,user%pix)) 
 
          ebh = areafrac * ejdistribution(idistorted,jdistorted) * ebh
-         cumulative_elchange(i,j) = areafrac * cumulative_elchange(i,j) + ebh
+         cumulative_elchange(i,j) = areafrac * cumulative_elchange(i,j) + ebh + crater_profile(user, crater, lrad)
 
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region
