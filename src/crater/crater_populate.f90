@@ -251,10 +251,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
             if (user%doregotrack) then 
                call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
-               call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+               !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             else 
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
-               call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
+               !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
             call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,age,age_resolution,ejecta_dem)
          else
@@ -346,6 +346,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       hmin = minval(surf(:,:)%dem)
       if (any(surf(:,:)%dem /= surf(:,:)%dem)) then
          write(*,*) 'Invalid surface elevation detected. Halting.'
+         write(*,*) crater%imp, crater%impvel, crater%xl, crater%yl, crater%sinimpang
          exit
       end if
    end do  ! end crater production loop 

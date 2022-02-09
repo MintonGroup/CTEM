@@ -310,6 +310,7 @@ real(DP),parameter :: KT = 0.85_DP             ! Proportionality constant (see R
 real(DP),parameter :: CT = KT * (PI*THIRD)**(SIXTH) 
 
 real(DP),parameter :: RIMDROP = 4.20_DP        ! Power law index for rim profile 
+real(DP), parameter :: EJPROFILE = 3.0_DP      ! Power law index for ejecta profile
 real(DP),parameter :: TRSIM = 1.25_DP          ! ?
 real(DP),parameter :: EXFAC = 0.1_DP           ! Excavation depth relative to transient crater diameter
 real(DP),parameter :: CXEXPS = 1._DP / 0.885_DP - 1.0_DP ! Complex crater scaling exponent (see Croft 1985)
