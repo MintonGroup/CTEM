@@ -447,6 +447,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
       end do
 
 
+      !i=1+3
+
       close(74)
 
 
