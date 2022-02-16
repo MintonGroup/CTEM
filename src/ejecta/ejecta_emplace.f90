@@ -297,7 +297,29 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    cumulative_elchange = cumulative_elchange * fmasscons
    crater%ejrim = crater%ejrim * fmasscons
    ejb(:)%thick = ejb(:)%thick * fmasscons
+
+
+
+   !open(  74 , file = 'cumulative_elchange.txt' , status = 'replace')
+   
+   !do i = 1 , 1000
+      
+      !write(  74  , *)    ejb(i)%lrad,      ejb(i)%thick
+   
+   !end do
+   
+   !close(74)
+   
+
+
+ 
+
    maxhits = 1
+
+
+
+
+
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
 
@@ -326,6 +348,18 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
             surf(xpi,ypi)%ejcov = max(surf(xpi,ypi)%ejcov + cumulative_elchange(i,j), 0.0_DP)
          end do
       end do
+
+
+
+ 
+
+  
+
+
+
+
+
+
 
 
    else ! Ejecta wraps around the grid. 
@@ -369,6 +403,22 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
          end do
       end if
 
+
+
+
+ 
+
+
+ 
+
+
+
+
+
+
+
+
+
       call ejecta_soften(user,surf,user%gridsize + 2,big_indarray,big_cumulative_elchange)
 
       do i = 1,user%gridsize
@@ -378,7 +428,41 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
          end do
       end do
 
+
+
       deallocate(big_cumulative_elchange,big_indarray,big_kdiff,big_cel)
+
+
+
+
+      open(  74 , file = 'test_0215_surf.txt' , status = 'replace')
+
+
+      do j = 1,user%gridsize
+         do i = 1,user%gridsize
+
+            write(  74  , *)    surf(i,j)%dem
+
+         end do
+      end do
+
+
+      close(74)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    end if
 
    deallocate(indarray,diffdistribution,ejdistribution,kdiff,cel)
