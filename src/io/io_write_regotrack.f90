@@ -30,13 +30,17 @@ subroutine io_write_regotrack(user,surf)
    integer(I4B), parameter :: LUN=7
    integer(I4B), parameter :: LUM=8
    integer(I4B), parameter :: LUC=9
+   integer(I4B), parameter :: LUA=10
    type(regolisttype),pointer :: current => null()
-   real(DP),dimension(user%gridsize,user%gridsize) :: regotop,comp,melt
+   real(DP),dimension(user%gridsize,user%gridsize)     :: regotop,comp,melt
+   real(SP),dimension(user%gridsize,user%gridsize)     :: agetop
+   real(SP),dimension(user%gridsize,user%gridsize,60)   :: age  
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
    integer(kind=8) :: recsize
    real(DP) :: dtmp
+   real(SP) :: stmp
    integer(I4B) :: itmp
-   real(DP),dimension(user%gridsize,user%gridsize) :: comptop!,surface
+   real(DP),dimension(user%gridsize,user%gridsize) :: comptop, rego
    real(DP),dimension(:),allocatable :: marehisto
    real(DP) :: mare, z
 
@@ -51,37 +55,6 @@ subroutine io_write_regotrack(user,surf)
    logical :: exist
  
    ! Executable code
-   open(LUN,file=MELTFILE,status='replace',form='unformatted')
-   open(LUM,file=REGOFILE,status='replace',form='unformatted')
-   open(LUC,file=COMPFILE,status='replace',form='unformatted')
-
-   do j=1,user%gridsize
-      do i=1,user%gridsize
-         stacks_num(i,j) = 0
-         current => surf(i,j)%regolayer
-         comptop(i,j) = current%regodata%comp
-         do 
-          if (.not. associated(current)) exit
-          stacks_num(i,j) = stacks_num(i,j) + 1
-          regotop(i,j) = current%regodata%thickness
-          comp(i,j) = current%regodata%comp
-          melt(i,j) = current%regodata%meltfrac
-          write(LUM) regotop(i,j)
-          write(LUC) comp(i,j)
-          write(LUN) melt(i,j) 
-          current => current%next
-         end do
-      end do 
-   end do
-   close(LUN)
-   close(LUM)
-   close(LUC)
-
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
-   open(LUN,file='comptop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
-   write(LUN,rec=1) comptop
-   close(LUN)
-
    ! Output mulitple "comphisto" files
    inquire(file=clockfile, exist=exist)
    if (exist) then
@@ -92,9 +65,54 @@ subroutine io_write_regotrack(user,surf)
    end if
    tictoc = tictoc + 1
    close(LUN)
-  
    open(LUN,file=clockfile,status='replace')
    write(LUN,*) tictoc
+   close(LUN)
+
+   write(fname,'(a,i4.4)') 'surface_melt',tictoc
+   open(LUN,file=fname,status='replace',form='unformatted')
+   write(fname,'(a,i4.4)') 'surface_rego',tictoc
+   open(LUM,file=fname,status='replace',form='unformatted')
+   write(fname,'(a,i4.4)') 'surface_comp',tictoc
+   open(LUC,file=fname,status='replace',form='unformatted')
+   write(fname,'(a,i4.4)') 'surface_age',tictoc
+   open(LUA,file=fname,status='replace',form='unformatted')
+
+   do j=1,user%gridsize
+      do i=1,user%gridsize
+         stacks_num(i,j) = 0
+         current => surf(i,j)%regolayer
+         comptop(i,j) = current%regodata%comp
+         rego(i,j)    = current%regodata%thickness
+         agetop(i,j)  = current%regodata%age(1)
+         do 
+          if (.not. associated(current)) exit
+          stacks_num(i,j) = stacks_num(i,j) + 1
+          regotop(i,j) = current%regodata%thickness
+          comp(i,j) = current%regodata%comp
+          melt(i,j) = current%regodata%meltfrac
+          age(i,j,:)= current%regodata%age(:)
+          write(LUM) regotop(i,j)
+          write(LUC) comp(i,j)
+          write(LUN) melt(i,j) 
+          write(LUA) age(i,j,:)
+          current => current%next
+         end do
+      end do 
+   end do
+   close(LUN)
+   close(LUM)
+   close(LUC)
+   close(LUA)
+
+   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
+   open(LUN,file='agetop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
+   write(LUN,rec=1) agetop
+   close(LUN)
+
+   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
+   open(LUN,file='comptop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
+   write(LUN,rec=1) comptop
    close(LUN)
 
    allocate(marehisto(user%gridsize))
@@ -114,8 +132,14 @@ subroutine io_write_regotrack(user,surf)
    close(LUN)
    deallocate(marehisto)
 
+   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
+   open(LUN,file='regotop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
+   write(LUN,rec=1) rego
+   close(LUN)
+
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
-   open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')
+   write(fname,'(a,i4.4)') 'surface_stacknum',tictoc
+   open(LUN,file=fname,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) stacks_num
    close(LUN)
 

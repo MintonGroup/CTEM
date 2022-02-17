@@ -70,6 +70,7 @@ Kd1             0.0001
 psi             2.000
 fe              4.00
 ejecta_truncation 4.0
+doregotrack F
 dorays  T 
 superdomain F
-
+dorealistic F

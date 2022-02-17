@@ -69,7 +69,7 @@ doangle         T                               ! Vary the impact angle. Set to 
 Kd1             0.00312669649143281
 psi             2.000
 fe              10.0
-ejecta_truncation 20.0
+ejecta_truncation 10.0
 dorays  T 
 
 ! Testing input. These are used to perform non-Monte Carlo tests.

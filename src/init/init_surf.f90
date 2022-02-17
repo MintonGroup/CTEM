@@ -38,9 +38,6 @@ subroutine init_surf(user,surf)
    !if (user%docrustal_thinning) surf%mantle = 0._DP
 
    if (user%doregotrack) call init_regolith_stack(user,surf)
-   
-   ! If doporosity, call init_porosity_stack to define the porolayer linked list. 
- 	if (user%doporosity)  call init_porosity_stack(user,surf)
 
    return
-end subroutine init_surf
+   end subroutine init_surf

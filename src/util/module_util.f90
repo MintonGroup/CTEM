@@ -165,7 +165,7 @@ interface util_search
 end interface util_search
 
 interface util_periodic
-   subroutine util_periodic(x,y,side)
+   pure subroutine util_periodic(x,y,side)
    use module_globals
    implicit none
    integer(I4B),intent(inout) :: x,y
@@ -223,6 +223,16 @@ interface
    logical, intent(in),optional :: poisson_first
    integer(I8B)             :: ival
    end function util_poisson
+end interface
+
+interface
+   function util_perlin_noise(x,y,z) result (noise)
+   use module_globals
+   implicit none
+   real(DP),intent(in) :: x,y
+   real(DP),intent(in),optional :: z
+   real(DP) :: noise
+   end function util_perlin_noise
 end interface
 
 end module

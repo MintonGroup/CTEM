@@ -77,7 +77,6 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-
    recsize = sizeof(stmp) * user%gridsize * user%gridsize
    open(LUN,file=POSFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
@@ -92,9 +91,6 @@ subroutine io_read_surf(user,surf)
 
    if (user%doregotrack) call io_read_regotrack(user,surf)
    
-	! if doporosity, call io_read_porotrack to define the porosity linked list from the read files. 
-   if (user%doporosity)  call io_read_porotrack(user,surf)
-
    !if (user%docrustal_thinning) then
    !   recsize=sizeof(itmp)*user%gridsize*user%gridsize
    !   open(LUN,file=THICKFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)

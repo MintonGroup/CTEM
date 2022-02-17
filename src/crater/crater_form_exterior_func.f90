@@ -39,7 +39,7 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
    type(surftype) :: surfi
 
    ! Now make the exterior of the crater
-   inc = int(crater%frad/user%pix*(domain%small/crater%rheight)**(-1._DP/RIMDROP)) !  Maximum distance of crater form
+   inc = int(crater%frad/user%pix*(domain%small/crater%rimheight)**(-1._DP/RIMDROP)) !  Maximum distance of crater form
    inc = max(min(max(crater%rimdispx,inc),PBCLIM*user%gridsize),1)
 
    crater%maxinc = max(crater%maxinc,inc)

@@ -176,7 +176,7 @@ def image_shaded_relief(parameters, DEM):
     filename = parameters['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % parameters['ncount']
     matplotlib.pyplot.savefig(filename,dpi=dpi,bbox_inches=0)
     return
-    
+
 def create_rplot(parameters,odist,pdist,tdist,ph1):
     #Parameters: empirical saturation limit and dfrac
     satlimit = 3.12636

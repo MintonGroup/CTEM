@@ -95,6 +95,7 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    end do
    domain%vhi = min(domain%vhi + 1,domain%vnum)
    rmsvel = sqrt(rmsvel/numvel) 
+   domain%rmsvel = rmsvel
 
    domain%smallest_impactor_index = 1
    ! Find the smallest impactor that produces a crater at least 1 pixel wide at the maximum possible impact velocity and angle

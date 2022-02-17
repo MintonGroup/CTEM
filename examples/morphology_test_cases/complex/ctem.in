@@ -3,9 +3,9 @@
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      15000            ! Diameter of test impactor (m)
-testvel      18.3e3                            ! Velocity of test crater (m/s)
-testang      45.0                              ! Impact angle of test crater (deg) - Default 90.0
+testimp      5.934e3 ! 93km crater            ! Diameter of test impactor (m)
+testvel      15.0e3                            ! Velocity of test crater (m/s)
+testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0e0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
 testyoffset  0.0e0                             ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
@@ -21,22 +21,22 @@ numintervals 1                                ! Total number of intervals
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
 popupconsole F                                  ! Pop up console window every output interval 
-saveshaded   F                                  ! Output shaded relief images  
+saveshaded   T                                  ! Output shaded relief images  
 saverego     F                                  ! Output regolith map images 
 savepres     F                                  ! Output simplified console display images (presentation-compatible images)
 savetruelist T                                  ! Save the true cumulative crater distribution for each interval (large file size)
 sfdcompare   LOLASethCraterCatalogv8gt20-binned.dat         ! File name for the SFD comparison file used in the console display
-shadedminh   -85.0                              ! Minimum height for shaded relief map (m) (Default - automatic)
-shadedmaxh   85.0                               ! Maximum height for shaded relief map (m) (Default - automatic)
+shadedminh   -5000.0                            ! Minimum height for shaded relief map (m) (Default - automatic)
+shadedmaxh   5000.0                             ! Maximum height for shaded relief map (m) (Default - automatic)
 runtype      single                             ! Run type: options are normal / statistical
                                                 !    single:      craters accumulate in successive intervals
                                                 !    statistical: surface is reset between intervals
 
 ! CTEM required inputs
-seed         33790                    ! Random number generator seed
+seed         23790                    ! Random number generator seed
 gridsize     2000                          ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
-pix          3.08e3                           ! Pixel size (m)
+pix          2.0e2                           ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
 ! Bedrock scaling parameters
 mu_b         0.55e0                             ! Experimentally derived parameter for bedrock crater scaling law 
@@ -64,12 +64,14 @@ maxcrat         1.00e-98                          ! Fraction of gridsize that ma
 killatmaxcrater F                               ! Stop the run if a crater larger than the maximum is produced - Default F      
 basinimp        35.0e3                          ! Size of impactor to switch to lunar basin scaling law - Default is to ignore
 docollapse      T                               ! Do slope collapse - Default T
-dosoftening     T                               ! Do ejecta softening - Default T
+dosoftening     F                               ! Do ejecta softening - Default T
 doangle         T                               ! Vary the impact angle. Set to F to have only vertical impacts - Default T
 Kd1             0.0001
 psi             2.000
 fe              4.00
 ejecta_truncation 4.0
-dorays  T 
+dorays  F
 superdomain F
+doregotrack F
+dorealistic T
 

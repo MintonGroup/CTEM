@@ -28,10 +28,13 @@ subroutine init_regolith_stack(user,surf)
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(regodatatype) :: bedrock 
-   integer(I4B) :: xp,yp
+   integer(I4B) :: xp,yp,k
 
    ! Internal variables
    logical :: initstat
+
+   ! Temporary variable setup for initialize a pre-exising structure
+   type(regodatatype) :: test_stratig
 
    !call init_regolith_parab(user,surf)
    !=======================================
@@ -40,6 +43,7 @@ subroutine init_regolith_stack(user,surf)
    bedrock%thickness = user%trad
    bedrock%meltfrac  = 0._DP 
    bedrock%comp      = 0._DP
+   bedrock%age(:)    = 0.0_SP
 
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize

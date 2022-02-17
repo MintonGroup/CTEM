@@ -36,6 +36,9 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
    real(DP) :: dd, ds !mixing depth for shallow and deep
    integer(I4B) :: klo, khi
 
+   ! Test age
+   real(SP) :: age_mean
+
    ! Find the deepest depth for 100% true saturation
    klo = 1
    ds = p(1,1) 

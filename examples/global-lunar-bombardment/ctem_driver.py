@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python3
 #
 #Cratered Terrain Evolution Model driver
 #
@@ -92,29 +92,7 @@ if (parameters['quasimc'] == 'T'):
     ynew = df['log(Di)'].values
     interp = interp1d(xnew, ynew, fill_value='extrapolate')
     rclist[:,0] = numpy.exp(interp(numpy.log(rclist[:,0])))
-
-    #Convert latitude and longitude to y- and x-offset
-    for lat in range(0, len(rclist[:,3])):
-        if numpy.abs(rclist[lat,3]) > 90.0:
-            print("non-physical latitude on line %i of craterlist.in. Please enter a value between -90 and 90 degrees." %(lat+1))
-            quit()
-        else:
-            rclist[lat,3] = rclist[lat,3] * ((parameters['pix'] * (parameters['gridsize']/2)) / 90.0)
     
-    for lon in range(0, len(rclist[:,4])):
-        if numpy.abs(rclist[lon,4]) > 360.0:
-            print("Non-physical longitude on line %i of craterlist.in. Please enter a value between -360 and 360 degrees." %(lon+1))
-            quit()
-        else:
-            if rclist[lon,4] < -180.0:
-                rclist[lon,4] = 360.0 - numpy.abs(rclist[lon,4])
-            elif rclist[lon,4] > 180.0:
-                rclist[lon,4] = -(360.0 - rclist[lon,4])
-            else:
-                rclist[lon,4] = rclist[lon,4]
-            
-    rclist[:,4] = rclist[:,4] * ((parameters['pix'] * (parameters['gridsize']/2)) / 180.0)
-
     #Convert age in Ga to "interval time"
     rclist[:,5] = (parameters['interval'] * parameters['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
     rclist = rclist[rclist[:,5].argsort()]
