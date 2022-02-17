@@ -46,7 +46,13 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
    logtablerad = ejb(k)%lrad 
 
    ! Interpolate in logspace (this saves on the number of table elements we need)
-   if (k == ejtble) then
+   if (ejtble == 1) then
+      ebh = ejb(k)%thick
+      if (present(vsq)) vsq = ejb(k)%vesq
+      if (present(theta)) theta= ejb(k)%angle
+      if (present(melt)) melt = ejb(k)%meltfrac
+      if (present(erad)) erad = ejb(k)%erad
+   else if (k == ejtble) then
       logdelta = logtablerad - ejb(k - 1)%lrad
       frac = (loglrad - logtablerad) / logdelta
       ebh = ejb(k)%thick - ((ejb(k)%thick - LOGVSMALL) * frac)
