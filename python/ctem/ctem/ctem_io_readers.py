@@ -12,6 +12,25 @@
 
 import numpy
 
+
+def real2float(realstr):
+    """
+    Converts a Fortran-generated ASCII string of a real value into a numpy float type. Handles cases where double precision
+    numbers in exponential notation use 'd' or 'D' instead of 'e' or 'E'
+
+    Parameters
+    ----------
+    realstr : string
+        Fortran-generated ASCII string of a real value.
+
+    Returns
+    -------
+     : float
+        The converted floating point value of the input string
+    """
+    return float(realstr.replace('d', 'E').replace('D', 'E'))
+
+
 def read_ctemin(parameters,notset):
     #Read and parse ctem.in file
    inputfile = parameters['workingdir'] + parameters['ctemfile']
@@ -26,14 +45,14 @@ def read_ctemin(parameters,notset):
    for line in lines:
       fields = line.split()
       if len(fields) > 0:
-         if ('pix' == fields[0].lower()): parameters['pix']=float(fields[1])
+         if ('pix' == fields[0].lower()): parameters['pix']=real2float(fields[1])
          if ('gridsize' == fields[0].lower()): parameters['gridsize']=int(fields[1])
          if ('seed' == fields[0].lower()): parameters['seed']=int(fields[1])
          if ('sfdfile' == fields[0].lower()): parameters['sfdfile']=fields[1]
          if ('impfile' == fields[0].lower()): parameters['impfile']=fields[1]
-         if ('maxcrat' == fields[0].lower()): parameters['maxcrat']=float(fields[1])
+         if ('maxcrat' == fields[0].lower()): parameters['maxcrat']=real2float(fields[1])
          if ('sfdcompare' == fields[0].lower()): parameters['sfdcompare']=fields[1]
-         if ('interval' == fields[0].lower()): parameters['interval']=float(fields[1])
+         if ('interval' == fields[0].lower()): parameters['interval']=real2float(fields[1])
          if ('numintervals' == fields[0].lower()): parameters['numintervals']=int(fields[1])
          if ('popupconsole' == fields[0].lower()): parameters['popupconsole']=fields[1]
          if ('saveshaded' == fields[0].lower()): parameters['saveshaded']=fields[1]
@@ -43,10 +62,10 @@ def read_ctemin(parameters,notset):
          if ('runtype' == fields[0].lower()): parameters['runtype']=fields[1]
          if ('restart' == fields[0].lower()): parameters['restart']=fields[1]
          if ('shadedminh' == fields[0].lower()):
-            parameters['shadedminh'] = float(fields[1])
+            parameters['shadedminh'] = real2float(fields[1])
             parameters['shadedminhdefault'] = 0
          if ('shadedmaxh' == fields[0].lower()):
-            parameters['shadedmaxh'] = float(fields[1])
+            parameters['shadedmaxh'] = real2float(fields[1])
             parameters['shadedmaxhdefault'] = 0
        
    #Test values for further processing
@@ -109,19 +128,19 @@ def read_ctemdat(parameters, seedarr):
     #Parse file lines and update parameter fields
     fields = lines[0].split()
     if len(fields) > 0:
-      parameters['totalimpacts'] = float(fields[0])
+      parameters['totalimpacts'] = real2float(fields[0])
       parameters['ncount'] = int(fields[1])
-      parameters['curyear'] = float(fields[2])
+      parameters['curyear'] = real2float(fields[2])
       parameters['restart'] = fields[3]
-      parameters['fracdone'] = float(fields[4])
-      parameters['masstot'] = float(fields[5])
+      parameters['fracdone'] = real2float(fields[4])
+      parameters['masstot'] = real2float(fields[5])
 
     #Parse remainder of file to build seed array
     nlines = len(lines)
     index = 1
     while (index < nlines):
         fields = lines[index].split()
-        seedarr[index - 1] = float(fields[0])
+        seedarr[index - 1] = real2float(fields[0])
         index += 1
 
     parameters['seedn'] = index - 1
@@ -137,7 +156,7 @@ def read_impact_mass(filename):
    
    fields = line[0].split()
    if (len(fields) > 0):
-      mass = float(fields[0])
+      mass = real2float(fields[0])
    else:
       mass = 0
       
