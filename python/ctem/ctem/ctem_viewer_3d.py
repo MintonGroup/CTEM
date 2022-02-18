@@ -68,25 +68,39 @@ class polysurface:
             for i in range(s - 1):
                 idx = (s - 1) * j + i
                 # faces[idx,:] = [ j*s+i, j*s+i+1, (j+1)*s+i+1, (j+1)*s+i ]
-                faces[idx, :] = [j * s + i, j * s + i + 1, (j + 1) * s + i]
+                faces[idx, :] = [j * s + i, j * s + i + 1, (j + 1) * s + i + 1]
                 idx += (s - 1) ** 2
-                faces[idx, :] = [j * s + i + 1, (j + 1) * s + i + 1, (j + 1) * s + i]
+                faces[idx, :] = [(j + 1) * s + i + 1, (j + 1) * s + i, j * s + i ]
         self.mesh.vertices = open3d.utility.Vector3dVector(verts)
         self.mesh.triangles = open3d.utility.Vector3iVector(faces)
         self.mesh.compute_vertex_normals()
         
+        return
     
+    def visualize(self):
+        vis = open3d.visualization.Visualizer()
+        vis.create_window()
+        vis.add_geometry(self.mesh)
+        
+
+        # zmax = np.amax(surf.dem)
+        # zmin = np.amin(surf.dem)
+        # cnorm = (surf.dem.flatten() - zmin) / (zmax - zmin)
+        # cval = plt.cm.terrain(cnorm)[:, :3]
+
+        self.mesh.paint_uniform_color([0.5, 0.5, 0.5])
+        vis.run()
+        vis.destroy_window()
+
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     surf = polysurface()
     surf.ctem2mesh(surface_file="surface_dem.dat")
+    surf.visualize()
 
-    zmax = np.amax(surf.dem)
-    zmin = np.amin(surf.dem)
-    cnorm = (surf.dem.flatten() - zmin) / (zmax - zmin)
-    cval = plt.cm.terrain(cnorm)[:,:3]
-    surf.mesh.vertex_colors = open3d.utility.Vector3dVector(cval)
-    open3d.visualization.draw_geometries([surf.mesh])
+    
+
     
 
