@@ -98,8 +98,8 @@ class polysurface:
                 faces[fidx[1],:] = [i0, i2, i3]
                 # Make the two west side triangles
                 if i > 0:
-                    faces[fidx[0],:] = [i0, i3, i3-1]
-                    faces[fidx[1],:] = [i0, i3-1, i0-1]
+                    faces[fidx[2],:] = [i0, i3, i2-1]
+                    faces[fidx[3],:] = [i0, i2-1, i1-1]
                 # Make the two south side triangles
                 if j > 0:
                     faces[fidx[4],:] = [i1, i0, i3-s ]
