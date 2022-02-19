@@ -13,13 +13,12 @@ class polysurface:
         self.mesh = open3d.geometry.TriangleMesh()
         return
     
-    def ctem2mesh(self, surface_file):
-    
+    def readctem(self, surface_file):
         # Create and initialize data dictionaries for parameters and options from CTEM.in
         notset = '-NOTSET-'
         currentdir = os.getcwd() + os.sep
     
-        parameters = {'restart': notset,
+        self.parameters = {'restart': notset,
                       'runtype': notset,
                       'popupconsole': notset,
                       'saveshaded': notset,
@@ -48,22 +47,24 @@ class polysurface:
                       'impfile': notset,
                       'sfdcompare': notset,
                       'sfdfile': notset}
-
+    
         # Read ctem.in to initialize parameter values based on user input
-        ctem_io_readers.read_ctemin(parameters, notset)
+        ctem_io_readers.read_ctemin(self.parameters, notset)
         # Read surface dem(shaded relief) and ejecta data files
-        dem_file = parameters['workingdir'] + surface_file
-        self.dem = ctem_io_readers.read_unformatted_binary(dem_file, parameters['gridsize'])
+        dem_file = self.parameters['workingdir'] + surface_file
+        self.dem = ctem_io_readers.read_unformatted_binary(dem_file, self.parameters['gridsize'])
+        return
+    
+    def ctem2blockmesh(self):
         # Build mesh grid
-        s = parameters['gridsize']
-        pix = parameters['pix']
+        s = self.parameters['gridsize']
+        pix = self.parameters['pix']
         ygrid, xgrid = np.mgrid[-s/2:s/2, -s/2:s/2] * pix
         y0, x0 = ygrid - pix/2, xgrid - pix/2
         y1, x1 = ygrid - pix/2, xgrid + pix/2
         y2, x2 = ygrid + pix/2, xgrid + pix/2
         y3, x3 = ygrid + pix/2, xgrid - pix/2
 
-    
         xvals = np.append(
                 np.append(
                 np.append(x0.flatten(),
@@ -121,6 +122,31 @@ class polysurface:
 
         return
     
+    def ctem2trimesh(self):
+        # Build mesh grid
+        s = self.parameters['gridsize']
+        pix = self.parameters['pix']
+        ygrid, xgrid = np.mgrid[-s/2:s/2, -s/2:s/2] * pix
+
+        xvals = xgrid.flatten()
+        yvals = ygrid.flatten()
+        zvals = self.dem.flatten()
+        verts = np.array((xvals, yvals, zvals)).T
+        faces = np.full([2 * (s-1)**2, 3], -1, dtype=np.int64)
+        for j in range(s - 1):
+            for i in range(s - 1):
+                idx = (s - 1) * j + i
+                # faces[idx,:] = [ j*s+i, j*s+i+1, (j+1)*s+i+1, (j+1)*s+i ]
+                faces[idx, :] = [j * s + i, j * s + i + 1, (j + 1) * s + i + 1]
+                idx += (s - 1) ** 2
+                faces[idx, :] = [(j + 1) * s + i + 1, (j + 1) * s + i, j * s + i ]
+        self.mesh.vertices = open3d.utility.Vector3dVector(verts)
+        self.mesh.triangles = open3d.utility.Vector3iVector(faces)
+        self.mesh.compute_vertex_normals()
+        self.mesh.compute_triangle_normals()
+
+        return
+    
     def visualize(self):
         vis = open3d.visualization.Visualizer()
         vis.create_window()
@@ -142,9 +168,9 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     surf = polysurface()
-    surf.ctem2mesh(surface_file="surface_dem.dat")
+    surf.readctem(surface_file="surface_dem.dat")
+    surf.ctem2trimesh()
     surf.visualize()
-    #open3d.visualization.draw_geometries_with_editing([surf.mesh])
 
     
 
