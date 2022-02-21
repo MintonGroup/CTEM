@@ -22,6 +22,7 @@
 subroutine util_diffusion_solver(user,surf,N,indarray,kdiff,cumulative_elchange,maxhits)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_diffusion_solver
+   use, intrinsic :: ieee_exceptions
    implicit none
 
    ! Arguments
@@ -40,7 +41,12 @@ subroutine util_diffusion_solver(user,surf,N,indarray,kdiff,cumulative_elchange,
    integer(I4B) :: mi,mip1,mim1,mj,mjp1,mjm1,nloops
    real(DP),dimension(N,N) :: elchange
    integer(I4B),dimension(6,N,N) :: indarray_extended
+   logical, dimension(size(IEEE_ALL))   :: fpe_halting_modes, fpe_quiet_modes
+   logical, dimension(size(IEEE_USUAL)) :: fpe_flag 
 
+   call ieee_get_halting_mode(IEEE_ALL,fpe_halting_modes)  ! Save the current halting modes so we can turn them off temporarily
+   fpe_quiet_modes(:) = .false.
+   call ieee_set_halting_mode(IEEE_ALL,fpe_quiet_modes)
 
    cumulative_elchange = 0.0_DP
    kdiffmax = maxval(kdiff)
@@ -121,6 +127,8 @@ subroutine util_diffusion_solver(user,surf,N,indarray,kdiff,cumulative_elchange,
       ! add the total diffusion to the cumulative
       cumulative_elchange = cumulative_elchange + elchange 
    end do
+
+   call ieee_set_halting_mode(IEEE_ALL,fpe_halting_modes)  ! Restore the original FPE halting modes
 
 return
 end subroutine util_diffusion_solver
