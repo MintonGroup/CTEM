@@ -1,3 +1,13 @@
+import numpy as np
+import os
+import shutil
+from matplotlib.colors import LightSource
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+
+# Set pixel scaling common for image writing, at 1 pixel/ array element
+dpi = 72.0
+
 def copy_dists(parameters):
     # Save copies of distribution files
     
@@ -398,15 +408,3 @@ def write_production(parameters, production):
     
     return
 
-
-dpi = 72.0
-
-
-from matplotlib.colors import LightSource
-import matplotlib.cm as cm
-
-# Set pixel scaling common for image writing, at 1 pixel/ array element
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-import shutil
