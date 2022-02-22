@@ -8,49 +8,50 @@ import matplotlib.pyplot as plt
 # Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
 
-def copy_dists(parameters):
+def copy_dists(user, output_filenames, distlist):
     # Save copies of distribution files
     
     orig_list = ['odistribution', 'ocumulative', 'pdistribution', 'tdistribution']
     dest_list = ['odist', 'ocum', 'pdist', 'tdist']
     
     for index in range(len(orig_list)):
-        forig = parameters['workingdir'] + orig_list[index] + '.dat'
-        fdest = parameters['workingdir'] + 'dist' + os.sep + dest_list[index] + "_%06d.dat" % parameters['ncount']
+        forig = user['workingdir'] + orig_list[index] + '.dat'
+        fdest = user['workingdir'] + 'dist' + os.sep + dest_list[index] + "_%06d.dat" % user['ncount']
         shutil.copy2(forig, fdest)
     
-    forig = parameters['workingdir'] + 'impactmass.dat'
-    fdest = parameters['workingdir'] + 'misc' + os.sep + "mass_%06d.dat" % parameters['ncount']
+    forig = user['workingdir'] + 'impactmass.dat'
+    fdest = user['workingdir'] + 'misc' + os.sep + "mass_%06d.dat" % user['ncount']
     shutil.copy2(forig, fdest)
     
-    if (parameters['savetruelist'].upper() == 'T'):
-        forig = parameters['workingdir'] + 'tcumulative.dat'
-        fdest = parameters['workingdir'] + 'dist' + os.sep + "tcum_%06d.dat" % parameters['ncount']
+    if (user['savetruelist'].upper() == 'T'):
+        forig = user['workingdir'] + 'tcumulative.dat'
+        fdest = user['workingdir'] + 'dist' + os.sep + "tcum_%06d.dat" % user['ncount']
         shutil.copy2(forig, fdest)
     
     return
 
 
-def create_dir_structure(parameters):
+
+def create_dir_structure(user):
     # Create directories for various output files if they do not already exist
     directories = ['dist', 'misc', 'rego', 'rplot', 'surf', 'shaded']
     
     for directory in directories:
-        dir_test = parameters['workingdir'] + directory
+        dir_test = user['workingdir'] + directory
         if not os.path.isdir(dir_test):
             os.makedirs(dir_test)
     
     return
 
 
-def create_rplot(parameters, odist, pdist, tdist, ph1):
+def create_rplot(user, odist, pdist, tdist, ph1):
     # Parameters: empirical saturation limit and dfrac
     satlimit = 3.12636
     dfrac = 2 ** (1. / 4) * 1.0e-3
     
     # Calculate geometric saturation
-    minx = (parameters['pix'] / 3.0) * 1.0e-3
-    maxx = 3 * parameters['pix'] * parameters['gridsize'] * 1.0e-3
+    minx = (user['pix'] / 3.0) * 1.0e-3
+    maxx = 3 * user['pix'] * user['gridsize'] * 1.0e-3
     geomem = np.array([[minx, satlimit / 20.0], [maxx, satlimit / 20.0]])
     geomep = np.array([[minx, satlimit / 10.0], [maxx, satlimit / 10.0]])
     
@@ -68,10 +69,10 @@ def create_rplot(parameters, odist, pdist, tdist, ph1):
     tdistnz = tdistnz[:, [2, 5]]
     
     # Correct pdist
-    pdistnz[:, 1] = pdistnz[:, 1] * parameters['curyear'] / parameters['interval']
+    pdistnz[:, 1] = pdistnz[:, 1] * user['curyear'] / user['interval']
     
     # Create sdist bin factors, which contain one crater per bin
-    area = (parameters['gridsize'] * parameters['pix'] * 1.0e-3) ** 2.
+    area = (user['gridsize'] * user['pix'] * 1.0e-3) ** 2.
     plo = 1
     sq2 = 2 ** (1. / 2)
     while (sq2 ** plo > minx):
@@ -88,14 +89,14 @@ def create_rplot(parameters, odist, pdist, tdist, ph1):
         p = p + 1
     
     # Create time label
-    tlabel = "%5.4e" % parameters['curyear']
+    tlabel = "%5.4e" % user['curyear']
     tlabel = tlabel.split('e')
     texp = str(int(tlabel[1]))
     timelabel = 'Time = ' + r'${}$ x 10$^{}$'.format(tlabel[0], texp) + ' yrs'
     
     # Save image to file
-    filename = parameters['workingdir'] + 'rplot' + os.sep + "rplot%06d.png" % parameters['ncount']
-    height = parameters['gridsize'] / dpi
+    filename = user['workingdir'] + 'rplot' + os.sep + "rplot%06d.png" % user['ncount']
+    height = user['gridsize'] / dpi
     width = height
     fig = plt.figure(figsize=(width, height), dpi=dpi)
     
@@ -131,13 +132,13 @@ def create_rplot(parameters, odist, pdist, tdist, ph1):
     
     return
 
-def image_dem(parameters, DEM):
+def image_dem(user, DEM):
     dpi = 300.0  # 72.0
-    pix = parameters['pix']
-    gridsize = parameters['gridsize']
+    pix = user['pix']
+    gridsize = user['gridsize']
     ve = 1.0
-    azimuth = 300.0  # parameters['azimuth']
-    solar_angle = 20.0  # parameters['solar_angle']
+    azimuth = 300.0  # user['azimuth']
+    solar_angle = 20.0  # user['solar_angle']
     
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
     dem_img = ls.hillshade(DEM, vert_exag=ve, dx=pix, dy=pix)
@@ -150,15 +151,15 @@ def image_dem(parameters, DEM):
     ax.imshow(dem_img, interpolation="nearest", cmap='gray', vmin=0.0, vmax=1.0)
     plt.axis('off')
     # Save image to file
-    filename = parameters['workingdir'] + 'surf' + os.sep + "surf%06d.png" % parameters['ncount']
+    filename = user['workingdir'] + 'surf' + os.sep + "surf%06d.png" % user['ncount']
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
     
     return
 
 
-def image_regolith(parameters, regolith):
+def image_regolith(user, regolith):
     # Create scaled regolith image
-    minref = parameters['pix'] * 1.0e-4
+    minref = user['pix'] * 1.0e-4
     maxreg = np.amax(regolith)
     minreg = np.amin(regolith)
     if (minreg < minref): minreg = minref
@@ -169,8 +170,8 @@ def image_regolith(parameters, regolith):
             (np.log(regolith_scaled) - np.log(minreg)) / (np.log(maxreg) - np.log(minreg)))
     
     # Save image to file
-    filename = parameters['workingdir'] + 'rego' + os.sep + "rego%06d.png" % parameters['ncount']
-    height = parameters['gridsize'] / dpi
+    filename = user['workingdir'] + 'rego' + os.sep + "rego%06d.png" % user['ncount']
+    height = user['gridsize'] / dpi
     width = height
     fig = plt.figure(figsize=(width, height), dpi=dpi)
     fig.figimage(regolith_scaled, cmap=cm.nipy_spectral, origin='lower')
@@ -179,36 +180,36 @@ def image_regolith(parameters, regolith):
     return
 
 
-def image_shaded_relief(parameters, DEM):
+def image_shaded_relief(user, DEM):
     dpi = 300.0  # 72.0
-    pix = parameters['pix']
-    gridsize = parameters['gridsize']
+    pix = user['pix']
+    gridsize = user['gridsize']
     ve = 1.0
     mode = 'overlay'
-    azimuth = 300.0  # parameters['azimuth']
-    solar_angle = 20.0  # parameters['solar_angle']
+    azimuth = 300.0  # user['azimuth']
+    solar_angle = 20.0  # user['solar_angle']
     
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
     cmap = cm.cividis
     
     # If min and max appear to be reversed, then fix them
-    if (parameters['shadedminh'] > parameters['shadedmaxh']):
-        temp = parameters['shadedminh']
-        parameters['shadedminh'] = parameters['shadedmaxh']
-        parameters['shadedmaxh'] = temp
+    if (user['shadedminh'] > user['shadedmaxh']):
+        temp = user['shadedminh']
+        user['shadedminh'] = user['shadedmaxh']
+        user['shadedmaxh'] = temp
     else:
-        parameters['shadedminh'] = parameters['shadedminh']
-        parameters['shadedmaxh'] = parameters['shadedmaxh']
+        user['shadedminh'] = user['shadedminh']
+        user['shadedmaxh'] = user['shadedmaxh']
     
-    # If no shadedmin/max parameters are read in from ctem.dat, determine the values from the data
-    if (parameters['shadedminhdefault'] == 1):
+    # If no shadedmin/max user are read in from ctem.dat, determine the values from the data
+    if (user['shadedminhdefault'] == 1):
         shadedminh = np.amin(DEM)
     else:
-        shadedminh = parameters['shadedminh']
-    if (parameters['shadedmaxhdefault'] == 1):
+        shadedminh = user['shadedminh']
+    if (user['shadedmaxhdefault'] == 1):
         shadedmaxh = np.amax(DEM)
     else:
-        shadedmaxh = parameters['shadedmaxh']
+        shadedmaxh = user['shadedmaxh']
     
     dem_img = ls.shade(DEM, cmap=cmap, blend_mode=mode, fraction=1.0,
                        vert_exag=ve, dx=pix, dy=pix,
@@ -222,17 +223,17 @@ def image_shaded_relief(parameters, DEM):
     ax.imshow(dem_img, interpolation="nearest", vmin=0.0, vmax=1.0)
     plt.axis('off')
     # Save image to file
-    filename = parameters['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % parameters['ncount']
+    filename = user['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % user['ncount']
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
-    return parameters
+    return user
 
 
-def read_ctemdat(parameters, seedarr):
+def read_datfile(user, seedarr):
     # Read and parse ctem.dat file
-    datfile = parameters['workingdir'] + 'ctem.dat'
+    datfile = user['workingdir'] + 'ctem.dat'
     
     # Read ctem.dat file
-    print('Reading input file ' + parameters['datfile'])
+    print('Reading input file ' + user['datfile'])
     fp = open(datfile, 'r')
     lines = fp.readlines()
     fp.close()
@@ -240,12 +241,12 @@ def read_ctemdat(parameters, seedarr):
     # Parse file lines and update parameter fields
     fields = lines[0].split()
     if len(fields) > 0:
-        parameters['totalimpacts'] = real2float(fields[0])
-        parameters['ncount'] = int(fields[1])
-        parameters['curyear'] = real2float(fields[2])
-        parameters['restart'] = fields[3]
-        parameters['fracdone'] = real2float(fields[4])
-        parameters['masstot'] = real2float(fields[5])
+        user['totalimpacts'] = real2float(fields[0])
+        user['ncount'] = int(fields[1])
+        user['curyear'] = real2float(fields[2])
+        user['restart'] = fields[3]
+        user['fracdone'] = real2float(fields[4])
+        user['masstot'] = real2float(fields[5])
     
     # Parse remainder of file to build seed array
     nlines = len(lines)
@@ -255,7 +256,7 @@ def read_ctemdat(parameters, seedarr):
         seedarr[index - 1] = real2float(fields[0])
         index += 1
     
-    parameters['seedn'] = index - 1
+    user['seedn'] = index - 1
     
     return
 
@@ -285,12 +286,12 @@ def read_impact_mass(filename):
 
 # Write production function to file production.dat
 # This file format does not exactly match that generated from IDL. Does it work?
-def read_param(parameters):
+def read_user_input(user):
     # Read and parse ctem.in file
-    inputfile = os.path.join(parameters['workingdir'], parameters['ctemfile'])
+    inputfile = user['ctemfile']
     
     # Read ctem.in file
-    print('Reading input file ' + parameters['ctemfile'])
+    print('Reading input file ' + user['ctemfile'])
     with open(inputfile, 'r') as fp:
         lines = fp.readlines()
     
@@ -298,60 +299,60 @@ def read_param(parameters):
     for line in lines:
         fields = line.split()
         if len(fields) > 0:
-            if ('pix' == fields[0].lower()): parameters['pix'] = real2float(fields[1])
-            if ('gridsize' == fields[0].lower()): parameters['gridsize'] = int(fields[1])
-            if ('seed' == fields[0].lower()): parameters['seed'] = int(fields[1])
-            if ('sfdfile' == fields[0].lower()): parameters['sfdfile'] = fields[1]
-            if ('impfile' == fields[0].lower()): parameters['impfile'] = fields[1]
-            if ('maxcrat' == fields[0].lower()): parameters['maxcrat'] = real2float(fields[1])
-            if ('sfdcompare' == fields[0].lower()): parameters['sfdcompare'] = fields[1]
-            if ('interval' == fields[0].lower()): parameters['interval'] = real2float(fields[1])
-            if ('numintervals' == fields[0].lower()): parameters['numintervals'] = int(fields[1])
-            if ('popupconsole' == fields[0].lower()): parameters['popupconsole'] = fields[1]
-            if ('saveshaded' == fields[0].lower()): parameters['saveshaded'] = fields[1]
-            if ('saverego' == fields[0].lower()): parameters['saverego'] = fields[1]
-            if ('savepres' == fields[0].lower()): parameters['savepres'] = fields[1]
-            if ('savetruelist' == fields[0].lower()): parameters['savetruelist'] = fields[1]
-            if ('runtype' == fields[0].lower()): parameters['runtype'] = fields[1]
-            if ('restart' == fields[0].lower()): parameters['restart'] = fields[1]
+            if ('pix' == fields[0].lower()): user['pix'] = real2float(fields[1])
+            if ('gridsize' == fields[0].lower()): user['gridsize'] = int(fields[1])
+            if ('seed' == fields[0].lower()): user['seed'] = int(fields[1])
+            if ('sfdfile' == fields[0].lower()): user['sfdfile'] = os.path.join(user['workingdir'],fields[1])
+            if ('impfile' == fields[0].lower()): user['impfile'] = os.path.join(user['workingdir'],fields[1])
+            if ('maxcrat' == fields[0].lower()): user['maxcrat'] = real2float(fields[1])
+            if ('sfdcompare' == fields[0].lower()): user['sfdcompare'] = os.path.join(user['workingdir'], fields[1])
+            if ('interval' == fields[0].lower()): user['interval'] = real2float(fields[1])
+            if ('numintervals' == fields[0].lower()): user['numintervals'] = int(fields[1])
+            if ('popupconsole' == fields[0].lower()): user['popupconsole'] = fields[1]
+            if ('saveshaded' == fields[0].lower()): user['saveshaded'] = fields[1]
+            if ('saverego' == fields[0].lower()): user['saverego'] = fields[1]
+            if ('savepres' == fields[0].lower()): user['savepres'] = fields[1]
+            if ('savetruelist' == fields[0].lower()): user['savetruelist'] = fields[1]
+            if ('runtype' == fields[0].lower()): user['runtype'] = fields[1]
+            if ('restart' == fields[0].lower()): user['restart'] = fields[1]
             if ('shadedminh' == fields[0].lower()):
-                parameters['shadedminh'] = real2float(fields[1])
-                parameters['shadedminhdefault'] = 0
+                user['shadedminh'] = real2float(fields[1])
+                user['shadedminhdefault'] = 0
             if ('shadedmaxh' == fields[0].lower()):
-                parameters['shadedmaxh'] = real2float(fields[1])
-                parameters['shadedmaxhdefault'] = 0
+                user['shadedmaxh'] = real2float(fields[1])
+                user['shadedmaxhdefault'] = 0
     
     # Test values for further processing
-    if (parameters['interval'] <= 0.0):
+    if (user['interval'] <= 0.0):
         print('Invalid value for or missing variable INTERVAL in ' + inputfile)
-    if (parameters['numintervals'] <= 0):
+    if (user['numintervals'] <= 0):
         print('Invalid value for or missing variable NUMINTERVALS in ' + inputfile)
-    if (parameters['pix'] <= 0.0):
+    if (user['pix'] <= 0.0):
         print('Invalid value for or missing variable PIX in ' + inputfile)
-    if (parameters['gridsize'] <= 0):
+    if (user['gridsize'] <= 0):
         print('Invalid value for or missing variable GRIDSIZE in ' + inputfile)
-    if (parameters['seed'] == 0):
+    if (user['seed'] == 0):
         print('Invalid value for or missing variable SEED in ' + inputfile)
-    if (parameters['sfdfile'] is None):
+    if (user['sfdfile'] is None):
         print('Invalid value for or missing variable SFDFILE in ' + inputfile)
-    if (parameters['impfile'] is None):
+    if (user['impfile'] is None):
         print('Invalid value for or missing variable IMPFILE in ' + inputfile)
-    if (parameters['popupconsole'] is None):
+    if (user['popupconsole'] is None):
         print('Invalid value for or missing variable POPUPCONSOLE in ' + inputfile)
-    if (parameters['saveshaded'] is None):
+    if (user['saveshaded'] is None):
         print('Invalid value for or missing variable SAVESHADED in ' + inputfile)
-    if (parameters['saverego'] is None):
+    if (user['saverego'] is None):
         print('Invalid value for or missing variable SAVEREGO in ' + inputfile)
-    if (parameters['savepres'] is None):
+    if (user['savepres'] is None):
         print('Invalid value for or missing variable SAVEPRES in ' + inputfile)
-    if (parameters['savetruelist'] is None):
+    if (user['savetruelist'] is None):
         print('Invalid value for or missing variable SAVETRUELIST in ' + inputfile)
-    if (parameters['runtype'] is None):
+    if (user['runtype'] is None):
         print('Invalid value for or missing variable RUNTYPE in ' + inputfile)
-    if (parameters['restart'] is None):
+    if (user['restart'] is None):
         print('Invalid value for or missing variable RESTART in ' + inputfile)
     
-    return parameters
+    return user
 
 
 def read_unformatted_binary(filename, gridsize):
@@ -382,16 +383,15 @@ def real2float(realstr):
     return float(realstr.replace('d', 'E').replace('D', 'E'))
 
 
-def write_ctemdat(parameters, seedarr):
-    # Write various parameters and random number seeds into ctem.dat file
-    filename = parameters['workingdir'] + parameters['datfile']
+def write_datfile(user, filename, seedarr):
+    # Write various user and random number seeds into ctem.dat file
     fp = open(filename, 'w')
     
     template = "%(totalimpacts)17d %(ncount)12d %(curyear)19.12E %(restart)s %(fracdone)9.6f %(masstot)19.12E\n"
-    fp.write(template % parameters)
+    fp.write(template % user)
     
     # Write random number seeds to the file
-    for index in range(parameters['seedn']):
+    for index in range(user['seedn']):
         fp.write("%12d\n" % seedarr[index])
     
     fp.close()
@@ -399,11 +399,8 @@ def write_ctemdat(parameters, seedarr):
     return
 
 
-# Possible references
-# http://nbviewer.jupyter.org/github/ThomasLecocq/geophysique.be/blob/master/2014-02-25%20Shaded%20Relief%20Map%20in%20Python.ipynb
-
-def write_production(parameters, production):
-    filename = parameters['workingdir'] + parameters['sfdfile']
+def write_production(user, production):
+    filename = user['sfdfile']
     np.savetxt(filename, production, fmt='%1.8e', delimiter='   ')
     
     return

@@ -14,7 +14,7 @@ class polysurface:
         return
     
     def readctem(self, surface_file):
-        # Create and initialize data dictionaries for parameters and options from CTEM.in
+        # Create and initialize data dictionaries for user and options from CTEM.in
         notset = '-NOTSET-'
         currentdir = os.getcwd() + os.sep
     
