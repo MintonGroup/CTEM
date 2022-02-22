@@ -218,22 +218,21 @@ class Simulation:
         io.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
 
         # Save copy of crater distribution files
+        # Update user: mass, curyear, regolith properties
+        self.user['masstot'] = self.user['masstot'] + impact_mass
+
+        self.user['curyear'] = self.user['curyear'] + self.user['fracdone'] * self.user['interval']
+        template = "%(fracdone)9.6f %(curyear)19.12E\n"
+        with open(self.output_filenames['fracdone'], 'w') as fp_frac:
+            fp_frac.write(template % self.user)
+
+        reg_text = "%19.12E %19.12E %19.12E %19.12E\n" % (self.user['curyear'],
+                                                          np.mean(self.surface_ejc), np.amax(self.surface_ejc),
+                                                          np.amin(self.surface_ejc))
+        with open(self.output_filenames['regodepth'], 'w') as fp_reg:
+            fp_reg.write(reg_text)
+
         if isnew:
-    
-            # Update user: mass, curyear, regolith properties
-            self.user['masstot'] = self.user['masstot'] + impact_mass
-    
-            self.user['curyear'] = self.user['curyear'] + self.user['fracdone'] * self.user['interval']
-            template = "%(fracdone)9.6f %(curyear)19.12E\n"
-            with open(self.output_filenames['fracdone']) as fp_frac:
-                fp_frac.write(template % self.user)
-    
-            reg_text = "%19.12E %19.12E %19.12E %19.12E\n" % (self.user['curyear'],
-                                                              np.mean(self.surface_ejc), np.amax(self.surface_ejc),
-                                                              np.amin(self.surface_ejc))
-            with open(self.output_filenames['regodepth']) as fp_reg:
-                fp_reg.write(reg_text)
-                
             self.redirect_outputs(['odist', 'ocum', 'pdist', 'tdist'], 'dist')
             if (self.user['savetruelist'].upper() == 'T'):
                 self.redirect_outputs(['tcum'], 'dist')
