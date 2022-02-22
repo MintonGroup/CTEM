@@ -228,12 +228,11 @@ def image_shaded_relief(user, DEM):
     return user
 
 
-def read_datfile(user, seedarr):
+def read_datfile(user, datfile, seedarr):
     # Read and parse ctem.dat file
-    datfile = user['workingdir'] + 'ctem.dat'
     
     # Read ctem.dat file
-    print('Reading input file ' + user['datfile'])
+    print('Reading input file ' + datfile)
     fp = open(datfile, 'r')
     lines = fp.readlines()
     fp.close()

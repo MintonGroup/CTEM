@@ -91,7 +91,7 @@ class Simulation:
                 self.user['ncount'] = 1
 
                 # Write ctem.dat file
-                io.write_datfile(self.user, self.seedarr)
+                io.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
             else:
                 self.user['ncount'] = 0
 
@@ -212,10 +212,10 @@ class Simulation:
         self.pdist = io.read_formatted_ascii(self.output_filenames['pdist'], skip_lines=1)
 
         # Read impact mass from file
-        impact_mass = io.read_impact_mass(self.output_filenames['massfile'])
+        impact_mass = io.read_impact_mass(self.output_filenames['impmass'])
 
         # Read ctem.dat file
-        io.read_ctemdat(self.user, self.seedarr)
+        io.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
 
         # Save copy of crater distribution files
         if isnew:
