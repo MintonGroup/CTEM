@@ -10,7 +10,7 @@ class Simulation:
     it in from a file (default name is ctem.in). It also creates the directory structure needed to store simulation
     files if necessary.
     """
-    def __init__(self, param_file="ctem.in"):
+    def __init__(self, param_file="ctem.in", isnew=True):
         currentdir = os.getcwd()
         self.user = {
             'restart': None,
@@ -78,14 +78,19 @@ class Simulation:
             sfdfile = os.path.join(self.user['workingdir'], self.user['sfdcompare'])
             self.ph1 = io.read_formatted_ascii(sfdfile, skip_lines=0)
            
-        # Scale the production function to the simulation domain
-        self.scale_production()
 
         # Starting new or old run?
-        if (self.user['restart'].upper() == 'F'):
+        if (self.user['restart'].upper() == 'F' and isnew):
             print('Starting a new run')
 
             io.create_dir_structure(self.user)
+            # Delete any old output files
+            for k, v in self.output_filenames.items():
+                if os.path.isfile(v):
+                    os.remove(v)
+
+            # Scale the production function to the simulation domain
+            self.scale_production()
             
             if (self.user['runtype'].upper() == 'STATISTICAL'):
                 self.user['ncount'] = 1
@@ -94,15 +99,9 @@ class Simulation:
                 io.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
             else:
                 self.user['ncount'] = 0
-
-            # Delete any old output files
-            for k, v in self.output_filenames.items():
-                if os.path.isfile(v):
-                    os.remove(v)
         else:
             print('Continuing a previous run')
             self.process_interval(isnew=False)
-
 
         return
     

@@ -37,7 +37,7 @@ def create_dir_structure(user):
     directories = ['dist', 'misc', 'rego', 'rplot', 'surf', 'shaded']
     
     for directory in directories:
-        dir_test = user['workingdir'] + directory
+        dir_test = os.path.join(user['workingdir'], directory)
         if not os.path.isdir(dir_test):
             os.makedirs(dir_test)
     
