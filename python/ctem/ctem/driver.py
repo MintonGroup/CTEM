@@ -254,7 +254,8 @@ class Simulation:
         
         for k in filekeys:
             forig = self.output_filenames[k]
-        fdist = os.path.join(self.user['workingdir'], foldername, f"{k}_{self.user['ncount']:06d}.dat")
+            fdest = os.path.join(self.user['workingdir'], foldername, f"{k}_{self.user['ncount']:06d}.dat")
+            shutil.copy2(forig, fdest)
 
 if __name__ == '__main__':
     sim = Simulation()
