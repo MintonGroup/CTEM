@@ -1,64 +1,22 @@
 import numpy as np
 import os
 import open3d
-from ctem import ctem_io_readers
+import ctem
 import os
 
-
-class polysurface:
+class Polysurface(ctem.Simulation):
     """A model of a self-gravitating small body"""
     def __init__(self):
-        self.polyfile = ""
+        ctem.Simulation.__init__(self, isnew=False) # Initialize the data structures, but doesn't start a new run
         #used for Open3d module
         self.mesh = open3d.geometry.TriangleMesh()
-        return
-    
-    def readctem(self, surface_file):
-        # Create and initialize data dictionaries for user and options from CTEM.in
-        notset = '-NOTSET-'
-        currentdir = os.getcwd() + os.sep
-    
-        self.parameters = {'restart': notset,
-                      'runtype': notset,
-                      'popupconsole': notset,
-                      'saveshaded': notset,
-                      'saverego': notset,
-                      'savepres': notset,
-                      'savetruelist': notset,
-                      'seedn': 1,
-                      'totalimpacts': 0,
-                      'ncount': 0,
-                      'curyear': 0.0,
-                      'fracdone': 1.0,
-                      'masstot': 0.0,
-                      'interval': 0.0,
-                      'numintervals': 0,
-                      'pix': -1.0,
-                      'gridsize': -1,
-                      'seed': 0,
-                      'maxcrat': 1.0,
-                      'shadedminhdefault': 1,
-                      'shadedmaxhdefault': 1,
-                      'shadedminh': 0.0,
-                      'shadedmaxh': 0.0,
-                      'workingdir': currentdir,
-                      'ctemfile': 'ctem.in',
-                      'datfile': 'ctem.dat',
-                      'impfile': notset,
-                      'sfdcompare': notset,
-                      'sfdfile': notset}
-    
-        # Read ctem.in to initialize parameter values based on user input
-        ctem_io_readers.read_ctemin(self.parameters, notset)
-        # Read surface dem(shaded relief) and ejecta data files
-        dem_file = self.parameters['workingdir'] + surface_file
-        self.dem = ctem_io_readers.read_unformatted_binary(dem_file, self.parameters['gridsize'])
+        self.process_interval(isnew=False)
         return
     
     def ctem2blockmesh(self):
         # Build mesh grid
-        s = self.parameters['gridsize']
-        pix = self.parameters['pix']
+        s = self.user['gridsize']
+        pix = self.user['pix']
         ygrid, xgrid = np.mgrid[-s/2:s/2, -s/2:s/2] * pix
         y0, x0 = ygrid - pix/2, xgrid - pix/2
         y1, x1 = ygrid - pix/2, xgrid + pix/2
@@ -124,13 +82,13 @@ class polysurface:
     
     def ctem2trimesh(self):
         # Build mesh grid
-        s = self.parameters['gridsize']
-        pix = self.parameters['pix']
+        s = self.user['gridsize']
+        pix = self.user['pix']
         ygrid, xgrid = np.mgrid[-s/2:s/2, -s/2:s/2] * pix
 
         xvals = xgrid.flatten()
         yvals = ygrid.flatten()
-        zvals = self.dem.flatten()
+        zvals = self.surface_dem.flatten()
         verts = np.array((xvals, yvals, zvals)).T
         faces = np.full([2 * (s-1)**2, 3], -1, dtype=np.int64)
         for j in range(s - 1):
@@ -154,9 +112,9 @@ class polysurface:
         opt = vis.get_render_option()
         opt.background_color = np.asarray([0, 0, 0])
 
-        # zmax = np.amax(surf.dem)
-        # zmin = np.amin(surf.dem)
-        # cnorm = (surf.dem.flatten() - zmin) / (zmax - zmin)
+        # zmax = np.amax(self.surface_dem)
+        # zmin = np.amin(self.surface_dem)
+        # cnorm = (self.surface_dem.flatten() - zmin) / (zmax - zmin)
         # cval = plt.cm.terrain(cnorm)[:, :3]
 
         self.mesh.paint_uniform_color([0.5, 0.5, 0.5])
@@ -167,12 +125,9 @@ class polysurface:
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    surf = polysurface()
-    surf.readctem(surface_file="surface_dem.dat")
-    surf.ctem2trimesh()
-    surf.visualize()
-
-    
+    sim = Polysurface()
+    sim.ctem2trimesh()
+    sim.visualize()
 
     
 
