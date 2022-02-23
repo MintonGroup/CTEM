@@ -8,30 +8,6 @@ import matplotlib.pyplot as plt
 # Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
 
-def copy_dists(user, output_filenames, distlist):
-    # Save copies of distribution files
-    
-    orig_list = ['odistribution', 'ocumulative', 'pdistribution', 'tdistribution']
-    dest_list = ['odist', 'ocum', 'pdist', 'tdist']
-    
-    for index in range(len(orig_list)):
-        forig = user['workingdir'] + orig_list[index] + '.dat'
-        fdest = user['workingdir'] + 'dist' + os.sep + dest_list[index] + "_%06d.dat" % user['ncount']
-        shutil.copy2(forig, fdest)
-    
-    forig = user['workingdir'] + 'impactmass.dat'
-    fdest = user['workingdir'] + 'misc' + os.sep + "mass_%06d.dat" % user['ncount']
-    shutil.copy2(forig, fdest)
-    
-    if (user['savetruelist'].upper() == 'T'):
-        forig = user['workingdir'] + 'tcumulative.dat'
-        fdest = user['workingdir'] + 'dist' + os.sep + "tcum_%06d.dat" % user['ncount']
-        shutil.copy2(forig, fdest)
-    
-    return
-
-
-
 def create_dir_structure(user):
     # Create directories for various output files if they do not already exist
     directories = ['dist', 'misc', 'rego', 'rplot', 'surf', 'shaded']
@@ -95,7 +71,7 @@ def create_rplot(user, odist, pdist, tdist, ph1):
     timelabel = 'Time = ' + r'${}$ x 10$^{}$'.format(tlabel[0], texp) + ' yrs'
     
     # Save image to file
-    filename = user['workingdir'] + 'rplot' + os.sep + "rplot%06d.png" % user['ncount']
+    filename = os.path.join(user['workingdir'],'rplot',"rplot%06d.png" % user['ncount'])
     height = user['gridsize'] / dpi
     width = height
     fig = plt.figure(figsize=(width, height), dpi=dpi)
@@ -151,7 +127,7 @@ def image_dem(user, DEM):
     ax.imshow(dem_img, interpolation="nearest", cmap='gray', vmin=0.0, vmax=1.0)
     plt.axis('off')
     # Save image to file
-    filename = user['workingdir'] + 'surf' + os.sep + "surf%06d.png" % user['ncount']
+    filename = os.path.join(user['workingdir'],'surf',"surf%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
     
     return
@@ -170,7 +146,7 @@ def image_regolith(user, regolith):
             (np.log(regolith_scaled) - np.log(minreg)) / (np.log(maxreg) - np.log(minreg)))
     
     # Save image to file
-    filename = user['workingdir'] + 'rego' + os.sep + "rego%06d.png" % user['ncount']
+    filename = os.path.join(user['workingdir'],'rego', "rego%06d.png" % user['ncount'])
     height = user['gridsize'] / dpi
     width = height
     fig = plt.figure(figsize=(width, height), dpi=dpi)
@@ -223,7 +199,7 @@ def image_shaded_relief(user, DEM):
     ax.imshow(dem_img, interpolation="nearest", vmin=0.0, vmax=1.0)
     plt.axis('off')
     # Save image to file
-    filename = user['workingdir'] + 'shaded' + os.sep + "shaded%06d.png" % user['ncount']
+    filename = os.path.join(user['workingdir'],'shaded',"shaded%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
     return user
 
