@@ -69,3 +69,5 @@ examples/global-lunar-bombardment/scale.ipynb
 *.code-workspace
 
 *.png
+
+python/ctem/ctem.egg-info/
