@@ -1,8 +1,6 @@
 import numpy as np
-import os
 import open3d
 import ctem
-import os
 
 class Polysurface(ctem.Simulation):
     """A model of a self-gravitating small body"""
@@ -10,7 +8,6 @@ class Polysurface(ctem.Simulation):
         ctem.Simulation.__init__(self, isnew=False) # Initialize the data structures, but doesn't start a new run
         #used for Open3d module
         self.mesh = open3d.geometry.TriangleMesh()
-        self.process_interval(isnew=False)
         return
     
     def ctem2blockmesh(self):
@@ -94,7 +91,6 @@ class Polysurface(ctem.Simulation):
         for j in range(s - 1):
             for i in range(s - 1):
                 idx = (s - 1) * j + i
-                # faces[idx,:] = [ j*s+i, j*s+i+1, (j+1)*s+i+1, (j+1)*s+i ]
                 faces[idx, :] = [j * s + i, j * s + i + 1, (j + 1) * s + i + 1]
                 idx += (s - 1) ** 2
                 faces[idx, :] = [(j + 1) * s + i + 1, (j + 1) * s + i, j * s + i ]
@@ -112,19 +108,12 @@ class Polysurface(ctem.Simulation):
         opt = vis.get_render_option()
         opt.background_color = np.asarray([0, 0, 0])
 
-        # zmax = np.amax(self.surface_dem)
-        # zmin = np.amin(self.surface_dem)
-        # cnorm = (self.surface_dem.flatten() - zmin) / (zmax - zmin)
-        # cval = plt.cm.terrain(cnorm)[:, :3]
-
         self.mesh.paint_uniform_color([0.5, 0.5, 0.5])
         vis.run()
         vis.destroy_window()
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
     sim = Polysurface()
     sim.ctem2trimesh()
     sim.visualize()
