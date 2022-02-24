@@ -6,6 +6,7 @@ class Polysurface(ctem.Simulation):
     """A model of a self-gravitating small body"""
     def __init__(self):
         ctem.Simulation.__init__(self, isnew=False) # Initialize the data structures, but doesn't start a new run
+        self.read_output(isnew=False)
         #used for Open3d module
         self.mesh = open3d.geometry.TriangleMesh()
         return
