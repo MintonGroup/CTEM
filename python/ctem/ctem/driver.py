@@ -3,6 +3,7 @@ import os
 import subprocess
 import shutil
 from ctem import util
+import sys
 
 class Simulation:
     """
@@ -178,14 +179,21 @@ class Simulation:
         """
         # Create crater population and display CTEM progress on screen
         print(self.user['ncount'], '  Calling FORTRAN routine')
-        with subprocess.Popen([os.path.join(self.user['workingdir'], 'CTEM')],
+        try:
+            p = subprocess.Popen([os.path.join(self.user['workingdir'], 'CTEM')],
                               stdout=subprocess.PIPE,
-                              universal_newlines=True) as p:
-            try:
-                for line in p.stdout:
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+            for line in p.stdout:
+                print(line, end='')
+            res = p.communicate()
+            if p.returncode != 0:
+                for line in res[1]:
                     print(line, end='')
-            except:
-                print("Error executing main CTEM program")
+                raise Exception ("CTEM Failure")
+        except:
+            print("Error executing main CTEM program")
+            sys.exit()
 
         return
     
