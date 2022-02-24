@@ -2,7 +2,7 @@ import numpy as np
 import os
 import subprocess
 import shutil
-from ctem import io
+from ctem import util
 
 class Simulation:
     """
@@ -42,7 +42,7 @@ class Simulation:
             'sfdcompare': None,
             'sfdfile': None
         }
-        self.user = io.read_user_input(self.user)
+        self.user = util.read_user_input(self.user)
         
         self.output_filenames = {
             'dat': 'ctem.dat',
@@ -71,19 +71,19 @@ class Simulation:
         self.pdist = np.zeros([1, 6])
         self.tdist = np.zeros([1, 6])
         self.surface_dem = np.zeros([self.user['gridsize'], self.user['gridsize']], dtype=float)
-        self.regolith = np.zeros([self.user['gridsize'], self.user['gridsize']], dtype=float)
+        self.surface_ejc = np.zeros([self.user['gridsize'], self.user['gridsize']], dtype=float)
         
         if self.user['sfdcompare'] is not None:
             # Read sfdcompare file
             sfdfile = os.path.join(self.user['workingdir'], self.user['sfdcompare'])
-            self.ph1 = io.read_formatted_ascii(sfdfile, skip_lines=0)
+            self.ph1 = util.read_formatted_ascii(sfdfile, skip_lines=0)
            
 
         # Starting new or old run?
         if (self.user['restart'].upper() == 'F' and isnew):
             print('Starting a new run')
 
-            io.create_dir_structure(self.user)
+            util.create_dir_structure(self.user)
             # Delete any old output files
             for k, v in self.output_filenames.items():
                 if os.path.isfile(v):
@@ -92,13 +92,7 @@ class Simulation:
             # Scale the production function to the simulation domain
             self.scale_production()
             
-            if (self.user['runtype'].upper() == 'STATISTICAL'):
-                self.user['ncount'] = 1
-
-                # Write ctem.dat file
-                io.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
-            else:
-                self.user['ncount'] = 0
+            util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
         else:
             print('Continuing a previous run')
             self.process_interval(isnew=False)
@@ -113,7 +107,7 @@ class Simulation:
         
         # Read production function file
         impfile = os.path.join(self.user['workingdir'], self.user['impfile'])
-        prodfunction = io.read_formatted_ascii(impfile, skip_lines=0)
+        prodfunction = util.read_formatted_ascii(impfile, skip_lines=0)
 
         # Create impactor production population
         area = (self.user['gridsize'] * self.user['pix']) ** 2
@@ -121,7 +115,7 @@ class Simulation:
         self.production[:, 1] = self.production[:, 1] * area * self.user['interval']
 
         # Write the scaled production function to file
-        io.write_production(self.user, self.production)
+        util.write_production(self.user, self.production)
         
         return
     
@@ -145,17 +139,23 @@ class Simulation:
                 # Process output files
                 self.process_interval()
 
+                # Redirect output files to storage
+                self.redirect_outputs(['odist', 'ocum', 'pdist', 'tdist'], 'dist')
+                if (self.user['savetruelist'].upper() == 'T'):
+                    self.redirect_outputs(['tcum'], 'dist')
+                self.redirect_outputs(['impmass'], 'misc')
+
             # Display results
             print(self.user['ncount'], '  Displaying results')
 
             # Write surface dem, surface ejecta, shaded relief, and rplot data
-            io.image_dem(self.user, self.surface_dem)
+            util.image_dem(self.user, self.surface_dem)
             if (self.user['saverego'].upper() == 'T'):
-                io.image_regolith(self.user, self.surface_ejc)
+                util.image_regolith(self.user, self.surface_ejc)
             if (self.user['saveshaded'].upper() == 'T'):
-                io.image_shaded_relief(self.user, self.surface_dem)
+                util.image_shaded_relief(self.user, self.surface_dem)
             if (self.user['savepres'].upper() == 'T'):
-                io.create_rplot(self.user, self.odist, self.pdist, self.tdist, self.ph1)
+                util.create_rplot(self.user, self.odist, self.pdist, self.tdist, self.ph1)
 
             # Update ncount
             self.user['ncount'] = self.user['ncount'] + 1
@@ -166,7 +166,7 @@ class Simulation:
                 self.user['totalimpacts'] = 0
                 self.user['masstot'] = 0.0
 
-                # Delete tdistribution file, if it exists
+                # Delete tdistribution file, if it exists so that we don't accumulate true craters in statistical mode
                 tdist_file = self.user['workingdir'] + 'tdistribution.dat'
                 if os.path.isfile(tdist_file):
                     os.remove(tdist_file)
@@ -175,7 +175,7 @@ class Simulation:
                 self.user['restart'] = 'T'
 
             # Write ctem.dat file
-            io.write_datfile(self.user, self.output_filenames['dat'],self.seedarr)
+            util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
 
         return
     
@@ -188,8 +188,11 @@ class Simulation:
         with subprocess.Popen([os.path.join(self.user['workingdir'], 'CTEM')],
                               stdout=subprocess.PIPE,
                               universal_newlines=True) as p:
-            for line in p.stdout:
-                print(line, end='')
+            try:
+                for line in p.stdout:
+                    print(line, end='')
+            except:
+                print("Error executing main CTEM program")
 
         return
     
@@ -202,19 +205,19 @@ class Simulation:
         print(self.user['ncount'], '  Reading Fortran output')
 
         # Read surface dem(shaded relief) and ejecta data files
-        self.surface_dem = io.read_unformatted_binary(self.output_filenames['dem'], self.user['gridsize'])
-        self.surface_ejc = io.read_unformatted_binary(self.output_filenames['ejc'], self.user['gridsize'])
+        self.surface_dem = util.read_unformatted_binary(self.output_filenames['dem'], self.user['gridsize'])
+        self.surface_ejc = util.read_unformatted_binary(self.output_filenames['ejc'], self.user['gridsize'])
 
         # Read odistribution, tdistribution, and pdistribution files
-        self.odist = io.read_formatted_ascii(self.output_filenames['odist'], skip_lines=1)
-        self.tdist = io.read_formatted_ascii(self.output_filenames['tdist'], skip_lines=1)
-        self.pdist = io.read_formatted_ascii(self.output_filenames['pdist'], skip_lines=1)
+        self.odist = util.read_formatted_ascii(self.output_filenames['odist'], skip_lines=1)
+        self.tdist = util.read_formatted_ascii(self.output_filenames['tdist'], skip_lines=1)
+        self.pdist = util.read_formatted_ascii(self.output_filenames['pdist'], skip_lines=1)
 
         # Read impact mass from file
-        impact_mass = io.read_impact_mass(self.output_filenames['impmass'])
+        impact_mass = util.read_impact_mass(self.output_filenames['impmass'])
 
         # Read ctem.dat file
-        io.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
+        util.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
 
         # Save copy of crater distribution files
         # Update user: mass, curyear, regolith properties
@@ -231,12 +234,6 @@ class Simulation:
         with open(self.output_filenames['regodepth'], 'w') as fp_reg:
             fp_reg.write(reg_text)
 
-        if isnew:
-            self.redirect_outputs(['odist', 'ocum', 'pdist', 'tdist'], 'dist')
-            if (self.user['savetruelist'].upper() == 'T'):
-                self.redirect_outputs(['tcum'], 'dist')
-            self.redirect_outputs(['impmass'], 'misc')
-        return
 
     def redirect_outputs(self, filekeys, foldername):
         """
