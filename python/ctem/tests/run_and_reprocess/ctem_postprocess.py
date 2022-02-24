@@ -6,5 +6,5 @@ a typical CTEM simulation
 import ctem
 sim = ctem.Simulation(isnew=False)
 sim.read_output()
-sim.user['ncount'] += 1
+sim.user['ncount'] += 1 # Increment the output count in the situation in which the simulation was run outside of the driver script
 sim.process_output()
