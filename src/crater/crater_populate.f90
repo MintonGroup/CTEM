@@ -345,9 +345,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       hmax = maxval(surf(:,:)%dem)
       hmin = minval(surf(:,:)%dem)
       if (any(surf(:,:)%dem /= surf(:,:)%dem)) then
-         write(*,*) 'Invalid surface elevation detected. Halting.'
          write(*,*) crater%imp, crater%impvel, crater%xl, crater%yl, crater%sinimpang
-         exit
+         error stop "Invalid surface elevation detected. Halting."
       end if
    end do  ! end crater production loop 
 
