@@ -314,10 +314,10 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
    integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
    real(DP), parameter :: xy_noise_fac = 3.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 7.0e-3_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 3.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
-   real(DP), parameter :: outer_wall_size = 2.1_DP
+   real(DP), parameter :: outer_wall_size = 1.2_DP
 
    !Executable code
    call random_number(rn)
@@ -344,7 +344,7 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
          areafrac = areafrac * util_area_intersection(outer_wall_size * crater%frad,xbar,ybar,user%pix)
          areafrac = areafrac * min((r / flr)**12,1.0_DP) ! Smooth out interface between wall and floor
-         areafrac = areafrac * max(min(2._DP - r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
+         areafrac = areafrac * max(min(outer_wall_size- r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
 
          ! Add some roughness to the walls
          noise = 0.0_DP
@@ -356,7 +356,6 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          end do
          newdem = newdem + noise * areafrac
          if (r < flr) newdem = max(newdem,crater%melev - crater%floordepth)
-         if (r > 1.1_DP) newdem = max(newdem,newdem + areafrac * crater%ejrim * r**(-3))
 
          elchange  = newdem - surf(xpi,ypi)%dem
          deltaMtot = deltaMtot + elchange
@@ -405,6 +404,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    real(DP)                      :: router          ! The radius of the terrace outer edge
    real(DP)                      :: rinner          ! The radius of the terrace outer edge
    real(DP)                      :: upshift,dfloor
+   real(DP)                      :: h_scallop_profile ! Profile of the scallop wall
    integer(I4B)                  :: num_oct_tfloor 
    real(DP)                      :: noise_height_tfloor
    real(DP)                      :: freq_tfloor
@@ -424,7 +424,9 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    nscallops = 16 
    scallop_p = 0.6_DP 
    scallop_width = 0.20_DP 
-   rimfloor = crater%melev
+   h_scallop_profile = 2.0_DP
+   rimfloor = crater%melev + 0.5_DP * crater%rimheight
+   upshift = 0.0_DP
 
    num_oct_tfloor  = 4
    noise_height_tfloor = crater%floordepth / nterraces
@@ -441,13 +443,12 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    !^^^^^^^^^^^^^^^
 
    rad = 2.0_DP * crater%frad
-   upshift = 0._DP
  
    inc = max(min(nint(rad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
-   do terrace = 1, nterraces 
+   do terrace = 1, nterraces
       router = flr + (1._DP - flr) * (terrace / real(nterraces,kind=DP))**(terracefac) ! The radius of the outer edge of the terrace
       rinner = flr + (1._DP - flr) * ((terrace - 1) / real(nterraces,kind=DP))**(terracefac) ! The radius of the inner edge of the terrace
 
@@ -484,7 +485,11 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
 
             isterrace = 1.0_DP - noise < hprof
 
-            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 + tnoise ! This is the floor profile that replaces the old one at each terrace
+            if (r < 1.0_DP) then
+               tprof = crater_profile(user,crater,rinner) * (r/rinner)**h_scallop_profile + tnoise ! This is the floor profile that replaces the old one at each terrace
+            else
+               tprof = (crater_profile(user,crater,rinner) + crater%ejrim * (rinner)**(-EJPROFILE)) + tnoise ! This is the floor profile that replaces the old one at each terrace
+            end if
 
             if (isterrace) then
                newdem = min(tprof,newdem) 
@@ -517,7 +522,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          ! Make scalloped rim
-         znoise = scallop_width**(1._DP / (2 * scallop_p))
+         znoise = (scallop_width)**(1._DP / (2 * scallop_p))
          xynoise = (nscallops / PI) / crater%fcrat
          dnoise = util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                     xynoise * ybar + offset * rn(2)) * znoise
@@ -563,7 +568,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          
          if (r > flr) then
-            newdem = newdem + upshift * max(min(3.0_DP - 2 * r,1.0_DP),0.0_DP)
+            newdem = newdem + upshift * max(min(3.0_DP - 2 * r**2,1.0_DP),0.0_DP)
             elchange  = newdem - surf(xpi,ypi)%dem
             deltaMtot = deltaMtot + elchange
             surf(xpi,ypi)%dem = newdem
