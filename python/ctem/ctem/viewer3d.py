@@ -35,10 +35,10 @@ class Polysurface(ctem.Simulation):
                           y3.flatten())
         zvals = np.append(
                 np.append(
-                np.append(self.dem.flatten(),
-                          self.dem.flatten()),
-                          self.dem.flatten()),
-                          self.dem.flatten())
+                np.append(self.surface_dem.flatten(),
+                          self.surface_dem.flatten()),
+                          self.surface_dem.flatten()),
+                          self.surface_dem.flatten())
         verts = np.array((xvals, yvals, zvals)).T
         nface_triangles = 10
         faces = np.full([nface_triangles*s**2, 3], -1, dtype=np.int64)
@@ -116,6 +116,7 @@ class Polysurface(ctem.Simulation):
 
 if __name__ == '__main__':
     sim = Polysurface()
+    sim.surface_dem *= 10
     sim.ctem2trimesh()
     sim.visualize()
 
