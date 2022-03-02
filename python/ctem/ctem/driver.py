@@ -113,11 +113,11 @@ class Simulation:
 
                     #Read list of real craters
                     print("quasi-MC mode is ON")
-                    craterlistfile = self.user['workingdir'] + self.user['realcraterlist']
-                    rclist = util.read_formatted_ascii(craterlistfile, skip_lines = 0)
+                    # Use self.compute_one_interval() to generate craterlist.dat
+                    rclist = util.read_formatted_ascii(self.user['realcraterlist'], skip_lines = 0)
 
                     #Interpolate craterscale.dat to get impactor sizes from crater sizes given
-                    df = pandas.read_csv('craterscale.dat', sep='\s+')
+                    df = pandas.read_csv(self.output_filenames['craterscale'], sep='\s+')
                     df['log(Dc)'] = np.log(df['Dcrat(m)'])
                     df['log(Di)'] = np.log(df['#Dimp(m)'])
                     xnew = df['log(Dc)'].values
@@ -132,8 +132,6 @@ class Simulation:
                     #Export to dat file
                     util.write_realcraters(user, rclist)
 
-
-                
                 util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
             else:
                 print('Continuing a previous run')
@@ -253,8 +251,6 @@ class Simulation:
         # Read ctem.dat file
         util.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
 
-        # Read craterlist.dat file
-        self.realcraterlist = util.read_formatted_ascii(self.output_filenames['craterlist'], skip_lines=1)
         
     def process_output(self):
         """

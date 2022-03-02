@@ -310,6 +310,7 @@ def read_user_input(user):
             if ('savetruelist' == fields[0].lower()): user['savetruelist'] = fields[1]
             if ('runtype' == fields[0].lower()): user['runtype'] = fields[1]
             if ('restart' == fields[0].lower()): user['restart'] = fields[1]
+            if ('quasimc' == fields[0].lower()): user['quasimc'] = fields[1]
             if ('shadedminh' == fields[0].lower()):
                 user['shadedminh'] = real2float(fields[1])
                 user['shadedminhdefault'] = 0
@@ -404,7 +405,7 @@ def write_production(user, production):
 def write_realcraters(user, realcraters):
     """Writes file of real craters for use in quasi-MC runs"""
 
-    filename = user['workingdir'] + user['craterlist']
+    filename = user['craterlist']
     np.savetxt(filename, realcraters, fmt='%1.8e', delimiter='\t')
 
     return
