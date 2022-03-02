@@ -400,3 +400,11 @@ def write_production(user, production):
     
     return
 
+
+def write_realcraters(user, realcraters):
+    """Writes file of real craters for use in quasi-MC runs"""
+
+    filename = user['workingdir'] + user['craterlist']
+    np.savetxt(filename, realcraters, fmt='%1.8e', delimiter='\t')
+
+    return

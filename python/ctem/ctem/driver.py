@@ -4,6 +4,9 @@ import subprocess
 import shutil
 from ctem import util
 import sys
+import pandas
+from ctem import craterproduction
+from scipy.interpolate import interp1d
 
 class Simulation:
     """
@@ -41,7 +44,9 @@ class Simulation:
             'ctemfile': os.path.join(currentdir, param_file),
             'impfile': None,
             'sfdcompare': None,
-            'sfdfile': None
+            'sfdfile': None,
+            'quasimc': None,
+            'realcraterlist': None
         }
         self.user = util.read_user_input(self.user)
        
@@ -65,7 +70,8 @@ class Simulation:
             'ejmax' : 'ejecta_table_max.dat',
             'ejmin' : 'ejecta_table_min.dat',
             'testprof' : 'testprofile.dat',
-            'craterscale' : 'craterscale.dat'
+            'craterscale' : 'craterscale.dat',
+            'craterlist' : 'craterlist.dat'
         }
 
         for k, v in self.output_filenames.items():
@@ -100,6 +106,33 @@ class Simulation:
 
                 # Scale the production function to the simulation domain
                 self.scale_production()
+
+                # Setup Quasi-MC run
+
+                if (self.user['quasimc'] == 'T'):
+
+                    #Read list of real craters
+                    print("quasi-MC mode is ON")
+                    craterlistfile = self.user['workingdir'] + self.user['realcraterlist']
+                    rclist = util.read_formatted_ascii(craterlistfile, skip_lines = 0)
+
+                    #Interpolate craterscale.dat to get impactor sizes from crater sizes given
+                    df = pandas.read_csv('craterscale.dat', sep='\s+')
+                    df['log(Dc)'] = np.log(df['Dcrat(m)'])
+                    df['log(Di)'] = np.log(df['#Dimp(m)'])
+                    xnew = df['log(Dc)'].values
+                    ynew = df['log(Di)'].values
+                    interp = interp1d(xnew, ynew, fill_value='extrapolate')
+                    rclist[:,0] = np.exp(interp(np.log(rclist[:,0])))
+    
+                    #Convert age in Ga to "interval time"
+                    rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+                    rclist = rclist[rclist[:,5].argsort()]
+
+                    #Export to dat file
+                    util.write_realcraters(user, rclist)
+
+
                 
                 util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
             else:
@@ -219,6 +252,9 @@ class Simulation:
 
         # Read ctem.dat file
         util.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
+
+        # Read craterlist.dat file
+        self.realcraterlist = util.read_formatted_ascii(self.output_filenames['craterlist'], skip_lines=1)
         
     def process_output(self):
         """
