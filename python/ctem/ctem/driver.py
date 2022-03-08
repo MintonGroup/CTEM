@@ -4,6 +4,9 @@ import subprocess
 import shutil
 from ctem import util
 import sys
+import pandas
+from ctem import craterproduction
+from scipy.interpolate import interp1d
 
 class Simulation:
     """
@@ -19,7 +22,6 @@ class Simulation:
             'popupconsole': None,
             'saveshaded': None,
             'saverego': None,
-            'savepres': None,
             'savetruelist': None,
             'seedn': 1,
             'totalimpacts': 0,
@@ -41,7 +43,9 @@ class Simulation:
             'ctemfile': os.path.join(currentdir, param_file),
             'impfile': None,
             'sfdcompare': None,
-            'sfdfile': None
+            'sfdfile': None,
+            'quasimc': None,
+            'realcraterlist': None
         }
         self.user = util.read_user_input(self.user)
        
@@ -65,12 +69,19 @@ class Simulation:
             'ejmax' : 'ejecta_table_max.dat',
             'ejmin' : 'ejecta_table_min.dat',
             'testprof' : 'testprofile.dat',
-            'craterscale' : 'craterscale.dat'
+            'craterscale' : 'craterscale.dat',
+            'craterlist' : 'craterlist.dat'
         }
 
         for k, v in self.output_filenames.items():
             self.output_filenames[k] = os.path.join(currentdir, v)
-        
+
+        self.directories = ['dist', 'misc', 'surf']
+        if self.user['saveshaded'].upper() == 'T':
+            self.directories.append('shaded')
+        if self.user['saverego'].upper() == 'T':
+            self.directories.append('rego')
+            
         # Set up data arrays
         self.seedarr = np.zeros(100, dtype=int)
         self.seedarr[0] = self.user['seed']
@@ -79,6 +90,7 @@ class Simulation:
         self.tdist = np.zeros([1, 6])
         self.surface_dem = np.zeros([self.user['gridsize'], self.user['gridsize']], dtype=float)
         self.surface_ejc = np.zeros([self.user['gridsize'], self.user['gridsize']], dtype=float)
+        self.ph1 = None
         
         if self.user['sfdcompare'] is not None:
             # Read sfdcompare file
@@ -92,7 +104,7 @@ class Simulation:
             if (self.user['restart'].upper() == 'F'):
                 print('Starting a new run')
 
-                util.create_dir_structure(self.user)
+                util.create_dir_structure(self.user, self.directories)
                 # Delete any old output files
                 for k, v in self.output_filenames.items():
                     if os.path.isfile(v):
@@ -100,7 +112,32 @@ class Simulation:
 
                 # Scale the production function to the simulation domain
                 self.scale_production()
-                
+
+                # Setup Quasi-MC run
+
+                if (self.user['quasimc'] == 'T'):
+
+                    #Read list of real craters
+                    print("quasi-MC mode is ON")
+                    # Use self.compute_one_interval() to generate craterlist.dat
+                    rclist = util.read_formatted_ascii(self.user['realcraterlist'], skip_lines = 0)
+
+                    #Interpolate craterscale.dat to get impactor sizes from crater sizes given
+                    df = pandas.read_csv(self.output_filenames['craterscale'], sep='\s+')
+                    df['log(Dc)'] = np.log(df['Dcrat(m)'])
+                    df['log(Di)'] = np.log(df['#Dimp(m)'])
+                    xnew = df['log(Dc)'].values
+                    ynew = df['log(Di)'].values
+                    interp = interp1d(xnew, ynew, fill_value='extrapolate')
+                    rclist[:,0] = np.exp(interp(np.log(rclist[:,0])))
+    
+                    #Convert age in Ga to "interval time"
+                    rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+                    rclist = rclist[rclist[:,5].argsort()]
+
+                    #Export to dat file
+                    util.write_realcraters(user, rclist)
+
                 util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
             else:
                 print('Continuing a previous run')
@@ -219,6 +256,7 @@ class Simulation:
 
         # Read ctem.dat file
         util.read_datfile(self.user, self.output_filenames['dat'], self.seedarr)
+
         
     def process_output(self):
         """
@@ -228,7 +266,7 @@ class Simulation:
         # Display results
         print(self.user['ncount'], '  Generating surface images and plots')
 
-        # Write surface dem, surface ejecta, shaded relief, and rplot data
+        # Write surface dem, surface ejecta and shaded relief data
         util.image_dem(self.user, self.surface_dem)
         if (self.user['saverego'].upper() == 'T'):
             util.image_regolith(self.user, self.surface_ejc)
@@ -236,8 +274,6 @@ class Simulation:
             util.image_shaded_relief(self.user, self.surface_dem)
         
         if self.user['ncount'] > 0: # These aren't available yet from the initial conditions
-            if (self.user['savepres'].upper() == 'T'):
-                util.create_rplot(self.user, self.odist, self.pdist, self.tdist, self.ph1)
             
             # Save copy of crater distribution files
             # Update user: mass, curyear, regolith properties
@@ -286,7 +322,7 @@ class Simulation:
         """
         # This is a list of files generated by the main Fortran program
         print("Deleting all files generated by CTEM")
-        util.destroy_dir_structure(self.user)
+        util.destroy_dir_structure(self.user, self.directories)
         for key, filename in self.output_filenames.items():
             print(f"Deleting file {filename}")
             try:
