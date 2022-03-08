@@ -4,6 +4,8 @@ import shutil
 from matplotlib.colors import LightSource
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+import re
+from tempfile import mkstemp
 
 # Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
@@ -301,6 +303,7 @@ def read_user_input(user):
             if ('impfile' == fields[0].lower()): user['impfile'] = os.path.join(user['workingdir'],fields[1])
             if ('maxcrat' == fields[0].lower()): user['maxcrat'] = real2float(fields[1])
             if ('sfdcompare' == fields[0].lower()): user['sfdcompare'] = os.path.join(user['workingdir'], fields[1])
+            if ('realcraterlist' == fields[0].lower()): user['realcraterlist'] = os.path.join(user['workingdir'], fields[1])
             if ('interval' == fields[0].lower()): user['interval'] = real2float(fields[1])
             if ('numintervals' == fields[0].lower()): user['numintervals'] = int(fields[1])
             if ('popupconsole' == fields[0].lower()): user['popupconsole'] = fields[1]
@@ -378,6 +381,33 @@ def real2float(realstr):
     """
     return float(realstr.replace('d', 'E').replace('D', 'E'))
 
+def sed(pattern, replace, source, count=0):
+    """Python implementation of unix sed command; not fully functional sed."""
+
+    fin = open(source, 'r')
+    num_replaced = 0
+
+    fd, name = mkstemp()
+    fout = open(name, 'w')
+
+    for line in fin:
+        out = re.sub(pattern, replace, line)
+        fout.write(out)
+
+        if out != line:
+            num_replaced += 1
+        if count and num_replaced > count:
+            break
+
+    fout.writelines(fin.readlines())
+
+
+    fin.close()
+    fout.close()
+
+    shutil.move(name, source)
+    
+    return
 
 def write_datfile(user, filename, seedarr):
     # Write various user and random number seeds into ctem.dat file
@@ -402,10 +432,20 @@ def write_production(user, production):
     return
 
 
-def write_realcraters(user, realcraters):
+def write_realcraters(filename, realcraters):
     """Writes file of real craters for use in quasi-MC runs"""
 
-    filename = user['craterlist']
     np.savetxt(filename, realcraters, fmt='%1.8e', delimiter='\t')
+
+    return
+
+def write_temp_input(filename):
+    """Makes changes to a temporary input file for use when generating craterlist.dat for quasimc runs"""
+
+    sed('testflag', 'testflag T!', filename)
+    sed('testimp', 'testimp 10 !', filename)
+    sed('quasimc', 'quasimc F!', filename)
+    sed('interval', 'interval 1 !', filename)
+    sed('numinterval 1 !s', 'numintervals 1 !', filename)
 
     return
