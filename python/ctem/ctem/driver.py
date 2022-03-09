@@ -137,7 +137,8 @@ class Simulation:
                     self.ctemin = os.path.join(currentdir, 'ctem.in')
                     os.rename(self.permfile, self.permin)
                     os.rename(self.tempfile, self.ctemin)
-                    self.run()
+                    util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
+                    self.compute_one_interval()
 
                     os.replace(self.permin, self.ctemin)
                     self.user['ctemfile'] = self.permfile
