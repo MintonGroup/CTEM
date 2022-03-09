@@ -63,11 +63,17 @@ integer(I4B)            :: onum
 real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
+integer(I4B)            :: narg, ierr 
 
 !$ t1 = omp_get_wtime()
 call io_splash()
-!write(*,*) 'Reading input files'
-infile="ctem.in"
+narg = command_argument_count() 
+if (narg /= 0) then
+   call get_command_argument(1, infile, status = ierr)
+else
+   infile="ctem.in"
+end if
+write(*,*) 'Reading input file ',trim(adjustl(infile))
 call io_input(infile,user)
 
 ! Initialize distribution arrays (crater size, number)
