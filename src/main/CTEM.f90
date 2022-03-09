@@ -69,9 +69,9 @@ integer(I4B)            :: narg, ierr
 call io_splash()
 narg = command_argument_count() 
 if (narg /= 0) then
-   call get_command_argument(1, infile, status = ierr)
+   call get_command_argument(1, infile, status = ierr) ! Use first argument as the user input file name
 else
-   infile="ctem.in"
+   infile = USERFILE ! No arguments, so use the default file name for the user inputs
 end if
 write(*,*) 'Reading input file ',trim(adjustl(infile))
 call io_input(infile,user)

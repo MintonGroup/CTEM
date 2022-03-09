@@ -270,7 +270,7 @@ integer(I4B) :: pbarival
 integer(I4B) :: pbarpos
 character(len=PBARSIZE) :: pbarchar
 
-! Grid array file names
+! Default file names
 character(*),parameter :: DIAMFILE   = 'surface_diam.dat'
 character(*),parameter :: TIMEFILE   = 'surface_time.dat'
 character(*),parameter :: EJCOVFILE  = 'surface_ejc.dat'
@@ -284,7 +284,6 @@ character(*),parameter :: STACKPORFILE = 'porosity_stacknum.dat'
 character(*),parameter :: POROFILE     = 'porosity_porosity.dat'
 character(*),parameter :: DEPTHFILE    = 'porosity_depth.dat'
 character(*),parameter :: POROTHICKFILE = 'porosity_thickness.dat'
-!character(*),parameter :: THICKFILE  = 'surface_crustal_thickness.dat'
 character(*),parameter :: POSFILE    = 'surface_pos.dat'
 character(*),parameter :: TDISTFILE  = 'tdistribution.dat'
 character(*),parameter :: TLISTFILE  = 'tcumulative.dat'
@@ -292,7 +291,9 @@ character(*),parameter :: ODISTFILE  = 'odistribution.dat'
 character(*),parameter :: OLISTFILE  = 'ocumulative.dat'
 character(*),parameter :: PDISTFILE  = 'pdistribution.dat'
 character(*),parameter :: CRTSCLFILE = 'craterscale.dat'
-character(*),parameter :: DATFILE    = 'ctem.dat'
+character(*),parameter :: SFDFILE    = 'production.dat'
+character(*),parameter :: USERFILE   = 'ctem.in' 
+character(*),parameter :: DATFILE    = 'ctem.dat' !
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat' !not sure if this is where this line should go, but putting it here for now...
 

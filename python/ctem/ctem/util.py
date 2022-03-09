@@ -243,8 +243,6 @@ def read_user_input(user):
         print('Invalid value for or missing variable GRIDSIZE in ' + inputfile)
     if (user['seed'] == 0):
         print('Invalid value for or missing variable SEED in ' + inputfile)
-    if (user['sfdfile'] is None):
-        print('Invalid value for or missing variable SFDFILE in ' + inputfile)
     if (user['impfile'] is None):
         print('Invalid value for or missing variable IMPFILE in ' + inputfile)
     if (user['popupconsole'] is None):
@@ -336,8 +334,7 @@ def write_datfile(user, filename, seedarr):
     return
 
 
-def write_production(user, production):
-    filename = user['sfdfile']
+def write_production(filename, production):
     np.savetxt(filename, production, fmt='%1.8e', delimiter='   ')
     
     return
