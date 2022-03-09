@@ -231,17 +231,18 @@ class Simulation:
 
         return
     
-    def compute_one_interval(self):
+    def compute_one_interval(self, ctemin="ctem.in"):
         """
         Executes the Fortran code to generate one interval of simulation output.
         """
         # Create crater population and display CTEM progress on screen
         print(self.user['ncount'], '  Calling FORTRAN routine')
         try:
-            p = subprocess.Popen([os.path.join(self.user['workingdir'], 'CTEM')],
+            p = subprocess.Popen([os.path.join(self.user['workingdir'], 'CTEM'), ctemin],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
-                              universal_newlines=True)
+                              universal_newlines=True,
+                               shell=False)
             for line in p.stdout:
                 print(line, end='')
             res = p.communicate()
