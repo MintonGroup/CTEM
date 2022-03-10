@@ -46,7 +46,7 @@ def image_dem(user, DEM):
     solar_angle = 20.0  # user['solar_angle']
     
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
-    dem_img = ls.hillshade(DEM, vert_exag=ve, dx=pix, dy=pix)
+    dem_img = ls.hillshade(np.flip(DEM, axis=0), vert_exag=ve, dx=pix, dy=pix)
     
     # Generate image to put into an array
     height = gridsize / dpi
@@ -116,7 +116,7 @@ def image_shaded_relief(user, DEM):
     else:
         shadedmaxh = user['shadedmaxh']
     
-    dem_img = ls.shade(DEM, cmap=cmap, blend_mode=mode, fraction=1.0,
+    dem_img = ls.shade(np.flip(DEM, axis=0), cmap=cmap, blend_mode=mode, fraction=1.0,
                        vert_exag=ve, dx=pix, dy=pix,
                        vmin=shadedminh, vmax=shadedmaxh)
     
