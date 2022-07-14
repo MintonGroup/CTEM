@@ -128,7 +128,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    newlayer%thickness = ebh    ! default value: stream tube's volume = paraboloid shell's volume
    newlayer%comp      = 0.0_DP
    rints              = sqrt(rm**2 - (crater%imp/2.0)**2)
-   cosvints           = eradi / (crater%imp + eradi)
+   cosvints           = min(max(eradi / (crater%imp + eradi), -1.0_DP), 1.0_DP)
    sinvints           = sqrt(1.0 - cosvints**2)
    xvints             = eradi * ( 1.0 - cosvints) * sinvints
    volv1 = regolith_streamtube_volume_func(eradi,0.0_DP,xvints,deltar)
