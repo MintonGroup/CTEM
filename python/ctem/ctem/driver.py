@@ -59,6 +59,11 @@ class Simulation:
             'ejc': 'surface_ejc.dat',
             'pos': 'surface_pos.dat',
             'time': 'surface_time.dat',
+            'stack': 'surface_stacknum.dat',
+            'rego': 'surface_rego.dat',
+            'melt': 'surface_melt.dat',
+            'comp': 'surface_comp.dat',
+            'age' : 'surface_age.dat',
             'ocum': 'ocumulative.dat',
             'odist': 'odistribution.dat',
             'pdist': 'pdistribution.dat',
@@ -309,6 +314,8 @@ class Simulation:
             if (self.user['savetruelist'].upper() == 'T'):
                 self.redirect_outputs(['tcum'], 'dist')
             self.redirect_outputs(['impmass'], 'misc')
+            if (self.user['saverego'].upper() == 'T') :
+               self.redirect_outputs(['stack','rego','age','melt','comp'], 'rego')
             
 
 

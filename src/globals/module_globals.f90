@@ -63,6 +63,7 @@ real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta s
 real(DP),parameter :: PF     = 5.0e9          ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa. (5 GPa)
 real(DP),parameter :: RAD_GP = 20.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
+
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
@@ -275,7 +276,7 @@ character(*),parameter :: DIAMFILE   = 'surface_diam.dat'
 character(*),parameter :: TIMEFILE   = 'surface_time.dat'
 character(*),parameter :: EJCOVFILE  = 'surface_ejc.dat'
 character(*),parameter :: DEMFILE    = 'surface_dem.dat'
-character(*),parameter :: REGOFILE   = 'surface_regotop.dat'
+character(*),parameter :: REGOFILE   = 'surface_rego.dat'
 character(*),parameter :: MELTFILE   = 'surface_melt.dat'
 character(*),parameter :: COMPFILE   = 'surface_comp.dat'
 character(*),parameter :: STACKNUMFILE = 'surface_stacknum.dat'

@@ -89,7 +89,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! doregotrack & age simulation test
    real(DP)              :: melt, clock, age, thick
    real(SP),dimension(user%gridsize, user%gridsize)  :: agetop
-   real(SP),dimension(60)                            :: agetot
+   real(SP),dimension(MAXAGEBINS)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution
 
