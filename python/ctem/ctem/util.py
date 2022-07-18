@@ -6,6 +6,7 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import re
 from tempfile import mkstemp
+from scipy.io import FortranFile
 
 # Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
@@ -263,13 +264,34 @@ def read_user_input(user):
     return user
 
 
-def read_unformatted_binary(filename, gridsize):
+def read_unformatted_binary(filename, gridsize, kind='DP'):
     # Read unformatted binary files created by Fortran
     # For use with surface ejecta and surface dem data files
-    dt = np.float
+    if kind == 'DP':
+        dt = np.dtype('f8')
+    elif kind == 'SP':
+        dt = np.dtype('f4')
+    elif kind == 'I4B':
+        dt = np.dtype('<i4')
+    elif kind == 'I8B':
+        dt = np.dtypye('<i8')
     data = np.fromfile(filename, dtype=dt)
     data.shape = (gridsize, gridsize)
     
+    return data
+
+
+def read_linked_list_binary(filename, stackname, gridsize):
+    stack = read_unformatted_binary(stackname,gridsize,kind='I4B')
+    data = np.empty((gridsize,gridsize),dtype="object")
+    with FortranFile(filename, 'r') as f:
+        for i in np.arange(gridsize):
+            for j in np.arange(gridsize):
+                datastack = []
+                for s in np.arange(stack[j, i]):
+                    d = f.read_reals(np.float64)
+                    datastack.append(d)
+                data[j, i] = d
     return data
 
 
