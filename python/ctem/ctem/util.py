@@ -281,17 +281,12 @@ def read_unformatted_binary(filename, gridsize, kind='DP'):
     return data
 
 
-def read_linked_list_binary(filename, stackname, gridsize):
-    stack = read_unformatted_binary(stackname,gridsize,kind='I4B')
+def read_linked_list_binary(filename, gridsize):
     data = np.empty((gridsize,gridsize),dtype="object")
     with FortranFile(filename, 'r') as f:
         for i in np.arange(gridsize):
             for j in np.arange(gridsize):
-                datastack = []
-                for s in np.arange(stack[j, i]):
-                    d = f.read_reals(np.float64)
-                    datastack.append(d)
-                data[j, i] = np.asarray(datastack).T
+                data[j, i] = f.read_reals(np.float64)
     return data
 
 
