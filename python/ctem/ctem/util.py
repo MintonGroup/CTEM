@@ -291,7 +291,7 @@ def read_linked_list_binary(filename, stackname, gridsize):
                 for s in np.arange(stack[j, i]):
                     d = f.read_reals(np.float64)
                     datastack.append(d)
-                data[j, i] = d
+                data[j, i] = np.asarray(datastack).T
     return data
 
 
