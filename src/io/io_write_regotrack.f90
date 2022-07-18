@@ -55,8 +55,8 @@ subroutine io_write_regotrack(user,surf)
             if (.not. associated(current)) exit ! We've reached the bottom of the linked list
             stacks_num(i,j) = stacks_num(i,j) + 1
             write(FMELT) current%regodata%meltfrac
-            write(FREGO) current%regodata%comp
-            write(FCOMP) current%regodata%meltfrac 
+            write(FREGO) current%regodata%thickness
+            write(FCOMP) current%regodata%comp
             write(FAGE) current%regodata%age(:)
             current => current%next
          end do
