@@ -281,12 +281,20 @@ def read_unformatted_binary(filename, gridsize, kind='DP'):
     return data
 
 
-def read_linked_list_binary(filename, gridsize):
+def read_linked_list_binary(filename, gridsize, kind='DP'):
+    if kind == 'DP':
+        dt = np.dtype('f8')
+    elif kind == 'SP':
+        dt = np.dtype('f4')
+    elif kind == 'I4B':
+        dt = np.dtype('<i4')
+    elif kind == 'I8B':
+        dt = np.dtypye('<i8')
     data = np.empty((gridsize,gridsize),dtype="object")
     with FortranFile(filename, 'r') as f:
         for i in np.arange(gridsize):
             for j in np.arange(gridsize):
-                data[i, j] = f.read_reals(np.float64)
+                data[i, j] = f.read_reals(dt)
     return data
 
 
