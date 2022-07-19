@@ -286,7 +286,7 @@ def read_linked_list_binary(filename, gridsize):
     with FortranFile(filename, 'r') as f:
         for i in np.arange(gridsize):
             for j in np.arange(gridsize):
-                data[j, i] = f.read_reals(np.float64)
+                data[i, j] = f.read_reals(np.float64)
     return data
 
 
