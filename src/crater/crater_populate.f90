@@ -89,7 +89,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! doregotrack & age simulation test
    real(DP)              :: melt, clock, age, thick
    real(SP),dimension(user%gridsize, user%gridsize)  :: agetop
-   real(SP),dimension(MAXAGEBINS)                            :: agetot
+   real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution
 
@@ -240,12 +240,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass)
-         if (abs(ejbmass) < tiny(ejbmass)) then ! Crater has no topography. Discard and move on.
-            ntrue = ntrue -1
-            mass = mass - crater%impmass
-            cycle
-         end if
-
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                         ! For very steep size distributions, only a fraction of the
@@ -319,6 +313,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
          call regolith_depth_model(user,domain,finterval,nflux,p)
          call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
+         age = age - finterval * user%interval
       end if 
 
       ! Do periodic subpixel processes on the whole grid
