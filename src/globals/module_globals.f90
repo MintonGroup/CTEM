@@ -61,7 +61,8 @@ real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous eje
 real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
 real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
 real(DP),parameter :: PF     = 5.0e9          ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa. (5 GPa)
-real(DP),parameter :: RAD_GP = 20.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
+real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
+
 
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
@@ -270,12 +271,12 @@ integer(I4B) :: pbarival
 integer(I4B) :: pbarpos
 character(len=PBARSIZE) :: pbarchar
 
-! Grid array file names
+! Default file names
 character(*),parameter :: DIAMFILE   = 'surface_diam.dat'
 character(*),parameter :: TIMEFILE   = 'surface_time.dat'
 character(*),parameter :: EJCOVFILE  = 'surface_ejc.dat'
 character(*),parameter :: DEMFILE    = 'surface_dem.dat'
-character(*),parameter :: REGOFILE   = 'surface_regotop.dat'
+character(*),parameter :: REGOFILE   = 'surface_rego.dat'
 character(*),parameter :: MELTFILE   = 'surface_melt.dat'
 character(*),parameter :: COMPFILE   = 'surface_comp.dat'
 character(*),parameter :: STACKNUMFILE = 'surface_stacknum.dat'
@@ -284,7 +285,6 @@ character(*),parameter :: STACKPORFILE = 'porosity_stacknum.dat'
 character(*),parameter :: POROFILE     = 'porosity_porosity.dat'
 character(*),parameter :: DEPTHFILE    = 'porosity_depth.dat'
 character(*),parameter :: POROTHICKFILE = 'porosity_thickness.dat'
-!character(*),parameter :: THICKFILE  = 'surface_crustal_thickness.dat'
 character(*),parameter :: POSFILE    = 'surface_pos.dat'
 character(*),parameter :: TDISTFILE  = 'tdistribution.dat'
 character(*),parameter :: TLISTFILE  = 'tcumulative.dat'
@@ -292,7 +292,9 @@ character(*),parameter :: ODISTFILE  = 'odistribution.dat'
 character(*),parameter :: OLISTFILE  = 'ocumulative.dat'
 character(*),parameter :: PDISTFILE  = 'pdistribution.dat'
 character(*),parameter :: CRTSCLFILE = 'craterscale.dat'
-character(*),parameter :: DATFILE    = 'ctem.dat'
+character(*),parameter :: SFDFILE    = 'production.dat'
+character(*),parameter :: USERFILE   = 'ctem.in' 
+character(*),parameter :: DATFILE    = 'ctem.dat' !
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat' !not sure if this is where this line should go, but putting it here for now...
 

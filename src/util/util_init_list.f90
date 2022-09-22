@@ -73,7 +73,7 @@ subroutine util_init_list(regolayer,initstat)
       if (allocstat == 0) then
          initstat = .true.
          nullify(regolayer%next)
-         regolayer%regodata%thickness = VBIG ! This generates a buffer layer that the model should never reach if the run is structured properly
+         regolayer%regodata%thickness = sqrt(VBIG) ! This generates a buffer layer that the model should never reach if the run is structured properly
          regolayer%regodata%comp = 0.0_DP
          regolayer%regodata%meltfrac = 0.0_DP
          regolayer%regodata%porosity = 0.0_DP
