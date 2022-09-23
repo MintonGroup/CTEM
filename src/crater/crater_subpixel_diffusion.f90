@@ -94,6 +94,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          end if
 
          lambda = dN * domain%parea
+         if (lambda > 1.0_DP * huge(N)) cycle ! Too many impactors. 
 
          ! Don't parallelize the random
          do j = 1,user%gridsize

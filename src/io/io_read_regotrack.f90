@@ -28,14 +28,14 @@ subroutine io_read_regotrack(user,surf)
 
    ! Internals
    integer(I4B), parameter :: LUN=7
-   integer(I4B), parameter :: LUM=8
-   integer(I4B), parameter :: LUP=9
-   integer(I4B), parameter :: LUC=10
-   integer(I4B), parameter :: LUA=11
+   integer(I4B), parameter :: FMELT = 10
+   integer(I4B), parameter :: FREGO = 11
+   integer(I4B), parameter :: FCOMP = 12
+   integer(I4B), parameter :: FAGE = 13
    real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp
-   real(SP),dimension(user%gridsize,user%gridsize,60) :: age
+   real(SP),dimension(user%gridsize,user%gridsize,MAXAGEBINS) :: age
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
-   real(DP), dimension(:),allocatable :: regotopi,melti,compi,agei
+   real(DP), dimension(:), allocatable :: regotopi,melti,compi,agei
    type(regodatatype) :: newsurfi
    integer(I4B) :: ioerr,i,j,k,q,itmp
    integer(kind=8) :: recsize
@@ -46,34 +46,34 @@ subroutine io_read_regotrack(user,surf)
    ! Open a file for obtaining the number of stacks that is stored in each linked list
    ioerr = 0
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
-   open(LUP,file=STACKNUMFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
+   open(LUN,file=STACKNUMFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(STACKNUMFILE))
        stop
    end if
-   read(LUP,rec=1) stacks_num
-   close(LUP)
+   read(LUN,rec=1) stacks_num
+   close(LUN)
 
    ! Open files for regolith thickness/melt fraction 
-   open(LUN,file=REGOFILE,status='old',form='unformatted',iostat=ioerr)
+   open(FREGO,file=REGOFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(REGOFILE))
        stop
    end if
 
-   open(LUC,file=COMPFILE,status='old',form='unformatted',iostat=ioerr)
+   open(FCOMP,file=COMPFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then
        write(*,*) 'Error! Cannot read file ',trim(adjustl(COMPFILE))
        stop
    end if 
 
-   open(LUM,file=MELTFILE,status='old',form='unformatted',iostat=ioerr)
+   open(FMELT,file=MELTFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(MELTFILE))
        stop
    end if   
 
-   open(LUA,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
+   open(FAGE,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then
        write(*,*) 'Error! Cannot read file ',trim(adjustl(MELTFILE))
        stop
@@ -89,18 +89,18 @@ subroutine io_read_regotrack(user,surf)
          allocate(regotopi(stacks_num(i,j)))
          allocate(compi(stacks_num(i,j)))
          allocate(melti(stacks_num(i,j)))    
-         allocate(agei(60 * stacks_num(i,j)))
+         allocate(agei(MAXAGEBINS * stacks_num(i,j)))
         
          do k=1,stacks_num(i,j)
-            read(LUN) regotop(i,j)
+            read(FREGO) regotop(i,j)
             regotopi(k) = regotop(i,j)       
-            read(LUC) comp(i,j)
+            read(FCOMP) comp(i,j)
             compi(k) = comp(i,j)
-            read(LUM) melt(i,j) 
+            read(FMELT) melt(i,j) 
             melti(k) = melt(i,j)
-            read(LUA) age(i,j,:)
-            do q=1,60
-               agei(60*k - (60-q)) = age(i,j,q)
+            read(FAGE) age(i,j,:)
+            do q=1,MAXAGEBINS
+               agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(i,j,q)
             end do
          end do
 
@@ -108,8 +108,8 @@ subroutine io_read_regotrack(user,surf)
             newsurfi%thickness = regotopi(k)
             newsurfi%comp = compi(k)
             newsurfi%meltfrac  = melti(k)
-            do q=1,60
-               newsurfi%age(q) = agei(60*k-(60-q))
+            do q=1,MAXAGEBINS
+               newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
             end do
             call util_push(surf(i,j)%regolayer,newsurfi)
          end do 
@@ -118,8 +118,9 @@ subroutine io_read_regotrack(user,surf)
 
       end do
    end do
-   close(LUN)
-   close(LUC)
-   close(LUM)
+   close(FMELT)
+   close(FREGO)
+   close(FCOMP)
+   close(FAGE)
    return
 end subroutine io_read_regotrack

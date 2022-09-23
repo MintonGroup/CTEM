@@ -4,6 +4,9 @@ import shutil
 from matplotlib.colors import LightSource
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+import re
+from tempfile import mkstemp
+from scipy.io import FortranFile
 
 # Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
@@ -44,7 +47,7 @@ def image_dem(user, DEM):
     solar_angle = 20.0  # user['solar_angle']
     
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
-    dem_img = ls.hillshade(DEM, vert_exag=ve, dx=pix, dy=pix)
+    dem_img = ls.hillshade(np.flip(DEM, axis=0), vert_exag=ve, dx=pix, dy=pix)
     
     # Generate image to put into an array
     height = gridsize / dpi
@@ -114,7 +117,7 @@ def image_shaded_relief(user, DEM):
     else:
         shadedmaxh = user['shadedmaxh']
     
-    dem_img = ls.shade(DEM, cmap=cmap, blend_mode=mode, fraction=1.0,
+    dem_img = ls.shade(np.flip(DEM, axis=0), cmap=cmap, blend_mode=mode, fraction=1.0,
                        vert_exag=ve, dx=pix, dy=pix,
                        vmin=shadedminh, vmax=shadedmaxh)
     
@@ -212,6 +215,7 @@ def read_user_input(user):
             if ('impfile' == fields[0].lower()): user['impfile'] = os.path.join(user['workingdir'],fields[1])
             if ('maxcrat' == fields[0].lower()): user['maxcrat'] = real2float(fields[1])
             if ('sfdcompare' == fields[0].lower()): user['sfdcompare'] = os.path.join(user['workingdir'], fields[1])
+            if ('realcraterlist' == fields[0].lower()): user['realcraterlist'] = os.path.join(user['workingdir'], fields[1])
             if ('interval' == fields[0].lower()): user['interval'] = real2float(fields[1])
             if ('numintervals' == fields[0].lower()): user['numintervals'] = int(fields[1])
             if ('popupconsole' == fields[0].lower()): user['popupconsole'] = fields[1]
@@ -240,8 +244,6 @@ def read_user_input(user):
         print('Invalid value for or missing variable GRIDSIZE in ' + inputfile)
     if (user['seed'] == 0):
         print('Invalid value for or missing variable SEED in ' + inputfile)
-    if (user['sfdfile'] is None):
-        print('Invalid value for or missing variable SFDFILE in ' + inputfile)
     if (user['impfile'] is None):
         print('Invalid value for or missing variable IMPFILE in ' + inputfile)
     if (user['popupconsole'] is None):
@@ -262,13 +264,37 @@ def read_user_input(user):
     return user
 
 
-def read_unformatted_binary(filename, gridsize):
+def read_unformatted_binary(filename, gridsize, kind='DP'):
     # Read unformatted binary files created by Fortran
     # For use with surface ejecta and surface dem data files
-    dt = np.float
+    if kind == 'DP':
+        dt = np.dtype('f8')
+    elif kind == 'SP':
+        dt = np.dtype('f4')
+    elif kind == 'I4B':
+        dt = np.dtype('<i4')
+    elif kind == 'I8B':
+        dt = np.dtypye('<i8')
     data = np.fromfile(filename, dtype=dt)
     data.shape = (gridsize, gridsize)
     
+    return data
+
+
+def read_linked_list_binary(filename, gridsize, kind='DP'):
+    if kind == 'DP':
+        dt = np.dtype('f8')
+    elif kind == 'SP':
+        dt = np.dtype('f4')
+    elif kind == 'I4B':
+        dt = np.dtype('<i4')
+    elif kind == 'I8B':
+        dt = np.dtypye('<i8')
+    data = np.empty((gridsize,gridsize),dtype="object")
+    with FortranFile(filename, 'r') as f:
+        for i in np.arange(gridsize):
+            for j in np.arange(gridsize):
+                data[i, j] = f.read_reals(dt)
     return data
 
 
@@ -289,6 +315,33 @@ def real2float(realstr):
     """
     return float(realstr.replace('d', 'E').replace('D', 'E'))
 
+def sed(pattern, replace, source, count=0):
+    """Python implementation of unix sed command; not fully functional sed."""
+
+    fin = open(source, 'r')
+    num_replaced = 0
+
+    fd, name = mkstemp()
+    fout = open(name, 'w')
+
+    for line in fin:
+        out = re.sub(pattern, replace, line)
+        fout.write(out)
+
+        if out != line:
+            num_replaced += 1
+        if count and num_replaced > count:
+            break
+
+    fout.writelines(fin.readlines())
+
+
+    fin.close()
+    fout.close()
+
+    shutil.move(name, source)
+    
+    return
 
 def write_datfile(user, filename, seedarr):
     # Write various user and random number seeds into ctem.dat file
@@ -306,17 +359,26 @@ def write_datfile(user, filename, seedarr):
     return
 
 
-def write_production(user, production):
-    filename = user['sfdfile']
+def write_production(filename, production):
     np.savetxt(filename, production, fmt='%1.8e', delimiter='   ')
     
     return
 
 
-def write_realcraters(user, realcraters):
+def write_realcraters(filename, realcraters):
     """Writes file of real craters for use in quasi-MC runs"""
 
-    filename = user['craterlist']
     np.savetxt(filename, realcraters, fmt='%1.8e', delimiter='\t')
+
+    return
+
+def write_temp_input(filename):
+    """Makes changes to a temporary input file for use when generating craterlist.dat for quasimc runs"""
+
+    sed('testflag', 'testflag T!', filename)
+    sed('testimp', 'testimp 10 !', filename)
+    sed('quasimc', 'quasimc F!', filename)
+    sed('interval', 'interval 1 !', filename)
+    sed('numinterval 1 !s', 'numintervals 1 !', filename)
 
     return

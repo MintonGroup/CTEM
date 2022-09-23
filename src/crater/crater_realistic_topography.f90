@@ -112,14 +112,14 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
    select case(crater%morphtype)
    case("COMPLEX","PEAKRING","MULTIRING")
       call complex_terrace(user,surf,crater,deltaMtot)
-      call complex_wall_texture(user,surf,crater,domain,deltaMtot)
-      call complex_floor(user,surf,crater,deltaMtot)
-      call complex_peak(user,surf,crater,deltaMtot)
+      !call complex_wall_texture(user,surf,crater,domain,deltaMtot)
+      !call complex_floor(user,surf,crater,deltaMtot)
+      !call complex_peak(user,surf,crater,deltaMtot)
    end select
 
    ! Retrieve the size of the ejecta dem and correct for indexing
-   inc = (size(ejecta_dem,1) - 1) / 2
-   call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
+   !inc = (size(ejecta_dem,1) - 1) / 2
+   !call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
    ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
 
@@ -448,63 +448,63 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
-   do terrace = 1, nterraces
-      router = flr + (1._DP - flr) * (terrace / real(nterraces,kind=DP))**(terracefac) ! The radius of the outer edge of the terrace
-      rinner = flr + (1._DP - flr) * ((terrace - 1) / real(nterraces,kind=DP))**(terracefac) ! The radius of the inner edge of the terrace
+   ! do terrace = 1, nterraces
+   !    router = flr + (1._DP - flr) * (terrace / real(nterraces,kind=DP))**(terracefac) ! The radius of the outer edge of the terrace
+   !    rinner = flr + (1._DP - flr) * ((terrace - 1) / real(nterraces,kind=DP))**(terracefac) ! The radius of the inner edge of the terrace
 
-      do j = -inc,inc
-         do i = -inc,inc
-            xpi = crater%xlpx + i
-            ypi = crater%ylpx + j
+   !    do j = -inc,inc
+   !       do i = -inc,inc
+   !          xpi = crater%xlpx + i
+   !          ypi = crater%ylpx + j
 
-            xbar = xpi * user%pix - crater%xl 
-            ybar = ypi * user%pix - crater%yl
+   !          xbar = xpi * user%pix - crater%xl 
+   !          ybar = ypi * user%pix - crater%yl
 
-            ! periodic boundary conditions
-            call util_periodic(xpi,ypi,user%gridsize)
-            newdem = surf(xpi,ypi)%dem
+   !          ! periodic boundary conditions
+   !          call util_periodic(xpi,ypi,user%gridsize)
+   !          newdem = surf(xpi,ypi)%dem
 
-            r = sqrt(xbar**2 + ybar**2) / crater%frad
+   !          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
-            ! Make scalloped terraces
-            znoise = scallop_width**(1._DP / (2 * scallop_p)) 
-            xynoise = (nscallops / PI) / crater%fcrat
-            dnoise = util_perlin_noise(xynoise * xbar + terrace * offset * rn(1), &
-                                       xynoise * ybar + terrace * offset * rn(2)) * znoise
-            noise = (dnoise**2)**scallop_p
-            hprof = (r / router)**(-1)
+   !          ! Make scalloped terraces
+   !          znoise = scallop_width**(1._DP / (2 * scallop_p)) 
+   !          xynoise = (nscallops / PI) / crater%fcrat
+   !          dnoise = util_perlin_noise(xynoise * xbar + terrace * offset * rn(1), &
+   !                                     xynoise * ybar + terrace * offset * rn(2)) * znoise
+   !          noise = (dnoise**2)**scallop_p
+   !          hprof = (r / router)**(-1)
 
-            ! Make textured floor of terrace 
-            tnoise = 0.0_DP
-            do octave = 1, num_oct_tfloor
-               xynoise = xy_size_tfloor * freq_tfloor ** (octave - 1) 
-               znoise = noise_height_tfloor  * (pers_tfloor ) ** (octave - 1) 
-               tnoise = tnoise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
-                                                 xynoise * ybar + offset * rn(2))* znoise
-            end do
+   !          ! Make textured floor of terrace 
+   !          tnoise = 0.0_DP
+   !          do octave = 1, num_oct_tfloor
+   !             xynoise = xy_size_tfloor * freq_tfloor ** (octave - 1) 
+   !             znoise = noise_height_tfloor  * (pers_tfloor ) ** (octave - 1) 
+   !             tnoise = tnoise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+   !                                               xynoise * ybar + offset * rn(2))* znoise
+   !          end do
 
-            isterrace = 1.0_DP - noise < hprof
+   !          isterrace = 1.0_DP - noise < hprof
 
-            if (r < 1.0_DP) then
-               tprof = crater_profile(user,crater,rinner) * (r/rinner)**h_scallop_profile + tnoise ! This is the floor profile that replaces the old one at each terrace
-            else
-               tprof = (crater_profile(user,crater,rinner) + crater%ejrim * (rinner)**(-EJPROFILE)) + tnoise ! This is the floor profile that replaces the old one at each terrace
-            end if
+   !          if (r < 1.0_DP) then
+   !             tprof = crater_profile(user,crater,rinner) * (r/rinner)**h_scallop_profile + tnoise ! This is the floor profile that replaces the old one at each terrace
+   !          else
+   !             tprof = (crater_profile(user,crater,rinner) + crater%ejrim * (rinner)**(-EJPROFILE)) + tnoise ! This is the floor profile that replaces the old one at each terrace
+   !          end if
 
-            if (isterrace) then
-               newdem = min(tprof,newdem) 
-               elchange  = newdem - surf(xpi,ypi)%dem
-               deltaMtot = deltaMtot + elchange
-               surf(xpi,ypi)%dem = newdem
-               ! Save the minimum elevation below the floor
-               dfloor = crater%melev - crater%floordepth - newdem
-               if (dfloor > 0.0_DP) upshift = max(upshift,dfloor) 
-            end if
+   !          if (isterrace) then
+   !             newdem = min(tprof,newdem) 
+   !             elchange  = newdem - surf(xpi,ypi)%dem
+   !             deltaMtot = deltaMtot + elchange
+   !             surf(xpi,ypi)%dem = newdem
+   !             ! Save the minimum elevation below the floor
+   !             dfloor = crater%melev - crater%floordepth - newdem
+   !             if (dfloor > 0.0_DP) upshift = max(upshift,dfloor) 
+   !          end if
 
-         end do
-      end do
+   !       end do
+   !    end do
 
-   end do
+   ! end do
 
    ! Now make the scalloped rim
    do j = -inc,inc

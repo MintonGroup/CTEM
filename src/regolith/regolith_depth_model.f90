@@ -19,6 +19,7 @@
 subroutine regolith_depth_model(user,domain,finterval,nflux,p)
    use module_globals
    use module_util
+   use, intrinsic :: ieee_arithmetic
    use module_regolith, EXCEPT_THIS_ONE => regolith_depth_model
    implicit none
 
@@ -35,7 +36,9 @@ subroutine regolith_depth_model(user,domain,finterval,nflux,p)
    integer(I4B) :: i, j
    real(DP)     :: h, dr, f, fmin, fmax
    real(DP)     :: ntotsubcrat
+   logical :: underflow
 
+   if (ieee_support_underflow_control(psum)) call ieee_set_underflow_mode(gradual=.true.)
    ! Smallest crater size in sub-pixel crater regime (regolith scaling column in "nflux")
    ! Do it in terms of number of craters
    ntotsubcrat = 0._DP
@@ -93,7 +96,11 @@ subroutine regolith_depth_model(user,domain,finterval,nflux,p)
          f    = 0.5_DP * dr * ( fmin + fmax )
          psum = psum + f   
       end do
-      p(2,i) = 1.0_DP - exp(-1.0_DP * PI * psum * t)
+      if (abs(psum) > epsilon(psum)) then
+         p(2,i) = 1.0_DP - exp(-1.0_DP * PI * psum * t)
+      else
+         p(2,i) = 1.0_DP
+      end if
    end do
 
    return

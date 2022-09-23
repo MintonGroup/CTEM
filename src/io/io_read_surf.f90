@@ -69,7 +69,7 @@ subroutine io_read_surf(user,surf)
 
    open(LUN,file=TIMEFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
-      write(*,*) 'Error! Cannot read file ',trim(adjustl(DIAMFILE))
+      write(*,*) 'Error! Cannot read file ',trim(adjustl(TIMEFILE))
       stop
    end if
    do i=1,user%numlayers 
