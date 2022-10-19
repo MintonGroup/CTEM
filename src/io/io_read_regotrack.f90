@@ -75,7 +75,7 @@ subroutine io_read_regotrack(user,surf)
 
    open(FAGE,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(MELTFILE))
+       write(*,*) 'Error! Cannot read file ',trim(adjustl(AGEFILE))
        stop
    end if
 
