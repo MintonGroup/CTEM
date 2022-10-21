@@ -73,3 +73,5 @@ examples/global-lunar-bombardment/scale.ipynb
 python/ctem/ctem.egg-info/
 
 .idea
+
+*.i90
