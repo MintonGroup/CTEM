@@ -105,6 +105,7 @@ def create_rplot(user, odist, pdist, tdist, ph1):
     plt.tick_params(axis='both', which='minor', labelsize=12)
     
     plt.savefig(filename)
+    plt.close()
     
     return
 
@@ -129,6 +130,7 @@ def image_dem(user, DEM):
     # Save image to file
     filename = os.path.join(user['workingdir'],'surf',"surf%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
+    plt.close()
     
     return
 
@@ -201,6 +203,8 @@ def image_shaded_relief(user, DEM):
     # Save image to file
     filename = os.path.join(user['workingdir'],'shaded',"shaded%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
+    plt.close()
+
     return user
 
 
