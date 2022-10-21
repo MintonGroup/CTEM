@@ -121,6 +121,7 @@ def create_rplot(user, odist, pdist, tdist, ph1):
     plt.tick_params(axis='both', which='minor', labelsize=12)
     
     plt.savefig(filename)
+    plt.close()
     
     return
 
@@ -130,7 +131,7 @@ def image_dem(user, DEM):
     gridsize = user['gridsize']
     ve = 1.0
     azimuth = 300.0  # user['azimuth']
-    solar_angle = 20.0  # user['solar_angle']
+    solar_angle = 15.0  # user['solar_angle']
     
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
     dem_img = ls.hillshade(DEM, vert_exag=ve, dx=pix, dy=pix)
@@ -145,6 +146,7 @@ def image_dem(user, DEM):
     # Save image to file
     filename = os.path.join(user['workingdir'],'surf',"surf%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
+    plt.close()
     
     return
 
@@ -168,6 +170,7 @@ def image_regolith(user, regolith):
     fig = plt.figure(figsize=(width, height), dpi=dpi)
     fig.figimage(regolith_scaled, cmap=cm.nipy_spectral, origin='lower')
     plt.savefig(filename)
+    plt.close()
     
     return
 
@@ -177,13 +180,13 @@ def image_shaded_relief(user, DEM):
     pix = user['pix']
     gridsize = user['gridsize']
     ve = 1.0
-    mode = 'overlay'
+    mode = 'hsv'
     azimuth = 300.0  # user['azimuth']
-    solar_angle = 20.0  # user['solar_angle']
+    solar_angle = 15.0  # user['solar_angle']
     
     ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
     cmap = cm.cividis
-    
+
     # If min and max appear to be reversed, then fix them
     if (user['shadedminh'] > user['shadedmaxh']):
         temp = user['shadedminh']
@@ -192,7 +195,7 @@ def image_shaded_relief(user, DEM):
     else:
         user['shadedminh'] = user['shadedminh']
         user['shadedmaxh'] = user['shadedmaxh']
-    
+
     # If no shadedmin/max user are read in from ctem.dat, determine the values from the data
     if (user['shadedminhdefault'] == 1):
         shadedminh = np.amin(DEM)
@@ -217,6 +220,8 @@ def image_shaded_relief(user, DEM):
     # Save image to file
     filename = os.path.join(user['workingdir'],'shaded',"shaded%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
+    plt.close()
+
     return user
 
 
