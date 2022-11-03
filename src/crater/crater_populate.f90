@@ -312,7 +312,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%doregotrack) then
          call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
          call regolith_depth_model(user,domain,finterval,nflux,p)
-         call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
+         !call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
          age = age - finterval * user%interval
       end if 
 

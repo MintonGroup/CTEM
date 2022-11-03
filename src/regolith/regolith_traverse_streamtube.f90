@@ -53,7 +53,7 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    zri  = erad * (1.0 - cosi) * cosi 
    coso = regolith_quartic_func(rip1,erad)
    zrip1 = erad * (1.0 - coso) * coso
-   thetast = atan((zrip1-zri)/(rip1-ri))/PI*180.0
+   thetast = atan2((zrip1-zri),(rip1-ri))/PI*180.0
 
    zmin = min(zri,zrip1)
    zmax = max(zri,zrip1)
