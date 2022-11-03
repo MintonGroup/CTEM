@@ -55,7 +55,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints)
+subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_melt_glass
@@ -73,6 +73,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    real(DP),intent(out)             :: deltar
    type(regodatatype),intent(out)   :: newlayer
    real(DP),intent(out)             :: xmints
+   real(DP),intent(out)             :: melt
 
    ! Internal variables
    ! Stream tube parameters  
@@ -85,7 +86,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    ! Calculate vapor and melt zone intersection point with stream tubes
    real(DP)     :: vst, erado, eradi
    real(DP)     :: cosvints, sinvints, xvints, rints
-   real(DP)     :: volv1, melt, volm1, depthb
+   real(DP)     :: volv1, volm1, depthb
    real(DP)     :: q1, q2, q3 
    real(DP)     :: thetaq
    integer(I2B) :: n_age

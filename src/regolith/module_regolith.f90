@@ -35,12 +35,12 @@ public
 save
 
    interface
-      subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
+      subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb, volm)
       use module_globals
       type(usertype),intent(in) :: user
       type(cratertype),intent(inout) :: crater
       real(DP),intent(in)  :: dimp,vimp
-      real(DP),intent(out) :: rmelt,depthb
+      real(DP),intent(out) :: rmelt,depthb,volm
       end subroutine regolith_melt_zone
    end interface
 
@@ -77,7 +77,7 @@ save
 
    interface 
       subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,&
-                 rm,vsq,age,age_resolution)
+                 rm,vsq,age,age_resolution, volm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -89,6 +89,7 @@ save
       real(DP),intent(in)          :: xp,yp,lrad,ebh
       integer(I4B),intent(in)      :: xpi,ypi
       real(DP),intent(in)          :: rm, vsq, age, age_resolution
+      real(DP),intent(inout)       :: volm
       end subroutine regolith_streamtube
    end interface
 
@@ -245,7 +246,7 @@ save
    end interface
 
    interface
-      subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints)
+      subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
       use module_globals
       type(usertype),intent(in)        :: user
       type(cratertype),intent(in)      :: crater
@@ -258,6 +259,7 @@ save
       real(DP),intent(out)             :: deltar
       type(regodatatype),intent(out)   :: newlayer
       real(DP),intent(out)             :: xmints
+      real(DP),intent(out)             :: melt
       end subroutine regolith_melt_glass
    end interface
 

@@ -106,6 +106,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    real(DP),dimension(:,:),allocatable :: ejdistribution,diffdistribution
    integer(I4B) :: bigi,bigj,maxhits,nin,nnot,dradsq
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   real(DP) :: vmelt, totmelt, volm
    
 
    ! Ray mixing model variables 
@@ -126,7 +127,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
    ! Executable code
 
-   if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
+   if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm,totmelt)
+   vmelt = 0.0_DP
 
    crater%vdepth = crater%rimheight + crater%floordepth
    crater%vrim   = crater%rimheight
@@ -272,13 +274,17 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
 
          if (user%doregotrack .and. ebh>1.0e-8_DP) then
-            call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution)
+            call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
+            vmelt = vmelt + volm
          end if
 
             
       end do
    end do
    !!$OMP END PARALLEL DO
+   write(*,*) 'Ejected Melt: ', vmelt
+   write(*,*) 'Total Melt: ', totmelt
+   write(*,*) 'ejected / total melt:', vmelt/totmelt
    ejbmass = sum(cumulative_elchange)
 
    ! Create buffer to prevent infinite hole bug

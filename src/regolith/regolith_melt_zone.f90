@@ -51,7 +51,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
+subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb,volm)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_melt_zone
    implicit none
@@ -60,12 +60,12 @@ subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
    type(usertype),intent(in) :: user
    type(cratertype),intent(inout) :: crater
    real(DP),intent(in)  :: dimp,vimp    ! diameter and impact velocity of projectile for testing case and a real run
-   real(DP),intent(out) :: rmelt, depthb
+   real(DP),intent(out) :: rmelt, depthb, volm
 
    ! Internal variables
    real(DP),parameter      :: Em = 3.42d06 ! specific internal energy for highland (Bjorkman and Holsapple 1987)
    real(DP)                :: rimp
-   real(DP)                :: volm,vtc
+   real(DP)                :: vtc
    real(DP)                :: b,c,d,e
 
    ! Executable code 
