@@ -94,6 +94,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    real(DP),parameter :: b_exponent = -0.97
    real(DP)           :: cvpgsqr, p1, p2, p3, p4, p5
    real(DP)           :: dm
+   real(DP)           :: cosq1, cosq2
    
 
    ! Executalbe code
@@ -142,14 +143,27 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
       xmints   = rints 
    else if (eradi > rints) then
            depthb = crater%imp / 2.0
-           q1     =   1.0 / (1.0 + 2.0 * depthb / eradi)
-           q2     =  -1.0 - q1
-           q3     = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1 
-           thetaq = acos( -0.5 * q2 - 0.5 * sqrt(q2**2 - 4.0 * q3) )
-           xmints = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
-           volm1 = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
-           melt   = volm1 - volv1
-           newlayer%meltfrac = melt/vst
+         !   q1     =   1.0 / (1.0 + 2.0 * depthb / eradi)
+         !   q2     =  -1.0 - q1
+         !   q3     = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1 
+         !   thetaq = acos( -0.5 * q2 - 0.5 * sqrt(q2**2 - 4.0 * q3) )
+         !   xmints = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
+         !   volm1 = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
+         !   melt   = volm1 - volv1
+         !   newlayer%meltfrac = melt/vst
+
+           !the following is from the old regolith_streamtube.f90:
+
+           q1           =   1.0 / (1.0 + 2.0 * depthb / eradi)
+           q2           =  -1.0 - 1.0/q1
+           q3           = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1
+           cosq1        = 0.5 * q1 * (-1.0 * q2 + sqrt(q2**2 - 4.0 * q3/q1))
+           cosq2        = 0.5 * q1 * (-1.0 * q2 - sqrt(q2**2 - 4.0 * q3/q1))
+           thetaq       = acos( min(abs(cosq1),abs(cosq2)) )
+           xmints       = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
+           volm1        = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
+           melt         = volm1 - volv1
+           newlayer%meltfrac = melt/(vst-volv1)
    end if
 
    n_age = max(ceiling(age / age_resolution), 1)
