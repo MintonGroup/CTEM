@@ -282,9 +282,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
       end do
    end do
    !!$OMP END PARALLEL DO
-   write(*,*) 'Ejected Melt: ', vmelt
-   write(*,*) 'Total Melt: ', totmelt
-   write(*,*) 'ejected / total melt:', vmelt/totmelt
+   if(user%doregotrack .and. user%testflag) then
+      write(*,*) 'Ejected Melt: ', vmelt
+      write(*,*) 'Total Melt: ', totmelt
+      write(*,*) 'ejected / total melt:', vmelt/totmelt
+   end if
    ejbmass = sum(cumulative_elchange)
 
    ! Create buffer to prevent infinite hole bug
