@@ -189,6 +189,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    !!$OMP SHARED(user,domain,crater,surf,ejb,ejtble) &
    !!$OMP SHARED(inc,incsq) &
    !!$OMP SHARED(cumulative_elchange,kdiff,kdiffmax,indarray,ejdistribution,diffdistribution) 
+   !open(74, file='meltvserad.csv', status='replace')
    do j = -inc,inc
       do i = -inc,inc
          ! find distance from crater center
@@ -276,11 +277,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
          if (user%doregotrack .and. ebh>1.0e-8_DP) then
             call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
             vmelt = vmelt + volm
+            !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
          end if
 
             
       end do
    end do
+   !close(74)
    !!$OMP END PARALLEL DO
    if(user%doregotrack .and. user%testflag) then
       write(*,*) 'Ejected Melt: ', vmelt

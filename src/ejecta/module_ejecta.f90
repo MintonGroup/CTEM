@@ -55,6 +55,17 @@ save
    end interface
 
    interface
+      function ejecta_ray_pattern_function(theta,r,rmin,rmax,thetari,ej) result(ans)
+      use module_globals
+      implicit none
+      real(DP) :: ans
+      real(DP),intent(in) :: r,rmin,rmax,theta
+      real(DP),dimension(:),intent(in) :: thetari
+      logical,intent(in) :: ej
+      end function ejecta_ray_pattern_function
+   end interface
+
+   interface
       subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       use module_globals
       implicit none
