@@ -27,7 +27,7 @@
 !***
 
 !**********************************************************************************************************
-function pattern(theta,r,rmin,rmax,thetari,ej) result(ans)
+function ejecta_ray_pattern_function(theta,r,rmin,rmax,thetari,ej) result(ans)
     use module_globals
     use module_ejecta, EXCEPT_THIS_ONE => ejecta_ray_pattern_function
     implicit none
@@ -96,4 +96,4 @@ function pattern(theta,r,rmin,rmax,thetari,ej) result(ans)
     return
     end function ray
  
-end function pattern
+end function ejecta_ray_pattern_function
