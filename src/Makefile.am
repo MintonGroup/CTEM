@@ -66,7 +66,7 @@ io/io_write_age_depth.f90\
 ejecta/ejecta_emplace.f90\
 ejecta/ejecta_ray_pattern.f90\
 ejecta/ejecta_ray_pattern_func.f90\
-ejecta/ejecta_ray_ray_func.f90\
+ejecta/ejecta_ray_func.f90\
 ejecta/ejecta_blanket.f90\
 ejecta/ejecta_blanket_func.f90\
 ejecta/ejecta_thickness.f90\

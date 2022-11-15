@@ -66,13 +66,13 @@ save
    end interface
 
    interface
-      function ejecta_ray_ray_func(theta,thetar,r,n,w) result(ans)
+      function ejecta_ray_func(theta,thetar,r,n,w) result(ans)
       use module_globals
       implicit none
       real(DP) :: ans
       real(DP),intent(in) :: theta,thetar,r,w
       integer(I4B),intent(in) :: n
-      end function ejecta_ray_ray_func
+      end function ejecta_ray_func
    end interface
 
    interface

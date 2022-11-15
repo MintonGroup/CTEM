@@ -74,7 +74,7 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
              FF = rayfmult * (20 / rmax)**(0.5_DP) * 0.25_DP 
              f = FF * fpeak * (rtrans / rpeak)**rayq * exp(1._DP / rayq * (1.0_DP - (rtrans / rpeak)**rayq)) !equation 42 Minton et al. 2019
           end if
-          ans = ans + ejecta_ray_ray_func(theta,thetari(i),r,n,rw) * f / a 
+          ans = ans + ejecta_ray_func(theta,thetari(i),r,n,rw) * f / a 
        end do
     end if 
  

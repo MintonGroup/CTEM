@@ -1,12 +1,12 @@
 !****f* ejecta/ejecta_ray_ray_func
 ! Name
-!   ejecta_ray_ray_func -- Calculate ejecta ray
+!   ejecta_ray_func -- Calculate ejecta ray
 ! SYNOPSIS
 !   This uses
 !   * module_globals
 !   * module_ejecta
 !
-!   ans = ejecta_ray_ray_func()
+!   ans = ejecta_ray_func()
 !
 ! DESCRIPTION
 !   
@@ -26,9 +26,9 @@
 !***
 
 !**********************************************************************************************************
-function ejecta_ray_ray_func(theta,thetar,r,n,w) result(ans)
+function ejecta_ray_func(theta,thetar,r,n,w) result(ans)
     use module_globals
-    use module_ejecta, EXCEPT_THIS_ONE => ejecta_ray_ray_func
+    use module_ejecta, EXCEPT_THIS_ONE => ejecta_ray_func
     implicit none
     real(DP) :: ans
     real(DP),intent(in) :: theta,thetar,r,w
@@ -42,4 +42,4 @@ function ejecta_ray_ray_func(theta,thetar,r,n,w) result(ans)
     ans = a * exp(-dtheta**2 / (2 * c**2))
 
 !return
-end function ejecta_ray_ray_func
+end function ejecta_ray_func
