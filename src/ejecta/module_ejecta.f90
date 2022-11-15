@@ -55,14 +55,24 @@ save
    end interface
 
    interface
-      function ejecta_ray_pattern_function(theta,r,rmin,rmax,thetari,ej) result(ans)
+      function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
       use module_globals
       implicit none
       real(DP) :: ans
       real(DP),intent(in) :: r,rmin,rmax,theta
       real(DP),dimension(:),intent(in) :: thetari
       logical,intent(in) :: ej
-      end function ejecta_ray_pattern_function
+      end function ejecta_ray_pattern_func
+   end interface
+
+   interface
+      function ejecta_ray_ray_func(theta,thetar,r,n,w) result(ans)
+      use module_globals
+      implicit none
+      real(DP) :: ans
+      real(DP),intent(in) :: theta,thetar,r,w
+      integer(I4B),intent(in) :: n
+      end function ejecta_ray_ray_func
    end interface
 
    interface

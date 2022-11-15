@@ -106,8 +106,8 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
             areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
             r = sqrt(xbar**2 + ybar**2) / crater%frad
             theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
-            diffdistribution(i,j) = areafrac * ejecta_ray_pattern_function(theta,r,rmin,rmax,thetari,.false.) 
-            ejdistribution(i,j) = areafrac * ejecta_ray_pattern_function(theta,r,rmin,rmax,thetari,.true.) 
+            diffdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.false.) 
+            ejdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.true.) 
          end do
       end do
       !!$OMP END PARALLEL DO
