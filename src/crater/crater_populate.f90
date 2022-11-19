@@ -158,7 +158,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
-            write(*,*) "Real crater at ", crater%timestamp
+            write(message,*) "Real @ ", crater%timestamp
+            call io_updatePbar(message)
             user%testflag = .true.
             user%testimp = rclist(1, rccount)
             user%testvel = rclist(2, rccount)
@@ -169,8 +170,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
-      if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat
-      if (user%testflag) write(*,*) 'Dtrans = ',crater%rad*2
+      if (user%testflag) then
+         write(message,'("Dc=",F8.1," Dt=",F8.1)') crater%fcrat, crater%rad*2
+         call io_updatePbar(message)
+      end if
       if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
          if ( user%testflag .eqv. .false. ) then
             if (user%killatmaxcrater) then 
@@ -188,7 +191,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             user%testflag = .false.
             rccount = rccount + 1
             if (rccount > domain%rcnum) then
-               write(*,*) "Real crater list complete."
+               write(message,*) "Real crater list complete."
+               call io_updatePbar(message)
                user%rctime = 1e30
             else
                user%rctime = rclist(6,rccount)
