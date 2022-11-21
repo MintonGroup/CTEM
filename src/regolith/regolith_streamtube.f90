@@ -240,10 +240,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    tots    = 0.0_DP
    depthb = crater%imp / 2.0_DP
 
-   if (eradc<=user%testimp) then
-      write(*,*) lrad/crater%frad, user%testimp, crater%frad, rm, deltar, eradc, eradi, erado, ebh, newlayer%meltfrac
-      stop
-   end if
+   ! if (eradc<=user%testimp) then
+   !    write(*,*) lrad/crater%frad, user%testimp, crater%frad, rm, deltar, eradc, eradi, erado, ebh, newlayer%meltfrac
+   !    stop
+   ! end if
 
    call regolith_shock_damage_zone(crater,rm,eradi,depthb,xsfints)
 

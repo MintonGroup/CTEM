@@ -38,7 +38,7 @@ function ejecta_ray_func(theta,thetar,r,n,w) result(ans)
     c = w / r
     b = thetar 
     dtheta = min(2*pi - abs(theta - b),abs(theta - b))
-    a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c)))
+    a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c))) !this is the intensity function
     ans = a * exp(-dtheta**2 / (2 * c**2))
 
 !return
