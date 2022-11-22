@@ -144,7 +144,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    inc = ceiling(inc * 1.5_DP)
    krad = user%ejecta_truncation * crater%frad
    dradsq = int(krad / user%pix) + 3
-   inc = max(inc,dradsq)
+   inc = min(nint(PI * user%trad / user%pix),max(inc,dradsq)) ! Ensure that the ejecta doesn't get any bigger than the surface can accomodate
    dradsq = dradsq**2
 
    if (user%dosoftening) kdiffmax = crater_degradation_function(user,crater%frad)
