@@ -7,6 +7,9 @@ import sys
 import pandas
 from ctem import craterproduction
 from scipy.interpolate import interp1d
+from ctem import __file__ as _pyfile
+from pathlib import Path
+import warnings
 
 class Simulation:
     """
@@ -47,6 +50,16 @@ class Simulation:
             'sfdfile' : None,
             'realcraterlist': None,
         }
+
+        # Get the location of the CTEM executable
+        self.ctem_executable = Path(_pyfile).parent.parent.parent.parent / "build" / "src" / "CTEM"
+        if not self.ctem_executable.exists():
+            print(f"CTEM driver not found at {self.ctem_executable}. Trying current directory.")
+            self.ctem_executable = Path(currentdir) / "CTEM"
+            if not self.ctem_executable.exists():
+                warnings.warn(f"Cannot find the CTEM driver {str(self.ctem_executable)}", stacklevel=2)
+                self.ctem_executable = None
+
 
         self.user = util.read_user_input(self.user)
 
@@ -236,13 +249,16 @@ class Simulation:
         # Create crater population and display CTEM progress on screen
         print(self.user['ncount'], '  Calling FORTRAN routine')
         try:
-            p = subprocess.Popen([os.path.join(self.user['workingdir'], 'CTEM'), ctemin],
+            p = subprocess.Popen([os.path.join(self.user['workingdir'], self.ctem_executable), ctemin],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
                               universal_newlines=True,
                                shell=False)
             for line in p.stdout:
-                print(line, end='')
+                if "%" in line:
+                    print(line.replace('\n','\r'), end='')
+                else:
+                    print(line,end='')
             res = p.communicate()
             if p.returncode != 0:
                 for line in res[1]:
