@@ -87,8 +87,11 @@ type surftype
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
-   type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
-   type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   ! type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+   ! type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   !type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+   !type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   type(regodatatype), dimension(:), allocatable: regolayer
 end type surftype
 
 ! Derived data type for crater information
