@@ -269,7 +269,7 @@ save
      type(usertype),intent(in)      :: user
      type(cratertype),intent(inout) :: crater
      type(domaintype),intent(in)    :: domain
-     type(regolisttype),pointer     :: regolayer
+     type(regodatatype),dimension(:),allocatable,intent(inout)       :: regolayer
      real(DP),intent(in)            :: ejdistribution 
      integer(I4B),intent(in)        :: xpi, ypi
      real(DP),intent(in)            :: age

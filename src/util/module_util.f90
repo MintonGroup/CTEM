@@ -46,8 +46,8 @@ interface
    subroutine util_push_array(regolayer,newregodata)
    use module_globals
    implicit none
-   type(regodatatype),dimension(:),allocatable :: regolayer
-   type(regodatatype),dimension(:),allocatable,intent(in) :: newregodata
+   type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
+   type(regodatatype),intent(in) :: newregodata
    end subroutine util_push_array
 end interface
 
@@ -55,7 +55,7 @@ interface
    subroutine util_pop_array(regolayer,oldregodata)
    use module_globals
    implicit none
-   type(regodatatype),dimension(:),allocatable :: regolayer
+   type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
    type(regodatatype),intent(out) :: oldregodata
    end subroutine util_pop_array
 end interface
@@ -70,15 +70,26 @@ end interface
 !    end subroutine util_pop
 ! end interface
 
+! interface
+!    subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
+!    use module_globals
+!    implicit none
+!    !type(regolisttype),pointer :: regolayer
+!    type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
+!    real(DP),intent(in)         :: traverse_depth
+!    !type(regolisttype),pointer :: poppedlist
+!    !type(regodatatype),dimension(:),allocatable,intent(out) :: poppedarray
+!    end subroutine 
+! end interface
+
 interface
-   subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
+   subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
    use module_globals
    implicit none
-   !type(regolisttype),pointer :: regolayer
-   type(regodatatype),dimension(:),allocatable :: regolayer
-   real(DP),intent(in)         :: traverse_depth
-   type(regolisttype),pointer :: poppedlist
-   end subroutine 
+   type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
+   real(DP),intent(in) :: traverse_depth
+   type(regodatatype),dimension(:),allocatable,intent(out) :: poppedarray
+   end subroutine
 end interface
 
 interface
@@ -89,13 +100,22 @@ interface
    end subroutine util_destroy_list
 end interface
 
+! interface
+!    subroutine util_init_list(regolayer,initstat)
+!    use module_globals
+!    implicit none
+!    type(regolisttype),pointer :: regolayer
+!    logical, intent(out)     :: initstat
+!    end subroutine util_init_list
+! end interface
+
 interface
-   subroutine util_init_list(regolayer,initstat)
+   subroutine util_init_array(regolayer,initstat)
    use module_globals
    implicit none
-   type(regolisttype),pointer :: regolayer
+   type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
    logical, intent(out)     :: initstat
-   end subroutine util_init_list
+   end subroutine util_init_array
 end interface
 
 interface

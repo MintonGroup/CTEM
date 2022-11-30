@@ -30,7 +30,8 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    real(SP),dimension(:),intent(inout) :: age_collector
  
    ! internal variables
-   type(regolisttype),pointer :: current
+   !type(regolisttype),pointer :: current
+   type(regodatatype),dimension(:),allocatable :: current
    real(DP),parameter :: vratio = sqrt(2.0_DP)/2.0_DP ! Unfortunately, the approximate function that is used to get the size of a stream
                                                       ! tube with a constraint of CTEM's ejecta blanket thickness is slightly different
                                                       ! from the analytical function that we use here to approximate the stream tube's 
@@ -41,8 +42,10 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    ! melt collector
    real(DP) :: recyratio
 
-   current => surfi%regolayer
-   z = current%regodata%thickness
+   !current => surfi%regolayer
+   !current = surfi%regolayer
+   allocate(current,source=surfi%regolayer)
+   z = current%thickness
    vsgly = vratio * PI * deltar**3
    tothead = 0._DP
    totmarehead = 0._DP
@@ -55,29 +58,29 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
 
    if (zend >= zmax) then ! Stream tube's head is inside the 1st layer.
       tots = tots + vsgly
-      totmare = totmare + vsgly * current%regodata%comp
-      recyratio = vsgly / (user%pix**2) /current%regodata%thickness
-      age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
+      totmare = totmare + vsgly * current%comp
+      recyratio = vsgly / (user%pix**2) /current%thickness
+      age_collector(:) = age_collector(:) + current%age(:) * recyratio
    else ! head is not intersected with layers. 
 
    do
-      if (.not. associated(current%next)) exit
+      ! if (.not. associated(current%next)) exit
       
       if (zend < zmax) then 
          vhead = regolith_circle_sector_func(deltar,zstart,zend)
          tothead = tothead + vhead * vratio 
-         totmarehead = totmarehead + vhead * vratio * current%regodata%comp
-         recyratio = vhead * vratio / (user%pix**2) / current%regodata%thickness
-         age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
-         current => current%next
-         z = z + current%regodata%thickness
+         totmarehead = totmarehead + vhead * vratio * current%comp
+         recyratio = vhead * vratio / (user%pix**2) / current%thickness
+         age_collector(:) = age_collector(:) + current%age(:) * recyratio
+         !current => current%next
+         z = z + current%thickness
          zstart = zend
          zend = z
       else 
-         totmarehead = totmarehead + (vsgly-tothead) * current%regodata%comp
+         totmarehead = totmarehead + (vsgly-tothead) * current%comp
          tothead = vsgly
-         recyratio = (vsgly - tothead) / (user%pix**2) / current%regodata%thickness
-         age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
+         recyratio = (vsgly - tothead) / (user%pix**2) / current%thickness
+         age_collector(:) = age_collector(:) + current%age(:) * recyratio
          exit
       end if
    end do

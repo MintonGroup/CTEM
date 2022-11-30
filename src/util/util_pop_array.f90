@@ -25,19 +25,19 @@ subroutine util_pop_array(regolayer,oldregodata)
     implicit none
 
     ! Arguments
-    type(regodatatype),dimension(:),allocatable :: regolayer
+    type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
     type(regodatatype),intent(out) :: oldregodata
 
     ! Internal variables
     type(regodatatype), dimension(:), allocatable :: newlayer
-    integer(I4B) :: allocstat
     integer(I4B) :: nold
 
     ! Executable code
 
     nold = size(regolayer)
 
-    allocate(newlayer(nold-1), stat=allocstat)
-    newlayer(1:nold-1) = regolayer(1:nold-1) ! could also be 2:nold depending on if top or bottom is popped off
+    allocate(newlayer(nold-1),source=regolayer(1:nold-1))
+    !newlayer(1:nold-1) = regolayer(1:nold-1) ! could also be 2:nold depending on if top or bottom is popped off
+    oldregodata = regolayer(nold)
     call move_alloc(newlayer, regolayer)
 end subroutine util_pop_array

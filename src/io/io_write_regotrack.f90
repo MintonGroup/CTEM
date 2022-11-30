@@ -77,10 +77,10 @@ subroutine io_write_regotrack(user,surf)
             ! comp(k) = current%regodata%comp
             ! age(:,k) = current%regodata%age(:)
             ! current => current%next
-            meltfrac(k) = current%meltfrac
-            thickness(k) = current%thickness
-            comp(k) = current%comp
-            age(:,k) = current%age(:)
+            meltfrac(k) = current(k)%meltfrac
+            thickness(k) = current(k)%thickness
+            comp(k) = current(k)%comp
+            age(:,k) = current(k)%age(:)
 
          end do
          write(FMELT) meltfrac(:)
