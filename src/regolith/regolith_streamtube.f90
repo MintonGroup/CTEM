@@ -316,7 +316,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
   end if
 
-  call util_push(surf(xpi,ypi)%regolayer,newlayer)
+  call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
 
   deallocate(xints,yints)
 

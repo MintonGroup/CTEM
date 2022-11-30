@@ -66,7 +66,7 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
 
    newlayer%meltfrac = melt
    
-   call util_push(surfi%regolayer,newlayer)
+   call util_push_array(surfi%regolayer,newlayer)
 
    return
 end subroutine regolith_transport

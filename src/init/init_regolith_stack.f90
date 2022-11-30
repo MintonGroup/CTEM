@@ -51,7 +51,7 @@ subroutine init_regolith_stack(user,surf)
          call util_init_list(surf(xp,yp)%regolayer,initstat)
 
          if (initstat) then
-             call util_push(surf(xp,yp)%regolayer,bedrock)
+             call util_push_array(surf(xp,yp)%regolayer,bedrock)
          else
             write(*,*) 'init_regolith_stack: Initialization of regolayer failed.'
          end if

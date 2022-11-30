@@ -7,11 +7,11 @@ OPTREPORT = -qopt-report=5
 IPRODUCTION = -g -traceback -no-wrap-margin -assume byterecl -O3 -qopt-prefetch=0 -sox $(PAR) $(SIMDVEC) $(HEAPARR)
 #IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-div -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
 IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
-AM_FCFLAGS =  $(IPRODUCTION)
+#AM_FCFLAGS =  $(IPRODUCTION)
 #ifort debug flags
 
 #gfortran optimized flags
-#AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
+AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
 #gfortran debug flags
 #AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form -fsanitize-address-use-after-scope -fstack-check  -fsanitize=bounds-strict -fsanitize=undefined -fsanitize=signed-integer-overflow -fsanitize=object-size -fstack-protector-all
 
@@ -36,8 +36,8 @@ util/util_rootbracketed.f90\
 util/util_diffusion_solver.f90\
 util/util_area_intersection.f90\
 util/util_poisson.f90\
-util/util_pop.f90\
-util/util_push.f90\
+util/util_pop_array.f90\
+util/util_push_array.f90\
 util/util_traverse_pop.f90\
 util/util_destroy_list.f90\
 util/util_init_list.f90\

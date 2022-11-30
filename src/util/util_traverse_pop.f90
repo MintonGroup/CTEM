@@ -60,7 +60,8 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    implicit none
 
    ! Arguments
-   type(regolisttype),pointer   :: regolayer
+   !type(regolisttype),pointer   :: regolayer
+   type(regodatatype),dimension(:),allocatable :: regolayer
    real(DP),intent(in)          :: traverse_depth
    type(regolisttype),pointer   :: poppedlist 
 
@@ -95,12 +96,12 @@ subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
           recyratio                    = dz / regolayer%regodata%thickness
           regolayer%regodata%age(:)    = recyratio * regolayer%regodata%age(:)
           regolayer%regodata%thickness = dz
-          call util_push(poppedlist,oldregodata)
+          call util_push_array(poppedlist,oldregodata)
           exit
        else
           z = z - regolayer%regodata%thickness
-          call util_pop(regolayer,oldregodata)
-          call util_push(poppedlist,oldregodata)
+          call util_pop_array(regolayer,oldregodata)
+          call util_push_array(poppedlist,oldregodata)
           depth = regolayer%regodata%thickness
        end if
       

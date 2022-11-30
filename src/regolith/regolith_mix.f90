@@ -53,7 +53,7 @@ subroutine regolith_mix(surfi,mixing_depth)
    newlayer%comp = newlayer%comp / newlayer%thickness 
    newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
    
-   call util_push(surfi%regolayer, newlayer)
+   call util_push_array(surfi%regolayer, newlayer)
    call util_destroy_list(poppedlist_top)
 
    return

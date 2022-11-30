@@ -64,7 +64,7 @@ subroutine porosity_form_interior(user, surfi, crater, lradsq)
 		end if
 	else
 		! Linked list if there is only one porosity layer
-		call util_push(surfi%porolayer, nlayer)
+		call util_push_array(surfi%porolayer, nlayer)
 	end if 
 	
    return

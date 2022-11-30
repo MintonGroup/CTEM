@@ -33,29 +33,49 @@ implicit none
 public
 save
 
+! interface
+!    subroutine util_push(regolayer,newregodata)
+!    use module_globals
+!    implicit none
+!    type(regolisttype),pointer :: regolayer
+!    type(regodatatype),intent(in) :: newregodata
+!    end subroutine util_push
+! end interface
+
 interface
-   subroutine util_push(regolayer,newregodata)
+   subroutine util_push_array(regolayer,newregodata)
    use module_globals
    implicit none
-   type(regolisttype),pointer :: regolayer
-   type(regodatatype),intent(in) :: newregodata
-   end subroutine util_push
+   type(regodatatype),dimension(:),allocatable :: regolayer
+   type(regodatatype),dimension(:),allocatable,intent(in) :: newregodata
+   end subroutine util_push_array
 end interface
 
 interface
-   subroutine util_pop(regolayer,oldregodata)
+   subroutine util_pop_array(regolayer,oldregodata)
    use module_globals
    implicit none
-   type(regolisttype),pointer :: regolayer
+   type(regodatatype),dimension(:),allocatable :: regolayer
    type(regodatatype),intent(out) :: oldregodata
-   end subroutine util_pop
+   end subroutine util_pop_array
 end interface
+
+
+! interface
+!    subroutine util_pop(regolayer,oldregodata)
+!    use module_globals
+!    implicit none
+!    type(regolisttype),pointer :: regolayer
+!    type(regodatatype),intent(out) :: oldregodata
+!    end subroutine util_pop
+! end interface
 
 interface
    subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)
    use module_globals
    implicit none
-   type(regolisttype),pointer :: regolayer
+   !type(regolisttype),pointer :: regolayer
+   type(regodatatype),dimension(:),allocatable :: regolayer
    real(DP),intent(in)         :: traverse_depth
    type(regolisttype),pointer :: poppedlist
    end subroutine 

@@ -91,7 +91,7 @@ type surftype
    ! type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
    !type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
    !type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
-   type(regodatatype), dimension(:), allocatable: regolayer
+   type(regodatatype), dimension(:), allocatable :: regolayer
 end type surftype
 
 ! Derived data type for crater information

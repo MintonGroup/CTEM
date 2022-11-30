@@ -32,7 +32,8 @@ subroutine io_write_regotrack(user,surf)
    integer(I4B), parameter :: FREGO = 11
    integer(I4B), parameter :: FCOMP = 12
    integer(I4B), parameter :: FAGE = 13
-   type(regolisttype),pointer :: current => null()
+   !type(regolisttype),pointer :: current => null()
+   type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
    real(DP),dimension(:),allocatable :: meltfrac, thickness, comp
    real(SP),dimension(:,:),allocatable :: age
@@ -53,27 +54,34 @@ subroutine io_write_regotrack(user,surf)
    stacks_num(:,:) = 0
    do j=1,user%gridsize
       do i=1,user%gridsize
-         current => surf(i,j)%regolayer
-         do 
-            if (.not. associated(current)) exit ! We've reached the bottom of the linked list
-            stacks_num(i,j) = stacks_num(i,j) + 1
-            current => current%next
-         end do
+         !current => surf(i,j)%regolayer
+         current = surf(i,j)%regolayer(1)
+         ! do 
+         !    if (.not. associated(current)) exit ! We've reached the bottom of the linked list
+         !    stacks_num(i,j) = stacks_num(i,j) + 1
+         !    current => current%next
+         ! end do
       end do 
    end do
 
    ! Second pass to get data and save it
    do j=1,user%gridsize
       do i=1,user%gridsize
-         current => surf(i,j)%regolayer
+         !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
          allocate(meltfrac(N),thickness(N),comp(N),age(MAXAGEBINS,N))
          do k=1,N
-            meltfrac(k) = current%regodata%meltfrac
-            thickness(k) = current%regodata%thickness
-            comp(k) = current%regodata%comp
-            age(:,k) = current%regodata%age(:)
-            current => current%next
+            current = surf(i,j)%regolayer(k)
+            ! meltfrac(k) = current%regodata%meltfrac
+            ! thickness(k) = current%regodata%thickness
+            ! comp(k) = current%regodata%comp
+            ! age(:,k) = current%regodata%age(:)
+            ! current => current%next
+            meltfrac(k) = current%meltfrac
+            thickness(k) = current%thickness
+            comp(k) = current%comp
+            age(:,k) = current%age(:)
+
          end do
          write(FMELT) meltfrac(:)
          write(FREGO) thickness(:)

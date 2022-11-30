@@ -111,7 +111,7 @@ subroutine io_read_regotrack(user,surf)
             do q=1,MAXAGEBINS
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
             end do
-            call util_push(surf(i,j)%regolayer,newsurfi)
+            call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do 
 
          deallocate(regotopi,compi,melti,agei)
