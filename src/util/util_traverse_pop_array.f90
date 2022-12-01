@@ -45,7 +45,7 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
  
   
     ! Initialize popped array
-    !call util_init_array(poppedarray,initstat)
+    call util_init_array(poppedarray,initstat)
  
     
     !if (initstat) then
@@ -61,7 +61,7 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
     end do
 
 
-    allocate(poppedarray,source=regolayer(maxi:N))
+    !allocate(poppedarray,source=regolayer(maxi:N))
 
 
     depth = regolayer(maxi)%depth
