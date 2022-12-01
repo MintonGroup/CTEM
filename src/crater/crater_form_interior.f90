@@ -36,8 +36,9 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    real(DP) :: cform,newdem,elchange,r
    integer(I4B) :: layer
 
-   ! A list for popped data 
-   type(regolisttype),pointer :: poppedlist
+   ! An array for popped data 
+   !type(regolisttype),pointer :: poppedlist
+   type(regodatatype),dimension(:),allocatable :: poppedarray
 
 
    ! Empirical crater shape parameters from Fassett et al. (2014)
@@ -79,8 +80,9 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
 
    if (user%doregotrack) then
-      call util_traverse_pop(surfi%regolayer,abs(elchange),poppedlist)
-      call util_destroy_list(poppedlist)
+      call util_traverse_pop_array(surfi%regolayer,abs(elchange),poppedarray)
+      !call util_destroy_list(poppedlist)
+      deallocate(poppedarray)
    end if
 
 

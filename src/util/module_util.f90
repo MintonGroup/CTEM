@@ -61,14 +61,14 @@ interface
 end interface
 
 
-! interface
-!    subroutine util_pop(regolayer,oldregodata)
-!    use module_globals
-!    implicit none
-!    type(regolisttype),pointer :: regolayer
-!    type(regodatatype),intent(out) :: oldregodata
-!    end subroutine util_pop
-! end interface
+interface
+   subroutine util_pop(regolayer,oldregodata)
+   use module_globals
+   implicit none
+   type(regolisttype),pointer :: regolayer
+   type(regodatatype),intent(out) :: oldregodata
+   end subroutine util_pop
+end interface
 
 ! interface
 !    subroutine util_traverse_pop(regolayer,traverse_depth,poppedlist)

@@ -34,9 +34,12 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    real(DP),intent(in)             :: xmints
    real(DP),intent(in)             :: xsfints, depthb
 
+   ! Internal variables
+
    ! Traversing a linked list 
    real(DP) :: zri,zrip1,cosi,coso,rzmax
    real(DP) :: erad,z,zmin,zmax,thetast,vseg
+   integer(I4B) :: N
 
    real(DP),parameter :: a = 0.936457
    real(DP),parameter :: b = 1.12368
@@ -63,19 +66,21 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
       zmax = max(zmax,erad/4.0)
    end if
 
-   z = surfi%regolayer%regodata%thickness
+   N = size(surfi%regolayer)
+
+   z = surfi%regolayer(N)%thickness
    vmare  = 0._DP
    totseb = 0._DP
 
    if (z>=zmax) then 
 
-      vmare = newlayer%thickness * user%pix**2 * surfi%regolayer%regodata%comp
+      vmare = newlayer%thickness * user%pix**2 * surfi%regolayer(N)%comp
       totseb = newlayer%thickness * user%pix**2 
       if (rip1 > xmints .and. ri < xmints) then
          vseg             = regolith_streamtube_volume_func(eradi,max(xmints,ri),rip1,deltar)
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
-         recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer%regodata%thickness
-         age_collector(:) = age_collector(:) + surfi%regolayer%regodata%age(:) * recyratio
+         recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer(N)%thickness
+         age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
       end if
 
    else 

@@ -52,20 +52,20 @@ subroutine porosity_form_interior(user, surfi, crater, lradsq)
    depthht = ht - (parabht * lradsq) !The depth at a given pixel.  
    newtrn  = crater%melev - depthht  !The elevation of the bottom of the transient crater at a given pixel.
 
-	nlayer%porosity = 0.2;            !The porosity of the first value. This value is an assumed value. 
-	nlayer%depth    = newtrn; 
+	! nlayer%porosity = 0.2;            !The porosity of the first value. This value is an assumed value. 
+	! nlayer%depth    = newtrn; 
 
-	! Currently consider only the first layer. 
-	if (surfi%porolayer%regodata%porosity == nlayer%porosity) then
-		! just update if the newly calculated layer is deeper than the stored one. 
-		if (surfi%porolayer%regodata%depth > nlayer%depth) then
-			surfi%porolayer%regodata%depth    = nlayer%depth
-			surfi%porolayer%regodata%porosity = nlayer%porosity
-		end if
-	else
-		! Linked list if there is only one porosity layer
-		call util_push_array(surfi%porolayer, nlayer)
-	end if 
+	! ! ! Currently consider only the first layer. 
+	! ! if (surfi%porolayer%regodata%porosity == nlayer%porosity) then
+	! ! 	! just update if the newly calculated layer is deeper than the stored one. 
+	! ! 	if (surfi%porolayer%regodata%depth > nlayer%depth) then
+	! ! 		surfi%porolayer%regodata%depth    = nlayer%depth
+	! ! 		surfi%porolayer%regodata%porosity = nlayer%porosity
+	! ! 	end if
+	! ! else
+	! ! 	! Linked list if there is only one porosity layer
+	! ! 	call util_push_array(surfi%porolayer, nlayer)
+	! ! end if 
 	
    return
 end subroutine porosity_form_interior

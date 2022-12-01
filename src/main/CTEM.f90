@@ -160,19 +160,20 @@ call io_write_dist(pdist,crtscl,domain,mass)
 if (user%doregotrack) then
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
-         call util_destroy_list(surf(xp,yp)%regolayer)
+         !call util_destroy_list(surf(xp,yp)%regolayer)
+         deallocate(surf(xp,yp)%regolayer)
       end do
    end do
 end if
 
 ! If doporosity is true, then destroy the linked list for porosity
-if (user%doporosity) then
-   do yp = 1, user%gridsize
-      do xp = 1, user%gridsize
-         call util_destroy_list(surf(xp,yp)%porolayer)
-      end do
-   end do
-end if
+! if (user%doporosity) then
+!    do yp = 1, user%gridsize
+!       do xp = 1, user%gridsize
+!          call util_destroy_list(surf(xp,yp)%porolayer)
+!       end do
+!    end do
+! end if
 
 
 !$ t2 = omp_get_wtime()

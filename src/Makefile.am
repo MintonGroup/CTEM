@@ -36,6 +36,7 @@ util/util_rootbracketed.f90\
 util/util_diffusion_solver.f90\
 util/util_area_intersection.f90\
 util/util_poisson.f90\
+util/util_pop.f90\
 util/util_pop_array.f90\
 util/util_push_array.f90\
 util/util_traverse_pop_array.f90\

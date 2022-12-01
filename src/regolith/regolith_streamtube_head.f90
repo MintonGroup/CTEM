@@ -38,6 +38,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
                                                       ! head intersected with underlying layers, about 30% of volume difference. 
    real(DP) :: z,zstart,zend,zmin,zmax
    real(DP) :: tothead,totmarehead,marehead,vhead,vsgly
+   integer(I4B) :: N
 
    ! melt collector
    real(DP) :: recyratio
@@ -45,7 +46,8 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    !current => surfi%regolayer
    !current = surfi%regolayer
    allocate(current,source=surfi%regolayer)
-   z = current%thickness
+   N = size(current)
+   z = current(N)%thickness
    vsgly = vratio * PI * deltar**3
    tothead = 0._DP
    totmarehead = 0._DP
@@ -58,9 +60,9 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
 
    if (zend >= zmax) then ! Stream tube's head is inside the 1st layer.
       tots = tots + vsgly
-      totmare = totmare + vsgly * current%comp
-      recyratio = vsgly / (user%pix**2) /current%thickness
-      age_collector(:) = age_collector(:) + current%age(:) * recyratio
+      totmare = totmare + vsgly * current(N)%comp
+      recyratio = vsgly / (user%pix**2) /current(N)%thickness
+      age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
    else ! head is not intersected with layers. 
 
    do
@@ -69,18 +71,19 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       if (zend < zmax) then 
          vhead = regolith_circle_sector_func(deltar,zstart,zend)
          tothead = tothead + vhead * vratio 
-         totmarehead = totmarehead + vhead * vratio * current%comp
-         recyratio = vhead * vratio / (user%pix**2) / current%thickness
-         age_collector(:) = age_collector(:) + current%age(:) * recyratio
+         totmarehead = totmarehead + vhead * vratio * current(N)%comp
+         recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
+         age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
          !current => current%next
-         z = z + current%thickness
+         N = N - 1
+         z = z + current(N)%thickness
          zstart = zend
          zend = z
       else 
-         totmarehead = totmarehead + (vsgly-tothead) * current%comp
+         totmarehead = totmarehead + (vsgly-tothead) * current(N)%comp
          tothead = vsgly
-         recyratio = (vsgly - tothead) / (user%pix**2) / current%thickness
-         age_collector(:) = age_collector(:) + current%age(:) * recyratio
+         recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
+         age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
          exit
       end if
    end do

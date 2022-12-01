@@ -34,9 +34,11 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    real(DP),intent(in)             :: xsfints, depthb
 
    ! internal variables
-   type(regolisttype),pointer :: current
+   !type(regolisttype),pointer :: current
+   type(regodatatype),dimension(:),allocatable :: current
    real(DP) :: z,zstart,zend,rstart,rend,r
    real(DP) :: vsgly,x,vseg, vsh
+   integer(I4B) :: N
 
    ! Melt zone
    real(DP) :: recyratio, xsh, rst
@@ -44,8 +46,10 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    ! Shock damaged zone
    real(DP) :: ebh_recyl
  
-   current => surfi%regolayer
-   z = current%regodata%thickness
+   !current => surfi%regolayer
+   allocate(current,source=surfi%regolayer)
+   N = size(current)
+   z = current(N)%thickness
    zstart = 0.0_DP
    zend = z
  
@@ -61,36 +65,37 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
 
    do
 
-       if (.not. associated(current%next)) exit !it should exit until it hit the very bottom.
+       !if (.not. associated(current%next)) exit !it should exit until it hit the very bottom.
 
        if (zend <= zmin) then
 
-          if (zmax <= zend + current%next%regodata%thickness) then 
+          if (zmax <= zend + current(N-1)%thickness) then 
 
              vsgly = newlayer%thickness * user%pix**2
-             vmare = vsgly * current%next%regodata%comp
+             vmare = vsgly * current(N-1)%comp
              totseb = vsgly 
 
              if (ri > xmints) then
                 vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
                 ebh_recyl        = (1.0 - newlayer%meltfrac) * newlayer%thickness - vsh / user%pix**2
-                recyratio        = max(ebh_recyl,0.0_DP) / current%next%regodata%thickness
-                age_collector(:) = age_collector(:) + current%next%regodata%age(:) * recyratio
-                vol              = vol + sum(current%next%regodata%age(:)) * recyratio
+                recyratio        = max(ebh_recyl,0.0_DP) / current(N-1)%thickness
+                age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
+                vol              = vol + sum(current(N-1)%age(:)) * recyratio
              else if (ri <= xmints .and. rip1 > xmints) then 
                      vseg             = regolith_streamtube_volume_func(eradi,xmints,rip1,deltar)
                      vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1) 
-                     recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current%next%regodata%thickness 
-                     age_collector(:) = age_collector(:) + current%next%regodata%age(:) * recyratio
-                     vol              = vol + sum(current%next%regodata%age(:)) * recyratio
+                     recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N-1)%thickness 
+                     age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
+                     vol              = vol + sum(current(N-1)%age(:)) * recyratio
              end if
              exit
           else
 
-             current => current%next
-             z = z + current%regodata%thickness
-             zstart = zend
-             zend = z
+             !current => current%next
+            N = N - 1
+            z = z + current(N)%thickness
+            zstart = zend
+            zend = z
 
           end if
 
@@ -98,28 +103,29 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
 
                rend   = regolith_quadratic_func(zend,erad,ri,rip1,rstart)
                vsgly  = regolith_streamtube_volume_func(eradi,rstart,rend,deltar) 
-               vmare  = vmare + vsgly * current%regodata%comp
+               vmare  = vmare + vsgly * current(N)%comp
                totseb = totseb + vsgly
 
                ! A segment coming from the side of impact site, ri
                if (thetast>=0_DP .and. rend > xmints) then 
                   vseg             = regolith_streamtube_volume_func(eradi,max(xmints,rstart),rend,deltar)
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,rstart,rend)
-                  recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current%regodata%thickness
-                  age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
-                  vol              = vol + sum(current%regodata%age(:)) * recyratio
+                  recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
+                  age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+                  vol              = vol + sum(current(N)%age(:)) * recyratio
                end if
 
                ! A segment coming from the side of emerging location of a streamtube rip1 
                if (thetast<0._DP .and. rstart > xmints) then
                   vseg             = regolith_streamtube_volume_func(eradi,max(xmints,rend),rstart,deltar)
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,rend,rstart)
-                  recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current%regodata%thickness
-                  age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
-                  vol              = vol + sum(current%regodata%age(:)) * recyratio
+                  recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
+                  age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+                  vol              = vol + sum(current(N)%age(:)) * recyratio
                end if
-               current => current%next
-               z = z + current%regodata%thickness
+               !current => current%next
+               N = N - 1
+               z = z + current(N)%thickness
                r = rstart 
                rstart = rend 
                zstart = zend 
@@ -128,15 +134,15 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
        else if (zend >= zmax .and. zstart <= zmin) then
 
                vsgly = newlayer%thickness * user%pix**2
-               vmare = vsgly * current%regodata%comp
+               vmare = vsgly * current(N)%comp
                totseb = vsgly
 
                if (rip1 > xmints) then
                   vseg             = regolith_streamtube_volume_func(eradi,max(xmints,ri),rip1,deltar)
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
-                  recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current%regodata%thickness
-                  age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
-                  vol              = vol + sum(current%regodata%age(:)) * recyratio
+                  recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
+                  age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+                  vol              = vol + sum(current(N)%age(:)) * recyratio
                end if
 
                exit
@@ -144,7 +150,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
        else if (zend >= zmax .and. zstart > zmin) then 
                ! last part of a stream tube
                vsgly = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
-               vmare = vmare + (vsgly - totseb) * current%regodata%comp
+               vmare = vmare + (vsgly - totseb) * current(N)%comp
                totseb = vsgly 
                exit
        end if

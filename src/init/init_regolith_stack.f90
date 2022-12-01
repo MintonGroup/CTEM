@@ -48,7 +48,8 @@ subroutine init_regolith_stack(user,surf)
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
 
-         call util_init_list(surf(xp,yp)%regolayer,initstat)
+         !call util_init_list(surf(xp,yp)%regolayer,initstat)
+         call util_init_array(surf(xp,yp)%regolayer,initstat)
 
          if (initstat) then
              call util_push_array(surf(xp,yp)%regolayer,bedrock)
