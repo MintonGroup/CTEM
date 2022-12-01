@@ -44,12 +44,15 @@ subroutine util_init_array(regolayer,initstat)
           ! regolayer%regodata%porosity = 0.0_DP
           ! regolayer%regodata%age(:)   = 0.0_SP
     if (allocated(regolayer)) deallocate(regolayer)
-    allocate(regolayer(1))
-    regolayer(1)%thickness = sqrt(VBIG) ! This generates a buffer layer that the model should never reach if the run is structured properly
-    regolayer(1)%comp = 0.0_DP
-    regolayer(1)%meltfrac = 0.0_DP
-    regolayer(1)%porosity = 0.0_DP
-    regolayer(1)%age(:)   = 0.0_SP
+    allocate(regolayer(1),stat=allocstat)
+    if (allocstat == 0) then
+        initstat = .true.
+        regolayer(1)%thickness = sqrt(VBIG) ! This generates a buffer layer that the model should never reach if the run is structured properly
+        regolayer(1)%comp = 0.0_DP
+        regolayer(1)%meltfrac = 0.0_DP
+        regolayer(1)%porosity = 0.0_DP
+        regolayer(1)%age(:)   = 0.0_SP
+    end if
     !    else
     !       write(*,*) 'util_init_list: Initialization failed. Exhausted memory.'
     !    end if
