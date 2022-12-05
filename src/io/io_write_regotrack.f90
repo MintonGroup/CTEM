@@ -55,7 +55,9 @@ subroutine io_write_regotrack(user,surf)
    do j=1,user%gridsize
       do i=1,user%gridsize
          !current => surf(i,j)%regolayer
-         current = surf(i,j)%regolayer(1)
+         allocate(current,source=surf(i,j)%regolayer)
+         stacks_num(i,j) = size(current)
+         deallocate(current)
          ! do 
          !    if (.not. associated(current)) exit ! We've reached the bottom of the linked list
          !    stacks_num(i,j) = stacks_num(i,j) + 1
@@ -70,8 +72,8 @@ subroutine io_write_regotrack(user,surf)
          !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
          allocate(meltfrac(N),thickness(N),comp(N),age(MAXAGEBINS,N))
+         allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
-            current = surf(i,j)%regolayer(k)
             ! meltfrac(k) = current%regodata%meltfrac
             ! thickness(k) = current%regodata%thickness
             ! comp(k) = current%regodata%comp
@@ -83,6 +85,7 @@ subroutine io_write_regotrack(user,surf)
             age(:,k) = current(k)%age(:)
 
          end do
+         deallocate(current)
          write(FMELT) meltfrac(:)
          write(FREGO) thickness(:)
          write(FCOMP) comp(:)

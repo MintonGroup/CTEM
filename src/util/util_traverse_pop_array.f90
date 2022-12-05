@@ -32,7 +32,7 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
  
     ! Internal variables
     real(DP)                    :: z,depth,dz
-    type(regodatatype)          :: oldregodata
+    type(regodatatype),dimension(:),allocatable         :: oldregodata
     logical                     :: initstat
     real(DP)                    :: recyratio
     integer(I4B)                :: i, N, maxi
@@ -42,16 +42,9 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
     dz = 0._DP
     z = traverse_depth
     
- 
-  
-    ! Initialize popped array
-    call util_init_array(poppedarray,initstat)
- 
-    
-    !if (initstat) then
     i = N
     do
-        depth = depth + regolayer(i)%depth
+        depth = depth + regolayer(i)%thickness
         if (depth > traverse_depth) then
             maxi = i
             exit
@@ -61,20 +54,42 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
     end do
 
 
-    !allocate(poppedarray,source=regolayer(maxi:N))
+    allocate(poppedarray,source=regolayer(maxi:N))
 
 
-    depth = regolayer(maxi)%depth
+    !depth = regolayer(maxi)%thickness 
+
+    depth = 0
+    do i=1+maxi,N ! is this correct? NO- must check
+        depth = depth + regolayer(i)%thickness
+    end do
+
+    !for #1 element of poppedarray, shrink thickness by whatever was lefr over. In corresponding maxi of regolayer, also need to change that.
+
+    poppedarray(1)%thickness = z - depth
+    regolayer(maxi)%thickness = regolayer(maxi)%thickness - z
+
+    ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
+    allocate(oldregodata,source=regolayer(1:maxi))
+    deallocate(regolayer)
+    call move_alloc(oldregodata,regolayer) ! right intents?
 
     ! if (z <= depth) then
     !     dz = depth - z
-    oldregodata                  = regolayer(maxi)
-    oldregodata%thickness        = z
-    oldregodata%age(:)           = z / regolayer(maxi)%thickness * regolayer(maxi)%age(:)
-    recyratio                    = dz / regolayer(maxi)%thickness
-    regolayer(maxi)%age(:)    = recyratio * regolayer(maxi)%age(:)
-    regolayer(maxi)%thickness = dz
-    call util_push_array(poppedarray,oldregodata)
+
+    !*****the following lines may still be needed, especially if they deal with thickness:*****
+
+    ! oldregodata                  = regolayer(maxi)
+    ! oldregodata%thickness        = z
+    ! oldregodata%age(:)           = z / regolayer(maxi)%thickness * regolayer(maxi)%age(:)
+    ! recyratio                    = dz / regolayer(maxi)%thickness
+    ! regolayer(maxi)%age(:)    = recyratio * regolayer(maxi)%age(:)
+    ! regolayer(maxi)%thickness = dz
+
+    !********************
+
+
+    !call util_push_array(poppedarray,oldregodata) <--not needed; just editing in place
     ! else
     !     z = z - regolayer%thickness
     !     call util_pop_array(regolayer,oldregodata)

@@ -29,13 +29,13 @@ subroutine regolith_mix(surfi,mixing_depth)
    ! Internal variables
    type(regodatatype) :: newlayer
    !type(regolisttype),pointer :: poppedlist,poppedlist_top
-   type(regodatatype),dimension(:),allocatable :: poppedarray, poppedarray_top
-   integer(I4B) :: N
+   type(regodatatype),dimension(:),allocatable :: poppedarray
+   integer(I4B) :: i, N
 
    !===============================================
    ! Add up all layers' info until a desired depth
    !===============================================          
-   call util_traverse_pop_array(surfi%regolayer,mixing_depth,poppedarray_top)
+   call util_traverse_pop_array(surfi%regolayer,mixing_depth,poppedarray)
 
    newlayer%thickness = 0.0_DP
    newlayer%comp      = 0.0_DP
@@ -45,13 +45,12 @@ subroutine regolith_mix(surfi,mixing_depth)
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
    N = size(poppedarray)
-   do
-      newlayer%thickness = newlayer%thickness + poppedarray(N)%thickness
-      newlayer%comp      = newlayer%comp + poppedarray(N)%thickness * poppedarray(N)%comp       
-      newlayer%meltfrac  = newlayer%meltfrac + poppedarray(N)%thickness * poppedarray(N)%meltfrac
-      newlayer%age(:)    = newlayer%age(:) + poppedarray(N)%age(:)
+   do i = N,1,-1
+      newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
+      newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
+      newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
+      newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
       !poppedlist => poppedlist%next
-      N = N - 1
    end do
 
    ! Get average values of composition and melt fraction
@@ -60,7 +59,6 @@ subroutine regolith_mix(surfi,mixing_depth)
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
-   deallocate(poppedarray_top)
 
    return
 end subroutine regolith_mix
