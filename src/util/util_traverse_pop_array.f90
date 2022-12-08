@@ -68,7 +68,7 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
     !for #1 element of poppedarray, shrink thickness by whatever was lefr over. In corresponding maxi of regolayer, also need to change that.
 
     poppedarray(1)%thickness = poppedarray(1)%thickness - depth_diff
-    regolayer(maxi)%thickness = regolayer(maxi)%thickness - depth_diff
+    regolayer(maxi)%thickness = regolayer(maxi)%thickness - poppedarray(1)%thickness
 
     ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
     allocate(oldregodata,source=regolayer(1:maxi))
