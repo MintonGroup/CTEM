@@ -33,41 +33,42 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
     ! Internal variables
     real(DP)                    :: z,depth,dz
     type(regodatatype),dimension(:),allocatable         :: oldregodata
-    logical                     :: initstat
-    real(DP)                    :: recyratio
+    !logical                     :: initstat
+    real(DP)                    :: recyratio, depth_diff
     integer(I4B)                :: i, N, maxi
  
     N = size(regolayer)
-    depth = regolayer(N)%thickness
+    depth = 0._DP
     dz = 0._DP
     z = traverse_depth
     
     i = N
-    do
+    ! do !this is where i=N,1,-1 could be used
+    !     depth = depth + regolayer(i)%thickness
+    !     if (depth > traverse_depth) then
+    !         maxi = i
+    !         exit
+    !     else
+    !         i = i - 1
+    !     end if
+    ! end do
+
+    do i=N,1,-1
         depth = depth + regolayer(i)%thickness
-        if (depth > traverse_depth) then
+        depth_diff = depth - traverse_depth
+        if(depth_diff > 0) then
             maxi = i
             exit
-        else
-            i = i - 1
         end if
     end do
 
 
     allocate(poppedarray,source=regolayer(maxi:N))
 
-
-    !depth = regolayer(maxi)%thickness 
-
-    depth = 0
-    do i=1+maxi,N ! is this correct? NO- must check
-        depth = depth + regolayer(i)%thickness
-    end do
-
     !for #1 element of poppedarray, shrink thickness by whatever was lefr over. In corresponding maxi of regolayer, also need to change that.
 
-    poppedarray(1)%thickness = z - depth
-    regolayer(maxi)%thickness = regolayer(maxi)%thickness - z
+    poppedarray(1)%thickness = poppedarray(1)%thickness - depth_diff
+    regolayer(maxi)%thickness = regolayer(maxi)%thickness - depth_diff
 
     ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
     allocate(oldregodata,source=regolayer(1:maxi))
