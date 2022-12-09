@@ -72,6 +72,7 @@ type regodatatype
    real(DP) :: porosity   ! Porosity: Maximum 1, Minium 0.
    real(DP) :: damage     ! Damage  : Maximum 1, Minium 0.
    real(DP) :: depth      ! Absolute location with respect to the initial surface. 
+   real(SP),dimension(:),allocatable :: meltdist !its dimension should be the number of quasimc craters
 end type regodatatype
    
 type regolisttype
@@ -155,6 +156,7 @@ type domaintype
    integer(I4B) :: pnum      ! size of production function array
    integer(I4B) :: vnum      ! size of velocity distribution array
    integer(I4B) :: rcnum      ! size of real crater list array for quasi-MC
+   integer(I4B) :: rccount   ! Current quasimc crater
    real(DP)     :: vescsq    ! Escape velocity at target
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
@@ -297,9 +299,9 @@ character(*),parameter :: PDISTFILE  = 'pdistribution.dat'
 character(*),parameter :: CRTSCLFILE = 'craterscale.dat'
 character(*),parameter :: SFDFILE    = 'production.dat'
 character(*),parameter :: USERFILE   = 'ctem.in' 
-character(*),parameter :: DATFILE    = 'ctem.dat' !
+character(*),parameter :: DATFILE    = 'ctem.dat' 
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
-character(*),parameter :: RCFILE     = 'craterlist.dat' !not sure if this is where this line should go, but putting it here for now...
+character(*),parameter :: RCFILE     = 'craterlist.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit
@@ -352,8 +354,5 @@ real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
 real(DP),parameter :: rayp = 2.0_DP 
 integer(I4B),parameter :: rayq = 4
 real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
-
-! quasi-MC test variables
-integer(I4B) :: rccount !start line to be read for quasi-MC (should be 0)
 
 end module module_globals

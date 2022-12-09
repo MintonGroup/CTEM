@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine io_read_regotrack(user,surf)
+subroutine io_read_regotrack(user,surf,domain)
    use module_globals
    use module_util
    use module_io, EXCEPT_THIS_ONE => io_read_regotrack
@@ -25,6 +25,7 @@ subroutine io_read_regotrack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(out) :: surf
+   type(domaintype),intent(in)    :: domain
 
    ! Internals
    integer(I4B), parameter :: LUN=7
@@ -85,7 +86,7 @@ subroutine io_read_regotrack(user,surf)
       do i=1,user%gridsize
 
          !call util_init_list(surf(i,j)%regolayer,initstat)
-         call util_init_array(surf(i,j)%regolayer,initstat)
+         call util_init_array(surf(i,j)%regolayer,domain,initstat)
 
          allocate(regotopi(stacks_num(i,j)))
          allocate(compi(stacks_num(i,j)))

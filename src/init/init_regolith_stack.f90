@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_regolith_stack(user,surf)
+subroutine init_regolith_stack(user,surf,domain)
    use module_globals
    use module_util
    use module_init, EXCEPT_THIS_ONE => init_regolith_stack
@@ -27,6 +27,7 @@ subroutine init_regolith_stack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
+   type(domaintype),intent(in)    :: domain
    type(regodatatype) :: bedrock 
    integer(I4B) :: xp,yp,k
 
@@ -49,7 +50,7 @@ subroutine init_regolith_stack(user,surf)
       do xp = 1, user%gridsize
 
          !call util_init_list(surf(xp,yp)%regolayer,initstat)
-         call util_init_array(surf(xp,yp)%regolayer,initstat)
+         call util_init_array(surf(xp,yp)%regolayer,domain,initstat)
 
          if (initstat) then
              call util_push_array(surf(xp,yp)%regolayer,bedrock)

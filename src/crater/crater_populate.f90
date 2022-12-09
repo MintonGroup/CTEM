@@ -109,8 +109,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
    ! read initial quasi-MC position
    if (user%doquasimc) then
-      rccount = 1
-      user%rctime = rclist(6,rccount)
+      domain%rccount = 1
+      user%rctime = rclist(6,domain%rccount)
    end if
 
 
@@ -161,11 +161,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             write(message,*) "Real @ ", crater%timestamp
             call io_updatePbar(message)
             user%testflag = .true.
-            user%testimp = rclist(1, rccount)
-            user%testvel = rclist(2, rccount)
-            user%testang = rclist(3, rccount)
-            user%testxoffset = rclist(4, rccount)
-            user%testyoffset = rclist(5, rccount) 
+            user%testimp = rclist(1, domain%rccount)
+            user%testvel = rclist(2, domain%rccount)
+            user%testang = rclist(3, domain%rccount)
+            user%testxoffset = rclist(4, domain%rccount)
+            user%testyoffset = rclist(5, domain%rccount) 
          end if
       end if
       ! generate random crater
@@ -189,13 +189,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%doquasimc) then
          if (crater%timestamp > user%rctime) then
             user%testflag = .false.
-            rccount = rccount + 1
-            if (rccount > domain%rcnum) then
+            domain%rccount = domain%rccount + 1
+            if (domain%rccount > domain%rcnum) then
                write(message,*) "Real crater list complete."
                call io_updatePbar(message)
                user%rctime = 1e30
             else
-               user%rctime = rclist(6,rccount)
+               user%rctime = rclist(6,domain%rccount)
             end if
          end if
       end if

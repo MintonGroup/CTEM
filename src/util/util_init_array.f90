@@ -19,13 +19,14 @@
 !  Notes       : 
 !
 !**********************************************************************************************************************************
-subroutine util_init_array(regolayer,initstat)
+subroutine util_init_array(regolayer,domain,initstat)
     use module_globals
     use module_util, EXCEPT_THIS_ONE => util_init_array
     implicit none
  
     ! Arguments
     type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
+    type(domaintype),intent(in)    :: domain
     logical, intent(out)       :: initstat
  
     ! Internal variables
@@ -52,6 +53,8 @@ subroutine util_init_array(regolayer,initstat)
         regolayer(1)%meltfrac = 0.0_DP
         regolayer(1)%porosity = 0.0_DP
         regolayer(1)%age(:)   = 0.0_SP
+        allocate(regolayer(1)%meltdist(domain%rcnum))
+        regolayer(1)%meltdist(:) = 0.0_SP
     end if
     !    else
     !       write(*,*) 'util_init_list: Initialization failed. Exhausted memory.'

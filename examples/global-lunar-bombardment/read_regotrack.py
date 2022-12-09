@@ -3,10 +3,8 @@ import matplotlib.pyplot as plt
 import ctem
 import os
 
-#path = '/Users/owner/Desktop/yh/ctem_20220808'
-#path = '/Users/owner/Desktop/raytest/off'
-#path = '/Users/owner/Desktop/melt_distribution/'
-path = os.getcwd()
+path = '/Users/owner/Documents/git/CTEM/examples/global-lunar-bombardment'
+#path = os.getcwd()
 gridsize = 2000
 pix = 2000
 pixkm = pix / 1000
@@ -60,7 +58,7 @@ ax.set_yticklabels(yt)
 
 fig2 = plt.figure(figsize=(gridsize/dpi, gridsize/dpi), dpi=dpi)
 ax2 = plt.axes([0,0,1,1])
-md = ax2.imshow(meltdepth, interpolation='nearest')#, vmin=0.0, vmax=0.5)
+md = ax2.imshow(meltdepth, interpolation='nearest')#, vmin=0.0, vmax=0.1)
 cbar = fig2.colorbar(md, label = 'Melt Fraction')#, shrink=0.8)
 ax2.invert_yaxis()
 

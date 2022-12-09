@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine io_read_surf(user,surf)
+subroutine io_read_surf(user,surf,domain)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_read_surf
    implicit none
@@ -24,6 +24,7 @@ subroutine io_read_surf(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(out) :: surf
+   type(domaintype),intent(in)    :: domain
 
    ! Internals
    integer(I4B) :: ioerr,i
@@ -89,7 +90,7 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-   if (user%doregotrack) call io_read_regotrack(user,surf)
+   if (user%doregotrack) call io_read_regotrack(user,surf,domain)
    
    !if (user%docrustal_thinning) then
    !   recsize=sizeof(itmp)*user%gridsize*user%gridsize

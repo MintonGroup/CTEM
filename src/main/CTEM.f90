@@ -113,9 +113,9 @@ call random_seed(put=crater%seedarr)
 
 ! Read in old grid arrays, production function, and velocity distributions
 if (restart .or. user%tallyonly) then
-   call io_read_surf(user,surf)
+   call io_read_surf(user,surf,domain)
 else
-   call init_surf(user,surf)
+   call init_surf(user,surf,domain)
 end if
 
 if (.not.user%tallyonly) then
