@@ -358,23 +358,26 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if
    end do  ! end crater production loop 
 
+   if (ntrue > 0) then
 
-   call move_alloc(truelist, tmptruelist)
-   allocate(truelist(TRUECOLS,ntrue))
-   truelist(:,1:ntrue) = tmptruelist(:,1:ntrue)
-   deallocate(tmptruelist)
- 
-   ! Resize the true crater size array to the actual number of craters produced   
-   ! Display stats
-   ddmax = rmax / cmax
-   ddmin = rmin / cmin
-   rhpmax = rhmax / cmax
-   rhpmin = rhmin / cmin
-   write(*,*)
-   write(*,*) 'Minimum impactor diameter = ',imin
-   write(*,*) 'Maximum impactor diameter = ',imax
-   write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
-   write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
+      call move_alloc(truelist, tmptruelist)
+      allocate(truelist(TRUECOLS,ntrue))
+      truelist(:,1:ntrue) = tmptruelist(:,1:ntrue)
+      deallocate(tmptruelist)
    
+      ! Resize the true crater size array to the actual number of craters produced   
+      ! Display stats
+      ddmax = rmax / cmax
+      ddmin = rmin / cmin
+      rhpmax = rhmax / cmax
+      rhpmin = rhmin / cmin
+      write(*,*)
+      write(*,*) 'Minimum impactor diameter = ',imin
+      write(*,*) 'Maximum impactor diameter = ',imax
+      write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
+      write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
+     
+   end if
+
    return
 end subroutine crater_populate

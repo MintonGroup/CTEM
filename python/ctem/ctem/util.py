@@ -372,11 +372,11 @@ def write_realcraters(filename, realcraters):
 
     return
 
-def write_temp_input(filename):
+def write_temp_input(user, filename):
     """Makes changes to a temporary input file for use when generating craterlist.dat for quasimc runs"""
 
     sed('testflag', 'testflag T!', filename)
-    sed('testimp', 'testimp 10 !', filename)
+    sed('testimp', f'testimp {user["pix"]*1e-3} !', filename) # Make a tiny test crater. We don't care about the crater itself, just that we run CTEM once to get all of the converted files
     sed('quasimc', 'quasimc F!', filename)
     sed('interval', 'interval 1 !', filename)
     sed('numinterval 1 !s', 'numintervals 1 !', filename)
