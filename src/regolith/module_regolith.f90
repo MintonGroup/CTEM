@@ -246,10 +246,11 @@ save
    end interface
 
    interface
-      subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
+      subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
       use module_globals
       type(usertype),intent(in)        :: user
       type(cratertype),intent(in)      :: crater
+      type(domaintype),intent(in)      :: domain
       real(DP),intent(in)              :: age
       real(DP),intent(in)              :: age_resolution
       real(DP),intent(in)              :: ebh

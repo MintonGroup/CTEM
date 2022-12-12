@@ -226,7 +226,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! Purpose 2: Once we have the size information of a stream tube, we can
    ! calculate the distal melt: the precursor of glass spherules within a
    ! stream tube. The result is contained in a linked list "newlayer".
-   call regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints, volm)
+   call regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints, volm)
    ! if (eradc>rm) then
    !    write(*,*) 'eradc > rm!'
    !    write(*,*) ebh, exp(ejb(k)%thick)

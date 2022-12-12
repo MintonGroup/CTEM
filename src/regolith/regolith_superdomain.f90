@@ -60,7 +60,7 @@ subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,
    erad        = cvpg**(user%mu_b) * (lrad**(-0.5_DP * user%mu_b)) * (crater%rad)**(user%mu_b * 0.5_DP + 1.0_DP)
    vej         = cvpg * sqrt(user%gaccel * crater%grad) * (erad / crater%grad)**(-1.0_DP / user%mu_b) !equation 18 in Richardson 2009
    lrad        = ( vej **2 ) / user%gaccel !assume ejection angle is 45 degree.
-   call regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,erad,lrad,deltar,newlayer,xmints,melt) 
+   call regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad,lrad,deltar,newlayer,xmints,melt) 
    call util_push_array(regolayer,newlayer)
 
    return

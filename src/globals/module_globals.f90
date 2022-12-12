@@ -155,8 +155,10 @@ type domaintype
    real(DP)     :: ejbres    ! Ejecta blanket lookup table resolution
    integer(I4B) :: pnum      ! size of production function array
    integer(I4B) :: vnum      ! size of velocity distribution array
-   integer(I4B) :: rcnum      ! size of real crater list array for quasi-MC
-   integer(I4B) :: rccount   ! Current quasimc crater
+   integer(I4B) :: rcnum     ! size of real crater list array for quasi-MC
+   integer(I4B) :: rccount   ! quasimc crater for iterating through the list of craters
+   integer(I4B) :: nqmc      ! current Quasi-MC crater for regolith distribution
+   logical      :: currentqmc ! is the current crater a Quasi-MC crater?
    real(DP)     :: vescsq    ! Escape velocity at target
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
@@ -302,6 +304,7 @@ character(*),parameter :: USERFILE   = 'ctem.in'
 character(*),parameter :: DATFILE    = 'ctem.dat' 
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat'
+character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

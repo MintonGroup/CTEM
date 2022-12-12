@@ -147,7 +147,7 @@ write(*,*) 'Craters killed during tally: ',ntotkilled
 call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
 if (.not.user%tallyonly) then
    write(*,*) "Writing surface files"
-   call io_write_surf(user,surf)
+   call io_write_surf(user,surf,domain)
 end if
 
 if (user%testflag) then ! Draw a profile across the crater

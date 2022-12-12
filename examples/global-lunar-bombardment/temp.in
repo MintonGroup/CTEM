@@ -2,35 +2,35 @@
 
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
-testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      15000.0       ! Diameter of test impactor (m)
+testflag T!     F                                 ! Set to T to create a single crater with user-defined impactor properties
+testimp 10 !      15000.0       ! Diameter of test impactor (m)
 testvel      18.3e3                            ! Velocity of test crater (m/s)
 testang      45.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
 testyoffset  0.0                            ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F   
-quasimc      T                                 ! MC run constrained by non-MC 'real' craters given in a list
+quasimc F!      T                                 ! MC run constrained by non-MC 'real' craters given in a list
 realcraterlist    qmctest.in                ! list of 'real' craters for Quasi-MC runs
 
 
 
 ! IDL driver in uts
-interval     0.1
-numintervals 1                                  ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
+interval 1 !     0.1
+numintervals 1 ! 1                                  ! Total number of interval 1 !s (total time = interval 1 ! * numintervals 1 !) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
-popupconsole F                                  ! Pop up console window every output interval 
+popupconsole F                                  ! Pop up console window every output interval 1 ! 
 saveshaded   F                                  ! Output shaded relief images  
 saverego     T                                  ! Output regolith map images 
 savepres     F                                  ! Output simplified console display images (presentation-compatible images)
-savetruelist T                                  ! Save the true cumulative crater distribution for each interval (large file size)
+savetruelist T                                  ! Save the true cumulative crater distribution for each interval 1 ! (large file size)
 sfdcompare   LOLASethCraterCatalogv8gt20-binned.dat         ! File name for the SFD comparison file used in the console display
 shadedminh   -85.0                              ! Minimum height for shaded relief map (m) (Default - automatic)
 shadedmaxh   85.0                               ! Maximum height for shaded relief map (m) (Default - automatic)
 runtype      single                             ! Run type: options are normal / statistical
-                                                !    single:      craters accumulate in successive intervals
-                                                !    statistical: surface is reset between intervals
+                                                !    single:      craters accumulate in successive interval 1 !s
+                                                !    statistical: surface is reset between interval 1 !s
 
 ! CTEM required inputs
 seed         76535                    ! Random number generator seed

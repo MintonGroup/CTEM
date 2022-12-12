@@ -151,6 +151,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    oldpbarpos = 0
    do while (icrater < ntotcrat)
       makecrater = .true.
+      domain%currentqmc = .false.
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
@@ -158,6 +159,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
+            domain%currentqmc = .true.
             write(message,*) "Real @ ", crater%timestamp
             call io_updatePbar(message)
             user%testflag = .true.
@@ -189,6 +191,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%doquasimc) then
          if (crater%timestamp > user%rctime) then
             user%testflag = .false.
+            domain%nqmc = domain%rccount
             domain%rccount = domain%rccount + 1
             if (domain%rccount > domain%rcnum) then
                write(message,*) "Real crater list complete."

@@ -55,7 +55,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
+subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_melt_glass
@@ -64,6 +64,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    ! Arguments
    type(usertype),intent(in)        :: user
    type(cratertype),intent(in)      :: crater
+   type(domaintype),intent(in)      :: domain
    real(DP),intent(in)              :: age
    real(DP),intent(in)              :: age_resolution
    real(DP),intent(in)              :: ebh
@@ -164,6 +165,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
            volm1        = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
            melt         = volm1 - volv1
            newlayer%meltfrac = melt/(vst-volv1)
+           newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
    end if
 
    n_age = max(ceiling(age / age_resolution), 1)
