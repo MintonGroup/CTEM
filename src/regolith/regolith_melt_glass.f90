@@ -165,7 +165,10 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
            volm1        = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
            melt         = volm1 - volv1
            newlayer%meltfrac = melt/(vst-volv1)
-           newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
+           allocate(newlayer%meltdist((domain%rcnum)))
+           if(domain%currentqmc) then
+               newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
+           end if 
    end if
 
    n_age = max(ceiling(age / age_resolution), 1)
