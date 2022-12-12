@@ -135,23 +135,25 @@ if (.not.user%tallyonly) then
    call crater_tally_true(domain,truelist(:,1:ntrue),ntrue,truedist)
 end if
 
-write(*,*) "Tallying craters"
-if (.not.user%tallyonly) then
-   write(*,*) "Total craters generated:               ",ntotcrat
-   write(*,*) "Surface-affecting craters generated:   ",ntrue
-   write(*,*) "Visible craters generated:             ",vistrue
-end if
-call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
-ntotkilled = ntotkilled + nkilled
-write(*,*) 'Craters killed during tally: ',ntotkilled
-call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
-if (.not.user%tallyonly) then
-   write(*,*) "Writing surface files"
-   call io_write_surf(user,surf)
-end if
+if (ntrue > 0) then
+   write(*,*) "Tallying craters"
+   if (.not.user%tallyonly) then
+      write(*,*) "Total craters generated:               ",ntotcrat
+      write(*,*) "Surface-affecting craters generated:   ",ntrue
+      write(*,*) "Visible craters generated:             ",vistrue
+   end if
+   call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
+   ntotkilled = ntotkilled + nkilled
+   write(*,*) 'Craters killed during tally: ',ntotkilled
+   call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
+   if (.not.user%tallyonly) then
+      write(*,*) "Writing surface files"
+      call io_write_surf(user,surf)
+   end if
 
-if (user%testflag) then ! Draw a profile across the crater
-   call io_crater_profile(user,surf)
+   if (user%testflag) then ! Draw a profile across the crater
+      call io_crater_profile(user,surf)
+   end if
 end if
 write(*,*) 'Writing output files'
 

@@ -149,7 +149,7 @@ class Simulation:
                     shutil.copy2(self.user['ctemfile'], tempfile )
                     
                     #Write a temporary input file to generate the necessary quasimc files
-                    util.write_temp_input(tempfile)
+                    util.write_temp_input(self.user, tempfile)
                     util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
                     self.compute_one_interval(ctemin=tempfile)
                     os.remove(tempfile)
