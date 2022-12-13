@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_mix(surfi,mixing_depth)
+subroutine regolith_mix(surfi,mixing_depth,domain)
    use module_globals
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_mix
@@ -25,6 +25,7 @@ subroutine regolith_mix(surfi,mixing_depth)
    ! Arguments
    type(surftype),intent(inout) :: surfi
    real(DP), intent(in) :: mixing_depth
+   type(domaintype),intent(in) :: domain
 
    ! Internal variables
    type(regodatatype) :: newlayer
@@ -41,6 +42,7 @@ subroutine regolith_mix(surfi,mixing_depth)
    newlayer%comp      = 0.0_DP
    newlayer%meltfrac  = 0.0_DP
    newlayer%age(:)    = 0.0_DP
+   allocate(newlayer%meltdist(domain%rcnum))
 
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
@@ -50,12 +52,14 @@ subroutine regolith_mix(surfi,mixing_depth)
       newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
       newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
       newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
+      newlayer%meltdist(:) = newlayer%meltdist(:) + poppedarray(i)%thickness * poppedarray(i)%meltdist(:)
       !poppedlist => poppedlist%next
    end do
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
    newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
+   newlayer%meltdist(:) = newlayer%meltdist(:) / newlayer%thickness
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
