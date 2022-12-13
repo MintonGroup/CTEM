@@ -86,8 +86,7 @@ subroutine io_write_regotrack(user,surf,domain)
             thickness(k) = current(k)%thickness
             comp(k) = current(k)%comp
             age(:,k) = current(k)%age(:)
-            write(*,*) size(current(k)%age)
-            write(*,*) size(current(k)%meltdist)
+            !write(*,*) i, j
             meltdist(:,k) = current(k)%meltdist(:)
 
          end do
