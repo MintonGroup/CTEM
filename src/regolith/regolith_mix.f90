@@ -31,7 +31,7 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
    type(regodatatype) :: newlayer
    !type(regolisttype),pointer :: poppedlist,poppedlist_top
    type(regodatatype),dimension(:),allocatable :: poppedarray
-   integer(I4B) :: i, N
+   integer(I4B) :: i, j, N
 
    !===============================================
    ! Add up all layers' info until a desired depth
@@ -43,6 +43,7 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
    newlayer%meltfrac  = 0.0_DP
    newlayer%age(:)    = 0.0_DP
    allocate(newlayer%meltdist(domain%rcnum))
+   newlayer%meltdist(:) = 0.0_SP
 
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
@@ -53,7 +54,10 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
       newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
       newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
       newlayer%meltdist(:) = newlayer%meltdist(:) + poppedarray(i)%thickness * poppedarray(i)%meltdist(:)
-      !poppedlist => poppedlist%next
+      ! do j = 1,domain%rcnum !testing a loop here since the array operation resulted in a segfault
+      !    newlayer%meltdist(j) = newlayer%meltdist(j) + poppedarray(i)%thickness * poppedarray(i)%meltdist(j)
+      ! end do
+      ! !poppedlist => poppedlist%next
    end do
 
    ! Get average values of composition and melt fraction

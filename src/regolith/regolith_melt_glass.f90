@@ -166,6 +166,7 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
            melt         = volm1 - volv1
            newlayer%meltfrac = melt/(vst-volv1)
            allocate(newlayer%meltdist((domain%rcnum)))
+           newlayer%meltdist(:) = 0.0_SP
            if(domain%currentqmc) then
                newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
            end if 
