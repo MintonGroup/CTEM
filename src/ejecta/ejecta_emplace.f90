@@ -307,6 +307,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    fmasscons = (-deltaMtot)/ ejbmass
    cumulative_elchange = cumulative_elchange * fmasscons
    crater%ejrim = crater%ejrim * fmasscons
+   if (abs(fmasscons) < tiny(1.0_DP)) return
    ejb(:)%thick = ejb(:)%thick + log(fmasscons)
    maxhits = 1
    ! Create box for soften calculation (will be no bigger than the grid itself)

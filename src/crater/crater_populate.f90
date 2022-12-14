@@ -247,6 +247,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass)
+         if (abs(ejbmass) < 2*tiny(1.0_DP)) cycle
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                         ! For very steep size distributions, only a fraction of the
