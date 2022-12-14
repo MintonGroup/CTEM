@@ -35,7 +35,11 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
 
    !===============================================
    ! Add up all layers' info until a desired depth
-   !===============================================          
+   !=============================================== 
+   ! !test code to create a situation for a breakpoint, since vscode debugger won't recognize the conditional breakpoint
+   ! if(domain%currentqmc .eqv. .true.) then
+   !    j = 0
+   ! end if     
    call util_traverse_pop_array(surfi%regolayer,mixing_depth,poppedarray)
 
    newlayer%thickness = 0.0_DP
