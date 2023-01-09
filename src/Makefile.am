@@ -7,7 +7,7 @@ OPTREPORT = -qopt-report=5
 IPRODUCTION = -g -traceback -no-wrap-margin -assume byterecl -O3 -qopt-prefetch=0 -sox $(PAR) $(SIMDVEC) $(HEAPARR)
 #IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-div -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
 IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
-AM_FCFLAGS =  $(IPRODUCTION)
+AM_FCFLAGS =  $(IDEBUG)
 #ifort debug flags
 
 #gfortran optimized flags

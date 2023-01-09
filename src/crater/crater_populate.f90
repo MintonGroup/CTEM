@@ -316,13 +316,6 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       ! Do sub-pixel craters vertical mixing
       ! Do superdomain ray deposits
-      finterval = 1.0_DP / real(ntotcrat,kind=DP)
-      if (user%doregotrack) then
-         call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
-         call regolith_depth_model(user,domain,finterval,nflux,p)
-         call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
-         age = age - finterval * user%interval
-      end if 
 
       ! Do periodic subpixel processes on the whole grid
       if (.not.user%testflag) then
@@ -333,6 +326,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             craters_since_subpixel = icrater - icrater_last_subpixel
             finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
             call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
+
+            if (user%doregotrack) then
+               call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+               call regolith_depth_model(user,domain,finterval,nflux,p)
+               call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
+               age = age - finterval * user%interval
+            end if 
+
             icrater_last_subpixel = icrater
          end if
          ! Intermediate tally step 
