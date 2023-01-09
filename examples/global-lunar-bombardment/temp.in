@@ -2,41 +2,41 @@
 
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
-testflag T!      F                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp 10 !     15000.0       ! Diameter of test impactor (m)
+testflag T!     F                                 ! Set to T to create a single crater with user-defined impactor properties
+testimp 10 !      15000.0       ! Diameter of test impactor (m)
 testvel      18.3e3                            ! Velocity of test crater (m/s)
 testang      45.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
 testyoffset  0.0                            ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F   
-quasimc F!       T                                 ! MC run constrained by non-MC 'real' craters given in a list
-realcraterlist    craterlist.in                ! list of 'real' craters for Quasi-MC runs
+quasimc F!      T                                 ! MC run constrained by non-MC 'real' craters given in a list
+realcraterlist    qmctest.in                ! list of 'real' craters for Quasi-MC runs
 
 
 
 ! IDL driver in uts
-interval 1 !     6.280
-numintervals 1 ! 100                                  ! Total number of interval 1 ! 1 !s (total time = interval 1 ! 1 ! * numintervals 1 ! 1 !) <--when runtype is 'single'
+interval 1 !     0.1
+numintervals 1 ! 1                                  ! Total number of interval 1 !s (total time = interval 1 ! * numintervals 1 !) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
-popupconsole F                                  ! Pop up console window every output interval 1 ! 1 ! 
+popupconsole F                                  ! Pop up console window every output interval 1 ! 
 saveshaded   F                                  ! Output shaded relief images  
-saverego     F                                  ! Output regolith map images 
+saverego     T                                  ! Output regolith map images 
 savepres     F                                  ! Output simplified console display images (presentation-compatible images)
-savetruelist T                                  ! Save the true cumulative crater distribution for each interval 1 ! 1 ! (large file size)
+savetruelist T                                  ! Save the true cumulative crater distribution for each interval 1 ! (large file size)
 sfdcompare   LOLASethCraterCatalogv8gt20-binned.dat         ! File name for the SFD comparison file used in the console display
 shadedminh   -85.0                              ! Minimum height for shaded relief map (m) (Default - automatic)
 shadedmaxh   85.0                               ! Maximum height for shaded relief map (m) (Default - automatic)
 runtype      single                             ! Run type: options are normal / statistical
-                                                !    single:      craters accumulate in successive interval 1 ! 1 !s
-                                                !    statistical: surface is reset between interval 1 ! 1 !s
+                                                !    single:      craters accumulate in successive interval 1 !s
+                                                !    statistical: surface is reset between interval 1 !s
 
 ! CTEM required inputs
 seed         76535                    ! Random number generator seed
-gridsize     200                          ! Size of grid in pixels
+gridsize     2000                          ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
-pix          3.08e4                           ! Pixel size (m)
+pix          3.08e3                           ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
 ! Bedrock scaling parameters
 mu_b         0.55e0                             ! Experimentally derived parameter for bedrock crater scaling law 
@@ -52,6 +52,7 @@ ybar_r       0.00e6                              ! Regolith strength (Pa)
 gaccel       1.62e0                             ! Gravitational acceleration at target (m/s**2)
 trad         1737.35e3                          ! Target radius (m)
 prho         2500.0e0                           ! Projectile density (kg/m**3)
+sfdfile      production.dat                     ! Impactor SFD file (col 1: Dimp (m), col 2: ! impactors > D
 velfile      lunar-MBA-impactor-velocities.dat  ! Impactor velocity dist file
 
 ! Seismic shaking input (required if seismic shaking is set to T, otherwise ignored)
@@ -69,7 +70,7 @@ Kd1             0.0001
 psi             2.000
 fe              4.00
 ejecta_truncation 4.0
-doregotrack F
-dorays  T 
+doregotrack T
+dorays  F 
 superdomain F
 dorealistic F
