@@ -78,6 +78,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)            :: oldpbarpos
    real(DP),dimension(:,:),allocatable   :: ejecta_dem
    real(DP)                :: hmax, hmin
+   integer(I4B)            :: nmixingtimes
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -92,6 +93,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution
+
+   nmixingtimes = 0
 
    if (user%testflag) then
       write(*,*) "Generating a test crater"
@@ -318,7 +321,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
       ! Do periodic subpixel processes on the whole grid
       if (.not.user%testflag) then
-         if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+         !if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+         if (makecrater) then
             domain%subpixelcoverage = 0
             write(message,*) "Subpixel"
             call io_updatePbar(message)
@@ -333,6 +337,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call regolith_depth_model(user,domain,finterval,nflux,p)
                call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
                age = age - finterval * user%interval
+               nmixingtimes = nmixingtimes + 1
             end if 
 
             icrater_last_subpixel = icrater
@@ -381,6 +386,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
      
    end if
+
+   write(*,*) 'Total times mixing was called:',nmixingtimes
 
    return
 end subroutine crater_populate
