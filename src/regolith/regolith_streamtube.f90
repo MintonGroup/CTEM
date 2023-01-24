@@ -115,9 +115,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    real(SP),dimension(MAXAGEBINS) :: age_collector
    integer(I2B)               :: n_age
 
-   !test
-   real(DP) :: mf
-
    ! Executalbe code
 
    ! ****** Interpolate radial distance, erad, for a given pixel *******
@@ -133,7 +130,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    k = max(min(1 + int((log(lrad) - log(inneredge)) / (log(outeredge) - log(inneredge)) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
    loglrad = log(lrad)
    logtablerad = ejb(k)%lrad
-   mf = ejb(k)%meltfrac
 
    !from stable-1.4
    ! inneredge = crater%rad 
@@ -312,7 +308,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) + age_collector(:)
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
-      newlayer%meltfrac = mf
 
   end if
 
