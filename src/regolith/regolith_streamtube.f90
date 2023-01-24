@@ -279,10 +279,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          vseg = regolith_streamtube_volume_func(eradi,rbody,eradi,deltar)
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
-         ! call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-         !      totseb,age_collector,xmints,xsfints,rsh,depthb)
-         ! totmare = totmare + vmare
-         ! tots = tots + totseb
+         call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
+            totseb,age_collector,xmints,xsfints,rsh,depthb)
+         totmare = totmare + vmare
+         tots = tots + totseb
       end if           
   
       do i=cnt,3,-1
@@ -296,23 +296,23 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             vseg = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
-            ! call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-            !      totseb,age_collector,xmints,xsfints,rsh,depthb)
-            ! totmare = totmare + vmare
-            ! tots = tots + totseb 
+            call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
+               totseb,age_collector,xmints,xsfints,rsh,depthb)
+            totmare = totmare + vmare
+            tots = tots + totseb 
          end if
       end do
 
-      ! xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
-      ! ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
-      ! call util_periodic(xstpi,ystpi,user%gridsize)
-      ! call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector)
+      xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
+      ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
+      call util_periodic(xstpi,ystpi,user%gridsize)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector)
 
       newlayer%thickness = ebh
-      !newlayer%comp      = min(totmare/tots, 1.0_DP)
+      newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) + age_collector(:)
-      !newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
-      !newlayer%meltfrac = mf
+      newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
+      newlayer%meltfrac = mf
 
   end if
 
