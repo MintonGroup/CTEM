@@ -225,13 +225,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
             lrange = lrad - erad
 
             baseline = ((i * crater%xslp) + (j * crater%yslp)) * user%pix
-            craterslope = atan(baseline / lrad)
+            craterslope = atan2(baseline,lrad)
             if ((n == 1) .and. abs(craterslope) < epsilon(1._DP)) exit
             if (craterslope > maxslp) maxslp = craterslope
 
             ejheight = erad * sin(craterslope) + crater%melev
            
-            landslope = atan((surf(xpi,ypi)%dem - ejheight) / lrange)
+            landslope = atan2((surf(xpi,ypi)%dem - ejheight),lrange)
 
             ! Calculate corrected landing velocity for this location
             vsq = (lrange * user%gaccel * cos(craterslope)) / &
