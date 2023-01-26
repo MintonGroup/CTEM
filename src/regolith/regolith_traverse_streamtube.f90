@@ -52,7 +52,11 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
 
    erad = (eradi + erado)/2.0
    rzmax = erad * sqrt(3.0)/4.0
-   cosi = regolith_quartic_func(ri,erad)
+   if (ri .eq. 0) then
+      cosi = 0.0_DP
+   else
+      cosi = regolith_quartic_func(ri,erad)
+   end if
    zri  = erad * (1.0 - cosi) * cosi 
    coso = regolith_quartic_func(rip1,erad)
    zrip1 = erad * (1.0 - coso) * coso
