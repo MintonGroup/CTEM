@@ -19,7 +19,7 @@
 !
 !**********************************************************************************************************************************
 subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,depthb)
+           age_collector,xmints,xsfints,depthb,mixedregodata)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_streamtube
    implicit none
@@ -28,7 +28,7 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
    real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
-   type(regodatatype),intent(inout) :: newlayer
+   type(regodatatype),intent(inout) :: newlayer, mixedregodata
    real(DP),intent(out)            :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)             :: xmints
@@ -85,12 +85,15 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
          recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer(N)%thickness
          age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
+         mixedregodata%totvolume = vseg-vsh
+         mixedregodata%meltvolume = surfi%regolayer(N)%meltfrac * vseg * recyratio
+         mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
       end if
 
    else 
 
      call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,&
-          newlayer,vmare,totseb,age_collector,xmints,xsfints,depthb)
+          newlayer,vmare,totseb,age_collector,xmints,xsfints,depthb,mixedregodata)
 
    end if
 

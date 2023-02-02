@@ -72,6 +72,10 @@ type regodatatype
    real(DP) :: porosity   ! Porosity: Maximum 1, Minium 0.
    real(DP) :: damage     ! Damage  : Maximum 1, Minium 0.
    real(DP) :: depth      ! Absolute location with respect to the initial surface. 
+   real(DP) :: meltvolume
+   real(DP) :: totvolume
+   real(DP) :: ejm !ejected melt
+   real(DP) :: ejmf !ejected melt fraction
    real(SP),dimension(:),allocatable :: meltdist !its dimension should be the number of quasimc craters
 end type regodatatype
    

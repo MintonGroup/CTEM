@@ -89,7 +89,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
-   type(regodatatype) :: newlayer
+   type(regodatatype) :: newlayer, mixedregodata
 
    ! Constrain the tangital tube's volume with CTEM result
    real(DP)     :: k1,k2,k3,k4,c1,c2
@@ -222,7 +222,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! Purpose 2: Once we have the size information of a stream tube, we can
    ! calculate the distal melt: the precursor of glass spherules within a
    ! stream tube. The result is contained in a linked list "newlayer".
-   call regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints, volm)
+   call regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,volm)
    ! if (eradc>rm) then
    !    write(*,*) 'eradc > rm!'
    !    write(*,*) ebh, exp(ejb(k)%thick)
@@ -254,8 +254,11 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       vseg = regolith_streamtube_volume_func(eradi,0.0_DP,eradi,deltar)
       newlayer%thickness = vseg/(user%pix**2)
       call util_periodic(xstpi,ystpi,user%gridsize)
+      mixedregodata%meltfrac = surf(xstpi,ystpi)%regolayer%meltfrac
+      mixedregodata%meltvolume = surf(xstpi,ystpi)%regolayer%meltvolume
+      mixedregodata%totvolume = surf(xstpi,ystpi)%regolayer%totvolume
       call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,vol)
+           age_collector,xmints,xsfints,vol,mixedregodata)
 
       newlayer%age(:) = newlayer%age(:) + age_collector(:)
  
@@ -264,6 +267,9 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
+      newlayer%meltvolume = newlayer%meltvolume + mixedregodata%meltvolume
+      newlayer%totvolume  = newlayer%totvolume + mixedregodata%totvolume
+      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
 
    else
       rbody = sqrt(xints(2)**2 + yints(2)**2)
@@ -275,6 +281,9 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          vseg = regolith_streamtube_volume_func(eradi,rbody,eradi,deltar)
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
+         mixedregodata%meltfrac = surf(xstpi,ystpi)%regolayer%meltfrac
+         mixedregodata%meltvolume = surf(xstpi,ystpi)%regolayer%meltvolume
+         mixedregodata%totvolume = surf(xstpi,ystpi)%regolayer%totvolume
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
             totseb,age_collector,xmints,xsfints,rsh,depthb)
          totmare = totmare + vmare
@@ -292,8 +301,11 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             vseg = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
+            mixedregodata%meltfrac = surf(xstpi,ystpi)%regolayer%meltfrac
+            mixedregodata%meltvolume = surf(xstpi,ystpi)%regolayer%meltvolume
+            mixedregodata%totvolume = surf(xstpi,ystpi)%regolayer%totvolume
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-               totseb,age_collector,xmints,xsfints,rsh,depthb)
+               totseb,age_collector,xmints,xsfints,rsh,depthb,mixedregodata)
             totmare = totmare + vmare
             tots = tots + totseb 
          end if
@@ -302,12 +314,15 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector,mixedregodata)
 
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) + age_collector(:)
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
+      newlayer%meltvolume = newlayer%meltvolume + mixedregodata%meltvolume
+      newlayer%totvolume  = newlayer%totvolume + mixedregodata%totvolume
+      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
 
   end if
 

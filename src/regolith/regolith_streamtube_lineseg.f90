@@ -19,7 +19,7 @@
 !
 !**********************************************************************************************************************************
 subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,depthb)
+           age_collector,xmints,xsfints,depthb,mixedregodata)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_lineseg
    implicit none
@@ -27,7 +27,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    type(usertype),intent(in) :: user
    type(surftype),intent(in) :: surfi
    real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
-   type(regodatatype),intent(inout) :: newlayer
+   type(regodatatype),intent(inout) :: newlayer,mixedregodata
    real(DP),intent(inout) :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)             :: xmints
@@ -43,6 +43,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    ! Melt zone
    real(DP) :: recyratio, xsh, rst
    real(DP) :: theta1, theta2, r1, r2, vol
+   real(DP) :: linmelt
    ! Shock damaged zone
    real(DP) :: ebh_recyl
  
@@ -81,12 +82,26 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                 recyratio        = max(ebh_recyl,0.0_DP) / current(N-1)%thickness
                 age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
                 vol              = vol + sum(current(N-1)%age(:)) * recyratio
+                mixedregodata%totvolume = mixedregodata%totvolume + (vsgly-vsh)
+                linmelt = current(N-1)%meltfrac * vsgly * recyratio
+                mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
+                mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+                if (mixedregoda%meltfrac > 1.0_DP) then
+                  write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
+               end if
              else if (ri <= xmints .and. rip1 > xmints) then 
                      vseg             = regolith_streamtube_volume_func(eradi,xmints,rip1,deltar)
                      vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1) 
                      recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N-1)%thickness 
                      age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
                      vol              = vol + sum(current(N-1)%age(:)) * recyratio
+                     mixedregodata%totvolume = mixedregodata%totvolume + (vseg-vsh)
+                     linmelt = current(N-1)%meltfrac * vseg * recyratio
+                     mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
+                     mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+                     if (mixedregoda%meltfrac > 1.0_DP) then
+                        write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
+                     end if
              end if
              exit
           else
@@ -113,6 +128,13 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
                   vol              = vol + sum(current(N)%age(:)) * recyratio
+                  mixedregodata%totvolume = mixedregodata%totvolume + (vseg-vsh)
+                  linmelt = current(N)%meltfrac * vseg * recyratio
+                  mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
+                  mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+                  if (mixedregoda%meltfrac > 1.0_DP) then
+                     write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
+                  end if
                end if
 
                ! A segment coming from the side of emerging location of a streamtube rip1 
@@ -122,6 +144,13 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
                   vol              = vol + sum(current(N)%age(:)) * recyratio
+                  mixedregodata%totvolume = mixedregodata%totvolume + (vseg-vsh)
+                  linmelt = current(N)%meltfrac * vseg * recyratio
+                  mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
+                  mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+                  if (mixedregoda%meltfrac > 1.0_DP) then
+                     write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
+                  end if
                end if
                !current => current%next
                N = N - 1
@@ -143,6 +172,13 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
                   vol              = vol + sum(current(N)%age(:)) * recyratio
+                  mixedregodata%totvolume = mixedregodata%totvolume + (vseg-vsh)
+                  linmelt = current(N)%meltfrac * vseg * recyratio
+                  mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
+                  mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+                  if (mixedregoda%meltfrac > 1.0_DP) then
+                     write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
+                  end if
                end if
 
                exit
@@ -151,7 +187,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                ! last part of a stream tube
                vsgly = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
                vmare = vmare + (vsgly - totseb) * current(N)%comp
-               totseb = vsgly 
+               totseb = vsgly
+               mixedregodata%totvolume = mixedregodata%totvolume + vsgly
+               linmelt = surfi(N)%meltfrac * vsgly * recyratio
+               mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
+               mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+               if (mixedregoda%meltfrac > 1.0_DP) then
+                  write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
+               end if 
                exit
        end if
 

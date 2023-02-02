@@ -95,13 +95,13 @@ save
 
    interface 
       subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
-                 age_collector,xmints,xsfints,rsh,depthb)
+                 age_collector,xmints,xsfints,rsh,depthb,mixedregodata)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
-      type(regodatatype),intent(inout) :: newlayer
+      type(regodatatype),intent(inout) :: newlayer, mixedregodata
       real(DP),intent(out) :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
@@ -111,13 +111,13 @@ save
 
    interface 
       subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,& 
-                 age_collector,xmints,xsfints,vol) 
+                 age_collector,xmints,xsfints,vol,mixedregodata) 
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
       real(DP),intent(in)       :: deltar,ri,rip1,eradi
-      type(regodatatype),intent(inout)    :: newlayer
+      type(regodatatype),intent(inout)    :: newlayer, mixedregodata
       real(DP),intent(out)                :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)                 :: xmints
@@ -128,13 +128,13 @@ save
 
    interface 
       subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-      totseb,age_collector,xmints,xsfints,depthb)
+      totseb,age_collector,xmints,xsfints,depthb,mixedregodata)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
       real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
-      type(regodatatype),intent(inout) :: newlayer
+      type(regodatatype),intent(inout) :: newlayer,mixedregodata
       real(DP),intent(inout) :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
@@ -143,11 +143,12 @@ save
    end interface 
 
    interface 
-      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector)
+      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,mixedregodata)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
+      type(regodatatype),intent(inout) :: mixedregodata
       real(DP),intent(in) :: deltar
       real(DP),intent(inout) :: totmare,tots
       real(SP),dimension(:),intent(inout) :: age_collector
