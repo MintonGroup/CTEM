@@ -88,9 +88,6 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    
    !current => surfi%regolayer
    allocate(current,source=surfi%regolayer)
-   mixedregodata%totvolume = 0
-   mixedregodata%meltvolume = 0
-   mixedregodata%meltfrac = 0
    N = size(current)
    z = surfi%regolayer(N)%thickness
    zstart = 0.0_DP
@@ -202,7 +199,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          mixedregodata%meltvolume = mixedregodata%meltvolume + mvl + mvr
          mixedregodata%totvolume = mixedregodata%totvolume + vsgly
          mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-         if (mixedregoda%meltfrac > 1.0_DP) then
+         if (mixedregodata%meltfrac > 1.0_DP) then
             write(*,*) "ERROR! mixedregodata%meltfrac >1! (SUBPIXEL)"
          end if
          N = N - 1

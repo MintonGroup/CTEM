@@ -25,7 +25,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    ! arguemnts
    type(usertype),intent(in) :: user
    type(surftype),intent(in) :: surfi
-   type(regodatatype),intent(inout) :: regodatatype
+   type(regodatatype),intent(inout) :: mixedregodata
    real(DP),intent(in) :: deltar
    real(DP),intent(inout) :: totmare,tots
    real(SP),dimension(:),intent(inout) :: age_collector
@@ -69,50 +69,51 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       mixedregodata%totvolume = mixedregodata%totvolume + vsgly
       mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
       mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-      if (mixedregoda%meltfrac > 1.0_DP) then
+      if (mixedregodata%meltfrac > 1.0_DP) then
          write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
       end if
    else ! head is not intersected with layers. 
 
-   do
-      ! if (.not. associated(current%next)) exit
-      
-      if (zend < zmax) then 
-         vhead = regolith_circle_sector_func(deltar,zstart,zend)
-         tothead = tothead + vhead * vratio 
-         totmarehead = totmarehead + vhead * vratio * current(N)%comp
-         recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
-         age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-         mixedregodata%totvolume = mixedregodata%totvolume + tothead
-         headmeltvol = current(N)%meltfrac * recyratio * tothead
-         mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
-         mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-         if (mixedregoda%meltfrac > 1.0_DP) then
-            write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
+      do
+         ! if (.not. associated(current%next)) exit
+         
+         if (zend < zmax) then 
+            vhead = regolith_circle_sector_func(deltar,zstart,zend)
+            tothead = tothead + vhead * vratio 
+            totmarehead = totmarehead + vhead * vratio * current(N)%comp
+            recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
+            age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+            mixedregodata%totvolume = mixedregodata%totvolume + tothead
+            headmeltvol = current(N)%meltfrac * recyratio * tothead
+            mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
+            mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+            if (mixedregodata%meltfrac > 1.0_DP) then
+              write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
+            end if
+            !current => current%next
+            N = N - 1
+            z = z + current(N)%thickness
+            zstart = zend
+            zend = z
+         else 
+            totmarehead = totmarehead + (vsgly-tothead) * current(N)%comp
+            tothead = vsgly
+            recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
+            age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+            mixedregodata%totvolume = mixedregodata%totvolume + tothead
+            headmeltvol = current(N)%meltfrac * recyratio * tothead
+            mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
+            mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+            if (mixedregodata%meltfrac > 1.0_DP) then
+               write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
+            end if
+            exit
          end if
-         !current => current%next
-         N = N - 1
-         z = z + current(N)%thickness
-         zstart = zend
-         zend = z
-      else 
-         totmarehead = totmarehead + (vsgly-tothead) * current(N)%comp
-         tothead = vsgly
-         recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
-         age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-         mixedregodata%totvolume = mixedregodata%totvolume + tothead
-         headmeltvol = current(N)%meltfrac * recyratio * tothead
-         mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
-         mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-         if (mixedregoda%meltfrac > 1.0_DP) then
-            write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
-         end if
-         exit
-      end if
-   end do
+      end do
 
-   tots = tots + tothead
-   totmare = totmare + totmarehead
+
+      tots = tots + tothead
+      totmare = totmare + totmarehead
 
    end if
 

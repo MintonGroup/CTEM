@@ -86,7 +86,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                 linmelt = current(N-1)%meltfrac * vsgly * recyratio
                 mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
                 mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-                if (mixedregoda%meltfrac > 1.0_DP) then
+                if (mixedregodata%meltfrac > 1.0_DP) then
                   write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
                end if
              else if (ri <= xmints .and. rip1 > xmints) then 
@@ -99,7 +99,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                      linmelt = current(N-1)%meltfrac * vseg * recyratio
                      mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
                      mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-                     if (mixedregoda%meltfrac > 1.0_DP) then
+                     if (mixedregodata%meltfrac > 1.0_DP) then
                         write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
                      end if
              end if
@@ -132,7 +132,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   linmelt = current(N)%meltfrac * vseg * recyratio
                   mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
                   mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-                  if (mixedregoda%meltfrac > 1.0_DP) then
+                  if (mixedregodata%meltfrac > 1.0_DP) then
                      write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
                   end if
                end if
@@ -148,7 +148,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   linmelt = current(N)%meltfrac * vseg * recyratio
                   mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
                   mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-                  if (mixedregoda%meltfrac > 1.0_DP) then
+                  if (mixedregodata%meltfrac > 1.0_DP) then
                      write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
                   end if
                end if
@@ -176,7 +176,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   linmelt = current(N)%meltfrac * vseg * recyratio
                   mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
                   mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-                  if (mixedregoda%meltfrac > 1.0_DP) then
+                  if (mixedregodata%meltfrac > 1.0_DP) then
                      write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
                   end if
                end if
@@ -189,10 +189,10 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                vmare = vmare + (vsgly - totseb) * current(N)%comp
                totseb = vsgly
                mixedregodata%totvolume = mixedregodata%totvolume + vsgly
-               linmelt = surfi(N)%meltfrac * vsgly * recyratio
+               linmelt = current(N)%meltfrac * vsgly * recyratio
                mixedregodata%meltvolume = mixedregodata%meltvolume + linmelt
                mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-               if (mixedregoda%meltfrac > 1.0_DP) then
+               if (mixedregodata%meltfrac > 1.0_DP) then
                   write(*,*) "ERROR! mixedregodata%meltfrac >1! (LINESEG)"
                end if 
                exit

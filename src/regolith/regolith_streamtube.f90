@@ -117,6 +117,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
    ! Executalbe code
 
+   mixedregodata%totvolume = 0
+   mixedregodata%meltvolume = 0
+   mixedregodata%meltfrac = 0
+
    ! ****** Interpolate radial distance, erad, for a given pixel *******
    ! outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
    ! inneredge = crater%frad + 0.5_DP * domain%ejbres
@@ -254,9 +258,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       vseg = regolith_streamtube_volume_func(eradi,0.0_DP,eradi,deltar)
       newlayer%thickness = vseg/(user%pix**2)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      mixedregodata%meltfrac = surf(xstpi,ystpi)%regolayer%meltfrac
-      mixedregodata%meltvolume = surf(xstpi,ystpi)%regolayer%meltvolume
-      mixedregodata%totvolume = surf(xstpi,ystpi)%regolayer%totvolume
       call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
            age_collector,xmints,xsfints,vol,mixedregodata)
 
@@ -281,11 +282,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          vseg = regolith_streamtube_volume_func(eradi,rbody,eradi,deltar)
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
-         mixedregodata%meltfrac = surf(xstpi,ystpi)%regolayer%meltfrac
-         mixedregodata%meltvolume = surf(xstpi,ystpi)%regolayer%meltvolume
-         mixedregodata%totvolume = surf(xstpi,ystpi)%regolayer%totvolume
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-            totseb,age_collector,xmints,xsfints,rsh,depthb)
+            totseb,age_collector,xmints,xsfints,rsh,depthb,mixedregodata)
          totmare = totmare + vmare
          tots = tots + totseb
       end if           
@@ -301,9 +299,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             vseg = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
-            mixedregodata%meltfrac = surf(xstpi,ystpi)%regolayer%meltfrac
-            mixedregodata%meltvolume = surf(xstpi,ystpi)%regolayer%meltvolume
-            mixedregodata%totvolume = surf(xstpi,ystpi)%regolayer%totvolume
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
                totseb,age_collector,xmints,xsfints,rsh,depthb,mixedregodata)
             totmare = totmare + vmare
