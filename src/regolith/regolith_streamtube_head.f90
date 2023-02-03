@@ -18,14 +18,14 @@
 !  Notes       :  The stream tube's head is always attached to the surface. 
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,mixedregodata)
+subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_head
    implicit none
    ! arguemnts
    type(usertype),intent(in) :: user
    type(surftype),intent(in) :: surfi
-   type(regodatatype),intent(inout) :: mixedregodata
+   real(DP),intent(inout) :: meltinejecta
    real(DP),intent(in) :: deltar
    real(DP),intent(inout) :: totmare,tots
    real(SP),dimension(:),intent(inout) :: age_collector
@@ -66,12 +66,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       recyratio = vsgly / (user%pix**2) /current(N)%thickness
       age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
       headmeltvol = current(N)%meltfrac * recyratio * vsgly
-      mixedregodata%totvolume = mixedregodata%totvolume + vsgly
-      mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
-      mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-      if (mixedregodata%meltfrac > 1.0_DP) then
-         write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
-      end if
+      meltinejecta = meltinejecta + headmeltvol
    else ! head is not intersected with layers. 
 
       do
@@ -83,13 +78,8 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             totmarehead = totmarehead + vhead * vratio * current(N)%comp
             recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-            mixedregodata%totvolume = mixedregodata%totvolume + tothead
             headmeltvol = current(N)%meltfrac * recyratio * tothead
-            mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
-            mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-            if (mixedregodata%meltfrac > 1.0_DP) then
-              write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
-            end if
+            meltinejecta = meltinejecta + headmeltvol
             !current => current%next
             N = N - 1
             z = z + current(N)%thickness
@@ -100,13 +90,8 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             tothead = vsgly
             recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-            mixedregodata%totvolume = mixedregodata%totvolume + tothead
             headmeltvol = current(N)%meltfrac * recyratio * tothead
-            mixedregodata%meltvolume = mixedregodata%meltvolume + headmeltvol
-            mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-            if (mixedregodata%meltfrac > 1.0_DP) then
-               write(*,*) "ERROR! mixedregodata%meltfrac >1! (HEAD)"
-            end if
+            meltinejecta = meltinejecta + headmeltvol
             exit
          end if
       end do

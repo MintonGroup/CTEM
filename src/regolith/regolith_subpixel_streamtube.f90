@@ -51,7 +51,7 @@
 !
 !**********************************************************************************************************************************
 subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
-                                        age_collector,xmints,xsfints,vol,mixedregodata)
+                                        age_collector,xmints,xsfints,vol,meltinejecta)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_subpixel_streamtube
    implicit none
@@ -60,7 +60,8 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    type(usertype),intent(in) :: user
    type(surftype),intent(in) :: surfi
    real(DP),intent(in)       :: deltar,ri,rip1,eradi
-   type(regodatatype),intent(inout)    :: newlayer, mixedregodata
+   type(regodatatype),intent(inout)    :: newlayer
+   real(DP),intent(out)              :: meltinejecta
    real(DP),intent(out)                :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)                 :: xmints
@@ -97,6 +98,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    vseg   = 0.0_DP
    vsgly1  = 0.0_DP
    vsgly2  = 0.0_DP
+   meltinejecta = 0.0_DP
 
    ! Two cases: subpixel is inside the first layer, and its volume is simply the landing ejecta blanket.
    if (zend>=zmax) then 
@@ -105,10 +107,8 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
       if (eradi>xmints) then
          vseg             = regolith_streamtube_volume_func(eradi,xmints,eradi,deltar)
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,0.0_DP,eradi)
-         mixedregodata%totvolume = vseg-vsh
          recyratio        = max(vseg-vsh,0.0 )/ (user%pix**2) / (surfi%regolayer(N)%thickness)
-         mixedregodata%meltvolume = surfi%regolayer(N)%meltfrac * vseg * recyratio
-         mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
+         meltinejecta     = surfi%regolayer(N)%meltfrac * vseg * recyratio
          age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
          vol              = vol + sum(age_collector(:))
 !         write(*,*) '1',eradi, xmints, xsfints, &
@@ -196,19 +196,14 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          end if
 
          !current => current%next
-         mixedregodata%meltvolume = mixedregodata%meltvolume + mvl + mvr
-         mixedregodata%totvolume = mixedregodata%totvolume + vsgly
-         mixedregodata%meltfrac = mixedregodata%meltvolume / mixedregodata%totvolume
-         if (mixedregodata%meltfrac > 1.0_DP) then
-            write(*,*) "ERROR! mixedregodata%meltfrac >1! (SUBPIXEL)"
-         end if
+         meltinejecta = meltinejecta + mvl + mvr
          N = N - 1
          z = z + current(N)%thickness 
          zstart = zend
          zend = z
          rlefti = rleftf
          rrightf = rrighti
-      ! final part of a stream tube 
+       ! final part of a stream tube 
       else !I think this means it's in the melt zone like Ya-Huei said above.. if so, nothing needed here.
          vsgly   = 0.25 * PI * deltar**2 * a**2 * eradi / b * (abs(tan(b) - b)) 
          vmare   = vmare + (vsgly - totseb) * current(N)%comp
@@ -218,7 +213,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
      end do
    end if
 
-   call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,age_collector, mixedregodata)
+   call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,age_collector,meltinejecta)
 
    return
 end subroutine regolith_subpixel_streamtube

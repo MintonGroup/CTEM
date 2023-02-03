@@ -387,7 +387,5 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
      
    end if
 
-   write(*,*) 'Total times mixing was called:',nmixingtimes
-
    return
 end subroutine crater_populate
