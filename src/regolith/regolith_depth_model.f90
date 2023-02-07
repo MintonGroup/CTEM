@@ -97,8 +97,8 @@ subroutine regolith_depth_model(user,domain,finterval,nflux,p)
          f    = 0.5_DP * dr * ( fmin + fmax )
          psum = psum + f   
       end do
-      psumfunc = exp(-1.0_DP * PI * psum * t)
-      if (psumfunc > epsilon(psum)) then
+      psumfunc = -1.0_DP * PI * psum * t
+      if (psumfunc > exp(epsilon(psum))) then
          p(2,i) = 1.0_DP - exp(-1.0_DP * PI * psum * t)
       else
          p(2,i) = 1.0_DP
