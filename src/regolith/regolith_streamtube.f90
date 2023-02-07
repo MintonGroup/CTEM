@@ -267,6 +267,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
       newlayer%meltvolume = newlayer%meltvolume + meltinejecta
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
+      if (newlayer%meltfrac > 1.0_DP) then
+         write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
+          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, newlayer%ejm/newlayer%ejmf
+      end if
 
    else
       rbody = sqrt(xints(2)**2 + yints(2)**2)
@@ -314,7 +318,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%meltvolume = newlayer%meltvolume + meltinejecta
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
       if (newlayer%meltfrac > 1.0_DP) then
-         write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx
+         write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
+          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, newlayer%ejm/newlayer%ejmf
       end if
 
   end if
