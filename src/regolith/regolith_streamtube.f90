@@ -118,6 +118,9 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
    ! Executalbe code
 
+   meltinejecta = 0.0_DP
+   totvol = 0.0_DP
+
    ! ****** Interpolate radial distance, erad, for a given pixel *******
    ! outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
    ! inneredge = crater%frad + 0.5_DP * domain%ejbres

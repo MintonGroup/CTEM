@@ -29,7 +29,7 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    type(surftype),intent(inout) :: surfi
    real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
    type(regodatatype),intent(inout) :: newlayer
-   real(DP),intent(out)            :: meltinejecta,totvol
+   real(DP),intent(inout)            :: meltinejecta,totvol
    real(DP),intent(out)            :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)             :: xmints
@@ -52,8 +52,6 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    real(DP) :: vsh
 
    !executable code
-   meltinejecta = 0.0_DP
-   totvol = 0.0_DP
 
    erad = (eradi + erado)/2.0
    rzmax = erad * sqrt(3.0)/4.0
@@ -90,8 +88,8 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
          recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer(N)%thickness
          age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
-         meltinejecta     = surfi%regolayer(N)%meltfrac * vseg * recyratio
-         totvol = vseg
+         meltinejecta     = meltinejecta + surfi%regolayer(N)%meltfrac * vseg * recyratio
+         totvol = totvol + vseg
       end if
 
    else 
