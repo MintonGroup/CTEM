@@ -19,7 +19,7 @@
 !
 !**********************************************************************************************************************************
 subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,depthb,meltinejecta)
+           age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_lineseg
    implicit none
@@ -28,7 +28,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    type(surftype),intent(in) :: surfi
    real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
    type(regodatatype),intent(inout) :: newlayer
-   real(DP),intent(inout)           :: meltinejecta
+   real(DP),intent(inout)           :: meltinejecta,totvol
    real(DP),intent(inout) :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)             :: xmints
@@ -85,6 +85,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                 vol              = vol + sum(current(N-1)%age(:)) * recyratio
                 linmelt = current(N-1)%meltfrac * vsgly * recyratio
                 meltinejecta = meltinejecta + linmelt
+                totvol = totvol + vsgly
              else if (ri <= xmints .and. rip1 > xmints) then 
                      vseg             = regolith_streamtube_volume_func(eradi,xmints,rip1,deltar)
                      vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1) 
@@ -93,6 +94,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                      vol              = vol + sum(current(N-1)%age(:)) * recyratio
                      linmelt = current(N-1)%meltfrac * vseg * recyratio
                      meltinejecta = meltinejecta + linmelt
+                     totvol = totvol + vseg
              end if
              exit
           else
@@ -121,6 +123,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vol              = vol + sum(current(N)%age(:)) * recyratio
                   linmelt = current(N)%meltfrac * vseg * recyratio
                   meltinejecta = meltinejecta + linmelt
+                  totvol = totvol + vseg
                end if
 
                ! A segment coming from the side of emerging location of a streamtube rip1 
@@ -132,6 +135,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vol              = vol + sum(current(N)%age(:)) * recyratio
                   linmelt = current(N)%meltfrac * vseg * recyratio
                   meltinejecta = meltinejecta + linmelt
+                  totvol = totvol + vseg
                end if
                !current => current%next
                N = N - 1
@@ -155,6 +159,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vol              = vol + sum(current(N)%age(:)) * recyratio
                   linmelt = current(N)%meltfrac * vseg * recyratio
                   meltinejecta = meltinejecta + linmelt
+                  totvol = totvol + vseg
                end if
 
                exit
@@ -166,6 +171,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                totseb = vsgly
                linmelt = current(N)%meltfrac * vsgly * recyratio
                meltinejecta = meltinejecta + linmelt
+               totvol = totvol + vsgly
                exit
        end if
 

@@ -18,14 +18,14 @@
 !  Notes       :  The stream tube's head is always attached to the surface. 
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta)
+subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_head
    implicit none
    ! arguemnts
    type(usertype),intent(in) :: user
    type(surftype),intent(in) :: surfi
-   real(DP),intent(inout) :: meltinejecta
+   real(DP),intent(inout) :: meltinejecta,totvol
    real(DP),intent(in) :: deltar
    real(DP),intent(inout) :: totmare,tots
    real(SP),dimension(:),intent(inout) :: age_collector
@@ -67,6 +67,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
       headmeltvol = current(N)%meltfrac * recyratio * vsgly
       meltinejecta = meltinejecta + headmeltvol
+      totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
       do
@@ -80,6 +81,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             headmeltvol = current(N)%meltfrac * recyratio * tothead
             meltinejecta = meltinejecta + headmeltvol
+            totvol = totvol + tothead
             !current => current%next
             N = N - 1
             z = z + current(N)%thickness
@@ -92,6 +94,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             headmeltvol = current(N)%meltfrac * recyratio * tothead
             meltinejecta = meltinejecta + headmeltvol
+            totvol = totvol + tothead
             exit
          end if
       end do

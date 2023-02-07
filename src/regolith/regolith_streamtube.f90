@@ -89,7 +89,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
-   real(DP)     :: meltinejecta
+   real(DP)     :: meltinejecta, totvol
    type(regodatatype) :: newlayer
 
    ! Constrain the tangital tube's volume with CTEM result
@@ -256,7 +256,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%thickness = vseg/(user%pix**2)
       call util_periodic(xstpi,ystpi,user%gridsize)
       call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,vol,meltinejecta)
+           age_collector,xmints,xsfints,vol,meltinejecta,totvol)
 
       newlayer%age(:) = newlayer%age(:) + age_collector(:)
  
@@ -269,7 +269,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
       if (newlayer%meltfrac > 1.0_DP) then
          write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
-          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, newlayer%ejm/newlayer%ejmf
+          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
       end if
 
    else
@@ -283,7 +283,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-            totseb,age_collector,xmints,xsfints,rsh,depthb,meltinejecta)
+            totseb,age_collector,xmints,xsfints,rsh,depthb,meltinejecta,totvol)
          totmare = totmare + vmare
          tots = tots + totseb
       end if           
@@ -300,7 +300,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-               totseb,age_collector,xmints,xsfints,rsh,depthb,meltinejecta)
+               totseb,age_collector,xmints,xsfints,rsh,depthb,meltinejecta,totvol)
             totmare = totmare + vmare
             tots = tots + totseb 
          end if
@@ -309,7 +309,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector,meltinejecta)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector,meltinejecta,totvol)
 
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
@@ -319,7 +319,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
       if (newlayer%meltfrac > 1.0_DP) then
          write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
-          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, newlayer%ejm/newlayer%ejmf
+          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
       end if
 
   end if

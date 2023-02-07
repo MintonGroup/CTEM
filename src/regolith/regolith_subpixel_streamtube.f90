@@ -51,7 +51,7 @@
 !
 !**********************************************************************************************************************************
 subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
-                                        age_collector,xmints,xsfints,vol,meltinejecta)
+                                        age_collector,xmints,xsfints,vol,meltinejecta,totvol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_subpixel_streamtube
    implicit none
@@ -61,7 +61,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    type(surftype),intent(in) :: surfi
    real(DP),intent(in)       :: deltar,ri,rip1,eradi
    type(regodatatype),intent(inout)    :: newlayer
-   real(DP),intent(out)              :: meltinejecta
+   real(DP),intent(out)              :: meltinejecta, totvol
    real(DP),intent(out)                :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)                 :: xmints
@@ -99,6 +99,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    vsgly1  = 0.0_DP
    vsgly2  = 0.0_DP
    meltinejecta = 0.0_DP
+   totvol = 0.0_DP
 
    ! Two cases: subpixel is inside the first layer, and its volume is simply the landing ejecta blanket.
    if (zend>=zmax) then 
@@ -109,6 +110,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,0.0_DP,eradi)
          recyratio        = max(vseg-vsh,0.0 )/ (user%pix**2) / (surfi%regolayer(N)%thickness)
          meltinejecta     = surfi%regolayer(N)%meltfrac * vseg * recyratio
+         totvol           = vseg
          age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
          vol              = vol + sum(age_collector(:))
 !         write(*,*) '1',eradi, xmints, xsfints, &
@@ -197,6 +199,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
 
          !current => current%next
          meltinejecta = meltinejecta + mvl + mvr
+         totvol = totvol + vsgly1 + vsgly2
          N = N - 1
          z = z + current(N)%thickness 
          zstart = zend
@@ -213,7 +216,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
      end do
    end if
 
-   call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,age_collector,meltinejecta)
+   call regolith_streamtube_head(user,surfi,deltar,vmare,totseb,age_collector,meltinejecta,totvol)
 
    return
 end subroutine regolith_subpixel_streamtube
