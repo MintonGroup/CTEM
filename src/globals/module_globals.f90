@@ -309,6 +309,8 @@ character(*),parameter :: DATFILE    = 'ctem.dat'
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat'
 character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
+character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
+character(*),parameter :: EJMFFILE   = 'surface_ejmf.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit
