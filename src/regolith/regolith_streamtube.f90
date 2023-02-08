@@ -285,7 +285,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-            totseb,age_collector,xmints,xsfints,rsh,depthb,meltinejecta,totvol)
+            totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
          totmare = totmare + vmare
          tots = tots + totseb
       end if           
@@ -302,7 +302,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-               totseb,age_collector,xmints,xsfints,rsh,depthb,meltinejecta,totvol)
+               totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
             totmare = totmare + vmare
             tots = tots + totseb 
          end if

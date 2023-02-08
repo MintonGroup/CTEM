@@ -95,7 +95,7 @@ save
 
    interface 
       subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
-                 age_collector,xmints,xsfints,rsh,depthb,meltinejecta,totvol)
+                 age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -106,7 +106,7 @@ save
       real(DP),intent(out) :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
-      real(DP),intent(in)             :: xsfints, rsh, depthb
+      real(DP),intent(in)             :: xsfints, depthb
       end subroutine regolith_traverse_streamtube
    end interface
 
