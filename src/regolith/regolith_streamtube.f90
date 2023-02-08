@@ -118,9 +118,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
    ! Executalbe code
 
-   meltinejecta = 0.0_DP
-   totvol = 0.0_DP
-
    ! ****** Interpolate radial distance, erad, for a given pixel *******
    ! outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
    ! inneredge = crater%frad + 0.5_DP * domain%ejbres
@@ -239,6 +236,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    totmare = 0.0_DP
    tots    = 0.0_DP
    depthb = crater%imp / 2.0_DP
+   meltinejecta = 0.0_DP
+   totvol = 0.0_DP
 
    ! if (eradc<=user%testimp) then
    !    write(*,*) lrad/crater%frad, user%testimp, crater%frad, rm, deltar, eradc, eradi, erado, ebh, newlayer%meltfrac
@@ -271,7 +270,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%meltvolume = newlayer%meltvolume + meltinejecta
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
       if (newlayer%meltfrac > 1.0_DP) then
-         write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
+         write(*,*) "Melt fraction >1! (Subpixel)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
           newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
       end if
 
@@ -321,7 +320,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%meltvolume = newlayer%meltvolume + meltinejecta
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
       if (newlayer%meltfrac > 1.0_DP) then
-         write(*,*) "Melt fraction >1!", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
+         write(*,*) "Melt fraction >1! (Traverse)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
           newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
       end if
 
