@@ -169,7 +169,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                vsgly = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
                vmare = vmare + (vsgly - totseb) * current(N)%comp
                totseb = vsgly
-               linmelt = current(N)%meltfrac * vsgly * recyratio
+               linmelt = current(N)%meltfrac * vsgly
                meltinejecta = meltinejecta + linmelt
                totvol = totvol + vsgly
                exit
