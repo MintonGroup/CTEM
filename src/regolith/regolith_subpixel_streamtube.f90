@@ -100,6 +100,8 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    vsgly2  = 0.0_DP
    meltinejecta = 0.0_DP
    totvol = 0.0_DP
+   mvl = 0.0_DP
+   mvr = 0.0_DP
 
    ! Two cases: subpixel is inside the first layer, and its volume is simply the landing ejecta blanket.
    if (zend>=zmax) then 

@@ -146,9 +146,9 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
       melt     = volm1
       newlayer%meltvolume = melt
       newlayer%totvolume = volm1
-      newlayer%meltfrac = 1.0
+      newlayer%meltfrac = 1.0_DP
       newlayer%ejm = melt
-      newlayer%ejmf = 1.0
+      newlayer%ejmf = 1.0_DP
       xmints   = rints 
    else if (eradi > rints) then
            depthb = crater%imp / 2.0
