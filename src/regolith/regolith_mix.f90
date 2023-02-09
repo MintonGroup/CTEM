@@ -48,6 +48,8 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
    newlayer%age(:)    = 0.0_DP
    allocate(newlayer%meltdist(domain%rcnum))
    newlayer%meltdist(:) = 0.0_SP
+   newlayer%ejm       = 0.0_DP
+   newlayer%ejmf      = 0.0_DP
 
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
@@ -58,16 +60,16 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
       newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
       newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
       newlayer%meltdist(:) = newlayer%meltdist(:) + poppedarray(i)%thickness * poppedarray(i)%meltdist(:)
-      ! do j = 1,domain%rcnum !testing a loop here since the array operation resulted in a segfault
-      !    newlayer%meltdist(j) = newlayer%meltdist(j) + poppedarray(i)%thickness * poppedarray(i)%meltdist(j)
-      ! end do
-      ! !poppedlist => poppedlist%next
+      newlayer%ejm       = newlayer%ejm + poppedarray(i)%thickness * poppedarray(i)%ejm
+      newlayer%ejmf      = newlayer%ejmf + poppedarray(i)%thickness * poppedarray(i)%ejmf
    end do
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
    newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
    newlayer%meltdist(:) = newlayer%meltdist(:) / newlayer%thickness
+   newlayer%ejm = newlayer%ejm / newlayer%thickness
+   newlayer%ejmf = newlayer%ejmf / newlayer%thickness
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
