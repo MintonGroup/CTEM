@@ -51,7 +51,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
+subroutine crater_emplace(user,surf,crater,domain,deltaMtot,incval)
    use module_globals
    use module_util
    use module_porosity   
@@ -64,6 +64,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout) :: domain
    real(DP),intent(out) :: deltaMtot
+   integer(I4B),intent(out) :: incval
 
    ! Internal variables
    real(DP) :: lradsq,newelev, x_relative, y_relative 
@@ -81,6 +82,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    fradsq = crater%frad**2
    deltaMtot = 0.0_DP !ejbmass
    incsq = inc**2
+   incval = inc
 
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space

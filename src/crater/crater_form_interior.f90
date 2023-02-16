@@ -75,16 +75,10 @@ subroutine crater_form_interior(user,surfi,crater,x_relative, y_relative ,newele
    elchange  = newdem - surfi%dem
    deltaMi = elchange
    surfi%dem = newdem
+   surfi%abselc = abs(elchange)
    
    !change ejecta coverage
    surfi%ejcov = max(surfi%ejcov + elchange,0.0_DP)
-
-   if (user%doregotrack) then
-      call util_traverse_pop_array(surfi%regolayer,abs(elchange),poppedarray)
-      !call util_destroy_list(poppedlist)
-      deallocate(poppedarray)
-   end if
-
 
    return
 end subroutine crater_form_interior

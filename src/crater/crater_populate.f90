@@ -78,7 +78,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)            :: oldpbarpos
    real(DP),dimension(:,:),allocatable   :: ejecta_dem
    real(DP)                :: hmax, hmin
-   integer(I4B)            :: nmixingtimes
+   integer(I4B)            :: nmixingtimes, incval
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -249,7 +249,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call crater_averages(user,surf,crater)
 
          ! Place crater onto the surface
-         call crater_emplace(user,surf,crater,domain,ejbmass)
+         call crater_emplace(user,surf,crater,domain,ejbmass,incval)
          if (abs(ejbmass) < 2*tiny(1.0_DP)) cycle
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
@@ -271,6 +271,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          else
             ejtble = 0
          end if
+
+         if (user%doregotrack) call regolith_interior(user,surf,crater,incval)
 
          if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)

@@ -31,6 +31,7 @@ subroutine init_surf(user,surf,domain)
 
    surf%ejcov  = 0.0_DP
    surf%dem    = 0.0_DP
+   surf%abselc = 0.0_DP
    do layer = 1,user%numlayers
       surf%diam(layer)   = 0.0_DP
       surf%xl(layer)     = 0.0_SP

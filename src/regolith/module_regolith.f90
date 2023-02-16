@@ -320,5 +320,15 @@ save
      real(DP)                    :: vsh
      end function regolith_shock_damage
    end interface
+
+   interface
+      subroutine regolith_interior(user,surf,crater,incval)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(in) :: crater
+      integer(I4B),intent(in)     :: incval
+      end subroutine regolith_interior
+   end interface
   
 end module
