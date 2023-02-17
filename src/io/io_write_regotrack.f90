@@ -54,7 +54,7 @@ subroutine io_write_regotrack(user,surf,domain)
    open(FCOMP,file=COMPFILE,status='replace',form='unformatted')
    open(FAGE,file=AGEFILE,status='replace',form='unformatted')
    open(FMD,file=MDFILE,status='replace',form='unformatted')
-   open(FEJM,file=EJMFILE,status='replace',form='unformatted')
+   !open(FEJM,file=EJMFILE,status='replace',form='unformatted')
    open(FEJMF,file=EJMFFILE,status='replace',form='unformatted')
 
    ! First pass to get stack numbers
@@ -102,7 +102,7 @@ subroutine io_write_regotrack(user,surf,domain)
          write(FCOMP) comp(:)
          write(FAGE) age(:,:)
          write(FMD) meltdist(:,:)
-         write(FEJM) ejm(:)
+         !write(FEJM) ejm(:)
          write(FEJMF) ejmf(:)
          deallocate(meltfrac,thickness,comp,age,meltdist,ejm,ejmf)
       end do 
@@ -112,7 +112,7 @@ subroutine io_write_regotrack(user,surf,domain)
    close(FCOMP)
    close(FAGE)
    close(FMD)
-   close(FEJM)
+   !close(FEJM)
    close(FEJMF)
 
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
