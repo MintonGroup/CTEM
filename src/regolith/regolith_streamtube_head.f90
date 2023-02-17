@@ -18,7 +18,7 @@
 !  Notes       :  The stream tube's head is always attached to the surface. 
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol)
+subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol,distvol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_head
    implicit none
@@ -29,6 +29,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    real(DP),intent(in) :: deltar
    real(DP),intent(inout) :: totmare,tots
    real(SP),dimension(:),intent(inout) :: age_collector
+   real(SP),dimension(:),intent(inout) :: distvol
  
    ! internal variables
    !type(regolisttype),pointer :: current
@@ -67,6 +68,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
       headmeltvol = current(N)%meltfrac * recyratio * vsgly
       meltinejecta = meltinejecta + headmeltvol
+      distvol(:) = distvol + (current(N)%meltdist(:)*recyratio*vsgly)
       totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
@@ -81,6 +83,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             headmeltvol = current(N)%meltfrac * recyratio * tothead
             meltinejecta = meltinejecta + headmeltvol
+            distvol(:) = distvol + (current(N)%meltdist(:)*recyratio*tothead)
             totvol = totvol + tothead
             !current => current%next
             N = N - 1
@@ -94,6 +97,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             headmeltvol = current(N)%meltfrac * recyratio * tothead
             meltinejecta = meltinejecta + headmeltvol
+            distvol(:) = distvol + (current(N)%meltdist(:)*recyratio*tothead)
             totvol = totvol + tothead
             exit
          end if

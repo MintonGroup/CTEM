@@ -19,7 +19,7 @@
 !
 !**********************************************************************************************************************************
 subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
+           age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_traverse_streamtube
    implicit none
@@ -34,6 +34,7 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)             :: xmints
    real(DP),intent(in)             :: xsfints, depthb
+   real(SP),dimension(:),intent(inout) :: distvol
 
    ! Internal variables
 
@@ -89,13 +90,14 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
          recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer(N)%thickness
          age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
          meltinejecta     = meltinejecta + surfi%regolayer(N)%meltfrac * vseg * recyratio
+         distvol(:)       = distvol(:) + (surfi%regolayer(N)%meltdist(:)*vseg*recyratio)
          totvol = totvol + vseg
       end if
 
    else 
 
      call regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,&
-          newlayer,vmare,totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
+          newlayer,vmare,totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
 
    end if
 

@@ -95,7 +95,7 @@ save
 
    interface 
       subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
-                 age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
+                 age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -107,12 +107,13 @@ save
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
       real(DP),intent(in)             :: xsfints, depthb
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_traverse_streamtube
    end interface
 
    interface 
       subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,& 
-                 age_collector,xmints,xsfints,vol,meltinejecta,totvol) 
+                 age_collector,xmints,xsfints,vol,meltinejecta,totvol,distvol) 
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -125,12 +126,13 @@ save
       real(DP),intent(in)                 :: xmints
       real(DP),intent(in)                 :: xsfints
       real(DP),intent(inout)              :: vol
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_subpixel_streamtube
    end interface
 
    interface 
       subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-      totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol)
+      totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -142,11 +144,12 @@ save
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
       real(DP),intent(in)             :: xsfints, depthb
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_streamtube_lineseg
    end interface 
 
    interface 
-      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol)
+      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol,distvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -155,6 +158,7 @@ save
       real(DP),intent(in) :: deltar
       real(DP),intent(inout) :: totmare,tots
       real(SP),dimension(:),intent(inout) :: age_collector
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_streamtube_head
    end interface
 
