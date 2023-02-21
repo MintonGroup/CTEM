@@ -75,7 +75,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,vmeltsheet)
    use module_globals
    use module_util
    use module_io
@@ -95,6 +95,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    real(DP),intent(in)  :: age
    real(DP),intent(in)  :: age_resolution
    real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
+   real(DP),intent(out) :: vmeltsheet
 
    ! Internal variables
    real(DP) :: lrad,lradsq
@@ -129,6 +130,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
    if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm,totmelt)
    vmelt = 0.0_DP
+   vmeltsheet = 0.0_DP
 
    crater%vdepth = crater%rimheight + crater%floordepth
    crater%vrim   = crater%rimheight
@@ -290,6 +292,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
       write(*,*) 'Total Melt: ', totmelt
       write(*,*) 'ejected / total melt:', vmelt/totmelt
    end if
+   vmeltsheet = totmelt - vmelt   
+   
    ejbmass = sum(cumulative_elchange)
 
    ! Create buffer to prevent infinite hole bug

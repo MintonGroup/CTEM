@@ -326,12 +326,14 @@ save
    end interface
 
    interface
-      subroutine regolith_interior(user,surf,crater,incval)
+      subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
       use module_globals
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
+      type(domaintype),intent(in) :: domain
       type(cratertype),intent(in) :: crater
-      integer(I4B),intent(in)     :: incval
+      integer(I4B),intent(in)     :: incval, nmeltsheet
+      real(DP),intent(in)         :: vmeltsheet
       end subroutine regolith_interior
    end interface
   
