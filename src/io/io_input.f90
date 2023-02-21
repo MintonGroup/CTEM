@@ -93,6 +93,7 @@ subroutine io_input(infile,user)
    user%dorealistic = .false.
    user%doquasimc = .false.
    user%ejecta_truncation = 10.0_DP
+   user%domixing = .true.
    write(user%sfdfile,*) trim(adjustl(SFDFILE))
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
@@ -329,6 +330,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%ejecta_truncation
+         case ("DOMIXING")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%domixing
          ! Porosity model
          case ("POROSITYFLG")
             ifirst = ilast + 1

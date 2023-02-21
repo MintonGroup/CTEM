@@ -336,11 +336,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             ! Do superdomain ray deposits
             ! Do sub-pixel craters vertical mixing
             if (user%doregotrack) then
-               call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
-               call regolith_depth_model(user,domain,finterval,nflux,p)
-               call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
-               age = age - finterval * user%interval
-               nmixingtimes = nmixingtimes + 1
+               if (user%domixing) then
+                  call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+                  call regolith_depth_model(user,domain,finterval,nflux,p)
+                  call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
+                  age = age - finterval * user%interval
+                  nmixingtimes = nmixingtimes + 1
+               end if
             end if 
 
             icrater_last_subpixel = icrater

@@ -200,6 +200,7 @@ type usertype
    logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
    logical           :: doangle    ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
    logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
+   logical           :: domixing   ! Set to F to turn off regolith mixing (useful for test craters when you don't want to simulate gardening). Default is T.
    logical           :: doquasimc  ! set to T for quasi-MC run. Default F.
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
