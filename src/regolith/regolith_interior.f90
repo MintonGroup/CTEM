@@ -40,7 +40,7 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
 
     !Executable code
 
-    hmeltsheet = vmeltsheet / (nmeltsheet*user%gridsize*user%gridsize)
+    hmeltsheet = vmeltsheet / (nmeltsheet*user%pix*user%pix)
     allocate(newlayer%meltdist(domain%rcnum))
 
     inc = incval
