@@ -40,7 +40,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    type(regodatatype),dimension(:),allocatable :: current
    real(DP) :: z,zstart,zend,rstart,rend,r
    real(DP) :: vsgly,x,vseg, vsh
-   integer(I4B) :: N
+   integer(I4B) :: N,M
 
    ! Melt zone
    real(DP) :: recyratio, xsh, rst
@@ -51,8 +51,8 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
  
    !current => surfi%regolayer
    allocate(current,source=surfi%regolayer)
-   N = size(current)
-   z = current(N)%thickness
+   M = size(current)
+   z = current(M)%thickness
    zstart = 0.0_DP
    zend = z
  
@@ -66,7 +66,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
 
    vol = 0.0_DP
 
-   do
+   do N=N,2,-1
 
        !if (.not. associated(current%next)) exit !it should exit until it hit the very bottom.
 
@@ -103,8 +103,8 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
           else
 
              !current => current%next
-            N = N - 1
-            z = z + current(N)%thickness
+            !N = N - 1
+            z = z + current(N-1)%thickness
             zstart = zend
             zend = z
 
@@ -143,8 +143,8 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   totvol = totvol + vseg
                end if
                !current => current%next
-               N = N - 1
-               z = z + current(N)%thickness
+               !N = N - 1
+               z = z + current(N-1)%thickness
                r = rstart 
                rstart = rend 
                zstart = zend 

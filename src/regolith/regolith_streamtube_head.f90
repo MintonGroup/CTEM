@@ -40,7 +40,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
                                                       ! head intersected with underlying layers, about 30% of volume difference. 
    real(DP) :: z,zstart,zend,zmin,zmax
    real(DP) :: tothead,totmarehead,marehead,vhead,vsgly
-   integer(I4B) :: N
+   integer(I4B) :: N,M
 
    ! melt collector
    real(DP) :: recyratio
@@ -49,8 +49,8 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    !current => surfi%regolayer
    !current = surfi%regolayer
    allocate(current,source=surfi%regolayer)
-   N = size(current)
-   z = current(N)%thickness
+   M = size(current)
+   z = current(M)%thickness
    vsgly = vratio * PI * deltar**3
    tothead = 0._DP
    totmarehead = 0._DP
@@ -63,16 +63,16 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
 
    if (zend >= zmax) then ! Stream tube's head is inside the 1st layer.
       tots = tots + vsgly
-      totmare = totmare + vsgly * current(N)%comp
-      recyratio = vsgly / (user%pix**2) /current(N)%thickness
-      age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-      headmeltvol = current(N)%meltfrac * recyratio * vsgly
+      totmare = totmare + vsgly * current(M)%comp
+      recyratio = vsgly / (user%pix**2) /current(M)%thickness
+      age_collector(:) = age_collector(:) + current(M)%age(:) * recyratio
+      headmeltvol = current(M)%meltfrac * recyratio * vsgly
       meltinejecta = meltinejecta + headmeltvol
-      distvol(:) = distvol + (current(N)%meltdist(:)*recyratio*vsgly)
+      distvol(:) = distvol + (current(M)%meltdist(:)*recyratio*vsgly)
       totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
-      do
+      do N=M,2,-1
          ! if (.not. associated(current%next)) exit
          
          if (zend < zmax) then 
@@ -86,8 +86,8 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             distvol(:) = distvol + (current(N)%meltdist(:)*recyratio*tothead)
             totvol = totvol + tothead
             !current => current%next
-            N = N - 1
-            z = z + current(N)%thickness
+            !N = N - 1
+            z = z + current(N-1)%thickness
             zstart = zend
             zend = z
          else 
