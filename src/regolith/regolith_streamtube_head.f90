@@ -66,9 +66,9 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       totmare = totmare + vsgly * current(M)%comp
       recyratio = vsgly / (user%pix**2) /current(M)%thickness
       age_collector(:) = age_collector(:) + current(M)%age(:) * recyratio
-      headmeltvol = current(M)%meltfrac * vsgly ! * recyratio
+      headmeltvol = current(M)%meltfrac * vsgly * recyratio
       meltinejecta = meltinejecta + headmeltvol
-      distvol(:) = distvol + (current(M)%meltdist(:)*vsgly) !*recyratio)
+      distvol(:) = distvol + (current(M)%meltdist(:)*vsgly*recyratio)
       totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
@@ -81,9 +81,9 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             totmarehead = totmarehead + vhead * vratio * current(N)%comp
             recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-            headmeltvol = current(N)%meltfrac * tothead !* recyratio
+            headmeltvol = current(N)%meltfrac * tothead * recyratio
             meltinejecta = meltinejecta + headmeltvol
-            distvol(:) = distvol + (current(N)%meltdist(:)*tothead) !*recyratio)
+            distvol(:) = distvol + (current(N)%meltdist(:)*tothead*recyratio)
             totvol = totvol + tothead
             !current => current%next
             !N = N - 1
@@ -95,9 +95,9 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             tothead = vsgly
             recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-            headmeltvol = current(N)%meltfrac * tothead !*recyratio)
+            headmeltvol = current(N)%meltfrac * tothead*recyratio
             meltinejecta = meltinejecta + headmeltvol
-            distvol(:) = distvol + (current(N)%meltdist(:)*tothead) !*recyratio)
+            distvol(:) = distvol + (current(N)%meltdist(:)*tothead*recyratio)
             totvol = totvol + tothead
             exit
          end if
