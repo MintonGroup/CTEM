@@ -84,9 +84,9 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                 recyratio        = max(ebh_recyl,0.0_DP) / current(N-1)%thickness
                 age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
                 vol              = vol + sum(current(N-1)%age(:)) * recyratio
-                linmelt = current(N-1)%meltfrac * vsgly * recyratio
+                linmelt = current(N-1)%meltfrac * vsgly! * recyratio
                 meltinejecta = meltinejecta + linmelt
-                distvol(:) = distvol(:) + (current(N-1)%meltdist(:)*vsgly*recyratio)
+                distvol(:) = distvol(:) + (current(N-1)%meltdist(:)*vsgly)!*recyratio)
                 totvol = totvol + vsgly
              else if (ri <= xmints .and. rip1 > xmints) then 
                      vseg             = regolith_streamtube_volume_func(eradi,xmints,rip1,deltar)
@@ -94,9 +94,9 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                      recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N-1)%thickness 
                      age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
                      vol              = vol + sum(current(N-1)%age(:)) * recyratio
-                     linmelt = current(N-1)%meltfrac * vseg * recyratio
+                     linmelt = current(N-1)%meltfrac * vseg! * recyratio
                      meltinejecta = meltinejecta + linmelt
-                     distvol(:) = distvol(:) + (current(N-1)%meltdist(:)*vseg*recyratio)
+                     distvol(:) = distvol(:) + (current(N-1)%meltdist(:)*vseg)!*recyratio)
                      totvol = totvol + vseg
              end if
              exit
@@ -124,9 +124,9 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
                   vol              = vol + sum(current(N)%age(:)) * recyratio
-                  linmelt = current(N)%meltfrac * vseg * recyratio
+                  linmelt = current(N)%meltfrac * vseg! * recyratio
                   meltinejecta = meltinejecta + linmelt
-                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*vseg*recyratio)
+                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*vseg)!*recyratio)
                   totvol = totvol + vseg
                end if
 
@@ -137,9 +137,9 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
                   vol              = vol + sum(current(N)%age(:)) * recyratio
-                  linmelt = current(N)%meltfrac * vseg * recyratio
+                  linmelt = current(N)%meltfrac * vseg! * recyratio
                   meltinejecta = meltinejecta + linmelt
-                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*vseg*recyratio)
+                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*vseg)!*recyratio)
                   totvol = totvol + vseg
                end if
                !current => current%next
@@ -162,9 +162,9 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
                   vol              = vol + sum(current(N)%age(:)) * recyratio
-                  linmelt = current(N)%meltfrac * vseg * recyratio
+                  linmelt = current(N)%meltfrac * vseg! * recyratio
                   meltinejecta = meltinejecta + linmelt
-                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*vseg*recyratio)
+                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*vseg)!*recyratio)
                   totvol = totvol + vseg
                end if
 
