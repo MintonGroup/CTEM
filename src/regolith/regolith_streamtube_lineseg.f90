@@ -66,7 +66,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
 
    vol = 0.0_DP
 
-   do N=N,2,-1
+   do N=M,2,-1
 
        !if (.not. associated(current%next)) exit !it should exit until it hit the very bottom.
 
