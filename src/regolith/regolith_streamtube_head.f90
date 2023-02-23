@@ -68,7 +68,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       age_collector(:) = age_collector(:) + current(M)%age(:) * recyratio
       headmeltvol = current(M)%meltfrac * vsgly * recyratio
       meltinejecta = meltinejecta + headmeltvol
-      distvol(:) = distvol + (current(M)%meltdist(:)*vsgly*recyratio)
+      distvol(:) = distvol(:) + (current(M)%meltdist(:)*vsgly*recyratio)
       totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
@@ -83,7 +83,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             headmeltvol = current(N)%meltfrac * tothead * recyratio
             meltinejecta = meltinejecta + headmeltvol
-            distvol(:) = distvol + (current(N)%meltdist(:)*tothead*recyratio)
+            distvol(:) = distvol(:) + (current(N)%meltdist(:)*tothead*recyratio)
             totvol = totvol + tothead
             !current => current%next
             !N = N - 1
@@ -97,7 +97,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             headmeltvol = current(N)%meltfrac * tothead*recyratio
             meltinejecta = meltinejecta + headmeltvol
-            distvol(:) = distvol + (current(N)%meltdist(:)*tothead*recyratio)
+            distvol(:) = distvol(:) + (current(N)%meltdist(:)*tothead*recyratio)
             totvol = totvol + tothead
             exit
          end if
