@@ -131,7 +131,7 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
    newlayer%thickness = ebh    ! default value: stream tube's volume = paraboloid shell's volume
    newlayer%comp      = 0.0_DP
    newlayer%meltvolume = 0.0_DP
-   newlayer%totvolume = 0.0_DP
+   newlayer%totvolume = newlayer%thickness * user%pix * user%pix
    newlayer%ejm       = 0.0_DP
    newlayer%ejmf      = 0.0_DP
    rints              = sqrt(rm**2 - (crater%imp/2.0)**2)
@@ -145,7 +145,7 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
       volm1    = vst - volv1
       melt     = volm1
       newlayer%meltvolume = melt
-      newlayer%totvolume = volm1
+      !newlayer%totvolume = volm1
       newlayer%meltfrac = 1.0_DP
       newlayer%ejm = melt
       newlayer%ejmf = 1.0_DP
@@ -173,8 +173,8 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
            volm1        = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
            melt         = volm1 - volv1
            newlayer%meltvolume = melt
-           newlayer%totvolume = vst-volv1
-           newlayer%meltfrac = melt/(vst-volv1)
+           newlayer%totvolume = newlayer%thickness * user%pix * user%pix
+           newlayer%meltfrac = melt / newlayer%totvolume
            newlayer%ejm = melt
            newlayer%ejmf = newlayer%meltfrac
            
@@ -182,8 +182,11 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
 
    allocate(newlayer%meltdist((domain%rcnum)))
    newlayer%meltdist(:) = 0.0_SP
+   allocate(newlayer%distvol((domain%rcnum)))
+   newlayer%distvol(:) = 0.0_SP
    if(domain%currentqmc) then
-      newlayer%meltdist(domain%nqmc) = newlayer%meltfrac !might change this to melt
+      newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
+      newlayer%distvol(domain%nqmc) = newlayer%meltvolume
    end if 
 
    n_age = max(ceiling(age / age_resolution), 1)

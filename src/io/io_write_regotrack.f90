@@ -39,8 +39,8 @@ subroutine io_write_regotrack(user,surf,domain)
    !type(regolisttype),pointer :: current => null()
    type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
-   real(DP),dimension(:),allocatable :: meltfrac, thickness, comp, ejm, ejmf
-   real(SP),dimension(:,:),allocatable :: age, meltdist
+   real(DP),dimension(:),allocatable :: meltfrac, thickness, comp, ejm, ejmf, meltvolume
+   real(SP),dimension(:,:),allocatable :: age, meltdist, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
@@ -54,8 +54,8 @@ subroutine io_write_regotrack(user,surf,domain)
    open(FCOMP,file=COMPFILE,status='replace',form='unformatted')
    open(FAGE,file=AGEFILE,status='replace',form='unformatted')
    open(FMD,file=MDFILE,status='replace',form='unformatted')
-   !open(FEJM,file=EJMFILE,status='replace',form='unformatted')
-   open(FEJMF,file=EJMFFILE,status='replace',form='unformatted')
+   open(FEJM,file=EJMFILE,status='replace',form='unformatted')
+   !open(FEJMF,file=EJMFFILE,status='replace',form='unformatted')
 
    ! First pass to get stack numbers
    stacks_num(:,:) = 0
@@ -78,7 +78,7 @@ subroutine io_write_regotrack(user,surf,domain)
       do i=1,user%gridsize
          !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
-         allocate(meltfrac(N),thickness(N),comp(N),age(MAXAGEBINS,N),meltdist(domain%rcnum,N),ejm(N),ejmf(N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(domain%rcnum,N),ejm(N),ejmf(N))
          allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
             ! meltfrac(k) = current%regodata%meltfrac
@@ -86,25 +86,25 @@ subroutine io_write_regotrack(user,surf,domain)
             ! comp(k) = current%regodata%comp
             ! age(:,k) = current%regodata%age(:)
             ! current => current%next
-            meltfrac(k) = current(k)%meltfrac
+            meltvolume(k) = current(k)%meltvolume
             thickness(k) = current(k)%thickness
             comp(k) = current(k)%comp
             age(:,k) = current(k)%age(:)
             !write(*,*) i, j
-            meltdist(:,k) = current(k)%meltdist(:)
+            distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
-            ejmf(k) = current(k)%ejmf
+            !ejmf(k) = current(k)%ejmf
 
          end do
          deallocate(current)
-         write(FMELT) meltfrac(:)
+         write(FMELT) meltvolume(:)
          write(FREGO) thickness(:)
          write(FCOMP) comp(:)
          write(FAGE) age(:,:)
-         write(FMD) meltdist(:,:)
-         !write(FEJM) ejm(:)
-         write(FEJMF) ejmf(:)
-         deallocate(meltfrac,thickness,comp,age,meltdist,ejm,ejmf)
+         write(FMD) distvol(:,:)
+         write(FEJM) ejm(:)
+         !write(FEJMF) ejmf(:)
+         deallocate(meltfrac,thickness,comp,age,distvol,ejm,ejmf)
       end do 
    end do
    close(FMELT)
@@ -112,8 +112,8 @@ subroutine io_write_regotrack(user,surf,domain)
    close(FCOMP)
    close(FAGE)
    close(FMD)
-   !close(FEJM)
-   close(FEJMF)
+   close(FEJM)
+   !close(FEJMF)
 
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
    open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')

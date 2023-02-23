@@ -287,11 +287,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    end do
    !close(74)
    !!$OMP END PARALLEL DO
-   if(user%doregotrack .and. user%testflag) then
-      write(*,*) 'Ejected Melt: ', vmelt
-      write(*,*) 'Total Melt: ', totmelt
-      write(*,*) 'ejected / total melt:', vmelt/totmelt
-   end if
+   ! if(user%doregotrack .and. user%testflag) then
+   !    write(*,*) 'Ejected Melt: ', vmelt
+   !    write(*,*) 'Total Melt: ', totmelt
+   !    write(*,*) 'ejected / total melt:', vmelt/totmelt
+   ! end if
    vmeltsheet = totmelt - vmelt   
    
    ejbmass = sum(cumulative_elchange)
