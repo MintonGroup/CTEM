@@ -104,7 +104,7 @@ subroutine io_write_regotrack(user,surf,domain)
          write(FMD) distvol(:,:)
          write(FEJM) ejm(:)
          !write(FEJMF) ejmf(:)
-         deallocate(meltfrac,thickness,comp,age,distvol,ejm,ejmf)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf)
       end do 
    end do
    close(FMELT)

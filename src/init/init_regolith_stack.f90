@@ -46,7 +46,9 @@ subroutine init_regolith_stack(user,surf,domain)
    bedrock%comp      = 0._DP
    bedrock%age(:)    = 0.0_SP
    allocate(bedrock%meltdist(domain%rcnum))
+   allocate(bedrock%distvol(domain%rcnum))
    bedrock%meltdist(:) = 0.0_SP
+   bedrock%distvol(:) = 0.0_SP
 
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize

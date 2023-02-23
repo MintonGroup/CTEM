@@ -42,6 +42,7 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
 
     hmeltsheet = vmeltsheet / (nmeltsheet*user%pix*user%pix)
     allocate(newlayer%meltdist(domain%rcnum))
+    allocate(newlayer%distvol(domain%rcnum))
 
     inc = incval
 
@@ -80,6 +81,7 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
     end do
 
     deallocate(newlayer%meltdist)
+    deallocate(newlayer%distvol)
 
     return
 end subroutine regolith_interior
