@@ -65,6 +65,7 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
       newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%thickness * poppedarray(i)%distvol(:)
       newlayer%ejm       = newlayer%ejm + poppedarray(i)%thickness * poppedarray(i)%ejm
       newlayer%ejmf      = newlayer%ejmf + poppedarray(i)%thickness * poppedarray(i)%ejmf
+      newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%thickness * poppedarray(i)%meltvolume
    end do
 
    ! Get average values of composition and melt fraction
@@ -74,6 +75,7 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
    newlayer%distvol(:) = newlayer%distvol(:) / newlayer%thickness
    newlayer%ejm = newlayer%ejm / newlayer%thickness
    newlayer%ejmf = newlayer%ejmf / newlayer%thickness
+   newlayer%meltvolume = newlayer%meltvolume / newlayer%thickness
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
