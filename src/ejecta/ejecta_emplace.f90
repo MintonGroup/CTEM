@@ -266,7 +266,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
          areafrac =  (1.0_DP - util_area_intersection(crater%ejrad,xbar,ybar,user%pix)) 
 
          ebh = areafrac * ejdistribution(idistorted,jdistorted) * ebh
-         cumulative_elchange(i,j) = areafrac * cumulative_elchange(i,j) + ebh + crater_profile(user, crater, lrad)
+         cumulative_elchange(i,j) = ebh + crater_profile(user, crater, lrad)
 
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region
@@ -274,14 +274,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
             areafrac = areafrac * util_area_intersection(crater%fe * crater%frad,xbar,ybar,user%pix)
             kdiff(i,j) = areafrac * diffdistribution(idistorted,jdistorted) * kdiffmax
          end if
-
-
-         if (user%doregotrack .and. ebh>1.0e-8_DP) then
-            call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
-            vmelt = vmelt + volm
-            !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
-         end if
-
             
       end do
    end do
@@ -291,8 +283,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    !    write(*,*) 'Ejected Melt: ', vmelt
    !    write(*,*) 'Total Melt: ', totmelt
    !    write(*,*) 'ejected / total melt:', vmelt/totmelt
-   ! end if
-   vmeltsheet = totmelt - vmelt   
+   ! end if 
    
    ejbmass = sum(cumulative_elchange)
 
@@ -314,6 +305,45 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    if (abs(fmasscons) < tiny(1.0_DP)) return
    ejb(:)%thick = ejb(:)%thick + log(fmasscons)
    maxhits = 1
+   
+   if (user%doregotrack) then
+      do j = -inc,inc
+         do i = -inc, inc
+            ! find distance from crater center
+            iradsq = i*i + j*j
+            xpi = crater%xlpx + i
+            ypi = crater%ylpx + j
+   
+            ! Find distance from crater center to current pixel center in real space
+            xp = xpi * user%pix
+            yp = ypi * user%pix
+   
+            ! periodic boundary conditions
+            call util_periodic(xpi,ypi,user%gridsize)
+   
+            indarray(1,i,j) = xpi
+            indarray(2,i,j) = ypi
+   
+            lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+            lrad = sqrt(lradsq)
+            if (lrad < crater%ejrad) cycle
+      
+      
+      
+            ebh = cumulative_elchange(i,j) - crater_profile(user, crater, lrad)
+      
+      
+               if (user%doregotrack .and. ebh>1.0e-8_DP) then
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
+                  vmelt = vmelt + volm
+                  !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
+               end if
+         end do
+      end do
+   end if
+
+   vmeltsheet = totmelt - vmelt
+
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
 
