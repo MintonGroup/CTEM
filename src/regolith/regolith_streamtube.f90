@@ -272,9 +272,9 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
       newlayer%meltvolume = newlayer%meltvolume + meltinejecta
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
-      distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
-      newlayer%distvol(:) = distvol(:)
-      newlayer%meltdist(:) = distvol(:) / newlayer%totvolume
+      !distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
+      newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
+      newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
       ! if (newlayer%meltfrac > 1.0_DP) then
       !    write(*,*) "Melt fraction >1! (Subpixel)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
       !     newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
@@ -326,9 +326,9 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       if (newlayer%ejmf < 1.0_DP) then
          newlayer%meltvolume = newlayer%meltvolume + meltinejecta
          newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
-         distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
-         newlayer%distvol(:) = distvol(:)
-         newlayer%meltdist(:) = distvol(:) / newlayer%totvolume
+         !distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
+         newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
+         newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
       end if
       if (newlayer%meltfrac > 1.0_DP) then
          write(*,*) "Melt fraction >1! (Traverse)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
