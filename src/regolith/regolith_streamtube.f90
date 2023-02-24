@@ -330,10 +330,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
          newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
       end if
-      if (newlayer%meltfrac > 1.0_DP) then
-         write(*,*) "Melt fraction >1! (Traverse)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
-          newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
-      end if
+      ! if (newlayer%meltfrac > 1.0_DP) then
+      !    write(*,*) "Melt fraction >1! (Traverse)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
+      !     newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
+      ! end if
 
   end if
 
