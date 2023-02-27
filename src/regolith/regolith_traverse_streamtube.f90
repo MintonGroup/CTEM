@@ -89,8 +89,8 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
          recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / surfi%regolayer(N)%thickness
          age_collector(:) = age_collector(:) + surfi%regolayer(N)%age(:) * recyratio
-         meltinejecta     = meltinejecta + surfi%regolayer(N)%meltfrac * vseg*recyratio
-         distvol(:)       = distvol(:) + (surfi%regolayer(N)%meltdist(:)*vseg*recyratio)
+         meltinejecta     = meltinejecta + surfi%regolayer(N)%meltfrac*(vseg-vsh)!*recyratio
+         distvol(:)       = distvol(:) + (surfi%regolayer(N)%meltdist(:)*(vseg-vsh))!*recyratio)
          totvol = totvol + vseg
       end if
 
