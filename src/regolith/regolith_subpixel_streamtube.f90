@@ -188,26 +188,26 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          !if (rrighti>max(xmints,sqrt(rm**2 - z**2))) then
          if (rrighti > xmints) then
             vsh                = regolith_shock_damage(eradi,deltar,xmints,xsfints,rrighti,rrightf)
-            recyratio          = max((vsgly2 -vsh),0.0)/ (user%pix**2) / current(N)%thickness
+            recyratio          = max((vsgly2 -vsh),0.0_DP)/ (user%pix**2) / current(N)%thickness
             age_collector(:)   = age_collector(:) + current(N)%age(:) * recyratio
             vol                = vol + sum(current(N)%age(:)) * recyratio
-            mvr                = (vsgly2-vsh) * current(N)%meltfrac! * recyratio
+            mvr                = max((vsgly2 -vsh),0.0_DP) * current(N)%meltfrac! * recyratio
             recyratio2         = recyratio
             vsh2 = vsh
          end if
 
          if (rlefti > xmints) then
             vsh                = regolith_shock_damage(eradi,deltar,xmints,xsfints,rlefti,rleftf)
-            recyratio          = max((vsgly1-vsh),0.0) / (user%pix**2) / current(N)%thickness
+            recyratio          = max((vsgly1-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
             age_collector(:)   = age_collector(:) + current(N)%age(:) * recyratio
             vol                = vol + sum(current(N)%age(:)) * recyratio
-            mvl                = (vsgly1-vsh) * current(N)%meltfrac!*recyratio
+            mvl                = max((vsgly1-vsh),0.0_DP) * current(N)%meltfrac!*recyratio
          end if
 
          !current => current%next
          meltinejecta = meltinejecta + mvl + mvr
          !distvol(:) = distvol(:) + (current(N)%meltdist(:)*((vsgly1-vsh)*recyratio)+((vsgly2-vsh2)*recyratio2))
-         distvol(:) = distvol(:) + (current(N)%meltdist(:)*((vsgly1-vsh)+(vsgly2-vsh2)))
+         distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh),0.0_DP)))
          totvol = totvol + vsgly1 + vsgly2
          !N = N - 1
          z = z + current(N-1)%thickness 

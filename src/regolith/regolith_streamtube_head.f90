@@ -66,7 +66,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       totmare = totmare + vsgly * current(M)%comp
       recyratio = vsgly / (user%pix**2) /current(M)%thickness
       age_collector(:) = age_collector(:) + current(M)%age(:) * recyratio
-      headmeltvol = current(M)%meltfrac * vsgly * recyratio
+      headmeltvol = current(M)%meltfrac * vsgly! * recyratio
       meltinejecta = meltinejecta + headmeltvol
       distvol(:) = distvol(:) + (current(M)%meltdist(:)*vsgly)!*recyratio)
       totvol = totvol + vsgly
