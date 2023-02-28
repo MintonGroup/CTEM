@@ -113,9 +113,9 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          vseg             = regolith_streamtube_volume_func(eradi,xmints,eradi,deltar)
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,0.0_DP,eradi)
          recyratio        = max(vseg-vsh,0.0 )/ (user%pix**2) / (surfi%regolayer(M)%thickness)
-         meltinejecta     = surfi%regolayer(M)%meltfrac * (vseg-vsh)! * recyratio
-         distvol(:)       = distvol(:) + (surfi%regolayer(M)%meltdist(:)*(vseg-vsh))!*recyratio)
-         totvol           = vseg - vsh
+         meltinejecta     = surfi%regolayer(M)%meltfrac * max((vseg-vsh),0.0_DP)! * recyratio
+         distvol(:)       = distvol(:) + (surfi%regolayer(M)%meltdist(:)*max((vseg-vsh),0.0_DP))!*recyratio)
+         totvol           = vseg
          age_collector(:) = age_collector(:) + surfi%regolayer(M)%age(:) * recyratio
          vol              = vol + sum(age_collector(:))
 !         write(*,*) '1',eradi, xmints, xsfints, &
@@ -207,7 +207,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          !current => current%next
          meltinejecta = meltinejecta + mvl + mvr
          !distvol(:) = distvol(:) + (current(N)%meltdist(:)*((vsgly1-vsh)*recyratio)+((vsgly2-vsh2)*recyratio2))
-         distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh),0.0_DP)))
+         distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh2),0.0_DP)))
          totvol = totvol + vsgly1 + vsgly2
          !N = N - 1
          z = z + current(N-1)%thickness 

@@ -268,7 +268,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
                !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
-            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,age,age_resolution,ejecta_dem,vmeltsheet)
+            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,age,age_resolution,&
+               ejecta_dem,nmeltsheet,vmeltsheet)
          else
             ejtble = 0
          end if

@@ -75,7 +75,8 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,vmeltsheet)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,&
+   nmeltsheet,vmeltsheet)
    use module_globals
    use module_util
    use module_io
@@ -95,6 +96,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    real(DP),intent(in)  :: age
    real(DP),intent(in)  :: age_resolution
    real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
+   integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
 
    ! Internal variables
@@ -342,7 +344,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
       end do
    end if
 
-   vmeltsheet = totmelt - vmelt
+   if (totmelt > vmelt) then
+      vmeltsheet = totmelt - vmelt
+   else !give the craters a melt sheet of 1mm
+      vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+   end if
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then

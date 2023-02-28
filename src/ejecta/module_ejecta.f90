@@ -25,7 +25,8 @@ public
 save
 
    interface
-      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,vmeltsheet)
+      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,&
+         nmeltsheet,vmeltsheet)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -38,6 +39,7 @@ save
       real(DP),intent(in)  :: age
       real(DP),intent(in)  :: age_resolution
       real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
+      integer(I4B),intent(in) :: nmeltsheet
       real(DP),intent(out) :: vmeltsheet
       end subroutine ejecta_emplace
    end interface
