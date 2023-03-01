@@ -18,13 +18,14 @@
 !  Notes       :  Popped list will be in reversed order from the original list
 !
 !**********************************************************************************************************************************
-subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
+subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
     use module_globals
     use module_util, EXCEPT_THIS_ONE => util_traverse_pop_array
     implicit none
  
     ! Arguments
     !type(regolisttype),pointer   :: regolayer
+    type(usertype),intent(in)     :: user
     type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
     real(DP),intent(in)          :: traverse_depth
     !type(regolisttype),pointer   :: poppedlist 
@@ -69,6 +70,14 @@ subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
 
     poppedarray(1)%thickness = poppedarray(1)%thickness - depth_diff
     regolayer(maxi)%thickness = regolayer(maxi)%thickness - poppedarray(1)%thickness
+    poppedarray(1)%totvolume = poppedarray(1)%thickness * user%pix * user%pix
+    poppedarray(1)%meltvolume = poppedarray(1)%meltfrac * poppedarray(1)%totvolume
+    poppedarray(1)%distvol(:) = poppedarray(1)%meltdist(:) * poppedarray(1)%totvolume
+    poppedarray(1)%ejm = poppedarray(1)%ejmf * poppedarray(1)%totvolume
+    regolayer(maxi)%totvolume = regolayer(maxi)%thickness * user%pix * user%pix
+    regolayer(maxi)%distvol(:) = regolayer(maxi)%meltdist(:) * regolayer(maxi)%totvolume
+    regolayer(maxi)%meltvolume = regolayer(maxi)%meltfrac * regolayer(maxi)%totvolume
+    regolayer(maxi)%ejm = regolayer(maxi)%ejmf * regolayer(maxi)%totvolume
 
     ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
     allocate(oldregodata,source=regolayer(1:maxi))

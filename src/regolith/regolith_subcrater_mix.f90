@@ -66,7 +66,7 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
          N = size(surf(i,j)%regolayer)
 
          if (surf(i,j)%regolayer(N)%thickness < dd) then             
-            call regolith_mix(surf(i,j),dd,domain)
+            call regolith_mix(user,surf(i,j),dd,domain)
          end if
          
        end do

@@ -83,9 +83,10 @@ end interface
 ! end interface
 
 interface
-   subroutine util_traverse_pop_array(regolayer,traverse_depth,poppedarray)
+   subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
    use module_globals
    implicit none
+   type(usertype),intent(in) :: user
    type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
    real(DP),intent(in) :: traverse_depth
    type(regodatatype),dimension(:),allocatable,intent(out) :: poppedarray

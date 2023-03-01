@@ -235,8 +235,9 @@ save
    end interface
 
    interface
-      subroutine regolith_mix(surfi,mixing_depth,domain)
+      subroutine regolith_mix(user,surfi,mixing_depth,domain)
       use module_globals
+      type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in) :: mixing_depth
       type(domaintype),intent(in) :: domain

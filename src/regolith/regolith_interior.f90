@@ -62,7 +62,7 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
             lradsq = x_relative**2 + y_relative**2
 
             if (lradsq > crater%frad**2) cycle
-            call util_traverse_pop_array(surf(xpi,ypi)%regolayer,surf(xpi,ypi)%abselc,poppedarray)
+            call util_traverse_pop_array(user,surf(xpi,ypi)%regolayer,surf(xpi,ypi)%abselc,poppedarray)
             deallocate(poppedarray)
 
             !fill top layer with melt sheet of given thickness hmeltsheet

@@ -16,13 +16,14 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_mix(surfi,mixing_depth,domain)
+subroutine regolith_mix(user,surfi,mixing_depth,domain)
    use module_globals
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_mix
    implicit none
 
    ! Arguments
+   type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
    real(DP), intent(in) :: mixing_depth
    type(domaintype),intent(in) :: domain
@@ -40,7 +41,7 @@ subroutine regolith_mix(surfi,mixing_depth,domain)
    ! if(domain%currentqmc .eqv. .true.) then
    !    j = 0
    ! end if     
-   call util_traverse_pop_array(surfi%regolayer,mixing_depth,poppedarray)
+   call util_traverse_pop_array(user,surfi%regolayer,mixing_depth,poppedarray)
 
    newlayer%thickness = 0.0_DP
    newlayer%comp      = 0.0_DP
