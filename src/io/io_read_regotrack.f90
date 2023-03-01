@@ -86,7 +86,7 @@ subroutine io_read_regotrack(user,surf,domain)
       do i=1,user%gridsize
 
          !call util_init_list(surf(i,j)%regolayer,initstat)
-         call util_init_array(surf(i,j)%regolayer,domain,initstat)
+         call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
 
          allocate(regotopi(stacks_num(i,j)))
          allocate(compi(stacks_num(i,j)))

@@ -110,9 +110,10 @@ end interface
 ! end interface
 
 interface
-   subroutine util_init_array(regolayer,domain,initstat)
+   subroutine util_init_array(user,regolayer,domain,initstat)
    use module_globals
    implicit none
+   type(usertype),intent(in) :: user
    type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
    type(domaintype),intent(in)    :: domain
    logical, intent(out)     :: initstat

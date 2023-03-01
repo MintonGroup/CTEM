@@ -50,7 +50,7 @@ subroutine init_regolith_stack(user,surf,domain)
    bedrock%meltdist(:) = 0.0_SP
    bedrock%distvol(:) = 0.0_SP
    bedrock%meltvolume = 0.0_DP
-   bedrock%totvolume = 0.0_DP
+   bedrock%totvolume = bedrock%thickness * user%pix * user%pix
    bedrock%ejm = 0.0_DP
    bedrock%ejmf = 0.0_DP
 
@@ -58,7 +58,7 @@ subroutine init_regolith_stack(user,surf,domain)
       do xp = 1, user%gridsize
 
          !call util_init_list(surf(xp,yp)%regolayer,initstat)
-         call util_init_array(surf(xp,yp)%regolayer,domain,initstat)
+         call util_init_array(user,surf(xp,yp)%regolayer,domain,initstat)
 
          if (initstat) then
              call util_push_array(surf(xp,yp)%regolayer,bedrock)
