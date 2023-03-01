@@ -49,6 +49,10 @@ subroutine init_regolith_stack(user,surf,domain)
    allocate(bedrock%distvol(domain%rcnum))
    bedrock%meltdist(:) = 0.0_SP
    bedrock%distvol(:) = 0.0_SP
+   bedrock%meltvolume = 0.0_DP
+   bedrock%totvolume = 0.0_DP
+   bedrock%ejm = 0.0_DP
+   bedrock%ejmf = 0.0_DP
 
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
