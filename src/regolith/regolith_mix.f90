@@ -80,6 +80,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    newlayer%ejm = newlayer%ejm / newlayer%thickness
    newlayer%ejmf = newlayer%ejmf / newlayer%thickness
    newlayer%meltvolume = newlayer%meltvolume / newlayer%thickness
+   newlayer%totvolume = newlayer%totvolume / newlayer%thickness
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
