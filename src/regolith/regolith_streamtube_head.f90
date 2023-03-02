@@ -84,7 +84,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             headmeltvol = current(N)%meltfrac * tothead! * recyratio
             meltinejecta = meltinejecta + headmeltvol
             distvol(:) = distvol(:) + (current(N)%meltdist(:)*(vhead*vratio))!*recyratio)
-            !totvol = totvol + tothead
+            totvol = totvol + tothead
             !current => current%next
             !N = N - 1
             z = z + current(N-1)%thickness
