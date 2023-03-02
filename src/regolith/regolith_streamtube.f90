@@ -89,7 +89,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
-   real(DP)     :: meltinejecta, totvol
+   real(DP)     :: meltinejecta, totvol, factor
    type(regodatatype) :: newlayer
    real(SP),dimension(:),allocatable :: distvol
 
@@ -271,10 +271,10 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
       newlayer%meltvolume = newlayer%meltvolume + meltinejecta
-      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
+      newlayer%meltfrac = newlayer%meltvolume / totvol
       !distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
-      newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
-      newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
+      !newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
+      !newlayer%meltdist(:) = newlayer%distvol(:) / totvol
       ! if (newlayer%meltfrac > 1.0_DP) then
       !    write(*,*) "Melt fraction >1! (Subpixel)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
       !     newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
@@ -325,17 +325,38 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
       if (newlayer%ejmf < 1.0_DP) then
          newlayer%meltvolume = newlayer%meltvolume + meltinejecta
-         newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
+         newlayer%meltfrac = newlayer%meltvolume / totvol
          !distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
-         newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
-         newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
+         !newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
+         !newlayer%meltdist(:) = newlayer%distvol(:) / totvol
       end if
       ! if (newlayer%meltfrac > 1.0_DP) then
       !    write(*,*) "Melt fraction >1! (Traverse)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
       !     newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
       ! end if
+   end if
 
-  end if
+  !Apply a correction factor to ensure conservation of volume
+
+
+  factor = (totvol - newlayer%ejm) / newlayer%totvolume
+  totvol = newlayer%totvolume - meltinejecta
+  if (newlayer%ejm > newlayer%totvolume) then !entire pixel is ejected melt
+    newlayer%ejm = newlayer%totvolume
+    newlayer%meltdist(:) = newlayer%distvol(:) * 1.0
+    newlayer%meltfrac = 1.0
+  else
+    meltinejecta = meltinejecta * factor
+    if (meltinejecta + newlayer%ejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
+       meltinejecta = newlayer%totvolume - newlayer%ejm
+    end if
+    newlayer%meltfrac = (meltinejecta + newlayer%ejm) / newlayer%totvolume
+    if (newlayer%meltfrac > 1.0_DP) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
+       newlayer%meltfrac = 1.0_DP
+    end if
+    newlayer%distvol(:) = factor * (newlayer%distvol(:) + distvol(:))
+    newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
+   end if
 
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
 

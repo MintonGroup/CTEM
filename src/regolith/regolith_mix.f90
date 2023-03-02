@@ -62,25 +62,25 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    do i = N,1,-1
       newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
       newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
-      newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
+      !newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
       newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
-      newlayer%meltdist(:) = newlayer%meltdist(:) + poppedarray(i)%thickness * poppedarray(i)%meltdist(:)
+      !newlayer%meltdist(:) = newlayer%meltdist(:) + poppedarray(i)%thickness * poppedarray(i)%meltdist(:)
       newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%thickness * poppedarray(i)%distvol(:)
       newlayer%ejm       = newlayer%ejm + poppedarray(i)%thickness * poppedarray(i)%ejm
-      newlayer%ejmf      = newlayer%ejmf + poppedarray(i)%thickness * poppedarray(i)%ejmf
+      !newlayer%ejmf      = newlayer%ejmf + poppedarray(i)%thickness * poppedarray(i)%ejmf
       newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%thickness * poppedarray(i)%meltvolume
-      newlayer%totvolume = newlayer%totvolume + poppedarray(i)%thickness * poppedarray(i)%totvolume
+      !newlayer%totvolume = newlayer%totvolume + poppedarray(i)%thickness * poppedarray(i)%totvolume
    end do
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
-   newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
-   newlayer%meltdist(:) = newlayer%meltdist(:) / newlayer%thickness
+   !newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
+   !newlayer%meltdist(:) = newlayer%meltdist(:) / newlayer%thickness
    newlayer%distvol(:) = newlayer%distvol(:) / newlayer%thickness
    newlayer%ejm = newlayer%ejm / newlayer%thickness
-   newlayer%ejmf = newlayer%ejmf / newlayer%thickness
+   !newlayer%ejmf = newlayer%ejmf / newlayer%thickness
    newlayer%meltvolume = newlayer%meltvolume / newlayer%thickness
-   newlayer%totvolume = newlayer%totvolume / newlayer%thickness
+   !newlayer%totvolume = newlayer%totvolume / newlayer%thickness
 
    !test forcing melt fraction to equal melt volume / total volume
    newlayer%totvolume = newlayer%thickness * user%pix * user%pix
