@@ -270,8 +270,8 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
-      newlayer%meltvolume = newlayer%meltvolume + meltinejecta
-      newlayer%meltfrac = newlayer%meltvolume / totvol
+      !newlayer%meltvolume = newlayer%meltvolume + meltinejecta
+      !newlayer%meltfrac = newlayer%meltvolume / totvol
       !distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
       !newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
       !newlayer%meltdist(:) = newlayer%distvol(:) / totvol
