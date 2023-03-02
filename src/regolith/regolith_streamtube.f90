@@ -332,30 +332,30 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
   !Apply a correction factor to ensure conservation of volume
 
 
-  factor = newlayer%totvolume / (totvol - newlayer%ejm)
+  factor = (newlayer%totvolume-newlayer%ejm) / totvol
   meltinejecta = meltinejecta * factor
   distvol(:) = distvol(:) * factor
-  totvol = newlayer%totvolume - meltinejecta
+  !totvol = newlayer%totvolume - meltinejecta
   if (newlayer%ejm > newlayer%totvolume) then !entire pixel is ejected melt
-    newlayer%ejm = newlayer%totvolume
-    newlayer%meltfrac = 1.0
-    newlayer%meltvolume = newlayer%ejm
-  else
-    meltinejecta = meltinejecta * factor
-    if (meltinejecta + newlayer%ejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
-       meltinejecta = newlayer%totvolume - newlayer%ejm
-    end if
-    newlayer%meltvolume = meltinejecta + newlayer%ejm
-    newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
-    if (newlayer%meltfrac > 1.0_DP) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
-       newlayer%meltfrac = 1.0_DP
-       factor = newlayer%totvolume / newlayer%meltvolume
-       newlayer%meltvolume = newlayer%totvolume
-       distvol(:) = distvol(:) * factor
-    end if
-    newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
-    newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
-    newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
+      newlayer%ejm = newlayer%totvolume
+      newlayer%meltfrac = 1.0_DP
+      newlayer%meltvolume = newlayer%ejm
+      newlayer%ejmf = 1.0_DP
+   else
+      if (meltinejecta + newlayer%ejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
+         meltinejecta = newlayer%totvolume - newlayer%ejm
+      end if
+      newlayer%meltvolume = meltinejecta + newlayer%ejm
+      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
+      if (newlayer%meltfrac > 1.0_DP) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
+         newlayer%meltfrac = 1.0_DP
+         factor = newlayer%totvolume / newlayer%meltvolume
+         newlayer%meltvolume = newlayer%totvolume
+         distvol(:) = distvol(:) * factor
+      end if
+      newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
+      newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
+      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
    end if
 
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
