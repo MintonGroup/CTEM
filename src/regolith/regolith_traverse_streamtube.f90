@@ -54,6 +54,8 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
 
    !executable code
 
+   vsh = 0.0_DP
+
    erad = (eradi + erado)/2.0
    rzmax = erad * sqrt(3.0)/4.0
    if (ri .eq. 0) then
