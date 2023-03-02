@@ -60,7 +60,6 @@ real(DP),parameter :: ALPHA = 0.125_DP
 real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
 real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
-real(DP),parameter :: PF     = 5.0e9          ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa. (5 GPa)
 real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
 
@@ -163,6 +162,7 @@ type domaintype
    integer(I4B) :: vnum      ! size of velocity distribution array
    integer(I4B) :: rcnum     ! size of real crater list array for quasi-MC
    integer(I4B) :: rccount   ! quasimc crater for iterating through the list of craters
+   integer(I4B) :: local     ! 
    integer(I4B) :: nqmc      ! current Quasi-MC crater for regolith distribution
    logical      :: currentqmc ! is the current crater a Quasi-MC crater?
    real(DP)     :: vescsq    ! Escape velocity at target
