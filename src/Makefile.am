@@ -41,6 +41,7 @@ util/util_traverse_pop.f90\
 util/util_destroy_list.f90\
 util/util_init_list.f90\
 util/util_perlin_noise.f90\
+util/util_random_number_normal.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -126,5 +127,6 @@ regolith/regolith_shock_damage_zone.f90\
 regolith/regolith_shock_damage.f90\
 porosity/porosity_form_interior.f90\
 realistic/realistic_perlin_noise.f90\
+realistic/realistic_crater_topography.f90\
 main/CTEM.f90
 CLEANFILES = *.mod

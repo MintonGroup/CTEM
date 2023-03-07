@@ -1,4 +1,5 @@
 module module_realistic
+use module_globals
 implicit none
 public
 save
@@ -105,6 +106,101 @@ interface
       real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
       end subroutine realistic_ejecta_texture
 end interface
+
+
+
+! new interfaces added by jundu on 10/22/2022
+
+interface
+   subroutine realistic_crater_topography(user,surf,crater,domain,ejecta_dem)
+      use module_globals
+      use module_util
+      use module_crater
+      implicit none
+      ! in and out
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      type(domaintype),intent(in) :: domain
+      real(DP),dimension(:,:),intent(inout) :: ejecta_dem
+   end subroutine realistic_crater_topography
+end interface
+
+ 
+interface
+   subroutine realistic_rim(user,surf,crater,deltaMtot)
+      use module_globals
+      use module_util
+      use module_crater
+      implicit none
+      ! in and out
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(cratertype),intent(inout) :: crater
+      real(DP),intent(inout) :: deltaMtot
+   end subroutine realistic_rim
+end interface
+
+
+
+! Rim_crest:
+interface 
+ 
+   subroutine Calculate_am_wl_phase_from_diameter(psd_1D,amplitude,wavelength,phase)
+      use module_globals
+      implicit none
+      ! in and out
+      type(psdtype),intent(inout) :: psd_1D
+      real(DP),dimension(:), allocatable,intent(out) :: amplitude,wavelength,phase
+   end subroutine Calculate_am_wl_phase_from_diameter
+
+   subroutine Calculate_breakpoint_slope_from_diameter(psd_1D)
+      use module_globals
+      use module_util
+      implicit none
+      ! in and out
+      type(psdtype),intent(inout) :: psd_1D
+   end subroutine Calculate_breakpoint_slope_from_diameter
+
+   subroutine Calculate_targetPSD_from_breakpoint_slope(psd_1D,wavelength,psd)
+      use module_globals
+      use module_util
+      implicit none
+      !in and out
+      type(psdtype), intent(in)  :: psd_1D
+      real(DP) ,dimension(:),allocatable,intent(out) :: wavelength,psd 
+   end subroutine Calculate_targetPSD_from_breakpoint_slope
+
+   subroutine Calculate_am_wl_phase_from_targetPSD(psd_1D,wavelength,psd,amplitude,phase)
+      use module_globals
+      implicit none
+      !in and out
+      type(psdtype), intent(in)  :: psd_1D
+      real(DP) ,dimension(:),intent(in) :: wavelength,psd 
+      real(DP) ,dimension(:),allocatable,intent(out) :: amplitude,phase 
+   end subroutine Calculate_am_wl_phase_from_targetPSD
+
+   subroutine Create_rim(arc_length,psd_1D,amplitude,wavelength,phase,rim_parameter)
+      use module_globals
+      implicit none
+      ! in and out
+      real(DP),intent(in) :: arc_length
+      type(psdtype), intent(in)  :: psd_1D
+      real(DP),dimension(:),intent(in) :: amplitude
+      real(DP),dimension(:),intent(in) :: wavelength
+      real(DP),dimension(:),intent(in) :: phase
+      real(DP),intent(out) :: rim_parameter
+   end subroutine Create_rim
+
+end interface
+
+
+
+
+
+
+
+
 
 end module module_realistic
 
