@@ -4,12 +4,7 @@ import subprocess
 import shutil
 from ctem import util
 import sys
-import pandas
-from ctem import craterproduction
-from scipy.interpolate import interp1d
 from ctem import __file__ as _pyfile
-from pathlib import Path
-import warnings
 
 class Simulation:
     """
