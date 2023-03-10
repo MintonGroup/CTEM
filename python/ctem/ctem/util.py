@@ -274,7 +274,6 @@ def read_user_input(user):
             if ('impfile' == fields[0].lower()): user['impfile'] = os.path.join(user['workingdir'],fields[1])
             if ('maxcrat' == fields[0].lower()): user['maxcrat'] = real2float(fields[1])
             if ('sfdcompare' == fields[0].lower()): user['sfdcompare'] = os.path.join(user['workingdir'], fields[1])
-            if ('realcraterlist' == fields[0].lower()): user['realcraterlist'] = os.path.join(user['workingdir'], fields[1])
             if ('interval' == fields[0].lower()): user['interval'] = real2float(fields[1])
             if ('numintervals' == fields[0].lower()): user['numintervals'] = int(fields[1])
             if ('popupconsole' == fields[0].lower()): user['popupconsole'] = fields[1]
@@ -423,13 +422,6 @@ def write_production(filename, production):
     
     return
 
-
-def write_realcraters(filename, realcraters):
-    """Writes file of real craters for use in quasi-MC runs"""
-
-    np.savetxt(filename, realcraters, fmt='%1.8e', delimiter='\t')
-
-    return
 
 def write_temp_input(user, filename):
     """Makes changes to a temporary input file for use when generating craterlist.dat for quasimc runs"""
