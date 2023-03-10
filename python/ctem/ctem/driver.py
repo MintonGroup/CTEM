@@ -46,7 +46,6 @@ class Simulation:
             'ctemfile': param_file,
             'impfile': None,
             'sfdcompare': None,
-            'quasimc': None,
             'sfdfile' : None,
             'realcraterlist': None,
         }
@@ -134,41 +133,6 @@ class Simulation:
 
                 # Scale the production function to the simulation domain
                 self.scale_production()
-
-                # Setup Quasi-MC run
-
-                if (self.user['quasimc'] == 'T'):
-
-                    #Read list of real craters
-                    print("quasi-MC mode is ON")
-                    print("Generating the crater scaling data in CTEM")
-                    rclist = util.read_formatted_ascii(self.user['realcraterlist'], skip_lines = 0)
-                    tempfile = os.path.join(currentdir, 'temp.in')
-
-                    # Generate craterlist.dat
-                    shutil.copy2(self.user['ctemfile'], tempfile )
-                    
-                    #Write a temporary input file to generate the necessary quasimc files
-                    util.write_temp_input(self.user, tempfile)
-                    util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
-                    self.compute_one_interval(ctemin=tempfile)
-                    os.remove(tempfile)
-
-                    #Interpolate craterscale.dat to get impactor sizes from crater sizes given
-                    df = pandas.read_csv(self.output_filenames['craterscale'], sep='\s+')
-                    df['log(Dc)'] = np.log(df['Dcrat(m)'])
-                    df['log(Di)'] = np.log(df['#Dimp(m)'])
-                    xnew = df['log(Dc)'].values
-                    ynew = df['log(Di)'].values
-                    interp = interp1d(xnew, ynew, fill_value='extrapolate')
-                    rclist[:,0] = np.exp(interp(np.log(rclist[:,0])))
-    
-                    #Convert age in Ga to "interval time"
-                    rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
-                    rclist = rclist[rclist[:,5].argsort()]
-
-                    #Export to dat file
-                    util.write_realcraters(self.output_filenames['craterlist'], rclist)
 
                 util.write_datfile(self.user, self.output_filenames['dat'], self.seedarr)
             else:
