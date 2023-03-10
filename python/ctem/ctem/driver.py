@@ -5,6 +5,8 @@ import shutil
 from ctem import util
 import sys
 from ctem import __file__ as _pyfile
+from pathlib import Path
+import warnings
 
 class Simulation:
     """
