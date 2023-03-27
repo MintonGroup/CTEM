@@ -333,7 +333,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             call io_updatePbar(message)
             craters_since_subpixel = icrater - icrater_last_subpixel
             finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
-            !call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
+            if (user%dotopodiffusion) then
+               call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
+            end if
 
                ! Do superdomain ray deposits
                ! Do sub-pixel craters vertical mixing

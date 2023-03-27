@@ -11,12 +11,12 @@ testyoffset  0.0                            ! y-axis offset of crater center fro
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F   
 quasimc      T                                 ! MC run constrained by non-MC 'real' craters given in a list
-realcraterlist    qmctest.in                ! list of 'real' craters for Quasi-MC runs
+realcraterlist    craterlist.in                ! list of 'real' craters for Quasi-MC runs
 
 
 
 ! IDL driver in uts
-interval     0.1
+interval     628.0
 numintervals 1                                  ! Total number of intervals (total time = interval * numintervals) <--when runtype is 'single'
 restart      F                                  ! Restart a previous run
 impfile      NPFextrap.dat          ! Impactor SFD rate file (col 1: Dimp (m), col 2: ! impactors > D (m**(-2) y**(-1))
@@ -34,9 +34,9 @@ runtype      single                             ! Run type: options are normal /
 
 ! CTEM required inputs
 seed         76535                    ! Random number generator seed
-gridsize     2000                          ! Size of grid in pixels
+gridsize     500                          ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
-pix          3.08e3                           ! Pixel size (m)
+pix          12.32e3                           ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
 ! Bedrock scaling parameters
 mu_b         0.55e0                             ! Experimentally derived parameter for bedrock crater scaling law 
@@ -69,8 +69,10 @@ doangle         T                               ! Vary the impact angle. Set to 
 Kd1             0.0001
 psi             2.000
 fe              4.00
-ejecta_truncation 4.0
+ejecta_truncation 24.0
 doregotrack T
-dorays  F 
+dorays  T 
 superdomain F
 dorealistic F
+domixing T
+dotopodiffusion F

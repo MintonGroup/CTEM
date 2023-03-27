@@ -234,6 +234,8 @@ type usertype
    logical           :: doscour  ! Set T to use the ejecta scouring model (EXPERIMENTAL)
    ! Crustal thinning variables
    logical           :: docrustal_thinning ! Set T to use the crustal thinning model (EXPERIMENTAL)
+   ! Diffusion variables
+   logical           :: dotopodiffusion ! set T to do subpixel diffusion; default T; should be F for melt distribution runs
 
    logical           :: killatmaxcrater ! Set T to end the run when a crater exceeds the maximum allowable size
    
