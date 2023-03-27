@@ -90,7 +90,12 @@ class Simulation:
             'testprof' : 'testprofile.dat',
             'craterscale' : 'craterscale.dat',
             'craterlist' : 'craterlist.dat',
-            'sfdfile'    : 'production.dat'
+            'sfdfile'    : 'production.dat',
+            'distfrac' : 'surface_distfrac.dat',
+            'ejm' : 'surface_ejm.dat',
+            'ejmf' : 'surface_ejmf.dat',
+            'meltdist' : 'surface_meltdist.dat',
+            'meltfrac' : 'surface_meltfrac.dat'
         }
         if self.user['sfdfile'] is not None: # Override the default sfdfile name if the user supplies an alternative
             self.output_filenames['sfdfile'] = self.user['sfdfile']
@@ -331,7 +336,7 @@ class Simulation:
                 self.redirect_outputs(['tcum'], 'dist')
             self.redirect_outputs(['impmass'], 'misc')
             if (self.user['saverego'].upper() == 'T') :
-               self.redirect_outputs(['stack','rego','age','melt','comp'], 'rego')
+               self.redirect_outputs(['stack','rego','age','melt','comp','distfrac','ejm','ejmf','meltdist','meltfrac'], 'rego')
             
 
 
