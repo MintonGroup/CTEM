@@ -162,9 +162,17 @@ subroutine io_read_regotrack(user,surf,domain)
          do k=max(stacks_num(i,j)-1,1),1,-1
             newsurfi%thickness = regotopi(k)
             newsurfi%comp = compi(k)
-            newsurfi%meltfrac  = melti(k)
+            newsurfi%meltfrac  = mfi(k)
+            newsurfi%meltvolume = melti(k)
+            newsurfi%ejm = ejmi(k)
+            newsurfi%ejmf = ejmfi(k)
+            newsurfi%totvolume = regotopi(k) * user%gridsize * user%gridsize
             do q=1,MAXAGEBINS
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
+            end do
+            do q=1,domain%rcnum
+               newsurfi%meltdist(q) = dfi(q*k)
+               newsurfi%distvol(q) = mdi(q*k) !these two could be wrong based on the way the file is read; need to check
             end do
             call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do 
