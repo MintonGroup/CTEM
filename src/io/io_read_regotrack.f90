@@ -118,6 +118,9 @@ subroutine io_read_regotrack(user,surf,domain)
 
    ! Start pushing regolith thickness and melt fraction of each layer in FILO manner
 
+   allocate(newsurfi%meltdist(domain%rcnum))
+   allocate(newsurfi%distvol(domain%rcnum))
+
    do j=1,user%gridsize
       do i=1,user%gridsize
 
