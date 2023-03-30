@@ -38,13 +38,15 @@ subroutine io_read_regotrack(user,surf,domain)
    integer(I4B), parameter :: FEJMF = 16
    integer(I4B), parameter :: FMF = 17
    integer(I4B), parameter :: FDF = 18
-   real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp,ejm,ejmf,meltfrac
-   real(SP),dimension(user%gridsize,user%gridsize,domain%rcnum) :: meltdist, distfrac
-   real(SP),dimension(user%gridsize,user%gridsize,MAXAGEBINS) :: age
+   ! real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp,ejm,ejmf,meltfrac
+   ! real(SP),dimension(user%gridsize,user%gridsize,domain%rcnum) :: meltdist, distfrac
+   ! real(SP),dimension(user%gridsize,user%gridsize,MAXAGEBINS) :: age
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
+   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,ejmf,meltfrac,thickness,meltvolume
+   real(SP),dimension(:,:),allocatable :: age, meltdist, distfrac, distvol
    real(DP), dimension(:), allocatable :: regotopi,melti,compi,agei,dfi,ejmi,ejmfi,mdi,mfi
    type(regodatatype) :: newsurfi
-   integer(I4B) :: ioerr,i,j,k,q,itmp
+   integer(I4B) :: ioerr,i,j,k,q,itmp,N
    integer(kind=8) :: recsize
    logical :: initstat 
       
@@ -126,6 +128,19 @@ subroutine io_read_regotrack(user,surf,domain)
 
          !call util_init_list(surf(i,j)%regolayer,initstat)
          call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
+         N = stacks_num(i,j)
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(domain%rcnum,N),ejm(N),ejmf(N),&
+            meltfrac(N),meltdist(domain%rcnum,N))
+
+         read(FMELT) meltvolume(:)
+         read(FREGO) thickness(:)
+         read(FCOMP) comp(:)
+         read(FAGE) age(:,:)
+         read(FMD) distvol(:,:)
+         read(FEJM) ejm(:)
+         read(FEJMF) ejmf(:)
+         read(FMF) meltfrac(:)
+         read(FDF) meltdist(:,:)
 
          allocate(regotopi(stacks_num(i,j)))
          allocate(compi(stacks_num(i,j)))
@@ -136,31 +151,51 @@ subroutine io_read_regotrack(user,surf,domain)
          allocate(mfi(stacks_num(i,j)))
          allocate(dfi(domain%rcnum * stacks_num(i,j)))
          allocate(mdi(domain%rcnum * stacks_num(i,j)))
+
+         ! allocate(melti(N),regotopi(N),compi(N),agei(MAXAGEBINS,N),mdi(domain%rcnum,N),ejmi(N),ejmfi(N),&
+         !    mfi(N),mdi(domain%rcnum,N))
         
          do k=1,stacks_num(i,j)
-            read(FREGO) regotop(i,j)
-            regotopi(k) = regotop(i,j)       
-            read(FCOMP) comp(i,j)
-            compi(k) = comp(i,j)
-            read(FMELT) melt(i,j) 
-            melti(k) = melt(i,j)
-            read(FMF) meltfrac(i,j)
-            mfi(k) = meltfrac(i,j)
-            read(FEJM) ejm(i,j)
-            ejmi(k) = ejm(i,j)
-            read(FEJMF) ejmf(i,j)
-            ejmfi(k) = ejmf(i,j)
-            read(FDF) distfrac(i,j,:)
-            read(FMD) meltdist(i,j,:)
+         !    read(FREGO) regotop(i,j)
+         !    regotopi(k) = regotop(i,j)       
+         !    read(FCOMP) comp(i,j)
+         !    compi(k) = comp(i,j)
+         !    read(FMELT) melt(i,j) 
+         !    melti(k) = melt(i,j)
+         !    read(FMF) meltfrac(i,j)
+         !    mfi(k) = meltfrac(i,j)
+         !    read(FEJM) ejm(i,j)
+         !    ejmi(k) = ejm(i,j)
+         !    read(FEJMF) ejmf(i,j)
+         !    ejmfi(k) = ejmf(i,j)
+         !    read(FDF) distfrac(i,j,:)
+         !    read(FMD) meltdist(i,j,:)
+         !    do q=1,domain%rcnum
+         !       dfi(q*k) = distfrac(i,j,q)
+         !       mdi(q*k) = meltdist(i,j,q)
+         !    end do
+         !    read(FAGE) age(i,j,:)
+         !    do q=1,MAXAGEBINS
+         !       agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(i,j,q)
+         !    end do
+
+            regotopi(k) = regotop(k)
+            compi(k) = comp(k)
+            ejmi(k) = ejm(k)
+            ejmfi(k) = ejmf(k)
+            mfi(k) = meltfrac(k)
             do q=1,domain%rcnum
-               dfi(q*k) = distfrac(i,j,q)
-               mdi(q*k) = meltdist(i,j,q)
+               dfi(q*k) = distfrac(q,k) !or is it (k,q) ?
+               mdi(q*k) = meltdist(q,k)
             end do
-            read(FAGE) age(i,j,:)
             do q=1,MAXAGEBINS
-               agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(i,j,q)
+               agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(q,k) !again, (k,q)?
             end do
+
          end do
+            
+
+
 
          do k=max(stacks_num(i,j)-1,1),1,-1
             newsurfi%thickness = regotopi(k)
@@ -181,6 +216,7 @@ subroutine io_read_regotrack(user,surf,domain)
          end do 
 
          deallocate(regotopi,compi,melti,agei,dfi,ejmi,ejmfi,mdi,mfi)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf,meltfrac,meltdist)
 
       end do
    end do
