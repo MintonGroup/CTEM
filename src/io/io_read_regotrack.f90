@@ -179,17 +179,17 @@ subroutine io_read_regotrack(user,surf,domain)
          !       agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(i,j,q)
          !    end do
 
-            regotopi(k) = regotop(k)
+            regotopi(k) = thickness(k)
             compi(k) = comp(k)
             ejmi(k) = ejm(k)
             ejmfi(k) = ejmf(k)
             mfi(k) = meltfrac(k)
             do q=1,domain%rcnum
-               dfi(q*k) = distfrac(q,k) !or is it (k,q) ?
-               mdi(q*k) = meltdist(q,k)
+               dfi(q*k) = meltdist(q,k)
+               mdi(q*k) = distvol(q,k)
             end do
             do q=1,MAXAGEBINS
-               agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(q,k) !again, (k,q)?
+               agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(q,k)
             end do
 
          end do
