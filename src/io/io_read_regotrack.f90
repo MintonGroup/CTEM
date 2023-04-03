@@ -42,9 +42,9 @@ subroutine io_read_regotrack(user,surf,domain)
    ! real(SP),dimension(user%gridsize,user%gridsize,domain%rcnum) :: meltdist, distfrac
    ! real(SP),dimension(user%gridsize,user%gridsize,MAXAGEBINS) :: age
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
-   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,ejmf,meltfrac,thickness,meltvolume
+   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,ejmf,meltfrac,thickness,meltvolume,agei
    real(SP),dimension(:,:),allocatable :: age, meltdist, distfrac, distvol
-   real(DP), dimension(:), allocatable :: regotopi,melti,compi,agei,dfi,ejmi,ejmfi,mdi,mfi
+   !real(DP), dimension(:), allocatable :: regotopi,melti,compi,agei,dfi,ejmi,ejmfi,mdi,mfi
    type(regodatatype) :: newsurfi
    integer(I4B) :: ioerr,i,j,k,q,itmp,N
    integer(kind=8) :: recsize
@@ -141,53 +141,12 @@ subroutine io_read_regotrack(user,surf,domain)
          read(FEJMF) ejmf(:)
          read(FMF) meltfrac(:)
          read(FDF) meltdist(:,:)
-
-         allocate(regotopi(stacks_num(i,j)))
-         allocate(compi(stacks_num(i,j)))
-         allocate(melti(stacks_num(i,j)))    
+ 
          allocate(agei(MAXAGEBINS * stacks_num(i,j)))
-         allocate(ejmi(stacks_num(i,j)))
-         allocate(ejmfi(stacks_num(i,j)))
-         allocate(mfi(stacks_num(i,j)))
-         allocate(dfi(domain%rcnum * stacks_num(i,j)))
-         allocate(mdi(domain%rcnum * stacks_num(i,j)))
 
-         ! allocate(melti(N),regotopi(N),compi(N),agei(MAXAGEBINS,N),mdi(domain%rcnum,N),ejmi(N),ejmfi(N),&
-         !    mfi(N),mdi(domain%rcnum,N))
         
          do k=1,stacks_num(i,j)
-         !    read(FREGO) regotop(i,j)
-         !    regotopi(k) = regotop(i,j)       
-         !    read(FCOMP) comp(i,j)
-         !    compi(k) = comp(i,j)
-         !    read(FMELT) melt(i,j) 
-         !    melti(k) = melt(i,j)
-         !    read(FMF) meltfrac(i,j)
-         !    mfi(k) = meltfrac(i,j)
-         !    read(FEJM) ejm(i,j)
-         !    ejmi(k) = ejm(i,j)
-         !    read(FEJMF) ejmf(i,j)
-         !    ejmfi(k) = ejmf(i,j)
-         !    read(FDF) distfrac(i,j,:)
-         !    read(FMD) meltdist(i,j,:)
-         !    do q=1,domain%rcnum
-         !       dfi(q*k) = distfrac(i,j,q)
-         !       mdi(q*k) = meltdist(i,j,q)
-         !    end do
-         !    read(FAGE) age(i,j,:)
-         !    do q=1,MAXAGEBINS
-         !       agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(i,j,q)
-         !    end do
 
-            regotopi(k) = thickness(k)
-            compi(k) = comp(k)
-            ejmi(k) = ejm(k)
-            ejmfi(k) = ejmf(k)
-            mfi(k) = meltfrac(k)
-            do q=1,domain%rcnum
-               dfi(q*k) = meltdist(q,k)
-               mdi(q*k) = distvol(q,k)
-            end do
             do q=1,MAXAGEBINS
                agei(MAXAGEBINS*k - (MAXAGEBINS-q)) = age(q,k)
             end do
@@ -198,13 +157,13 @@ subroutine io_read_regotrack(user,surf,domain)
 
 
          do k=max(stacks_num(i,j)-1,1),1,-1
-            newsurfi%thickness = regotopi(k)
-            newsurfi%comp = compi(k)
-            newsurfi%meltfrac  = mfi(k)
-            newsurfi%meltvolume = melti(k)
-            newsurfi%ejm = ejmi(k)
-            newsurfi%ejmf = ejmfi(k)
-            newsurfi%totvolume = regotopi(k) * user%gridsize * user%gridsize
+            newsurfi%thickness = thickness(k)
+            newsurfi%comp = comp(k)
+            newsurfi%meltfrac  = meltfrac(k)
+            newsurfi%meltvolume = meltvolume(k)
+            newsurfi%ejm = ejm(k)
+            newsurfi%ejmf = ejmf(k)
+            newsurfi%totvolume = thickness(k) * user%gridsize * user%gridsize
             do q=1,MAXAGEBINS
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
             end do
@@ -215,8 +174,7 @@ subroutine io_read_regotrack(user,surf,domain)
             call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do 
 
-         deallocate(regotopi,compi,melti,agei,dfi,ejmi,ejmfi,mdi,mfi)
-         deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf,meltfrac,meltdist)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf,meltfrac,meltdist,agei)
 
       end do
    end do
