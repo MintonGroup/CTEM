@@ -209,8 +209,8 @@ subroutine io_read_regotrack(user,surf,domain)
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
             end do
             do q=1,domain%rcnum
-               newsurfi%meltdist(q) = dfi(q*k)
-               newsurfi%distvol(q) = mdi(q*k) !these two could be wrong based on the way the file is read; need to check
+               newsurfi%meltdist(q) = meltdist(q,k)
+               newsurfi%distvol(q) = distvol(q,k)
             end do
             call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do 
