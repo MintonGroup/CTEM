@@ -45,8 +45,8 @@ subroutine init_regolith_stack(user,surf,domain)
    bedrock%meltfrac  = 0._DP 
    bedrock%comp      = 0._DP
    bedrock%age(:)    = 0.0_SP
-   allocate(bedrock%meltdist(domain%rcnum))
-   allocate(bedrock%distvol(domain%rcnum))
+   allocate(bedrock%meltdist(1+domain%rcnum))
+   allocate(bedrock%distvol(1+domain%rcnum))
    bedrock%meltdist(:) = 0.0_SP
    bedrock%distvol(:) = 0.0_SP
    bedrock%meltvolume = 0.0_DP

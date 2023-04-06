@@ -75,8 +75,8 @@ type regodatatype
    real(DP) :: totvolume
    real(DP) :: ejm !ejected melt
    real(DP) :: ejmf !ejected melt fraction
-   real(SP),dimension(:),allocatable :: meltdist !its dimension should be the number of quasimc craters
-   real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters
+   real(SP),dimension(:),allocatable :: meltdist !its dimension should be the number of quasimc craters + 1
+   real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
 end type regodatatype
    
 type regolisttype

@@ -120,8 +120,8 @@ subroutine io_read_regotrack(user,surf,domain)
 
    ! Start pushing regolith thickness and melt fraction of each layer in FILO manner
 
-   allocate(newsurfi%meltdist(domain%rcnum))
-   allocate(newsurfi%distvol(domain%rcnum))
+   allocate(newsurfi%meltdist(1+domain%rcnum))
+   allocate(newsurfi%distvol(1+domain%rcnum))
 
    do j=1,user%gridsize
       do i=1,user%gridsize
@@ -129,8 +129,8 @@ subroutine io_read_regotrack(user,surf,domain)
          !call util_init_list(surf(i,j)%regolayer,initstat)
          call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
          N = stacks_num(i,j)
-         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(domain%rcnum,N),ejm(N),ejmf(N),&
-            meltfrac(N),meltdist(domain%rcnum,N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N),ejmf(N),&
+            meltfrac(N),meltdist(1+domain%rcnum,N))
 
          read(FMELT) meltvolume(:)
          read(FREGO) thickness(:)
@@ -167,7 +167,7 @@ subroutine io_read_regotrack(user,surf,domain)
             do q=1,MAXAGEBINS
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
             end do
-            do q=1,domain%rcnum
+            do q=1,1+domain%rcnum
                newsurfi%meltdist(q) = meltdist(q,k)
                newsurfi%distvol(q) = distvol(q,k)
             end do

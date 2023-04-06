@@ -239,7 +239,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    depthb = crater%imp / 2.0_DP
    meltinejecta = 0.0_DP
    totvol = 0.0_DP
-   allocate(distvol(domain%rcnum))
+   allocate(distvol(1+domain%rcnum))
    distvol(:) = 0.0_SP
 
    ! if (eradc<=user%testimp) then
@@ -355,7 +355,18 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       end if
       newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
       newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
+
+      newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume - sum(newlayer%distvol(1:domain%rcnum))
+      if (newlayer%distvol(1+domain%rcnum) < 0.0_DP) then !pixel consists entirely of QMC melt
+         newlayer%distvol(1+domain%rcnum) = 0.0_SP
+      end if
+      if (sum(newlayer%distvol) > newlayer%totvolume) then
+         factor = newlayer%totvolume / sum(newlayer%distvol)
+         newlayer%distvol(:) = newlayer%distvol(:) * factor
+      end if
+      newlayer%meltvolume = sum(newlayer%distvol)
       newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
+
    end if
 
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)

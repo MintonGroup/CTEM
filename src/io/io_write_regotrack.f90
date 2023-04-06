@@ -82,8 +82,8 @@ subroutine io_write_regotrack(user,surf,domain)
       do i=1,user%gridsize
          !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
-         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(domain%rcnum,N),ejm(N),ejmf(N),&
-            meltfrac(N),meltdist(domain%rcnum,N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N),ejmf(N),&
+            meltfrac(N),meltdist(1+domain%rcnum,N))
          allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
             meltfrac(k) = current(k)%meltfrac

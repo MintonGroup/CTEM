@@ -180,9 +180,9 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
            
    end if
 
-   allocate(newlayer%meltdist((domain%rcnum)))
+   allocate(newlayer%meltdist((1+domain%rcnum)))
    newlayer%meltdist(:) = 0.0_SP
-   allocate(newlayer%distvol((domain%rcnum)))
+   allocate(newlayer%distvol((1+domain%rcnum)))
    newlayer%distvol(:) = 0.0_SP
    if(domain%currentqmc) then
       newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
