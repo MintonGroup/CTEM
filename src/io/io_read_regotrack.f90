@@ -24,7 +24,7 @@ subroutine io_read_regotrack(user,surf,domain)
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(out) :: surf
+   type(surftype),dimension(:,:),intent(inout) :: surf
    type(domaintype),intent(in)    :: domain
 
    ! Internals
