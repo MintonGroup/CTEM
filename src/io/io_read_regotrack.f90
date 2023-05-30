@@ -156,7 +156,7 @@ subroutine io_read_regotrack(user,surf,domain)
 
 
 
-         do k=max(stacks_num(i,j)-1,1),1,-1
+         do k=max(stacks_num(i,j),1),1,-1
             newsurfi%thickness = thickness(k)
             newsurfi%comp = comp(k)
             newsurfi%meltfrac  = meltfrac(k)
@@ -171,8 +171,14 @@ subroutine io_read_regotrack(user,surf,domain)
                newsurfi%meltdist(q) = meltdist(q,k)
                newsurfi%distvol(q) = distvol(q,k)
             end do
+            ! if (j .eq. 1) then
+            !     if (i .eq. 1) then
+            !        !write(*,*) meltdist(:,k)
+            !         write(*,*) newsurfi%meltdist
+            !     end if
+            ! end if
             call util_push_array(surf(i,j)%regolayer,newsurfi)
-         end do 
+         end do
 
          deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf,meltfrac,meltdist,agei)
 
