@@ -48,7 +48,7 @@ subroutine io_read_regotrack(user,surf,domain)
    type(regodatatype) :: newsurfi
    integer(I4B) :: ioerr,i,j,k,q,itmp,N
    integer(kind=8) :: recsize
-   logical :: initstat 
+   logical :: initstat
       
    ! Executable code
 
@@ -118,8 +118,7 @@ subroutine io_read_regotrack(user,surf,domain)
        stop
    end if
 
-   ! Start pushing regolith thickness and melt fraction of each layer in FILO manner
-
+   ! Start pushing regolith thickness and melt fraction of each layer
    allocate(newsurfi%meltdist(1+domain%rcnum))
    allocate(newsurfi%distvol(1+domain%rcnum))
 
@@ -127,7 +126,7 @@ subroutine io_read_regotrack(user,surf,domain)
       do i=1,user%gridsize
 
          !call util_init_list(surf(i,j)%regolayer,initstat)
-         call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
+         !call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
          N = stacks_num(i,j)
          allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N),ejmf(N),&
             meltfrac(N),meltdist(1+domain%rcnum,N))
@@ -152,11 +151,9 @@ subroutine io_read_regotrack(user,surf,domain)
             end do
 
          end do
-            
 
-
-
-         do k=max(stacks_num(i,j),1),1,-1
+         !do k=max(stacks_num(i,j),1),1,-1
+         do k=1,max(stacks_num(i,j),1),1
             newsurfi%thickness = thickness(k)
             newsurfi%comp = comp(k)
             newsurfi%meltfrac  = meltfrac(k)
@@ -171,12 +168,6 @@ subroutine io_read_regotrack(user,surf,domain)
                newsurfi%meltdist(q) = meltdist(q,k)
                newsurfi%distvol(q) = distvol(q,k)
             end do
-            ! if (j .eq. 1) then
-            !     if (i .eq. 1) then
-            !        !write(*,*) meltdist(:,k)
-            !         write(*,*) newsurfi%meltdist
-            !     end if
-            ! end if
             call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do
 

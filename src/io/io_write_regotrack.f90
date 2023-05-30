@@ -100,7 +100,6 @@ subroutine io_write_regotrack(user,surf,domain)
             meltdist(:,k) = current(k)%meltdist(:)
             ejm(k) = current(k)%ejm
             ejmf(k) = current(k)%ejmf
-
          end do
          deallocate(current)
          write(FMELT) meltvolume(:)
