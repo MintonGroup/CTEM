@@ -76,3 +76,5 @@ python/ctem/ctem.egg-info/
 *.i90
 
 INSTALL
+
+examples/global-lunar-bombardment/temp.in

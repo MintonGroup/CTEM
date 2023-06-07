@@ -65,19 +65,29 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
 
 
     allocate(poppedarray,source=regolayer(maxi:N))
+    allocate(oldregodata,source=regolayer(maxi:maxi))
 
     !for #1 element of poppedarray, shrink thickness by whatever was lefr over. In corresponding maxi of regolayer, also need to change that.
 
     poppedarray(1)%thickness = poppedarray(1)%thickness - depth_diff
     regolayer(maxi)%thickness = regolayer(maxi)%thickness - poppedarray(1)%thickness
+    poppedarray(1)%meltvolume = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%meltvolume
+    poppedarray(1)%distvol(:) = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%distvol(:)
+    poppedarray(1)%ejm = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%ejm
+    regolayer(maxi)%meltvolume = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%meltvolume
+    regolayer(maxi)%distvol(:) = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%distvol(:)
+    regolayer(maxi)%ejm = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%ejm
+
     poppedarray(1)%totvolume = poppedarray(1)%thickness * user%pix * user%pix
-    poppedarray(1)%meltvolume = poppedarray(1)%meltfrac * poppedarray(1)%totvolume
-    poppedarray(1)%distvol(:) = poppedarray(1)%meltdist(:) * poppedarray(1)%totvolume
-    poppedarray(1)%ejm = poppedarray(1)%ejmf * poppedarray(1)%totvolume
+    if(poppedarray(1)%totvolume > 0) then
+        poppedarray(1)%meltfrac = poppedarray(1)%meltvolume / poppedarray(1)%totvolume
+        poppedarray(1)%ejmf = poppedarray(1)%ejm / poppedarray(1)%totvolume
+    end if
     regolayer(maxi)%totvolume = regolayer(maxi)%thickness * user%pix * user%pix
-    regolayer(maxi)%distvol(:) = regolayer(maxi)%meltdist(:) * regolayer(maxi)%totvolume
-    regolayer(maxi)%meltvolume = regolayer(maxi)%meltfrac * regolayer(maxi)%totvolume
-    regolayer(maxi)%ejm = regolayer(maxi)%ejmf * regolayer(maxi)%totvolume
+    regolayer(maxi)%meltfrac = regolayer(maxi)%meltvolume / regolayer(maxi)%totvolume
+    regolayer(maxi)%ejmf = regolayer(maxi)%ejm / regolayer(maxi)%totvolume
+
+    deallocate(oldregodata)
 
     ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
     allocate(oldregodata,source=regolayer(1:maxi))

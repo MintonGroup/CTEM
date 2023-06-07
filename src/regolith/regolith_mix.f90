@@ -49,8 +49,8 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    newlayer%age(:)    = 0.0_DP
    allocate(newlayer%meltdist(1+domain%rcnum))
    allocate(newlayer%distvol(1+domain%rcnum))
-   newlayer%meltdist(:) = 0.0_SP
-   newlayer%distvol(:) = 0.0_SP
+   newlayer%meltdist(:) = 0.0_DP
+   newlayer%distvol(:) = 0.0_DP
    newlayer%ejm       = 0.0_DP
    newlayer%ejmf      = 0.0_DP
    newlayer%meltvolume = 0.0_DP
@@ -62,27 +62,15 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    do i = N,1,-1
       newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
       newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
-      !newlayer%meltfrac  = newlayer%meltfrac + poppedarray(i)%thickness * poppedarray(i)%meltfrac
       newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
-      !newlayer%meltdist(:) = newlayer%meltdist(:) + poppedarray(i)%thickness * poppedarray(i)%meltdist(:)
-      newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%thickness * poppedarray(i)%distvol(:)
-      newlayer%ejm       = newlayer%ejm + poppedarray(i)%thickness * poppedarray(i)%ejm
-      !newlayer%ejmf      = newlayer%ejmf + poppedarray(i)%thickness * poppedarray(i)%ejmf
-      newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%thickness * poppedarray(i)%meltvolume
-      !newlayer%totvolume = newlayer%totvolume + poppedarray(i)%thickness * poppedarray(i)%totvolume
+      newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%distvol(:)
+      newlayer%ejm       = newlayer%ejm + poppedarray(i)%ejm
+      newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%meltvolume
    end do
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
-   !newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
-   !newlayer%meltdist(:) = newlayer%meltdist(:) / newlayer%thickness
-   newlayer%distvol(:) = newlayer%distvol(:) / newlayer%thickness
-   newlayer%ejm = newlayer%ejm / newlayer%thickness
-   !newlayer%ejmf = newlayer%ejmf / newlayer%thickness
-   newlayer%meltvolume = newlayer%meltvolume / newlayer%thickness
-   !newlayer%totvolume = newlayer%totvolume / newlayer%thickness
 
-   !test forcing melt fraction to equal melt volume / total volume
    newlayer%totvolume = newlayer%thickness * user%pix * user%pix
    newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
    newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
@@ -90,6 +78,13 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
+
+
+   ! do i = N,1,-1
+   !    if (abs(surfi%regolayer(i)%meltvolume - sum(surfi%regolayer(i)%distvol) > 1e-5)) then
+   !    write(*,*) "melt array =/= melt value!", domain%nqmc, domain%currentqmc, abs(surfi%regolayer(i)%meltvolume - sum(surfi%regolayer(i)%distvol))
+   !    end if
+   ! end do
 
    return
 end subroutine regolith_mix
