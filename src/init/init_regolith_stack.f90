@@ -42,17 +42,13 @@ subroutine init_regolith_stack(user,surf,domain)
    ! Initialize the grid space  
    !=======================================
    bedrock%thickness = user%trad
-   bedrock%meltfrac  = 0._DP 
    bedrock%comp      = 0._DP
    bedrock%age(:)    = 0.0_SP
-   allocate(bedrock%meltdist(1+domain%rcnum))
    allocate(bedrock%distvol(1+domain%rcnum))
-   bedrock%meltdist(:) = 0.0_SP
    bedrock%distvol(:) = 0.0_SP
    bedrock%meltvolume = 0.0_DP
    bedrock%totvolume = bedrock%thickness * user%pix * user%pix
    bedrock%ejm = 0.0_DP
-   bedrock%ejmf = 0.0_DP
 
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize

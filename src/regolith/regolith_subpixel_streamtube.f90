@@ -80,7 +80,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    integer(I4B) :: N,M
 
    ! Stream tube's distance from the edge of a melt zone 
-   real(DP) :: zm, recyratio, xmints1, vseg, recyratio2
+   real(DP) :: zm, recyratio, xmints1, vseg, recyratio2, ratio, ratio2
 
    ! Parameters for calculating shocked segment of stream tube   
    real(DP) :: x_up_sh, x_low_sh, vsh, vsh2
@@ -114,9 +114,13 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
       if (eradi>xmints) then
          vseg             = regolith_streamtube_volume_func(eradi,xmints,eradi,deltar)
          vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,0.0_DP,eradi)
-         recyratio        = max(vseg-vsh,0.0 )/ (user%pix**2) / (surfi%regolayer(M)%thickness)
-         meltinejecta     = surfi%regolayer(M)%meltfrac * max((vseg-vsh),0.0_DP)! * recyratio
-         distvol(:)       = distvol(:) + (surfi%regolayer(M)%meltdist(:)*max((vseg-vsh),0.0_DP))!*recyratio)
+         recyratio        = max(vseg-vsh,0.0_DP) / (user%pix**2) / (surfi%regolayer(M)%thickness)
+         ratio            = max(vseg-vsh,0.0_DP) / surfi%regolayer(M)%totvolume
+         if (ratio > 1) then
+            ratio = 1.0_DP
+         end if
+         meltinejecta     = surfi%regolayer(M)%meltvolume * ratio
+         distvol(:)       = distvol(:) + (surfi%regolayer(M)%distvol(:) * ratio)
          totvol           = vseg
          age_collector(:) = age_collector(:) + surfi%regolayer(M)%age(:) * recyratio
          vol              = vol + sum(age_collector(:))
@@ -193,7 +197,11 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
             recyratio          = max((vsgly2 -vsh),0.0_DP)/ (user%pix**2) / current(N)%thickness
             age_collector(:)   = age_collector(:) + current(N)%age(:) * recyratio
             vol                = vol + sum(current(N)%age(:)) * recyratio
-            mvr                = max((vsgly2 -vsh),0.0_DP) * current(N)%meltfrac! * recyratio
+            ratio2             = max((vsgly2-vsh),0.0_DP) / current(N)%totvolume
+            if (ratio2 > 1) then
+               ratio2 = 1.0_DP
+            end if
+            mvr                = ratio2 * current(N)%meltvolume
             recyratio2         = recyratio
             vsh2 = vsh
          end if
@@ -203,13 +211,22 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
             recyratio          = max((vsgly1-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
             age_collector(:)   = age_collector(:) + current(N)%age(:) * recyratio
             vol                = vol + sum(current(N)%age(:)) * recyratio
-            mvl                = max((vsgly1-vsh),0.0_DP) * current(N)%meltfrac!*recyratio
+            ratio              = max((vsgly1-vsh),0.0_DP) / current(N)%totvolume
+            if (ratio > 1) then
+               ratio = 1.0_DP
+            end if
+            mvl                = ratio * current(N)%meltvolume
          end if
 
          !current => current%next
          meltinejecta = meltinejecta + mvl + mvr
          !distvol(:) = distvol(:) + (current(N)%meltdist(:)*((vsgly1-vsh)*recyratio)+((vsgly2-vsh2)*recyratio2))
-         distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh2),0.0_DP)))
+         !distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh2),0.0_DP)))
+         if (ratio + ratio2 < 1.0_DP) then
+            distvol(:) = distvol(:) + (current(N)%distvol(:)*(ratio)) + (current(N)%distvol(:)*(ratio2))
+         else
+            distvol(:) = distvol(:) + current(N)%distvol(:)
+         end if
          totvol = totvol + vsgly1 + vsgly2
          !N = N - 1
          z = z + current(N-1)%thickness 

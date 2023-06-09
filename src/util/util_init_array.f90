@@ -51,13 +51,9 @@ subroutine util_init_array(user,regolayer,domain,initstat)
         initstat = .true.
         regolayer(1)%thickness = sqrt(VBIG) ! This generates a buffer layer that the model should never reach if the run is structured properly
         regolayer(1)%comp = 0.0_DP
-        regolayer(1)%meltfrac = 0.0_DP
         regolayer(1)%porosity = 0.0_DP
         regolayer(1)%age(:)   = 0.0_SP
         regolayer(1)%ejm = 0.0_DP
-        regolayer(1)%ejmf = 0.0_DP
-        allocate(regolayer(1)%meltdist(1+domain%rcnum))
-        regolayer(1)%meltdist(:) = 0.0_SP
         allocate(regolayer(1)%distvol(1+domain%rcnum))
         regolayer(1)%distvol(:) = 0.0_SP
         regolayer(1)%meltvolume = 0.0_DP

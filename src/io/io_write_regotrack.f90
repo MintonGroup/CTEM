@@ -35,14 +35,11 @@ subroutine io_write_regotrack(user,surf,domain)
    integer(I4B), parameter :: FAGE = 13
    integer(I4B), parameter :: FMD = 14
    integer(I4B), parameter :: FEJM = 15
-   integer(I4B), parameter :: FEJMF = 16
-   integer(I4B), parameter :: FMF = 17
-   integer(I4B), parameter :: FDF = 18
    !type(regolisttype),pointer :: current => null()
    type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
-   real(DP),dimension(:),allocatable :: meltfrac, thickness, comp, ejm, ejmf, meltvolume
-   real(SP),dimension(:,:),allocatable :: age, meltdist, distvol
+   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
+   real(SP),dimension(:,:),allocatable :: age, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
@@ -57,9 +54,6 @@ subroutine io_write_regotrack(user,surf,domain)
    open(FAGE,file=AGEFILE,status='replace',form='unformatted')
    open(FMD,file=MDFILE,status='replace',form='unformatted')
    open(FEJM,file=EJMFILE,status='replace',form='unformatted')
-   open(FMF,file=MELTFRACFILE,status='replace',form='unformatted')
-   open(FDF,file=DISTFRACFILE,status='replace',form='unformatted')
-   open(FEJMF,file=EJMFFILE,status='replace',form='unformatted')
 
    ! First pass to get stack numbers
    stacks_num(:,:) = 0
@@ -69,11 +63,6 @@ subroutine io_write_regotrack(user,surf,domain)
          allocate(current,source=surf(i,j)%regolayer)
          stacks_num(i,j) = size(current)
          deallocate(current)
-         ! do 
-         !    if (.not. associated(current)) exit ! We've reached the bottom of the linked list
-         !    stacks_num(i,j) = stacks_num(i,j) + 1
-         !    current => current%next
-         ! end do
       end do 
    end do
 
@@ -82,24 +71,16 @@ subroutine io_write_regotrack(user,surf,domain)
       do i=1,user%gridsize
          !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
-         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N),ejmf(N),&
-            meltfrac(N),meltdist(1+domain%rcnum,N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
          allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
-            meltfrac(k) = current(k)%meltfrac
-            ! thickness(k) = current%regodata%thickness
-            ! comp(k) = current%regodata%comp
-            ! age(:,k) = current%regodata%age(:)
-            ! current => current%next
             meltvolume(k) = current(k)%meltvolume
             thickness(k) = current(k)%thickness
             comp(k) = current(k)%comp
             age(:,k) = current(k)%age(:)
             !write(*,*) i, j
             distvol(:,k) = current(k)%distvol(:)
-            meltdist(:,k) = current(k)%meltdist(:)
             ejm(k) = current(k)%ejm
-            ejmf(k) = current(k)%ejmf
          end do
          deallocate(current)
          write(FMELT) meltvolume(:)
@@ -108,10 +89,7 @@ subroutine io_write_regotrack(user,surf,domain)
          write(FAGE) age(:,:)
          write(FMD) distvol(:,:)
          write(FEJM) ejm(:)
-         write(FEJMF) ejmf(:)
-         write(FMF) meltfrac(:)
-         write(FDF) meltdist(:,:)
-         deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf,meltfrac,meltdist)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm)
       end do 
    end do
    close(FMELT)
@@ -120,9 +98,6 @@ subroutine io_write_regotrack(user,surf,domain)
    close(FAGE)
    close(FMD)
    close(FEJM)
-   close(FEJMF)
-   close(FMF)
-   close(FDF)
 
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
    open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')

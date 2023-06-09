@@ -79,13 +79,7 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
     regolayer(maxi)%ejm = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%ejm
 
     poppedarray(1)%totvolume = poppedarray(1)%thickness * user%pix * user%pix
-    if(poppedarray(1)%totvolume > 0) then
-        poppedarray(1)%meltfrac = poppedarray(1)%meltvolume / poppedarray(1)%totvolume
-        poppedarray(1)%ejmf = poppedarray(1)%ejm / poppedarray(1)%totvolume
-    end if
     regolayer(maxi)%totvolume = regolayer(maxi)%thickness * user%pix * user%pix
-    regolayer(maxi)%meltfrac = regolayer(maxi)%meltvolume / regolayer(maxi)%totvolume
-    regolayer(maxi)%ejmf = regolayer(maxi)%ejm / regolayer(maxi)%totvolume
 
     deallocate(oldregodata)
 

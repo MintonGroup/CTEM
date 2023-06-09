@@ -66,7 +66,6 @@ real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of p
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
-   real(DP) :: meltfrac 
    real(DP) :: comp 
    real(DP) :: porosity   ! Porosity: Maximum 1, Minium 0.
    real(DP) :: damage     ! Damage  : Maximum 1, Minium 0.
@@ -74,8 +73,6 @@ type regodatatype
    real(DP) :: meltvolume
    real(DP) :: totvolume
    real(DP) :: ejm !ejected melt
-   real(DP) :: ejmf !ejected melt fraction
-   real(SP),dimension(:),allocatable :: meltdist !its dimension should be the number of quasimc craters + 1
    real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
 end type regodatatype
    
@@ -315,9 +312,6 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat'
 character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
 character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
-character(*),parameter :: EJMFFILE   = 'surface_ejmf.dat'
-character(*),parameter :: MELTFRACFILE   = 'surface_meltfrac.dat'
-character(*),parameter :: DISTFRACFILE = 'surface_distfrac.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

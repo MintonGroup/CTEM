@@ -45,6 +45,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    ! melt collector
    real(DP) :: recyratio
    real(DP) :: headmeltvol
+   real(DP) :: ratio
 
    !current => surfi%regolayer
    !current = surfi%regolayer
@@ -66,9 +67,13 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       totmare = totmare + vsgly * current(M)%comp
       recyratio = vsgly / (user%pix**2) /current(M)%thickness
       age_collector(:) = age_collector(:) + current(M)%age(:) * recyratio
-      headmeltvol = current(M)%meltfrac * vsgly! * recyratio
+      ratio = vsgly / current(M)%totvolume
+      if (ratio > 1) then
+         ratio = 1.0_DP
+      end if
+      headmeltvol = current(M)%meltvolume * ratio
       meltinejecta = meltinejecta + headmeltvol
-      distvol(:) = distvol(:) + (current(M)%meltdist(:)*vsgly)!*recyratio)
+      distvol(:) = distvol(:) + (current(M)%distvol(:) * ratio)
       totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
@@ -81,9 +86,13 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             totmarehead = totmarehead + vhead * vratio * current(N)%comp
             recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-            headmeltvol = current(N)%meltfrac * tothead! * recyratio
+            ratio = (vhead * vratio) / current(N)%totvolume
+            if (ratio > 1) then
+               ratio = 1.0_DP
+            end if
+            headmeltvol = current(N)%meltvolume * ratio
             meltinejecta = meltinejecta + headmeltvol
-            distvol(:) = distvol(:) + (current(N)%meltdist(:)*(vhead*vratio))!*recyratio)
+            distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
             totvol = totvol + tothead
             !current => current%next
             !N = N - 1
@@ -95,10 +104,13 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             tothead = vsgly
             recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
             age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
-            headmeltvol = current(N)%meltfrac * (vsgly-tothead)!*recyratio
+            ratio = (vsgly-tothead) / current(N)%totvolume
+            if (ratio > 1) then
+               ratio = 1.0_DP
+            end if
+            headmeltvol = current(N)%meltvolume * ratio
             meltinejecta = meltinejecta + headmeltvol
-            !distvol(:) = distvol(:) + (current(N)%meltdist(:)*tothead*recyratio) !should be +0 since recyratio=0
-            distvol(:) = distvol(:) + (current(N)%meltdist(:)*(vsgly-tothead))
+            distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
             totvol = totvol + vsgly
             exit
          end if

@@ -270,15 +270,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
-      !newlayer%meltvolume = newlayer%meltvolume + meltinejecta
-      !newlayer%meltfrac = newlayer%meltvolume / totvol
-      !distvol(:) = distvol(:) + (newlayer%ejm*newlayer%meltdist(:))
-      !newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
-      !newlayer%meltdist(:) = newlayer%distvol(:) / totvol
-      ! if (newlayer%meltfrac > 1.0_DP) then
-      !    write(*,*) "Melt fraction >1! (Subpixel)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
-      !     newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
-      ! end if
 
    else
       rbody = sqrt(xints(2)**2 + yints(2)**2)
@@ -338,23 +329,18 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
   !totvol = newlayer%totvolume - meltinejecta
   if (newlayer%ejm > newlayer%totvolume) then !entire pixel is ejected melt
       newlayer%ejm = newlayer%totvolume
-      newlayer%meltfrac = 1.0_DP
       newlayer%meltvolume = newlayer%ejm
-      newlayer%ejmf = 1.0_DP
    else
       if (meltinejecta + newlayer%ejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
          meltinejecta = newlayer%totvolume - newlayer%ejm
       end if
       newlayer%meltvolume = meltinejecta + newlayer%ejm
-      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
-      if (newlayer%meltfrac > 1.0_DP) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
-         newlayer%meltfrac = 1.0_DP
+      if (newlayer%meltvolume > newlayer%totvolume) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
          factor = newlayer%totvolume / newlayer%meltvolume
          newlayer%meltvolume = newlayer%totvolume
          distvol(:) = distvol(:) * factor
       end if
       newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
-      newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
 
       newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume - sum(newlayer%distvol(1:domain%rcnum))
       if (newlayer%distvol(1+domain%rcnum) < 0.0_DP) then !pixel consists entirely of QMC melt
@@ -365,7 +351,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%distvol(:) = newlayer%distvol(:) * factor
       end if
       newlayer%meltvolume = sum(newlayer%distvol)
-      newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
 
    end if
 

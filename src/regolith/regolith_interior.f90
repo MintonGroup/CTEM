@@ -41,7 +41,6 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
     !Executable code
 
     hmeltsheet = vmeltsheet / (nmeltsheet*user%pix*user%pix)
-    allocate(newlayer%meltdist(1+domain%rcnum))
     allocate(newlayer%distvol(1+domain%rcnum))
 
     inc = incval
@@ -66,26 +65,20 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
             deallocate(poppedarray)
 
             !fill top layer with melt sheet of given thickness hmeltsheet
-            newlayer%meltfrac = 1.0_DP
             newlayer%ejm = 0.0_DP
-            newlayer%ejmf = 0.0_DP
             newlayer%thickness = hmeltsheet
             newlayer%meltvolume = vmeltsheet / nmeltsheet
             newlayer%totvolume = newlayer%meltvolume
-            newlayer%meltdist(:) = 0.0_SP
             newlayer%distvol(:) = 0.0_SP
             if(domain%currentqmc) then
-                newlayer%meltdist(domain%nqmc) = newlayer%meltfrac
                 newlayer%distvol(domain%nqmc) = newlayer%meltvolume
             else
-                newlayer%meltdist(1+domain%rcnum) = newlayer%meltfrac
                 newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume
             end if
             call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
         end do
     end do
 
-    deallocate(newlayer%meltdist)
     deallocate(newlayer%distvol)
 
     return

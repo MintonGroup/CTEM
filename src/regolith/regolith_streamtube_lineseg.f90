@@ -43,7 +43,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    integer(I4B) :: N,M
 
    ! Melt zone
-   real(DP) :: recyratio, xsh, rst
+   real(DP) :: recyratio, xsh, rst, ratio
    real(DP) :: theta1, theta2, r1, r2, vol
    real(DP) :: linmelt
    ! Shock damaged zone
@@ -81,23 +81,31 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
 
              if (ri > xmints) then
                 vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
-                ebh_recyl        = (1.0 - newlayer%meltfrac) * newlayer%thickness - vsh / user%pix**2
+                ebh_recyl        = (1.0_DP - (newlayer%meltvolume/newlayer%totvolume)) * newlayer%thickness - vsh / user%pix**2
                 recyratio        = max(ebh_recyl,0.0_DP) / current(N-1)%thickness
                 age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
+                ratio            = max(vsgly-vsh,0.0_DP) / current(N-1)%totvolume
+                if (ratio > 1) then
+                  ratio = 1.0_DP
+                end if
                 vol              = vol + sum(current(N-1)%age(:)) * recyratio
-                linmelt = current(N-1)%meltfrac * max(vsgly-vsh,0.0_DP)! * recyratio
+                linmelt = current(N-1)%meltvolume * ratio
                 meltinejecta = meltinejecta + linmelt
-                distvol(:) = distvol(:) + (current(N-1)%meltdist(:)*max(vsgly-vsh,0.0_DP))!*recyratio)
+                distvol(:) = distvol(:) + (current(N-1)%distvol(:) * ratio)
                 totvol = totvol + vsgly
              else if (ri <= xmints .and. rip1 > xmints) then 
                      vseg             = regolith_streamtube_volume_func(eradi,xmints,rip1,deltar)
                      vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1) 
                      recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N-1)%thickness 
                      age_collector(:) = age_collector(:) + current(N-1)%age(:) * recyratio
+                     ratio            = max(vseg-vsh,0.0_DP) / current(N-1)%totvolume
+                     if (ratio > 1) then
+                        ratio = 1.0_DP
+                     end if
                      vol              = vol + sum(current(N-1)%age(:)) * recyratio
-                     linmelt = current(N-1)%meltfrac * max(vseg-vsh,0.0_DP)! * recyratio
+                     linmelt = current(N-1)%meltvolume * ratio
                      meltinejecta = meltinejecta + linmelt
-                     distvol(:) = distvol(:) + (current(N-1)%meltdist(:)*max(vseg-vsh,0.0_DP))!*recyratio)
+                     distvol(:) = distvol(:) + (current(N-1)%distvol(:) * ratio)
                      totvol = totvol + vseg
              end if
              exit
@@ -124,10 +132,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,rstart,rend)
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+                  ratio            = max((vseg-vsh),0.0_DP) / current(N)%totvolume
+                  if (ratio > 1) then
+                     ratio = 1.0_DP
+                  end if
                   vol              = vol + sum(current(N)%age(:)) * recyratio
-                  linmelt = current(N)%meltfrac * max(vseg-vsh,0.0_DP)! * recyratio
+                  linmelt = current(N)%meltvolume * ratio
                   meltinejecta = meltinejecta + linmelt
-                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*max(vseg-vsh,0.0_DP))!*recyratio)
+                  distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
                   totvol = totvol + vseg
                end if
 
@@ -137,10 +149,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,rend,rstart)
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+                  ratio            = max((vseg-vsh),0.0_DP) / current(N)%totvolume
+                  if (ratio > 1) then
+                     ratio = 1.0_DP
+                  end if
                   vol              = vol + sum(current(N)%age(:)) * recyratio
-                  linmelt = current(N)%meltfrac * max(vseg-vsh,0.0_DP)! * recyratio
+                  linmelt = current(N)%meltvolume * ratio
                   meltinejecta = meltinejecta + linmelt
-                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*max(vseg-vsh,0.0_DP))!*recyratio)
+                  distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
                   totvol = totvol + vseg
                end if
                !current => current%next
@@ -162,10 +178,11 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,ri,rip1)
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
                   age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
+                  ratio            = max((vseg-vsh),0.0_DP) / current(N)%totvolume
                   vol              = vol + sum(current(N)%age(:)) * recyratio
-                  linmelt = current(N)%meltfrac * max(vseg-vsh,0.0_DP)! * recyratio
+                  linmelt = current(N)%meltvolume * ratio
                   meltinejecta = meltinejecta + linmelt
-                  distvol(:) = distvol(:) + (current(N)%meltdist(:)*max(vseg-vsh,0.0_DP))!*recyratio)
+                  distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
                   totvol = totvol + vseg
                end if
 
@@ -176,9 +193,10 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                vsgly = regolith_streamtube_volume_func(eradi,ri,rip1,deltar)
                vmare = vmare + (vsgly - totseb) * current(N)%comp
                totseb = vsgly
-               linmelt = current(N)%meltfrac * vsgly
+               ratio = vsgly / current(N)%totvolume
+               linmelt = current(N)%meltvolume * ratio
                meltinejecta = meltinejecta + linmelt
-               distvol(:) = distvol(:) + (current(N)%meltdist(:)*vsgly)
+               distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
                totvol = totvol + vsgly
                exit
        end if

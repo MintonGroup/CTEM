@@ -45,14 +45,10 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
 
    newlayer%thickness = 0.0_DP
    newlayer%comp      = 0.0_DP
-   newlayer%meltfrac  = 0.0_DP
    newlayer%age(:)    = 0.0_DP
-   allocate(newlayer%meltdist(1+domain%rcnum))
    allocate(newlayer%distvol(1+domain%rcnum))
-   newlayer%meltdist(:) = 0.0_DP
    newlayer%distvol(:) = 0.0_DP
    newlayer%ejm       = 0.0_DP
-   newlayer%ejmf      = 0.0_DP
    newlayer%meltvolume = 0.0_DP
    newlayer%totvolume = 0.0_DP
 
@@ -72,9 +68,6 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    newlayer%comp = newlayer%comp / newlayer%thickness 
 
    newlayer%totvolume = newlayer%thickness * user%pix * user%pix
-   newlayer%meltfrac = newlayer%meltvolume / newlayer%totvolume
-   newlayer%meltdist(:) = newlayer%distvol(:) / newlayer%totvolume
-   newlayer%ejmf = newlayer%ejm / newlayer%totvolume
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)

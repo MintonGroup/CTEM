@@ -35,15 +35,12 @@ subroutine io_read_regotrack(user,surf,domain)
    integer(I4B), parameter :: FAGE = 13
    integer(I4B), parameter :: FMD = 14
    integer(I4B), parameter :: FEJM = 15
-   integer(I4B), parameter :: FEJMF = 16
-   integer(I4B), parameter :: FMF = 17
-   integer(I4B), parameter :: FDF = 18
    ! real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp,ejm,ejmf,meltfrac
    ! real(SP),dimension(user%gridsize,user%gridsize,domain%rcnum) :: meltdist, distfrac
    ! real(SP),dimension(user%gridsize,user%gridsize,MAXAGEBINS) :: age
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
-   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,ejmf,meltfrac,thickness,meltvolume,agei
-   real(SP),dimension(:,:),allocatable :: age, meltdist, distfrac, distvol
+   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,thickness,meltvolume,agei
+   real(SP),dimension(:,:),allocatable :: age, distvol
    !real(DP), dimension(:), allocatable :: regotopi,melti,compi,agei,dfi,ejmi,ejmfi,mdi,mfi
    type(regodatatype) :: newsurfi
    integer(I4B) :: ioerr,i,j,k,q,itmp,N
@@ -82,23 +79,11 @@ subroutine io_read_regotrack(user,surf,domain)
        stop
    end if   
 
-   open(FDF,file=DISTFRACFILE,status='old',form='unformatted',iostat=ioerr)
-   if (ioerr/=0) then 
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(DISTFRACFILE))
-       stop
-   end if  
-
    open(FEJM,file=EJMFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(EJMFILE))
        stop
    end if
-   
-   open(FEJMF,file=EJMFFILE,status='old',form='unformatted',iostat=ioerr)
-   if (ioerr/=0) then 
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(EJMFFILE))
-       stop
-   end if  
 
    open(FMD,file=MDFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
@@ -106,11 +91,6 @@ subroutine io_read_regotrack(user,surf,domain)
        stop
    end if  
 
-   open(FMF,file=MELTFRACFILE,status='old',form='unformatted',iostat=ioerr)
-   if (ioerr/=0) then 
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(MELTFRACFILE))
-       stop
-   end if  
 
    open(FAGE,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then
@@ -119,7 +99,6 @@ subroutine io_read_regotrack(user,surf,domain)
    end if
 
    ! Start pushing regolith thickness and melt fraction of each layer
-   allocate(newsurfi%meltdist(1+domain%rcnum))
    allocate(newsurfi%distvol(1+domain%rcnum))
 
    do j=1,user%gridsize
@@ -128,8 +107,7 @@ subroutine io_read_regotrack(user,surf,domain)
          !call util_init_list(surf(i,j)%regolayer,initstat)
          !call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
          N = stacks_num(i,j)
-         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N),ejmf(N),&
-            meltfrac(N),meltdist(1+domain%rcnum,N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
 
          read(FMELT) meltvolume(:)
          read(FREGO) thickness(:)
@@ -137,9 +115,6 @@ subroutine io_read_regotrack(user,surf,domain)
          read(FAGE) age(:,:)
          read(FMD) distvol(:,:)
          read(FEJM) ejm(:)
-         read(FEJMF) ejmf(:)
-         read(FMF) meltfrac(:)
-         read(FDF) meltdist(:,:)
  
          allocate(agei(MAXAGEBINS * stacks_num(i,j)))
 
@@ -156,22 +131,19 @@ subroutine io_read_regotrack(user,surf,domain)
          do k=1,max(stacks_num(i,j),1),1
             newsurfi%thickness = thickness(k)
             newsurfi%comp = comp(k)
-            newsurfi%meltfrac  = meltfrac(k)
             newsurfi%meltvolume = meltvolume(k)
             newsurfi%ejm = ejm(k)
-            newsurfi%ejmf = ejmf(k)
             newsurfi%totvolume = thickness(k) * user%gridsize * user%gridsize
             do q=1,MAXAGEBINS
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
             end do
             do q=1,1+domain%rcnum
-               newsurfi%meltdist(q) = meltdist(q,k)
                newsurfi%distvol(q) = distvol(q,k)
             end do
             call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do
 
-         deallocate(meltvolume,thickness,comp,age,distvol,ejm,ejmf,meltfrac,meltdist,agei)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm,agei)
 
       end do
    end do
@@ -179,10 +151,7 @@ subroutine io_read_regotrack(user,surf,domain)
    close(FREGO)
    close(FCOMP)
    close(FAGE)
-   close(FDF)
    close(FEJM)
-   close(FEJMF)
    close(FMD)
-   close(FMF)
    return
 end subroutine io_read_regotrack
