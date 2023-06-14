@@ -178,14 +178,17 @@ subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,erad
    newlayer%distvol(:) = 0.0_SP
    if(domain%currentqmc) then
       newlayer%distvol(domain%nqmc) = newlayer%meltvolume
+   else
+      newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume
+      newlayer%age(domain%age_counter) = newlayer%meltvolume
    end if 
 
-   n_age = max(ceiling(age / age_resolution), 1)
-   if (lrad >= RAD_GP * crater%rad) then
-      newlayer%age(n_age) = melt / (user%pix * user%pix) 
-   else 
-      newlayer%age(n_age) = 0.0_SP   
-   end if
+   ! n_age = max(ceiling(age / age_resolution), 1)
+   ! if (lrad >= RAD_GP * crater%rad) then
+   !    newlayer%age(n_age) = melt / (user%pix * user%pix) 
+   ! else 
+   !    newlayer%age(n_age) = 0.0_SP   
+   ! end if
 
    return
 end subroutine regolith_melt_glass

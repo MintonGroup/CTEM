@@ -86,30 +86,8 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
     ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
     allocate(oldregodata,source=regolayer(1:maxi))
     deallocate(regolayer)
-    call move_alloc(oldregodata,regolayer) ! right intents?
+    call move_alloc(oldregodata,regolayer)
 
-    ! if (z <= depth) then
-    !     dz = depth - z
-
-    !*****the following lines may still be needed, especially if they deal with thickness:*****
-
-    ! oldregodata                  = regolayer(maxi)
-    ! oldregodata%thickness        = z
-    ! oldregodata%age(:)           = z / regolayer(maxi)%thickness * regolayer(maxi)%age(:)
-    ! recyratio                    = dz / regolayer(maxi)%thickness
-    ! regolayer(maxi)%age(:)    = recyratio * regolayer(maxi)%age(:)
-    ! regolayer(maxi)%thickness = dz
-
-    !********************
-
-
-    !call util_push_array(poppedarray,oldregodata) <--not needed; just editing in place
-    ! else
-    !     z = z - regolayer%thickness
-    !     call util_pop_array(regolayer,oldregodata)
-    !     call util_push_array(poppedarray,oldregodata)
-    !     depth = regolayer%thickness
-    ! end if
        
     return
  end subroutine util_traverse_pop_array

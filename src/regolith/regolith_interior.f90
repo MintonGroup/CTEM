@@ -74,6 +74,7 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
                 newlayer%distvol(domain%nqmc) = newlayer%meltvolume
             else
                 newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume
+                newlayer%age(domain%age_counter) = newlayer%meltvolume
             end if
             call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
         end do

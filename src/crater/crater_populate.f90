@@ -94,6 +94,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution
+   integer(I4B)          :: age_counter
 
    nmixingtimes = 0
 
@@ -143,8 +144,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset age
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
-   age     = user%interval
+   age     = user%interval * user%numintervals
    age_resolution = age / real(MAXAGEBINS)
+   domain%age_counter = 1
 
    ! Reset coverage map
    domain%tallycoverage = 0
@@ -160,6 +162,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
+      if (crater%timestamp > (domain%age_counter*age_resolution)) then
+         domain%age_counter = domain%age_counter + 1
+      end if 
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then

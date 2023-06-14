@@ -122,8 +122,8 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          meltinejecta     = surfi%regolayer(M)%meltvolume * ratio
          distvol(:)       = distvol(:) + (surfi%regolayer(M)%distvol(:) * ratio)
          totvol           = vseg
-         age_collector(:) = age_collector(:) + surfi%regolayer(M)%age(:) * recyratio
-         vol              = vol + sum(age_collector(:))
+         age_collector(:) = age_collector(:) + (surfi%regolayer(M)%age(:) * ratio)
+         !vol              = vol + sum(age_collector(:))
 !         write(*,*) '1',eradi, xmints, xsfints, &
 !                    vseg/user%pix**2, (vseg-vsh)/user%pix**2, recyratio
       end if
@@ -195,8 +195,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          if (rrighti > xmints) then
             vsh                = regolith_shock_damage(eradi,deltar,xmints,xsfints,rrighti,rrightf)
             recyratio          = max((vsgly2 -vsh),0.0_DP)/ (user%pix**2) / current(N)%thickness
-            age_collector(:)   = age_collector(:) + current(N)%age(:) * recyratio
-            vol                = vol + sum(current(N)%age(:)) * recyratio
+            !vol                = vol + sum(current(N)%age(:)) * recyratio
             ratio2             = max((vsgly2-vsh),0.0_DP) / current(N)%totvolume
             if (ratio2 > 1) then
                ratio2 = 1.0_DP
@@ -209,8 +208,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          if (rlefti > xmints) then
             vsh                = regolith_shock_damage(eradi,deltar,xmints,xsfints,rlefti,rleftf)
             recyratio          = max((vsgly1-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
-            age_collector(:)   = age_collector(:) + current(N)%age(:) * recyratio
-            vol                = vol + sum(current(N)%age(:)) * recyratio
+            !vol                = vol + sum(current(N)%age(:)) * recyratio
             ratio              = max((vsgly1-vsh),0.0_DP) / current(N)%totvolume
             if (ratio > 1) then
                ratio = 1.0_DP
@@ -224,8 +222,10 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          !distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh2),0.0_DP)))
          if (ratio + ratio2 < 1.0_DP) then
             distvol(:) = distvol(:) + (current(N)%distvol(:)*(ratio)) + (current(N)%distvol(:)*(ratio2))
+            age_collector(:) = age_collector(:) + (current(N)%age(:)*(ratio)) + (current(N)%age*(ratio2))
          else
             distvol(:) = distvol(:) + current(N)%distvol(:)
+            age_collector(:) = age_collector(:) + current(N)%age(:)
          end if
          totvol = totvol + vsgly1 + vsgly2
          !N = N - 1

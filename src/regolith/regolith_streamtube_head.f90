@@ -66,11 +66,11 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       tots = tots + vsgly
       totmare = totmare + vsgly * current(M)%comp
       recyratio = vsgly / (user%pix**2) /current(M)%thickness
-      age_collector(:) = age_collector(:) + current(M)%age(:) * recyratio
       ratio = vsgly / current(M)%totvolume
       if (ratio > 1) then
          ratio = 1.0_DP
       end if
+      age_collector(:) = age_collector(:) + (current(M)%age(:) * ratio)
       headmeltvol = current(M)%meltvolume * ratio
       meltinejecta = meltinejecta + headmeltvol
       distvol(:) = distvol(:) + (current(M)%distvol(:) * ratio)
@@ -85,11 +85,11 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             tothead = tothead + vhead * vratio 
             totmarehead = totmarehead + vhead * vratio * current(N)%comp
             recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
-            age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             ratio = (vhead * vratio) / current(N)%totvolume
             if (ratio > 1) then
                ratio = 1.0_DP
             end if
+            age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
             headmeltvol = current(N)%meltvolume * ratio
             meltinejecta = meltinejecta + headmeltvol
             distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
@@ -103,11 +103,11 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             totmarehead = totmarehead + (vsgly-tothead) * current(N)%comp
             tothead = vsgly
             recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
-            age_collector(:) = age_collector(:) + current(N)%age(:) * recyratio
             ratio = (vsgly-tothead) / current(N)%totvolume
             if (ratio > 1) then
                ratio = 1.0_DP
             end if
+            age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
             headmeltvol = current(N)%meltvolume * ratio
             meltinejecta = meltinejecta + headmeltvol
             distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)

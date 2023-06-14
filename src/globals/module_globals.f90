@@ -159,6 +159,7 @@ type domaintype
    integer(I4B) :: vnum      ! size of velocity distribution array
    integer(I4B) :: rcnum     ! size of real crater list array for quasi-MC
    integer(I4B) :: rccount   ! quasimc crater for iterating through the list of craters
+   integer(I2B) :: age_counter ! Current age bin for the production of new melt
    integer(I4B) :: local     ! 
    integer(I4B) :: nqmc      ! current Quasi-MC crater for regolith distribution
    logical      :: currentqmc ! is the current crater a Quasi-MC crater?
