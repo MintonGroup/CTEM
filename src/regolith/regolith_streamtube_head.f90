@@ -61,6 +61,7 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    zend = z
    zmin = zstart 
    zmax = 2.0 * deltar
+   ratio = 0.0_DP
 
    if (zend >= zmax) then ! Stream tube's head is inside the 1st layer.
       tots = tots + vsgly

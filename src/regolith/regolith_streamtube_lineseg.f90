@@ -66,6 +66,7 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
 
    vol = 0.0_DP
    vsh = 0.0_DP
+   ratio = 0.0_DP
 
    do N=M,2,-1
 
