@@ -339,16 +339,20 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          factor = newlayer%totvolume / newlayer%meltvolume
          newlayer%meltvolume = newlayer%totvolume
          distvol(:) = distvol(:) * factor
+         newlayer%age(:) = newlayer%age(:) * factor
       end if
       newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
 
       newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume - sum(newlayer%distvol(1:domain%rcnum))
       if (newlayer%distvol(1+domain%rcnum) < 0.0_DP) then !pixel consists entirely of QMC melt
          newlayer%distvol(1+domain%rcnum) = 0.0_SP
+         newlayer%age(:) = 0.0_SP
       end if
       if (sum(newlayer%distvol) > newlayer%totvolume) then
          factor = newlayer%totvolume / sum(newlayer%distvol)
          newlayer%distvol(:) = newlayer%distvol(:) * factor
+         newlayer%age(:) = newlayer%age(:) * factor
+
       end if
       newlayer%meltvolume = sum(newlayer%distvol)
 
