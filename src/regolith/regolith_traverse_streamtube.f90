@@ -41,7 +41,8 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
    ! Traversing a linked list 
    real(DP) :: zri,zrip1,cosi,coso,rzmax
    real(DP) :: erad,z,zmin,zmax,thetast,vseg
-   integer(I4B) :: N
+   integer(I4B) :: N,i
+   real(SP) :: limit
 
    real(DP),parameter :: a = 0.936457
    real(DP),parameter :: b = 1.12368
@@ -94,6 +95,14 @@ subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,ne
          ratio            = max(vseg-vsh,0.0_DP) / surfi%regolayer(N)%totvolume
          if (ratio > 1) then
             ratio = 1.0_DP
+         end if
+         if (ratio > 0) then
+            limit = (TINY(1._SP) / ratio) * 2
+            do i=1,size(age_collector)
+               if(surfi%regolayer(N)%age(i)<limit) then
+                  surfi%regolayer(N)%age(i) = 0
+               end if
+            end do
          end if
          age_collector(:) = age_collector(:) + (surfi%regolayer(N)%age(:) * ratio)
          meltinejecta     = meltinejecta + (surfi%regolayer(N)%meltvolume * ratio)

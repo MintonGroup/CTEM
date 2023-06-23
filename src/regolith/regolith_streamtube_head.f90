@@ -40,12 +40,13 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
                                                       ! head intersected with underlying layers, about 30% of volume difference. 
    real(DP) :: z,zstart,zend,zmin,zmax
    real(DP) :: tothead,totmarehead,marehead,vhead,vsgly
-   integer(I4B) :: N,M
+   integer(I4B) :: N,M,i
 
    ! melt collector
    real(DP) :: recyratio
    real(DP) :: headmeltvol
    real(DP) :: ratio
+   real(SP) :: limit
 
    !current => surfi%regolayer
    !current = surfi%regolayer
@@ -71,6 +72,14 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
       if (ratio > 1) then
          ratio = 1.0_DP
       end if
+      if (ratio > 0) then
+         limit = (TINY(1._SP) / ratio) * 2
+         do i=1,size(age_collector)
+            if(current(M)%age(i)<limit) then
+               current(M)%age(i) = 0
+            end if
+         end do
+      end if
       age_collector(:) = age_collector(:) + (current(M)%age(:) * ratio)
       headmeltvol = current(M)%meltvolume * ratio
       meltinejecta = meltinejecta + headmeltvol
@@ -90,6 +99,14 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             if (ratio > 1) then
                ratio = 1.0_DP
             end if
+            if (ratio > 0) then
+               limit = (TINY(1._SP) / ratio) * 2
+               do i=1,size(age_collector)
+                  if(current(N)%age(i)<limit) then
+                     current(N)%age(i) = 0
+                  end if
+               end do
+            end if
             age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
             headmeltvol = current(N)%meltvolume * ratio
             meltinejecta = meltinejecta + headmeltvol
@@ -107,6 +124,14 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
             ratio = (vsgly-tothead) / current(N)%totvolume
             if (ratio > 1) then
                ratio = 1.0_DP
+            end if
+            if (ratio > 0) then
+               limit = (TINY(1._SP) / ratio) * 2
+               do i=1,size(age_collector)
+                  if(current(N)%age(i)<limit) then
+                     current(N)%age(i) = 0
+                  end if
+               end do
             end if
             age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
             headmeltvol = current(N)%meltvolume * ratio

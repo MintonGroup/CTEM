@@ -117,7 +117,7 @@ save
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
-      type(surftype),intent(in) :: surfi
+      type(surftype),intent(inout) :: surfi
       real(DP),intent(in)       :: deltar,ri,rip1,eradi
       type(regodatatype),intent(inout)    :: newlayer
       real(DP),intent(inout)                :: meltinejecta,totvol

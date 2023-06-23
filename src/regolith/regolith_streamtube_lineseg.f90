@@ -40,7 +40,8 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
    type(regodatatype),dimension(:),allocatable :: current
    real(DP) :: z,zstart,zend,rstart,rend,r
    real(DP) :: vsgly,x,vseg, vsh
-   integer(I4B) :: N,M
+   integer(I4B) :: N,M,i
+   real(SP) :: limit
 
    ! Melt zone
    real(DP) :: recyratio, xsh, rst, ratio
@@ -88,6 +89,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                 if (ratio > 1) then
                   ratio = 1.0_DP
                 end if
+                if (ratio > 0) then
+                  limit = (TINY(1._SP) / ratio) * 2
+                  do i=1,size(age_collector)
+                     if(current(N-1)%age(i)<limit) then
+                        current(N-1)%age(i) = 0
+                     end if
+                  end do
+               end if
                 age_collector(:) = age_collector(:) + (current(N-1)%age(:) * ratio)
                 !vol              = vol + sum(current(N-1)%age(:)) * recyratio
                 linmelt = current(N-1)%meltvolume * ratio
@@ -132,6 +141,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   vseg             = regolith_streamtube_volume_func(eradi,max(xmints,rstart),rend,deltar)
                   vsh              = regolith_shock_damage(eradi,deltar,xmints,xsfints,rstart,rend)
                   recyratio        = max((vseg-vsh),0.0_DP) / (user%pix**2) / current(N)%thickness
+                  if (ratio > 0) then
+                     limit = (TINY(1._SP) / ratio) * 2
+                     do i=1,size(age_collector)
+                        if(current(N)%age(i)<limit) then
+                           current(N)%age(i) = 0
+                        end if
+                     end do
+                  end if
                   age_collector(:) = age_collector(:) + current(N)%age(:) * ratio
                   ratio            = max((vseg-vsh),0.0_DP) / current(N)%totvolume
                   if (ratio > 1) then
@@ -152,6 +169,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   ratio            = max((vseg-vsh),0.0_DP) / current(N)%totvolume
                   if (ratio > 1) then
                      ratio = 1.0_DP
+                  end if
+                  if (ratio > 0) then
+                     limit = (TINY(1._SP) / ratio) * 2
+                     do i=1,size(age_collector)
+                        if(current(N)%age(i)<limit) then
+                           current(N)%age(i) = 0
+                        end if
+                     end do
                   end if
                   age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
                   !vol              = vol + sum(current(N)%age(:)) * recyratio
@@ -182,6 +207,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                   if (ratio > 1) then
                      ratio = 1.0_DP
                   end if
+                  if (ratio > 0) then
+                     limit = (TINY(1._SP) / ratio) * 2
+                     do i=1,size(age_collector)
+                        if(current(N)%age(i)<limit) then
+                           current(N)%age(i) = 0
+                        end if
+                     end do
+                  end if
                   age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
                   !vol              = vol + sum(current(N)%age(:)) * recyratio
                   linmelt = current(N)%meltvolume * ratio
@@ -200,6 +233,14 @@ subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad
                ratio = vsgly / current(N)%totvolume
                if (ratio > 1) then
                   ratio = 1.0_DP
+               end if
+               if (ratio > 0) then
+                  limit = (TINY(1._SP) / ratio) * 2
+                  do i=1,size(age_collector)
+                     if(current(N)%age(i)<limit) then
+                        current(N)%age(i) = 0
+                     end if
+                  end do
                end if
                age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
                linmelt = current(N)%meltvolume * ratio

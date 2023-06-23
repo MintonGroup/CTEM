@@ -58,7 +58,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),intent(in) :: surfi
+   type(surftype),intent(inout) :: surfi
    real(DP),intent(in)       :: deltar,ri,rip1,eradi
    type(regodatatype),intent(inout)    :: newlayer
    real(DP),intent(out)              :: meltinejecta, totvol
@@ -77,7 +77,8 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    !type(regolisttype),pointer :: current
    type(regodatatype),dimension(:),allocatable :: current
    real(DP) :: z,zmax,zstart,zend,rlefti,rleftf,rrighti,rrightf,rc,vsgly,vsgly1,vsgly2,x,mvl,mvr
-   integer(I4B) :: N,M
+   integer(I4B) :: N,M,i
+   real(SP)  :: limit, limit2
 
    ! Stream tube's distance from the edge of a melt zone 
    real(DP) :: zm, recyratio, xmints1, vseg, recyratio2, ratio, ratio2
@@ -108,6 +109,8 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    vsh2 = 0.0_DP
    ratio = 0.0_DP
    ratio2 = 0.0_DP
+   limit = 0.0_SP
+   limit2 = 0.0_SP
 
    ! Two cases: subpixel is inside the first layer, and its volume is simply the landing ejecta blanket.
    if (zend>=zmax) then 
@@ -124,6 +127,14 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          meltinejecta     = surfi%regolayer(M)%meltvolume * ratio
          distvol(:)       = distvol(:) + (surfi%regolayer(M)%distvol(:) * ratio)
          totvol           = vseg
+         if (ratio > 0) then
+            limit            = (TINY(1._SP) / ratio) * 2
+            do i=1,size(age_collector)
+               if(surfi%regolayer(M)%age(i)<limit) then
+                  surfi%regolayer(M)%age(i) = 0
+               end if
+            end do
+         end if
          age_collector(:) = age_collector(:) + (surfi%regolayer(M)%age(:) * ratio)
          !vol              = vol + sum(age_collector(:))
 !         write(*,*) '1',eradi, xmints, xsfints, &
@@ -224,6 +235,22 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
          !distvol(:) = distvol(:) + (current(N)%meltdist(:)*(max((vsgly1-vsh),0.0_DP)+max((vsgly2-vsh2),0.0_DP)))
          if (ratio + ratio2 < 1.0_DP) then
             distvol(:) = distvol(:) + (current(N)%distvol(:)*(ratio)) + (current(N)%distvol(:)*(ratio2))
+            if (ratio2 > 0) then
+               limit2 = (TINY(1._SP) / ratio2) * 2
+               do i=1,size(age_collector)
+                  if(current(N)%age(i)<limit2) then
+                     current(N)%age(i) = 0
+                  end if
+               end do
+            end if
+            if (ratio > 0) then
+               limit = (TINY(1._SP) / ratio) * 2
+               do i=1,size(age_collector)
+                  if(current(N)%age(i)<limit) then
+                     current(N)%age(i) = 0
+                  end if
+               end do
+            end if
             age_collector(:) = age_collector(:) + (current(N)%age(:)*(ratio)) + (current(N)%age*(ratio2))
          else
             distvol(:) = distvol(:) + current(N)%distvol(:)
