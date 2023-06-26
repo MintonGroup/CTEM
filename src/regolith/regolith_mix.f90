@@ -47,7 +47,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    newlayer%comp      = 0.0_DP
    newlayer%age(:)    = 0.0_SP
    allocate(newlayer%distvol(1+domain%rcnum))
-   newlayer%distvol(:) = 0.0_DP
+   newlayer%distvol(:) = 0.0_SP
    newlayer%ejm       = 0.0_DP
    newlayer%meltvolume = 0.0_DP
    newlayer%totvolume = 0.0_DP
