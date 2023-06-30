@@ -89,7 +89,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
-   real(DP)     :: meltinejecta, totvol, factor
+   real(DP)     :: meltinejecta, totvol, factor, agefactor
    type(regodatatype) :: newlayer
    real(SP),dimension(:),allocatable :: distvol
 
@@ -322,7 +322,6 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
   !Apply a correction factor to ensure conservation of volume
 
-
   factor = (newlayer%totvolume-newlayer%ejm) / totvol
   meltinejecta = meltinejecta * factor
   distvol(:) = distvol(:) * factor
@@ -356,6 +355,14 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       end if
       newlayer%meltvolume = sum(newlayer%distvol)
 
+   end if
+
+   !conserve volume in the age array
+   if (sum(newlayer%age(:)) > 0.0_DP) then
+      agefactor = newlayer%distvol(1+domain%rcnum) / sum(newlayer%age(:))
+      newlayer%age(:) = newlayer%age(:) * agefactor
+   else
+      newlayer%age(:) = 0.0_DP
    end if
 
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
