@@ -343,7 +343,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
 
       newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume - sum(newlayer%distvol(1:domain%rcnum))
-      if (newlayer%distvol(1+domain%rcnum) < 0.0_DP) then !pixel consists entirely of QMC melt
+      if (newlayer%distvol(1+domain%rcnum) < 0.0) then !pixel consists entirely of QMC melt
          newlayer%distvol(1+domain%rcnum) = 0.0_SP
          newlayer%age(:) = 0.0_SP
       end if
@@ -358,11 +358,11 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    end if
 
    !conserve volume in the age array
-   if (sum(newlayer%age(:)) > 0.0_DP) then
+   if (sum(newlayer%age(:)) > 0.0) then
       agefactor = newlayer%distvol(1+domain%rcnum) / sum(newlayer%age(:))
       newlayer%age(:) = newlayer%age(:) * agefactor
    else
-      newlayer%age(:) = 0.0_DP
+      newlayer%age(:) = 0.0_SP
    end if
 
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
