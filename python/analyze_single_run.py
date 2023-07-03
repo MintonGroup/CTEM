@@ -153,6 +153,8 @@ def aggregate(x,y,depth,n,rego,melt,meltdist,filter=False,apollo=False):
     a1.pie(sigmelt,labels=sigcraternames,startangle=90,autopct='%1.1f%%',shadow=False,colors = iter(plt.cm.Set3(np.linspace(0,1,len(sigmelt)))))
     a1.axis('equal')
     a2.imshow(img)
+    if apollo:
+        a2.scatter(apollo_x, surfcoords, color='red', label='Apollo 14-17 Landing Sites')
     #a2.scatter(x, gridsize-y, color='blue', label='Selected Pixel')
     a2.xaxis.set_ticklabels([])
     a2.yaxis.set_ticklabels([])
@@ -161,8 +163,6 @@ def aggregate(x,y,depth,n,rego,melt,meltdist,filter=False,apollo=False):
     else:
         rect = patches.Rectangle((x,gridsize-y),n,n,linewidth=1,edgecolor='b',facecolor='b',label='Selected Region')
         a2.add_patch(rect)
-    if apollo:
-        a2.scatter(apollo_x, surfcoords, color='red', label='Apollo 14-17 Landing Sites')
     a2.tick_params(left = False)
     a2.tick_params(bottom = False)
     a2.legend()
@@ -363,6 +363,8 @@ def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
     a1.set_xlabel('Age (Ga)')
     a1.set_ylabel('Melt Depth (m)')
     a2.imshow(img)
+    if apollo:
+        a2.scatter(apollo_x, surfcoords, color='red', label='Apollo 14-17 Landing Sites')
     if n == 0:
         a2.scatter(x, gridsize-y, color='blue', label='Selected Region')
     else:
@@ -370,8 +372,6 @@ def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
         a2.add_patch(rect)
     a2.xaxis.set_ticklabels([])
     a2.yaxis.set_ticklabels([])
-    if apollo:
-        a2.scatter(apollo_x, surfcoords, color='red', label='Apollo 14-17 Landing Sites')
     a2.tick_params(left = False)
     a2.tick_params(bottom = False)
     a1.legend()
