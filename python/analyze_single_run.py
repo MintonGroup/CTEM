@@ -328,7 +328,7 @@ def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
             for j in range(-n,n+1):
                 agedist.append(np.zeros(nage))
                 qmcarray.append(np.zeros(nage))
-                o,localage,qmcage = find_all_ages(x,y,depth)
+                o,localage,qmcage = find_all_ages(x+i,y+j,depth,rego,age)
                 agedist[k] = localage
                 qmcarray[k] = qmcage
                 k += 1
@@ -385,8 +385,8 @@ if __name__ == '__main__':
     #path = '/Users/owner/Desktop/debug/mftest/'
     #gridsize = 500
     #pix = 12.32e3
-    gridsize = 100
-    pix = 61.6e3
+    gridsize = 500
+    pix = 12.32e3
     pixkm = pix / 1000
 
     apollo_x, apollo_y = find_apollo_coords(gridsize,pix)
@@ -397,8 +397,8 @@ if __name__ == '__main__':
     rego = ctem.util.read_linked_list_binary(path + '/surface_rego.dat', gridsize)
     melt = ctem.util.read_linked_list_binary(path + '/surface_melt.dat', gridsize)
     stack = ctem.util.read_unformatted_binary(path + '/surface_stacknum.dat', gridsize, kind='I4B')
-    meltdist = ctem.util.read_linked_list_binary(path + '/surface_meltdist.dat', gridsize, kind='DP')
-    age = ctem.util.read_linked_list_binary(path + '/surface_age.dat', gridsize, kind='DP')
+    meltdist = ctem.util.read_linked_list_binary(path + '/surface_meltdist.dat', gridsize, kind='SP')
+    age = ctem.util.read_linked_list_binary(path + '/surface_age.dat', gridsize, kind='SP')
 
 
     surfimg = path + '/surf/surf000001.png'
@@ -431,4 +431,4 @@ if __name__ == '__main__':
     # craters = ['South Pole-Aitken','Serenitatis','Nectaris','Crisium','Imbrium','Orientale','Iridum','Local']
 
     #aggregate(apollo_x[2],apollo_y[2],5,0,rego,melt,meltdist)
-    aggregate_ages(apollo_x[2],apollo_y[2],5,0,rego,age,log=False,apollo=True)
+    aggregate_ages(apollo_x[0],apollo_y[0],5,1,rego,age,log=False,apollo=True)
