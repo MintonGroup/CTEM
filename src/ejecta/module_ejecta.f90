@@ -25,7 +25,8 @@ public
 save
 
    interface
-      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange)
+      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,&
+         nmeltsheet,vmeltsheet)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -38,6 +39,8 @@ save
       real(DP),intent(in)  :: age
       real(DP),intent(in)  :: age_resolution
       real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
+      integer(I4B),intent(in) :: nmeltsheet
+      real(DP),intent(out) :: vmeltsheet
       end subroutine ejecta_emplace
    end interface
 
@@ -52,6 +55,27 @@ save
       real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
       real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
       end subroutine ejecta_ray_pattern
+   end interface
+
+   interface
+      function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
+      use module_globals
+      implicit none
+      real(DP) :: ans
+      real(DP),intent(in) :: r,rmin,rmax,theta
+      real(DP),dimension(:),intent(in) :: thetari
+      logical,intent(in) :: ej
+      end function ejecta_ray_pattern_func
+   end interface
+
+   interface
+      function ejecta_ray_func(theta,thetar,r,n,w) result(ans)
+      use module_globals
+      implicit none
+      real(DP) :: ans
+      real(DP),intent(in) :: theta,thetar,r,w
+      integer(I4B),intent(in) :: n
+      end function ejecta_ray_func
    end interface
 
    interface

@@ -35,12 +35,12 @@ public
 save
 
    interface
-      subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
+      subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb,volm)
       use module_globals
       type(usertype),intent(in) :: user
       type(cratertype),intent(inout) :: crater
       real(DP),intent(in)  :: dimp,vimp
-      real(DP),intent(out) :: rmelt,depthb
+      real(DP),intent(out) :: rmelt,depthb,volm
       end subroutine regolith_melt_zone
    end interface
 
@@ -77,7 +77,7 @@ save
 
    interface 
       subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,&
-                 rm,vsq,age,age_resolution)
+                 rm,vsq,age,age_resolution,volm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -89,67 +89,76 @@ save
       real(DP),intent(in)          :: xp,yp,lrad,ebh
       integer(I4B),intent(in)      :: xpi,ypi
       real(DP),intent(in)          :: rm, vsq, age, age_resolution
+      real(DP),intent(inout)       :: volm
       end subroutine regolith_streamtube
    end interface
 
    interface 
       subroutine regolith_traverse_streamtube(user,surfi,deltar,ri,rip1,eradi,erado,newlayer,vmare,totseb,&
-                 age_collector,xmints,xsfints,rsh,depthb)
+                 age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
       type(regodatatype),intent(inout) :: newlayer
+      real(DP),intent(out)            :: meltinejecta,totvol
       real(DP),intent(out) :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
-      real(DP),intent(in)             :: xsfints, rsh, depthb
+      real(DP),intent(in)             :: xsfints, depthb
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_traverse_streamtube
    end interface
 
    interface 
       subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer,vmare,totseb,& 
-                 age_collector,xmints,xsfints,vol) 
+                 age_collector,xmints,xsfints,vol,meltinejecta,totvol,distvol) 
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
-      type(surftype),intent(in) :: surfi
+      type(surftype),intent(inout) :: surfi
       real(DP),intent(in)       :: deltar,ri,rip1,eradi
       type(regodatatype),intent(inout)    :: newlayer
+      real(DP),intent(inout)                :: meltinejecta,totvol
       real(DP),intent(out)                :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)                 :: xmints
       real(DP),intent(in)                 :: xsfints
       real(DP),intent(inout)              :: vol
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_subpixel_streamtube
    end interface
 
    interface 
       subroutine regolith_streamtube_lineseg(user,surfi,thetast,ri,rip1,zmin,zmax,erad,eradi,deltar,newlayer,vmare,&
-      totseb,age_collector,xmints,xsfints,depthb)
+      totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
       real(DP),intent(in) :: thetast,ri,rip1,zmin,zmax,erad,eradi,deltar
       type(regodatatype),intent(inout) :: newlayer
+      real(DP),intent(inout)           :: meltinejecta,totvol
       real(DP),intent(inout) :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints
       real(DP),intent(in)             :: xsfints, depthb
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_streamtube_lineseg
    end interface 
 
    interface 
-      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector)
+      subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol,distvol)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),intent(in) :: surfi
+      real(DP),intent(inout)    :: meltinejecta,totvol
       real(DP),intent(in) :: deltar
       real(DP),intent(inout) :: totmare,tots
       real(SP),dimension(:),intent(inout) :: age_collector
+      real(SP),dimension(:),intent(inout) :: distvol
       end subroutine regolith_streamtube_head
    end interface
 
@@ -226,10 +235,12 @@ save
    end interface
 
    interface
-      subroutine regolith_mix(surf,d)
+      subroutine regolith_mix(user,surfi,mixing_depth,domain)
       use module_globals
-      type(surftype),intent(inout) :: surf
-      real(DP),intent(in) :: d
+      type(usertype),intent(in) :: user
+      type(surftype),intent(inout) :: surfi
+      real(DP),intent(in) :: mixing_depth
+      type(domaintype),intent(in) :: domain
       end subroutine regolith_mix
    end interface
 
@@ -245,10 +256,11 @@ save
    end interface
 
    interface
-      subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints)
+      subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
       use module_globals
       type(usertype),intent(in)        :: user
       type(cratertype),intent(in)      :: crater
+      type(domaintype),intent(in)      :: domain
       real(DP),intent(in)              :: age
       real(DP),intent(in)              :: age_resolution
       real(DP),intent(in)              :: ebh
@@ -258,6 +270,7 @@ save
       real(DP),intent(out)             :: deltar
       type(regodatatype),intent(out)   :: newlayer
       real(DP),intent(out)             :: xmints
+      real(DP),intent(out)             :: melt
       end subroutine regolith_melt_glass
    end interface
 
@@ -267,7 +280,7 @@ save
      type(usertype),intent(in)      :: user
      type(cratertype),intent(inout) :: crater
      type(domaintype),intent(in)    :: domain
-     type(regolisttype),pointer     :: regolayer
+     type(regodatatype),dimension(:),allocatable,intent(inout)       :: regolayer
      real(DP),intent(in)            :: ejdistribution 
      integer(I4B),intent(in)        :: xpi, ypi
      real(DP),intent(in)            :: age
@@ -311,6 +324,18 @@ save
      real(DP),intent(in)         :: erad, deltar, xmints, xsfints, xleft, xright
      real(DP)                    :: vsh
      end function regolith_shock_damage
+   end interface
+
+   interface
+      subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
+      use module_globals
+      type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(domaintype),intent(in) :: domain
+      type(cratertype),intent(in) :: crater
+      integer(I4B),intent(in)     :: incval, nmeltsheet
+      real(DP),intent(in)         :: vmeltsheet
+      end subroutine regolith_interior
    end interface
   
 end module

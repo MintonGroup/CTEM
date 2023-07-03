@@ -18,31 +18,41 @@
 !  Notes       :  The stream tube's head is always attached to the surface. 
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector)
+subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector,meltinejecta,totvol,distvol)
    use module_globals 
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube_head
    implicit none
    ! arguemnts
    type(usertype),intent(in) :: user
    type(surftype),intent(in) :: surfi
+   real(DP),intent(inout) :: meltinejecta,totvol
    real(DP),intent(in) :: deltar
    real(DP),intent(inout) :: totmare,tots
    real(SP),dimension(:),intent(inout) :: age_collector
+   real(SP),dimension(:),intent(inout) :: distvol
  
    ! internal variables
-   type(regolisttype),pointer :: current
+   !type(regolisttype),pointer :: current
+   type(regodatatype),dimension(:),allocatable :: current
    real(DP),parameter :: vratio = sqrt(2.0_DP)/2.0_DP ! Unfortunately, the approximate function that is used to get the size of a stream
                                                       ! tube with a constraint of CTEM's ejecta blanket thickness is slightly different
                                                       ! from the analytical function that we use here to approximate the stream tube's 
                                                       ! head intersected with underlying layers, about 30% of volume difference. 
    real(DP) :: z,zstart,zend,zmin,zmax
    real(DP) :: tothead,totmarehead,marehead,vhead,vsgly
+   integer(I4B) :: N,M,i
 
    ! melt collector
    real(DP) :: recyratio
+   real(DP) :: headmeltvol
+   real(DP) :: ratio
+   real(SP) :: limit
 
-   current => surfi%regolayer
-   z = current%regodata%thickness
+   !current => surfi%regolayer
+   !current = surfi%regolayer
+   allocate(current,source=surfi%regolayer)
+   M = size(current)
+   z = current(M)%thickness
    vsgly = vratio * PI * deltar**3
    tothead = 0._DP
    totmarehead = 0._DP
@@ -52,38 +62,89 @@ subroutine regolith_streamtube_head(user,surfi,deltar,totmare,tots,age_collector
    zend = z
    zmin = zstart 
    zmax = 2.0 * deltar
+   ratio = 0.0_DP
 
    if (zend >= zmax) then ! Stream tube's head is inside the 1st layer.
       tots = tots + vsgly
-      totmare = totmare + vsgly * current%regodata%comp
-      recyratio = vsgly / (user%pix**2) /current%regodata%thickness
-      age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
+      totmare = totmare + vsgly * current(M)%comp
+      recyratio = vsgly / (user%pix**2) /current(M)%thickness
+      ratio = vsgly / current(M)%totvolume
+      if (ratio > 1) then
+         ratio = 1.0_DP
+      end if
+      if (ratio > 0) then
+         limit = (TINY(1._SP) / ratio) * 2
+         do i=1,size(age_collector)
+            if(current(M)%age(i)<limit) then
+               current(M)%age(i) = 0
+            end if
+         end do
+      end if
+      age_collector(:) = age_collector(:) + (current(M)%age(:) * ratio)
+      headmeltvol = current(M)%meltvolume * ratio
+      meltinejecta = meltinejecta + headmeltvol
+      distvol(:) = distvol(:) + (current(M)%distvol(:) * ratio)
+      totvol = totvol + vsgly
    else ! head is not intersected with layers. 
 
-   do
-      if (.not. associated(current%next)) exit
-      
-      if (zend < zmax) then 
-         vhead = regolith_circle_sector_func(deltar,zstart,zend)
-         tothead = tothead + vhead * vratio 
-         totmarehead = totmarehead + vhead * vratio * current%regodata%comp
-         recyratio = vhead * vratio / (user%pix**2) / current%regodata%thickness
-         age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
-         current => current%next
-         z = z + current%regodata%thickness
-         zstart = zend
-         zend = z
-      else 
-         totmarehead = totmarehead + (vsgly-tothead) * current%regodata%comp
-         tothead = vsgly
-         recyratio = (vsgly - tothead) / (user%pix**2) / current%regodata%thickness
-         age_collector(:) = age_collector(:) + current%regodata%age(:) * recyratio
-         exit
-      end if
-   end do
+      do N=M,2,-1
+         ! if (.not. associated(current%next)) exit
+         
+         if (zend < zmax) then 
+            vhead = regolith_circle_sector_func(deltar,zstart,zend)
+            tothead = tothead + vhead * vratio 
+            totmarehead = totmarehead + vhead * vratio * current(N)%comp
+            recyratio = vhead * vratio / (user%pix**2) / current(N)%thickness
+            ratio = (vhead * vratio) / current(N)%totvolume
+            if (ratio > 1) then
+               ratio = 1.0_DP
+            end if
+            if (ratio > 0) then
+               limit = (TINY(1._SP) / ratio) * 2
+               do i=1,size(age_collector)
+                  if(current(N)%age(i)<limit) then
+                     current(N)%age(i) = 0
+                  end if
+               end do
+            end if
+            age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
+            headmeltvol = current(N)%meltvolume * ratio
+            meltinejecta = meltinejecta + headmeltvol
+            distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
+            totvol = totvol + tothead
+            !current => current%next
+            !N = N - 1
+            z = z + current(N-1)%thickness
+            zstart = zend
+            zend = z
+         else 
+            totmarehead = totmarehead + (vsgly-tothead) * current(N)%comp
+            tothead = vsgly
+            recyratio = (vsgly - tothead) / (user%pix**2) / current(N)%thickness
+            ratio = (vsgly-tothead) / current(N)%totvolume
+            if (ratio > 1) then
+               ratio = 1.0_DP
+            end if
+            if (ratio > 0) then
+               limit = (TINY(1._SP) / ratio) * 2
+               do i=1,size(age_collector)
+                  if(current(N)%age(i)<limit) then
+                     current(N)%age(i) = 0
+                  end if
+               end do
+            end if
+            age_collector(:) = age_collector(:) + (current(N)%age(:) * ratio)
+            headmeltvol = current(N)%meltvolume * ratio
+            meltinejecta = meltinejecta + headmeltvol
+            distvol(:) = distvol(:) + (current(N)%distvol(:) * ratio)
+            totvol = totvol + vsgly
+            exit
+         end if
+      end do
 
-   tots = tots + tothead
-   totmare = totmare + totmarehead
+
+      tots = tots + tothead
+      totmare = totmare + totmarehead
 
    end if
 

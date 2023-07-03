@@ -208,14 +208,6 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    kdiff(user%gridsize + 1,:) = kdiff(1,:)
    kdiff(:,user%gridsize + 1) = kdiff(:,1)  
 
-   write(*,*)
-   write(*,*) 'avgkdiff = ',sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   write(*,*)
-   open(unit=55,file='avgkdiff.dat',status='unknown',position='append')
-   write(55,*) sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   close(55)
-
-
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
    do j = 1,user%gridsize
       do i = 1,user%gridsize

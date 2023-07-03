@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine io_write_regotrack(user,surf)
+subroutine io_write_regotrack(user,surf,domain)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_write_regotrack
    implicit none
@@ -24,6 +24,7 @@ subroutine io_write_regotrack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(in) :: surf
+   type(domaintype),intent(in) :: domain
 
    ! Regotrack Internals
    integer(I4B) :: i,j,k
@@ -32,10 +33,13 @@ subroutine io_write_regotrack(user,surf)
    integer(I4B), parameter :: FREGO = 11
    integer(I4B), parameter :: FCOMP = 12
    integer(I4B), parameter :: FAGE = 13
-   type(regolisttype),pointer :: current => null()
+   integer(I4B), parameter :: FMD = 14
+   integer(I4B), parameter :: FEJM = 15
+   !type(regolisttype),pointer :: current => null()
+   type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
-   real(DP),dimension(:),allocatable :: meltfrac, thickness, comp
-   real(SP),dimension(:,:),allocatable :: age
+   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
+   real(SP),dimension(:,:),allocatable :: age, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
@@ -48,44 +52,52 @@ subroutine io_write_regotrack(user,surf)
    open(FREGO,file=REGOFILE,status='replace',form='unformatted')
    open(FCOMP,file=COMPFILE,status='replace',form='unformatted')
    open(FAGE,file=AGEFILE,status='replace',form='unformatted')
+   open(FMD,file=MDFILE,status='replace',form='unformatted')
+   open(FEJM,file=EJMFILE,status='replace',form='unformatted')
 
    ! First pass to get stack numbers
    stacks_num(:,:) = 0
    do j=1,user%gridsize
       do i=1,user%gridsize
-         current => surf(i,j)%regolayer
-         do 
-            if (.not. associated(current)) exit ! We've reached the bottom of the linked list
-            stacks_num(i,j) = stacks_num(i,j) + 1
-            current => current%next
-         end do
+         !current => surf(i,j)%regolayer
+         allocate(current,source=surf(i,j)%regolayer)
+         stacks_num(i,j) = size(current)
+         deallocate(current)
       end do 
    end do
 
    ! Second pass to get data and save it
    do j=1,user%gridsize
       do i=1,user%gridsize
-         current => surf(i,j)%regolayer
+         !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
-         allocate(meltfrac(N),thickness(N),comp(N),age(MAXAGEBINS,N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
+         allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
-            meltfrac(k) = current%regodata%meltfrac
-            thickness(k) = current%regodata%thickness
-            comp(k) = current%regodata%comp
-            age(:,k) = current%regodata%age(:)
-            current => current%next
+            meltvolume(k) = current(k)%meltvolume
+            thickness(k) = current(k)%thickness
+            comp(k) = current(k)%comp
+            age(:,k) = current(k)%age(:)
+            !write(*,*) i, j
+            distvol(:,k) = current(k)%distvol(:)
+            ejm(k) = current(k)%ejm
          end do
-         write(FMELT) meltfrac(:)
+         deallocate(current)
+         write(FMELT) meltvolume(:)
          write(FREGO) thickness(:)
          write(FCOMP) comp(:)
          write(FAGE) age(:,:)
-         deallocate(meltfrac,thickness,comp,age)
+         write(FMD) distvol(:,:)
+         write(FEJM) ejm(:)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm)
       end do 
    end do
    close(FMELT)
    close(FREGO)
    close(FCOMP)
    close(FAGE)
+   close(FMD)
+   close(FEJM)
 
    recsize = sizeof(itmp) * user%gridsize * user%gridsize
    open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')

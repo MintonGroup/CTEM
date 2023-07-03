@@ -56,7 +56,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution)
+subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube
@@ -72,6 +72,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    real(DP),intent(in)          :: xp,yp,lrad,ebh
    integer(I4B),intent(in)      :: xpi,ypi
    real(DP),intent(in)          :: rm, vsq, age, age_resolution
+   real(DP),intent(inout)       :: volm
 
    ! Traversing a linked list 
    real(DP),parameter :: a = 0.936457 ! Fitting parameters for the relation between height difference and a radial position of a stream tube
@@ -88,7 +89,9 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    integer(I4B) :: i,j,k,toti,totj,toty,cnt,xstpi,ystpi
    real(DP)     :: vtot,vseg,ri,rip1,xc,yc,thetast
    real(DP)     :: vst,vbody,rbody,vmare,totmare,totseb,tots
+   real(DP)     :: meltinejecta, totvol, factor, agefactor
    type(regodatatype) :: newlayer
+   real(SP),dimension(:),allocatable :: distvol
 
    ! Constrain the tangital tube's volume with CTEM result
    real(DP)     :: k1,k2,k3,k4,c1,c2
@@ -117,20 +120,37 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! Executalbe code
 
    ! ****** Interpolate radial distance, erad, for a given pixel *******
-   outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
-   inneredge = crater%frad + 0.5_DP * domain%ejbres
-   k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
+   ! outeredge = crater%frad + domain%ejbres * (EJBTABSIZE - 0.5_DP)
+   ! inneredge = crater%frad + 0.5_DP * domain%ejbres
+   ! k = max(min(1 + int((lrad - inneredge) / (outeredge - inneredge) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
+   ! loglrad = log(lrad)
+   ! logtablerad = ejb(k)%lrad 
+
+   !from ejecta_interpolate
+   inneredge = crater%ejrad 
+   outeredge = crater%ejrad * exp(domain%ejbres * EJBTABSIZE)
+   k = max(min(1 + int((log(lrad) - log(inneredge)) / (log(outeredge) - log(inneredge)) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
    loglrad = log(lrad)
-   logtablerad = ejb(k)%lrad 
+   logtablerad = ejb(k)%lrad
+
+   !from stable-1.4
+   ! inneredge = crater%rad 
+   ! outeredge = crater%rad * exp(domain%ejbres * EJBTABSIZE)
+   ! k = max(min(1 + int((log(lrad) - log(inneredge)) / (log(outeredge) - log(inneredge)) * (EJBTABSIZE - 1.0_DP)),ejtble),1)
+   ! loglrad = log(lrad)
+   ! logtablerad = ejb(k)%lrad 
+
 
    if (k==ejtble) then
       logdelta = logtablerad - ejb(k - 1)%lrad
       frac = (loglrad - ejb(k-1)%lrad) / logdelta
-      eradc = ejb(k-1)%erad + ((ejb(k)%erad - ejb(k-1)%erad) * frac)
+      eradc = exp(ejb(k-1)%erad) + ((exp(ejb(k)%erad) - exp(ejb(k-1)%erad)) * frac)
+      !eradc = ejb(k-1)%erad + ((ejb(k)%erad - ejb(k-1)%erad) * frac)
    else
       logdelta = ejb(k + 1)%lrad - logtablerad 
       frac = (loglrad - logtablerad) / logdelta  
-      eradc = ejb(k)%erad - ((ejb(k)%erad - ejb(k+1)%erad) * frac)
+      eradc = exp(ejb(k)%erad) - ((exp(ejb(k)%erad) - exp(ejb(k+1)%erad)) * frac)
+      !eradc = ejb(k)%erad - ((ejb(k)%erad - ejb(k+1)%erad) * frac)
    end if
 
    if (eradc<=0.0_DP) then
@@ -141,7 +161,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! ********* Calculate the height difference between two streamlines that define a stream tube with varying radial position *******
    xl = xp - crater%xl
    yl = yp - crater%yl
-   phi = atan(yl/xl) 
+   phi = atan2(yl,xl) 
    toti = floor((eradc * abs(xl)/lrad) / user%pix)
    totj = floor((eradc * abs(yl)/lrad) / user%pix)
    ! *************************** Intersection points with grid lines ************************************************
@@ -204,13 +224,28 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! Purpose 2: Once we have the size information of a stream tube, we can
    ! calculate the distal melt: the precursor of glass spherules within a
    ! stream tube. The result is contained in a linked list "newlayer".
-   call regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints) 
+   call regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,volm)
+   ! if (eradc>rm) then
+   !    write(*,*) 'eradc > rm!'
+   !    write(*,*) ebh, exp(ejb(k)%thick)
+   !   stop
+   ! end if 
    erado = eradc + deltar
    eradi = eradc - deltar
    age_collector(:) = 0.0_SP
    vol = 0.0_DP
    totmare = 0.0_DP
    tots    = 0.0_DP
+   depthb = crater%imp / 2.0_DP
+   meltinejecta = 0.0_DP
+   totvol = 0.0_DP
+   allocate(distvol(1+domain%rcnum))
+   distvol(:) = 0.0_SP
+
+   ! if (eradc<=user%testimp) then
+   !    write(*,*) lrad/crater%frad, user%testimp, crater%frad, rm, deltar, eradc, eradi, erado, ebh, newlayer%meltfrac
+   !    stop
+   ! end if
 
    call regolith_shock_damage_zone(crater,rm,eradi,depthb,xsfints)
 
@@ -226,7 +261,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%thickness = vseg/(user%pix**2)
       call util_periodic(xstpi,ystpi,user%gridsize)
       call regolith_subpixel_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,newlayer,vmare,totseb,&
-           age_collector,xmints,xsfints,vol)
+           age_collector,xmints,xsfints,vol,meltinejecta,totvol,distvol)
 
       newlayer%age(:) = newlayer%age(:) + age_collector(:)
  
@@ -234,7 +269,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       tots = totseb
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
-      newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
+      !newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
 
    else
       rbody = sqrt(xints(2)**2 + yints(2)**2)
@@ -247,7 +282,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
          newlayer%thickness = vseg/(user%pix**2)
          call util_periodic(xstpi,ystpi,user%gridsize)
          call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,rbody,eradi,eradi,erado,newlayer,vmare,&
-              totseb,age_collector,xmints,xsfints,rsh,depthb)
+            totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
          totmare = totmare + vmare
          tots = tots + totseb
       end if           
@@ -264,7 +299,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
             newlayer%thickness = vseg/(user%pix**2)
             call util_periodic(xstpi,ystpi,user%gridsize)
             call regolith_traverse_streamtube(user,surf(xstpi,ystpi),deltar,ri,rip1,eradi,erado,newlayer,vmare,&
-                 totseb,age_collector,xmints,xsfints,rsh,depthb)
+               totseb,age_collector,xmints,xsfints,depthb,meltinejecta,totvol,distvol)
             totmare = totmare + vmare
             tots = tots + totseb 
          end if
@@ -273,18 +308,66 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       xstpi = crater%xlpx + nint(eradc*xl/lrad/user%pix)
       ystpi = crater%ylpx + nint(eradc*yl/lrad/user%pix)
       call util_periodic(xstpi,ystpi,user%gridsize)
-      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector)
+      call regolith_streamtube_head(user,surf(xstpi,ystpi),deltar,totmare,tots,age_collector,meltinejecta,totvol,distvol)
 
       newlayer%thickness = ebh
       newlayer%comp      = min(totmare/tots, 1.0_DP)
       newlayer%age(:)    = newlayer%age(:) + age_collector(:)
-      newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
+      !newlayer%age(:)    = newlayer%age(:) * min( (ebh * user%pix**2) / tots, 1.0_DP)
+      ! if (newlayer%meltfrac > 1.0_DP) then
+      !    write(*,*) "Melt fraction >1! (Traverse)", xpi,ypi,crater%timestamp,crater%fcrat,crater%xlpx,crater%ylpx,&
+      !     newlayer%meltvolume, newlayer%totvolume, newlayer%ejm, newlayer%ejmf, totvol
+      ! end if
+   end if
 
-  end if
+  !Apply a correction factor to ensure conservation of volume
 
-  call util_push(surf(xpi,ypi)%regolayer,newlayer)
+  factor = (newlayer%totvolume-newlayer%ejm) / totvol
+  meltinejecta = meltinejecta * factor
+  distvol(:) = distvol(:) * factor
+  !totvol = newlayer%totvolume - meltinejecta
+  if (newlayer%ejm > newlayer%totvolume) then !entire pixel is ejected melt
+      newlayer%ejm = newlayer%totvolume
+      newlayer%meltvolume = newlayer%ejm
+   else
+      if (meltinejecta + newlayer%ejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
+         meltinejecta = newlayer%totvolume - newlayer%ejm
+      end if
+      newlayer%meltvolume = meltinejecta + newlayer%ejm
+      if (newlayer%meltvolume > newlayer%totvolume) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
+         factor = newlayer%totvolume / newlayer%meltvolume
+         newlayer%meltvolume = newlayer%totvolume
+         distvol(:) = distvol(:) * factor
+         newlayer%age(:) = newlayer%age(:) * factor
+      end if
+      newlayer%distvol(:) = newlayer%distvol(:) + distvol(:)
 
-  deallocate(xints,yints)
+      newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume - sum(newlayer%distvol(1:domain%rcnum))
+      if (newlayer%distvol(1+domain%rcnum) < 0.0) then !pixel consists entirely of QMC melt
+         newlayer%distvol(1+domain%rcnum) = 0.0_SP
+         newlayer%age(:) = 0.0_SP
+      end if
+      if (sum(newlayer%distvol) > newlayer%totvolume) then
+         factor = newlayer%totvolume / sum(newlayer%distvol)
+         newlayer%distvol(:) = newlayer%distvol(:) * factor
+         newlayer%age(:) = newlayer%age(:) * factor
+
+      end if
+      newlayer%meltvolume = sum(newlayer%distvol)
+
+   end if
+
+   !conserve volume in the age array
+   if (sum(newlayer%age(:)) > 0.0) then
+      agefactor = newlayer%distvol(1+domain%rcnum) / sum(newlayer%age(:))
+      newlayer%age(:) = newlayer%age(:) * agefactor
+   else
+      newlayer%age(:) = 0.0_SP
+   end if
+
+  call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
+
+  deallocate(xints,yints,distvol)
 
   return
 end subroutine regolith_streamtube

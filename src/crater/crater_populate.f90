@@ -78,6 +78,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)            :: oldpbarpos
    real(DP),dimension(:,:),allocatable   :: ejecta_dem
    real(DP)                :: hmax, hmin
+   integer(I4B)            :: nmixingtimes, incval, nmeltsheet
+   real(DP)                :: vmeltsheet
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -92,6 +94,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution
+   integer(I4B)          :: age_counter
+
+   nmixingtimes = 0
 
    if (user%testflag) then
       write(*,*) "Generating a test crater"
@@ -109,8 +114,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
    ! read initial quasi-MC position
    if (user%doquasimc) then
-      rccount = 1
-      user%rctime = rclist(6,rccount)
+      domain%rccount = 1
+      user%rctime = rclist(6,domain%rccount)
    end if
 
 
@@ -139,8 +144,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset age
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
-   age     = user%interval
+   age     = user%interval * user%numintervals
    age_resolution = age / real(MAXAGEBINS)
+   domain%age_counter = 1
 
    ! Reset coverage map
    domain%tallycoverage = 0
@@ -151,26 +157,34 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    oldpbarpos = 0
    do while (icrater < ntotcrat)
       makecrater = .true.
+      domain%currentqmc = .false.
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
+      if (crater%timestamp > (domain%age_counter*age_resolution)) then
+         domain%age_counter = domain%age_counter + 1
+      end if 
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
-            write(*,*) "Real crater at ", crater%timestamp
+            domain%currentqmc = .true.
+            write(message,*) "Real @ ", crater%timestamp
+            call io_updatePbar(message)
             user%testflag = .true.
-            user%testimp = rclist(1, rccount)
-            user%testvel = rclist(2, rccount)
-            user%testang = rclist(3, rccount)
-            user%testxoffset = rclist(4, rccount)
-            user%testyoffset = rclist(5, rccount) 
+            user%testimp = rclist(1, domain%rccount)
+            user%testvel = rclist(2, domain%rccount)
+            user%testang = rclist(3, domain%rccount)
+            user%testxoffset = rclist(4, domain%rccount)
+            user%testyoffset = rclist(5, domain%rccount) 
          end if
       end if
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
-      if (user%testflag) write(*,*) 'Dcrat = ',crater%fcrat
-      if (user%testflag) write(*,*) 'Dtrans = ',crater%rad*2
+      if (user%testflag) then
+         write(message,'("Dc=",F8.1," Dt=",F8.1)') crater%fcrat, crater%rad*2
+         call io_updatePbar(message)
+      end if
       if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
          if ( user%testflag .eqv. .false. ) then
             if (user%killatmaxcrater) then 
@@ -186,12 +200,14 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%doquasimc) then
          if (crater%timestamp > user%rctime) then
             user%testflag = .false.
-            rccount = rccount + 1
-            if (rccount > domain%rcnum) then
-               write(*,*) "Real crater list complete."
+            domain%nqmc = domain%rccount
+            domain%rccount = domain%rccount + 1
+            if (domain%rccount > domain%rcnum) then
+               write(message,*) "Real crater list complete."
+               call io_updatePbar(message)
                user%rctime = 1e30
             else
-               user%rctime = rclist(6,rccount)
+               user%rctime = rclist(6,domain%rccount)
             end if
          end if
       end if
@@ -239,7 +255,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call crater_averages(user,surf,crater)
 
          ! Place crater onto the surface
-         call crater_emplace(user,surf,crater,domain,ejbmass)
+         call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
+         if (abs(ejbmass) < 2*tiny(1.0_DP)) cycle
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
                                                                         ! For very steep size distributions, only a fraction of the
@@ -256,10 +273,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
                !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
-            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,age,age_resolution,ejecta_dem)
+            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,age,age_resolution,&
+               ejecta_dem,nmeltsheet,vmeltsheet)
          else
             ejtble = 0
          end if
+
+         if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
 
          if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)
@@ -306,40 +326,48 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
       end if
 
-      ! Do sub-pixel craters vertical mixing
-      ! Do superdomain ray deposits
-      finterval = 1.0_DP / real(ntotcrat,kind=DP)
-      if (user%doregotrack) then
-         call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
-         call regolith_depth_model(user,domain,finterval,nflux,p)
-         call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
-         age = age - finterval * user%interval
-      end if 
+
 
       ! Do periodic subpixel processes on the whole grid
-      if (.not.user%testflag) then
-         if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+
+      !if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
+      if (makecrater) then
+         if (user%domixing) then
             domain%subpixelcoverage = 0
             write(message,*) "Subpixel"
             call io_updatePbar(message)
             craters_since_subpixel = icrater - icrater_last_subpixel
             finterval = craters_since_subpixel / real(ntotcrat,kind=DP)
-            call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
-            icrater_last_subpixel = icrater
-         end if
-         ! Intermediate tally step 
-         if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
-            domain%tallycoverage = 0
-            write(message,*) "Tally"
-            call io_updatePbar(message)
-            craters_since_tally = icrater - icrater_last_tally
-            finterval = craters_since_tally / real(ntotcrat,kind=DP)
-            icrater_last_tally = icrater
-            call crater_tally_observed(user,surf,domain,nkilled,onum)
-            write(message,*) "Tally killed ",nkilled
-            call io_updatePbar(message)
-            ntotkilled = ntotkilled + nkilled
-            nsincetally = 0
+            if (user%dotopodiffusion) then
+               call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
+            end if
+
+               ! Do superdomain ray deposits
+               ! Do sub-pixel craters vertical mixing
+               if (user%doregotrack) then
+                     call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+                     call regolith_depth_model(user,domain,finterval,nflux,p)
+                     call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
+                     age = age - finterval * user%interval
+                     nmixingtimes = nmixingtimes + 1
+               end if 
+
+               icrater_last_subpixel = icrater
+
+            ! Intermediate tally step 
+            if (domain%tallycoverage / real(user%gridsize**2,kind=DP) > TALLYCOVERAGE) then
+               domain%tallycoverage = 0
+               write(message,*) "Tally"
+               call io_updatePbar(message)
+               craters_since_tally = icrater - icrater_last_tally
+               finterval = craters_since_tally / real(ntotcrat,kind=DP)
+               icrater_last_tally = icrater
+               call crater_tally_observed(user,surf,domain,nkilled,onum)
+               write(message,*) "Tally killed ",nkilled
+               call io_updatePbar(message)
+               ntotkilled = ntotkilled + nkilled
+               nsincetally = 0
+            end if
          end if
       end if
 
@@ -351,23 +379,26 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if
    end do  ! end crater production loop 
 
+   if (ntrue > 0) then
 
-   call move_alloc(truelist, tmptruelist)
-   allocate(truelist(TRUECOLS,ntrue))
-   truelist(:,1:ntrue) = tmptruelist(:,1:ntrue)
-   deallocate(tmptruelist)
- 
-   ! Resize the true crater size array to the actual number of craters produced   
-   ! Display stats
-   ddmax = rmax / cmax
-   ddmin = rmin / cmin
-   rhpmax = rhmax / cmax
-   rhpmin = rhmin / cmin
-   write(*,*)
-   write(*,*) 'Minimum impactor diameter = ',imin
-   write(*,*) 'Maximum impactor diameter = ',imax
-   write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
-   write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
+      call move_alloc(truelist, tmptruelist)
+      allocate(truelist(TRUECOLS,ntrue))
+      truelist(:,1:ntrue) = tmptruelist(:,1:ntrue)
+      deallocate(tmptruelist)
    
+      ! Resize the true crater size array to the actual number of craters produced   
+      ! Display stats
+      ddmax = rmax / cmax
+      ddmin = rmin / cmin
+      rhpmax = rhmax / cmax
+      rhpmin = rhmin / cmin
+      write(*,*)
+      write(*,*) 'Minimum impactor diameter = ',imin
+      write(*,*) 'Maximum impactor diameter = ',imax
+      write(*,*) 'Minimum crater diameter = ',cmin,' d/D = ',ddmin,' r/D = ', rhpmin
+      write(*,*) 'Maximum crater diameter = ',cmax,' d/D = ',ddmax,' r/D = ', rhpmax
+     
+   end if
+
    return
 end subroutine crater_populate

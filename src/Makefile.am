@@ -5,7 +5,8 @@ PAR = -qopenmp -parallel
 HEAPARR = -heap-arrays 
 OPTREPORT = -qopt-report=5 
 IPRODUCTION = -g -traceback -no-wrap-margin -assume byterecl -O3 -qopt-prefetch=0 -sox $(PAR) $(SIMDVEC) $(HEAPARR)
-IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-div -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
+#IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-div -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
+IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
 AM_FCFLAGS =  $(IPRODUCTION)
 #ifort debug flags
 
@@ -36,10 +37,11 @@ util/util_diffusion_solver.f90\
 util/util_area_intersection.f90\
 util/util_poisson.f90\
 util/util_pop.f90\
-util/util_push.f90\
-util/util_traverse_pop.f90\
+util/util_pop_array.f90\
+util/util_push_array.f90\
+util/util_traverse_pop_array.f90\
 util/util_destroy_list.f90\
-util/util_init_list.f90\
+util/util_init_array.f90\
 util/util_perlin_noise.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
@@ -59,11 +61,11 @@ io/io_crater_profile.f90\
 io/io_updatePbar.f90\
 io/io_resetPbar.f90\
 io/io_splash.f90\
-io/io_write_age.f90\
 io/io_write_pindex_map.f90\
-io/io_write_age_depth.f90\
 ejecta/ejecta_emplace.f90\
 ejecta/ejecta_ray_pattern.f90\
+ejecta/ejecta_ray_pattern_func.f90\
+ejecta/ejecta_ray_func.f90\
 ejecta/ejecta_blanket.f90\
 ejecta/ejecta_blanket_func.f90\
 ejecta/ejecta_thickness.f90\
@@ -124,6 +126,7 @@ regolith/regolith_melt_zone_superdomain.f90\
 regolith/regolith_streamtube_volume_func.f90\
 regolith/regolith_shock_damage_zone.f90\
 regolith/regolith_shock_damage.f90\
+regolith/regolith_interior.f90\
 porosity/porosity_form_interior.f90\
 realistic/realistic_perlin_noise.f90\
 main/CTEM.f90

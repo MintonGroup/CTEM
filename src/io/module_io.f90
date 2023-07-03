@@ -49,38 +49,42 @@ save
    end interface
 
    interface   
-      subroutine io_read_surf(user,surf)
+      subroutine io_read_surf(user,surf,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(out) :: surf
+      type(domaintype),intent(in)    :: domain
       end subroutine io_read_surf
    end interface
 
   interface
-      subroutine io_read_regotrack(user,surf)
+      subroutine io_read_regotrack(user,surf,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(out) :: surf
+      type(surftype),dimension(:,:),intent(inout) :: surf
+      type(domaintype),intent(in)    :: domain
       end subroutine io_read_regotrack
   end interface  
 
   interface   
-      subroutine io_write_surf(user,surf)
+      subroutine io_write_surf(user,surf,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf
+      type(domaintype),intent(in) :: domain
       end subroutine io_write_surf
    end interface
 
   interface 
-      subroutine io_write_regotrack(user,surf)
+      subroutine io_write_regotrack(user,surf,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
-      type(surftype),dimension(:,:),intent(in) :: surf      
+      type(surftype),dimension(:,:),intent(in) :: surf   
+      type(domaintype),intent(in) :: domain   
       end subroutine io_write_regotrack
   end interface 
 

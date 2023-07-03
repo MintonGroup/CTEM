@@ -97,7 +97,7 @@ save
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
+      subroutine crater_emplace(user,surf,crater,domain,deltaMtot,incval,nmeltsheet)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -105,6 +105,7 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
       real(DP),intent(out) :: deltaMtot
+      integer(I4B),intent(out) :: incval,nmeltsheet
       end subroutine crater_emplace
    end interface
 
