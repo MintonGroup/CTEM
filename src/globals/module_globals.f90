@@ -102,7 +102,8 @@ type cratertype
    real(DP) :: imp,imprad,impvel,sinimpang,impmass ! Impactor properties
    ! Real domain properties
    real(SP) :: xl,yl               ! Crater center in simulated surface size units 
-   real(SP) :: timestamp           ! The formation time of the crater
+   real(DP) :: timestamp           ! The formation time of the crater
+   real(DP) :: timestampGa         ! Crater formation time in Ga
    real(DP) :: rad                 ! Transient radius
    real(DP) :: grad                ! Strengthless material transient crater radius
    real(DP) :: frad                ! Final crater radius

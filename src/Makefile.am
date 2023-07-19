@@ -43,6 +43,9 @@ util/util_traverse_pop_array.f90\
 util/util_destroy_list.f90\
 util/util_init_array.f90\
 util/util_perlin_noise.f90\
+util/util_tscale.f90\
+util/util_t_from_scale.f90\
+util/util_npf_timefunc.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\

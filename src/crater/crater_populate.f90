@@ -93,7 +93,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(SP),dimension(user%gridsize, user%gridsize)  :: agetop
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
-   real(DP)              :: age_resolution
+   real(DP)              :: age_resolution, ageGa, oldGa
    integer(I4B)          :: age_counter
 
    nmixingtimes = 0
@@ -145,8 +145,18 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
    age     = user%interval * user%numintervals
-   age_resolution = age / real(MAXAGEBINS)
+   if (age < 0._DP ) then
+      write(*,*) "MAJOR ERROR: Negative age!"
+      stop
+   else if (age < 2330._DP) then
+      ageGa = util_t_from_scale(age,1e-11_DP,4.5_DP)
+   else
+      ageGa = 4.5_DP !util_t_from_scale only supports ages <4.5 Ga
+   end if
+   age_resolution = ageGa / real(MAXAGEBINS)
+   write(*,*) "Age resolution: ", age_resolution, " Ga."
    domain%age_counter = 1
+   oldGa = 0._DP
 
    ! Reset coverage map
    domain%tallycoverage = 0
@@ -158,11 +168,20 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    do while (icrater < ntotcrat)
       makecrater = .true.
       domain%currentqmc = .false.
-      timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
+      timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
       icrater = icrater + 1
-      crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=SP)
+      crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
+      if (crater%timestamp < 2330._DP) then
+         if (oldGa > 0._DP) then 
+            crater%timestampGa = util_t_from_scale(crater%timestamp,oldGa,ageGa)
+         else
+            crater%timestampGa = util_t_from_scale(crater%timestamp,1e-11_DP,ageGa)
+         end if
+      else
+         crater%timestampGa = 4.5_DP
+      end if
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
-      if (crater%timestamp > (domain%age_counter*age_resolution)) then
+      if (crater%timestampGa > (domain%age_counter*age_resolution)) then
          domain%age_counter = domain%age_counter + 1
       end if 
       !if in quasiMC mode: check to see if it's time for a real crater

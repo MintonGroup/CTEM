@@ -278,5 +278,29 @@ interface
    end function util_perlin_noise
 end interface
 
+interface
+   function util_npf_timefunc(T) result(N1)
+   use module_globals
+   real(DP), intent(in) :: T
+   real(DP) :: N1
+   end function util_npf_timefunc
+end interface
+
+interface
+   function util_tscale(t) result(tscale)
+   use module_globals
+   real(DP), intent(in) :: t
+   real(DP) :: tscale
+   end function util_tscale
+end interface
+
+interface
+   function util_t_from_scale(scale,start,finish) result(time)
+   use module_globals
+   real(DP), intent(in) :: scale, start, finish
+   real(DP) :: time
+   end function util_t_from_scale
+end interface
+
 end module
 
