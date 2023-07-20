@@ -26,7 +26,7 @@ function util_t_from_scale(scale,start,finish) result(time)
     real(DP) :: tol = 1e-11_DP
     integer(I4B) :: maxiter = 1000
     integer(I4B) :: i
-    real(DP) :: a, b, c
+    real(DP) :: a, b, c, temp
 
 
     a = start
