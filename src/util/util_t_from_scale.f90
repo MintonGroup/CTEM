@@ -36,7 +36,7 @@ function util_t_from_scale(scale,start,finish) result(time)
     temp = 0._DP
 
     if (abs(temp-scale)<tol) then
-        ans = 0.0_DP
+        time = 0.0_DP
     else
         do while(i .lt. maxiter)
             c = (a+b)/2
@@ -59,7 +59,7 @@ function util_t_from_scale(scale,start,finish) result(time)
         end do
     end if
 
-    if (ans .lt. 0) then
+    if (time .lt. 0) then
         write(*,*) "ERROR in util_t_from_scale: Maximum iterations reached!"
         write(*,*) scale, maxiter
     end if
