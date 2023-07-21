@@ -274,7 +274,7 @@ def map_meltfrac_to_depth(depth,apollo=True,log=False):
     return
 
 def find_all_ages(x,y,depth,rego,age):
-    nlayers, bothickness = traverse(y,x,depth,rego)
+    nlayers, bothickness = traverse(y,x,depth)
     agearray = np.zeros((nlayers,nage))
     rt = np.zeros(nlayers)
     rt[0] = bothickness
@@ -295,11 +295,11 @@ def find_all_ages(x,y,depth,rego,age):
     trueages = []
     xax = np.arange(nage)
     for a in xax:
-        trueage = ctem.craterproduction.T_from_scale(((1+a)*(interval/nage)),'NPF_Moon')
+        trueage = a * binsize
         trueages.append(trueage[0])
     order = trueages[::-1]
     
-    totalmelt, idc = find_melt_at_pixel(x,y,depth,rego,melt,meltdist)
+    totalmelt, idc = find_melt_at_pixel(x,y,depth)
     qmcarray = np.zeros(nage)
     for i in range(nlist-1):
         age_number = qmcages[i]
@@ -315,8 +315,8 @@ def find_all_ages(x,y,depth,rego,age):
     return order, agedist, qmcarray
 
 def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
-    if n==0:
-        order,agedist,qmcarray = find_all_ages(x,y,depth,rego,age)
+   if n==0:
+        order,agedist,qmcarray = find_all_ages(x,y,depth)
         k = 1
     elif n<0:
         print("number of pixels must be >=0")
@@ -328,7 +328,7 @@ def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
             for j in range(-n,n+1):
                 agedist.append(np.zeros(nage))
                 qmcarray.append(np.zeros(nage))
-                o,localage,qmcage = find_all_ages(x+i,y+j,depth,rego,age)
+                o,localage,qmcage = find_all_ages(x+i,y+j,depth)
                 agedist[k] = localage
                 qmcarray[k] = qmcage
                 k += 1
@@ -363,8 +363,6 @@ def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
     a1.set_xlabel('Age (Ga)')
     a1.set_ylabel('Melt Depth (m)')
     a2.imshow(img)
-    if apollo:
-        a2.scatter(apollo_x, surfcoords, color='red', label='Apollo 14-17 Landing Sites')
     if n == 0:
         a2.scatter(x, gridsize-y, color='blue', label='Selected Region')
     else:
@@ -372,12 +370,13 @@ def aggregate_ages(x,y,depth,n,rego,age,log=False,apollo=False):
         a2.add_patch(rect)
     a2.xaxis.set_ticklabels([])
     a2.yaxis.set_ticklabels([])
+    if apollo:
+        a2.scatter(apollo_x, surfcoords, color='red', label='Apollo 14-17 Landing Sites')
     a2.tick_params(left = False)
     a2.tick_params(bottom = False)
     a1.legend()
     a2.legend()
     plt.rcParams['figure.figsize'] = [13, 5]
-    plt.show()
     return mf * depth
 
 if __name__ == '__main__':
