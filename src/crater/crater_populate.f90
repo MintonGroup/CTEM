@@ -396,6 +396,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          write(*,*) crater%imp, crater%impvel, crater%xl, crater%yl, crater%sinimpang
          error stop "Invalid surface elevation detected. Halting."
       end if
+      oldGa = crater%timestampGa
    end do  ! end crater production loop 
 
    if (ntrue > 0) then
