@@ -328,12 +328,10 @@ save
    end interface
 
    interface
-      subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+      subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
       use module_globals
       type(usertype),intent(in)                           :: user
       type(surftype),dimension(:,:),intent(inout)         :: surf
-      real(DP),intent(in)                                 :: age
-      real(DP),intent(in)                                 :: age_resolution
       real(DP),dimension(:,:),intent(in)                  :: prod,nflux
       type(domaintype),intent(in)                         :: domain
       real(DP),intent(in)                                 :: finterval

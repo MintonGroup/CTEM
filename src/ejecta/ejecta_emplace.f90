@@ -75,7 +75,7 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_resolution,cumulative_elchange,&
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange,&
    nmeltsheet,vmeltsheet)
    use module_globals
    use module_util
@@ -93,8 +93,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
-   real(DP),intent(in)  :: age
-   real(DP),intent(in)  :: age_resolution
    real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
    integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
@@ -336,7 +334,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
       
       
                if (user%doregotrack .and. ebh>1.0e-8_DP) then
-                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
                   vmelt = vmelt + volm
                   !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
                end if
@@ -346,7 +344,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,age,age_r
 
    if (totmelt > vmelt) then
       vmeltsheet = totmelt - vmelt
-   else !give the craters a melt sheet of 1mm
+   else !give the craters a melt sheet of 1m
       vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
    end if
 

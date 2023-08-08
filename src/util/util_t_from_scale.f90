@@ -61,7 +61,7 @@ function util_t_from_scale(scale,start,finish) result(time)
 
     if (time .lt. 0) then
         write(*,*) "ERROR in util_t_from_scale: Maximum iterations reached!"
-        write(*,*) scale, maxiter
+        write(*,*) scale, start, finish, maxiter
     end if
 end function util_t_from_scale
 

@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
    use module_globals
    use module_util
    use module_ejecta
@@ -30,8 +30,6 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
    ! Arguments
    type(usertype),intent(in)                           :: user
    type(surftype),dimension(:,:),intent(inout)         :: surf
-   real(DP),intent(in)                                 :: age
-   real(DP),intent(in)                                 :: age_resolution
    real(DP),dimension(:,:),intent(in)                  :: prod,nflux 
    type(domaintype),intent(in)                         :: domain
    real(DP),intent(in)                                 :: finterval
@@ -173,7 +171,7 @@ subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,fin
                   if ((abs(xpi) > inc) .or. (abs(ypi) > inc)) cycle
                   if (ejisray(xpi,ypi) == 0) cycle  
                   call regolith_superdomain(user,crater,domain,surf(i,j)%regolayer,ejdistribution(xpi,ypi),&
-                       i,j,age,age_resolution,rm,depthb)
+                       i,j,rm,depthb)
                end do
             end do
 

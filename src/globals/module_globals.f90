@@ -170,6 +170,7 @@ type domaintype
    integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
    integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
    real(DP)     :: rmsvel            ! Root mean square impact velocity
+   real(DP),dimension(MAXAGEBINS) :: age_bin_times ! Time in Ga to move to the next age bin
 end type domaintype 
 
 ! Derived data type for user input variables

@@ -77,7 +77,7 @@ save
 
    interface 
       subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,&
-                 rm,vsq,age,age_resolution,volm)
+                 rm,vsq,volm)
       use module_globals 
       implicit none
       type(usertype),intent(in) :: user
@@ -88,7 +88,7 @@ save
       type(ejbtype),dimension(:),intent(in)   :: ejb
       real(DP),intent(in)          :: xp,yp,lrad,ebh
       integer(I4B),intent(in)      :: xpi,ypi
-      real(DP),intent(in)          :: rm, vsq, age, age_resolution
+      real(DP),intent(in)          :: rm, vsq
       real(DP),intent(inout)       :: volm
       end subroutine regolith_streamtube
    end interface
@@ -256,13 +256,11 @@ save
    end interface
 
    interface
-      subroutine regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
+      subroutine regolith_melt_glass(user,crater,domain,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
       use module_globals
       type(usertype),intent(in)        :: user
       type(cratertype),intent(in)      :: crater
       type(domaintype),intent(in)      :: domain
-      real(DP),intent(in)              :: age
-      real(DP),intent(in)              :: age_resolution
       real(DP),intent(in)              :: ebh
       real(DP),intent(in)              :: rm
       real(DP),intent(in)              :: eradc
@@ -275,7 +273,7 @@ save
    end interface
 
    interface 
-     subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,ypi,age,age_resolution,rm,depthb)
+     subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,ypi,rm,depthb)
      use module_globals
      type(usertype),intent(in)      :: user
      type(cratertype),intent(inout) :: crater
@@ -283,8 +281,6 @@ save
      type(regodatatype),dimension(:),allocatable,intent(inout)       :: regolayer
      real(DP),intent(in)            :: ejdistribution 
      integer(I4B),intent(in)        :: xpi, ypi
-     real(DP),intent(in)            :: age
-     real(DP),intent(in)            :: age_resolution
      real(DP),intent(in)            :: rm
      real(DP),intent(in)            :: depthb
      end subroutine regolith_superdomain

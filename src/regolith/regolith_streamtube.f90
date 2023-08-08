@@ -56,7 +56,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,age,age_resolution,volm)
+subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_streamtube
@@ -71,7 +71,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    type(ejbtype),dimension(:),intent(in)   :: ejb
    real(DP),intent(in)          :: xp,yp,lrad,ebh
    integer(I4B),intent(in)      :: xpi,ypi
-   real(DP),intent(in)          :: rm, vsq, age, age_resolution
+   real(DP),intent(in)          :: rm, vsq
    real(DP),intent(inout)       :: volm
 
    ! Traversing a linked list 
@@ -224,7 +224,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    ! Purpose 2: Once we have the size information of a stream tube, we can
    ! calculate the distal melt: the precursor of glass spherules within a
    ! stream tube. The result is contained in a linked list "newlayer".
-   call regolith_melt_glass(user,crater,domain,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints,volm)
+   call regolith_melt_glass(user,crater,domain,ebh,rm,eradc,lrad,deltar,newlayer,xmints,volm)
    ! if (eradc>rm) then
    !    write(*,*) 'eradc > rm!'
    !    write(*,*) ebh, exp(ejb(k)%thick)

@@ -89,11 +89,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    integer(I4B)                      :: craters_since_subpixel_mix, icrater_last_subpixel_mix
 
    ! doregotrack & age simulation test
-   real(DP)              :: melt, clock, age, thick
+   real(DP)              :: melt, clock, age, thick, maxage
    real(SP),dimension(user%gridsize, user%gridsize)  :: agetop
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
-   real(DP)              :: age_resolution, ageGa, oldGa
+   real(DP)              :: age_resolution, maxageGa, oldGa, agemin 
    integer(I4B)          :: age_counter
 
    nmixingtimes = 0
@@ -144,17 +144,20 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset age
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
-   age     = user%interval * user%numintervals
-   if (age < 0._DP ) then
+   maxage = user%interval * user%numintervals
+   if (maxage < 0._DP ) then
       write(*,*) "MAJOR ERROR: Negative age!"
       stop
-   else if (age < 2330._DP) then
-      ageGa = util_t_from_scale(age,1e-11_DP,4.5_DP)
+   else if (maxage < 2330._DP) then
+      maxageGa = util_t_from_scale(maxage,1e-11_DP,4.5_DP)
    else
-      ageGa = 4.5_DP !util_t_from_scale only supports ages <4.5 Ga
+      maxageGa = 4.5_DP !util_t_from_scale only supports ages <4.5 Ga
    end if
-   age_resolution = ageGa / real(MAXAGEBINS)
+   age_resolution = maxageGa / real(MAXAGEBINS)
    write(*,*) "Age resolution: ", age_resolution, " Ga."
+   do i = 1,MAXAGEBINS
+      domain%age_bin_times(i) = maxageGa-(i*age_resolution)
+   end do
    domain%age_counter = 1
    oldGa = 0._DP
 
@@ -171,24 +174,32 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
+      if (icrater .eq. 1) then
+         agemin = crater%timestamp * 0.9_DP
+      end if
       if (crater%timestamp < 2330._DP) then
          if (oldGa > 0._DP) then 
-            crater%timestampGa = util_t_from_scale(crater%timestamp,oldGa,ageGa)
+            crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
          else
-            crater%timestampGa = util_t_from_scale(crater%timestamp,1e-11_DP,ageGa)
+            crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
          end if
       else
          crater%timestampGa = 4.5_DP
       end if
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
-      if (crater%timestampGa > (domain%age_counter*age_resolution)) then
-         domain%age_counter = domain%age_counter + 1
+      if (crater%timestampGa < domain%age_bin_times(domain%age_counter)) then
+         do i = domain%age_counter,MAXAGEBINS
+            if (crater%timestampGa > domain%age_bin_times(i)) then
+               domain%age_counter = i
+               exit
+            end if
+         end do
       end if 
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
             domain%currentqmc = .true.
-            write(message,*) "Real @ ", crater%timestamp
+            write(message,*) "Real @ ", crater%timestampGa
             call io_updatePbar(message)
             user%testflag = .true.
             user%testimp = rclist(1, domain%rccount)
@@ -292,7 +303,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
                !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
-            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,age,age_resolution,&
+            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,&
                ejecta_dem,nmeltsheet,vmeltsheet)
          else
             ejtble = 0
@@ -364,10 +375,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
                ! Do superdomain ray deposits
                ! Do sub-pixel craters vertical mixing
                if (user%doregotrack) then
-                     call crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+                     call crater_superdomain(user,surf,prod,nflux,domain,finterval)
                      call regolith_depth_model(user,domain,finterval,nflux,p)
                      call regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
-                     age = age - finterval * user%interval
                      nmixingtimes = nmixingtimes + 1
                end if 
 
