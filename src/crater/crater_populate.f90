@@ -199,7 +199,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
             domain%currentqmc = .true.
-            write(message,*) "Real @ ", crater%timestampGa
+            write(message, '("Real @ ",F8.1)') crater%timestampGa
             call io_updatePbar(message)
             user%testflag = .true.
             user%testimp = rclist(1, domain%rccount)
