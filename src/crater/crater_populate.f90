@@ -179,9 +179,17 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       end if
       if (crater%timestamp < 2330._DP) then
          if (oldGa > 0._DP) then 
-            crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
+            if (user%numintervals .eq. 1) then
+               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
+            else
+               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,oldGa)
+            end if
          else
-            crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
+            if (user%numintervals .eq. 1) then
+               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
+            else
+               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
+            end if
          end if
       else
          crater%timestampGa = 4.5_DP
