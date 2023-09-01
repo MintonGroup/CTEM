@@ -276,7 +276,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
             if (bigej) then 
                kdiff(xpi,ypi) = kdiff(xpi,ypi) + areafrac * diffi * kdiffmax
             else
-               kdiff(xpi,ypi) = areafrac * diffi * kdiffmax
+               kdiff(i,j) = areafrac * diffi * kdiffmax
             end if
 
          end if
@@ -340,8 +340,13 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
             lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
             lrad = sqrt(lradsq)
             if (lrad < crater%ejrad) cycle
-      
-            ebh = cumulative_elchange(i,j) - crater_profile(user, crater, lrad)
+     
+            if (bigej) then
+               ebh = cumulative_elchange(xpi,ypi) - crater_profile(user, crater, lrad)
+            else
+               ebh = cumulative_elchange(i,j) - crater_profile(user, crater, lrad)
+            end if
+
       
             if (user%doregotrack .and. ebh>1.0e-8_DP) then
                call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
