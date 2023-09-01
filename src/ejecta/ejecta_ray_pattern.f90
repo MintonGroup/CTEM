@@ -53,7 +53,6 @@ subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
    real(DP) :: theta, lradp, maxdistance
    real(DP), parameter :: n1 = 4.0_DP
    real(DP) :: n2, mag
-   real(DP),dimension(xi:xf,yi:yf) :: isray
    real(DP),dimension(:),allocatable :: numinray,totnum
    real(DP),dimension(:),allocatable :: mefarray
    real(DP) :: ans
@@ -76,8 +75,8 @@ subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
    diffi = 0.0_DP
 
    if (user%dorays) then
-      do i = 1,Nraymax
-         thetari(i) = 2 * pi * i / Nraymax
+      do k = 1,Nraymax
+         thetari(k) = 2 * pi * k / Nraymax
       end do
       call shuffle(thetari) ! randomize the ray pattern
 
@@ -102,26 +101,19 @@ subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
       eji = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.true.) 
 
    else
-      !Do simple circular region
-      incsq = inc**2
-      iradsq = i*i + j*j
 
-      if (iradsq < incsq) then
+      xpi = crater%xlpx + i
+      ypi = crater%ylpx + j
 
-         xpi = crater%xlpx + i
-         ypi = crater%ylpx + j
+      ! Find distance from crater center to current pixel center in real space
+      xp = xpi * user%pix
+      yp = ypi * user%pix
 
-         ! Find distance from crater center to current pixel center in real space
-         xp = xpi * user%pix
-         yp = ypi * user%pix
-
-         xbar = xp - crater%xl 
-         ybar = yp - crater%yl
-         areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) ! uniform circular
-         diffi = areafrac
-         eji = areafrac
-      end if
-
+      xbar = xp - crater%xl 
+      ybar = yp - crater%yl
+      areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) ! uniform circular
+      diffi = areafrac
+      eji = areafrac
    end if
 
    return  

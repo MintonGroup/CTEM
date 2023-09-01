@@ -93,37 +93,31 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
-   real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
+   real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
    integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
 
    ! Internal variables
    real(DP) :: lrad,lradsq
    integer(I4B),parameter :: MAXLOOP = 100 ! Maximum number of times to loop the ejecta angle correction calculation
-   integer(I4B) :: xpi,ypi,i,j,k,n,inc,incsq,iradsq,idistorted,jdistorted
+   integer(I4B) :: xpi,ypi,i,j,n,inc,incsq,iradsq,idistorted,jdistorted
    real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,ejbmass,fmasscons,areafrac,xbar,ybar,krad,kdiffmax
-   real(DP),dimension(:,:),allocatable :: big_cumulative_elchange,kdiff,big_kdiff,cel,big_cel
-   integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
-   integer(I4B) :: bigi,bigj,maxhits,nin,nnot,dradsq
+   real(DP),dimension(:,:),allocatable :: kdiff,cel
+   integer(I4B),dimension(:,:,:),allocatable :: indarray
+   integer(I4B) :: maxhits,nin,nnot,dradsq
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP) :: vmelt, totmelt, volm
+   real(DP) :: diffi,eji
    logical :: bigej 
 
-   ! Ray mixing model variables 
-   real(DP)      :: dsc
-
    ! Melt zone's radius
-   real(DP) :: rm, dm, melt, eradc
+   real(DP) :: rm, dm, melt
 
    ! Ejecta pattern distortion parameters
    real(DP) :: distance,erad,craterslope,landslope,baseline,lrange,frac,ejheight,ebh0,maxdistance
    real(DP) :: maxslp
    real(DP)      :: vsq, ejtheta
    integer(I4B) :: ind,klo
-
-   ! Age
-   real(SP) :: age_mean
-
 
    ! Executable code
 
@@ -368,7 +362,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
       cel = 0.0_DP
 
       if (bigej) then
-         call util_diffusion_solver(user,user%gridsize + 2,indarray,kdiff,cel,maxhits)
+         call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cel,maxhits)
          do ypi = 1,user%gridsize
             do xpi = 1,user%gridsize
                surf(xpi,ypi)%dem = surf(xpi,ypi)%dem + cel(xpi,ypi)
@@ -382,7 +376,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
          indarray(1:2,:,0) = user%gridsize
          indarray(1:2,:,user%gridsize+1) = 1
 
-         call ejecta_soften(user,user%gridsize + 2,indarray,cumulative_elchange)
+         call ejecta_soften(user,surf,user%gridsize + 2,indarray,cumulative_elchange)
 
          ! Add the ejecta back to the DEM
          do ypi = 1,user%gridsize

@@ -174,8 +174,6 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
             jmax = ypi - crater%ylpx
  
          
-            allocate(diffdistribution(imin:imax,jmin:jmax))
-            allocate(ejdistribution(imin:imax,jmin:jmax))
             ! Loop over affected matrix area
             !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
             !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &
@@ -195,7 +193,6 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
                end do
             end do
             !!$OMP END PARALLEL DO
-            deallocate(diffdistribution,ejdistribution)
          end do
       end if
 
