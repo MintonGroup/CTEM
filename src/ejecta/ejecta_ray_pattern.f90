@@ -26,12 +26,11 @@
 !   * domain  -- Simulation domain variable container
 !
 !   Output
-!   * ejdist -- logical array containing the pixels that contain ejecta
 ! 
 !***
 
 !**********************************************************************************************************************************
-subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,ejdistribution)
+subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
    use module_globals
    use module_util
    use module_io
@@ -42,14 +41,13 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(in) :: surf
    type(cratertype),intent(inout) :: crater
-   integer(I4B),intent(in) :: inc,xi,xf,yi,yf
-   real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
-   real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
+   integer(I4B),intent(in) :: i,j
+   real(DP),intent(out) :: diffi
+   real(DP),intent(out) :: eji
 
    ! Internal variables
-   integer(I4B) :: nrays,i,j,k,n,nef,incsq,iradsq,xpi,ypi,ejpxsq
+   integer(I4B) :: nrays,k,n,nef,incsq,iradsq,xpi,ypi,ejpxsq
    real(DP) :: frac,mef,lrad,lradsq,xp,yp,binres,areafrac,xbar,ybar
    real(DP) :: rn
    real(DP) :: theta, lradp, maxdistance
@@ -59,7 +57,7 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
    real(DP),dimension(:),allocatable :: numinray,totnum
    real(DP),dimension(:),allocatable :: mefarray
    real(DP) :: ans
-
+   logical :: bigej
 
    real(DP) :: C1,C2,p ! Fits to fe vs fd equation for the new ray pattern
    real(DP) :: rmin,rmax,r
@@ -74,7 +72,8 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
    logical :: ej
    real(DP),dimension(Nraymax) :: thetari
 
-   !TEMPORARY
+   eji = 0.0_DP
+   diffi = 0.0_DP
 
    if (user%dorays) then
       do i = 1,Nraymax
@@ -86,65 +85,45 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
       rmax = user%ejecta_truncation 
       rmin = crater%continuous / crater%frad
       crater%fe = 10.0_DP ! Estimate the equivalent degradation radius
-      !ejdistribution = 0.0_DP
-      !diffdistribution = 0.0_DP
-      !!$OMP PARALLEL DO DEFAULT(PRIVATE) &
-      !!$OMP SHARED(user,crater) &
-      !!$OMP SHARED(xi,xf,yi,yf,rn,diffdistribution,ejdistribution,thetari,rmin)
-      do j = yi,yf
-         do i = xi,xf
-            xpi = crater%xlpx + i
-            ypi = crater%ylpx + j
+      xpi = crater%xlpx + i
+      ypi = crater%ylpx + j
 
-            ! Find distance from crater center to current pixel center in real space
-            xp = xpi * user%pix
-            yp = ypi * user%pix
+      ! Find distance from crater center to current pixel center in real space
+      xp = xpi * user%pix
+      yp = ypi * user%pix
 
-            xbar = xp - crater%xl 
-            ybar = yp - crater%yl
+      xbar = xp - crater%xl 
+      ybar = yp - crater%yl
 
-            areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
-            r = sqrt(xbar**2 + ybar**2) / crater%frad
-            theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
-            diffdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.false.) 
-            ejdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.true.) 
-         end do
-      end do
-      !!$OMP END PARALLEL DO
+      areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
+      r = sqrt(xbar**2 + ybar**2) / crater%frad
+      theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
+      diffi = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.false.) 
+      eji = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.true.) 
 
-   
    else
       !Do simple circular region
       incsq = inc**2
-      ejdistribution = 0.0_DP
-      diffdistribution = 0.0_DP
-      !$OMP PARALLEL DO DEFAULT(PRIVATE) &
-      !$OMP SHARED(user,crater) &
-      !$OMP SHARED(inc,incsq,xi,xf,yi,yf,diffdistribution,ejdistribution)
-      do j = yi,yf
-         do i = xi,xf
-            iradsq = i*i + j*j
+      iradsq = i*i + j*j
 
-            if (iradsq < incsq) then
+      if (iradsq < incsq) then
 
-               xpi = crater%xlpx + i
-               ypi = crater%ylpx + j
+         xpi = crater%xlpx + i
+         ypi = crater%ylpx + j
 
-               ! Find distance from crater center to current pixel center in real space
-               xp = xpi * user%pix
-               yp = ypi * user%pix
+         ! Find distance from crater center to current pixel center in real space
+         xp = xpi * user%pix
+         yp = ypi * user%pix
 
-               xbar = xp - crater%xl 
-               ybar = yp - crater%yl
-               areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) ! uniform circular
-               diffdistribution(i,j) = areafrac 
-               ejdistribution(i,j) = areafrac
-            end if
-         end do
-      end do
-      !$OMP END PARALLEL DO
+         xbar = xp - crater%xl 
+         ybar = yp - crater%yl
+         areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) ! uniform circular
+         diffi = areafrac
+         eji = areafrac
+      end if
 
    end if
+
    return  
    contains
 
