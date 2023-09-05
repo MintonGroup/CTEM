@@ -67,9 +67,6 @@ type regodatatype
    real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
    real(DP) :: comp 
-   real(DP) :: porosity   ! Porosity: Maximum 1, Minium 0.
-   real(DP) :: damage     ! Damage  : Maximum 1, Minium 0.
-   real(DP) :: depth      ! Absolute location with respect to the initial surface. 
    real(DP) :: meltvolume
    real(DP) :: totvolume
    real(DP) :: ejm !ejected melt

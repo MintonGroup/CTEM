@@ -111,7 +111,7 @@ end interface
 ! end interface
 
 interface
-   subroutine util_init_array(user,regolayer,domain,initstat)
+   pure subroutine util_init_array(user,regolayer,domain,initstat)
    use module_globals
    implicit none
    type(usertype),intent(in) :: user
