@@ -88,6 +88,8 @@ subroutine init_dist(user,domain)
          write(*,*) "No valid entries in ",trim(rcfile)
       end if
       close(LUN)
+   else
+      domain%rcnum = 1
    end if
 
 

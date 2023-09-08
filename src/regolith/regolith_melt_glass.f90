@@ -55,7 +55,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,deltar,newlayer,xmints)
+subroutine regolith_melt_glass(user,crater,domain,ebh,rm,eradc,lrad,deltar,newlayer,xmints,melt)
    use module_globals 
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_melt_glass
@@ -64,8 +64,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    ! Arguments
    type(usertype),intent(in)        :: user
    type(cratertype),intent(in)      :: crater
-   real(DP),intent(in)              :: age
-   real(DP),intent(in)              :: age_resolution
+   type(domaintype),intent(in)      :: domain
    real(DP),intent(in)              :: ebh
    real(DP),intent(in)              :: rm
    real(DP),intent(in)              :: eradc
@@ -73,6 +72,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    real(DP),intent(out)             :: deltar
    type(regodatatype),intent(out)   :: newlayer
    real(DP),intent(out)             :: xmints
+   real(DP),intent(out)             :: melt
 
    ! Internal variables
    ! Stream tube parameters  
@@ -85,7 +85,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    ! Calculate vapor and melt zone intersection point with stream tubes
    real(DP)     :: vst, erado, eradi
    real(DP)     :: cosvints, sinvints, xvints, rints
-   real(DP)     :: volv1, melt, volm1, depthb
+   real(DP)     :: volv1, volm1, depthb
    real(DP)     :: q1, q2, q3 
    real(DP)     :: thetaq
    integer(I2B) :: n_age
@@ -93,6 +93,7 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    real(DP),parameter :: b_exponent = -0.97
    real(DP)           :: cvpgsqr, p1, p2, p3, p4, p5
    real(DP)           :: dm
+   real(DP)           :: cosq1, cosq2
    
 
    ! Executalbe code
@@ -124,9 +125,11 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
 
    vst = (0.25_DP * PI * deltar**2 * a**2 * eradi / b *(tan(b)-b)) + sqrt(2.0_DP)/2.0_DP*PI*deltar**3
    
-   newlayer%meltfrac  = 0.0_DP ! default value: no melt (zero)
    newlayer%thickness = ebh    ! default value: stream tube's volume = paraboloid shell's volume
    newlayer%comp      = 0.0_DP
+   newlayer%meltvolume = 0.0_DP
+   newlayer%totvolume = newlayer%thickness * user%pix * user%pix
+   newlayer%ejm       = 0.0_DP
    rints              = sqrt(rm**2 - (crater%imp/2.0)**2)
    cosvints           = min(max(eradi / (crater%imp + eradi), -1.0_DP), 1.0_DP)
    sinvints           = sqrt(1.0 - cosvints**2)
@@ -137,26 +140,46 @@ subroutine regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,eradc,lrad,
    if (eradi <= rints) then
       volm1    = vst - volv1
       melt     = volm1
-      newlayer%meltfrac = 1.0
+      newlayer%meltvolume = melt
+      !newlayer%totvolume = volm1
+      newlayer%ejm = melt
       xmints   = rints 
    else if (eradi > rints) then
            depthb = crater%imp / 2.0
-           q1     =   1.0 / (1.0 + 2.0 * depthb / eradi)
-           q2     =  -1.0 - q1
-           q3     = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1 
-           thetaq = acos( -0.5 * q2 - 0.5 * sqrt(q2**2 - 4.0 * q3) )
-           xmints = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
-           volm1 = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
-           melt   = volm1 - volv1
-           newlayer%meltfrac = melt/vst
+         !   q1     =   1.0 / (1.0 + 2.0 * depthb / eradi)
+         !   q2     =  -1.0 - q1
+         !   q3     = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1 
+         !   thetaq = acos( -0.5 * q2 - 0.5 * sqrt(q2**2 - 4.0 * q3) )
+         !   xmints = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
+         !   volm1 = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
+         !   melt   = volm1 - volv1
+         !   newlayer%meltfrac = melt/vst
+
+           !the following is from the old regolith_streamtube.f90:
+
+           q1           =   1.0 / (1.0 + 2.0 * depthb / eradi)
+           q2           =  -1.0 - 1.0/q1
+           q3           = ( 1.0 + (depthb**2 - rm**2)/eradi**2 ) * q1
+           cosq1        = 0.5 * q1 * (-1.0 * q2 + sqrt(q2**2 - 4.0 * q3/q1))
+           cosq2        = 0.5 * q1 * (-1.0 * q2 - sqrt(q2**2 - 4.0 * q3/q1))
+           thetaq       = acos( min(abs(cosq1),abs(cosq2)) )
+           xmints       = eradi * (1.0 - cos(thetaq)) * sin(thetaq)
+           volm1        = regolith_streamtube_volume_func(eradi,0.0_DP,xmints,deltar)
+           melt         = volm1 - volv1
+           newlayer%meltvolume = melt
+           newlayer%totvolume = newlayer%thickness * user%pix * user%pix
+           newlayer%ejm = melt
+           
    end if
 
-   n_age = max(ceiling(age / age_resolution), 1)
-   if (lrad >= RAD_GP * crater%rad) then
-      newlayer%age(n_age) = melt / (user%pix * user%pix) 
-   else 
-      newlayer%age(n_age) = 0.0_SP   
-   end if
+   allocate(newlayer%distvol((1+domain%rcnum)))
+   newlayer%distvol(:) = 0.0_SP
+   if(domain%currentqmc) then
+      newlayer%distvol(domain%nqmc) = newlayer%meltvolume
+   else
+      newlayer%distvol(1+domain%rcnum) = newlayer%meltvolume
+      newlayer%age(domain%age_counter) = newlayer%meltvolume
+   end if 
 
    return
 end subroutine regolith_melt_glass

@@ -52,7 +52,7 @@ real(DP),parameter :: SMALLFAC = 1e-5_DP       ! Smallest unit of measurement pr
 integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you need roughly 1-2 layers per order of magnitude of 
                                                ! resolution
 real(DP),parameter :: TALLYCOVERAGE = 0.01_DP  ! The total area coverage to reach before a tally step is executed
-real(DP),parameter :: SUBPIXELCOVERAGE = 0.025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
+real(DP),parameter :: SUBPIXELCOVERAGE = 0.00025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
@@ -60,18 +60,17 @@ real(DP),parameter :: ALPHA = 0.125_DP
 real(DP),parameter  :: DISEJB = 100.0_DP       ! The extent of discontinuous ejecta in the unit of crater radii. It is used in ejecta_table_define.f90
 real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous ejecta size power law from Moore et al. (1974) - scaled from km to m
 real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
-real(DP),parameter :: PF     = 5.0e9          ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa. (5 GPa)
 real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
 
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
-   real(DP) :: meltfrac 
    real(DP) :: comp 
-   real(DP) :: porosity   ! Porosity: Maximum 1, Minium 0.
-   real(DP) :: damage     ! Damage  : Maximum 1, Minium 0.
-   real(DP) :: depth      ! Absolute location with respect to the initial surface. 
+   real(DP) :: meltvolume
+   real(DP) :: totvolume
+   real(DP) :: ejm !ejected melt
+   real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
 end type regodatatype
    
 type regolisttype
@@ -87,8 +86,12 @@ type surftype
    real(DP) :: ejcov                ! Ejecta coverage
    real(DP) :: dem                  ! Digital elevation model
    real(DP) :: mantle               ! Height of mantle (should be smaller than dem)
-   type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
-   type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   real(DP) :: abselc               ! abs(elchange)
+   ! type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+   ! type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   !type(regolisttype), pointer :: regolayer => null() ! Pointer to the top of the regolith layer stack
+   !type(regolisttype), pointer :: porolayer => null() ! Pointer to the top of the porosity layer stack
+   type(regodatatype), dimension(:), allocatable :: regolayer
 end type surftype
 
 ! Derived data type for crater information
@@ -96,7 +99,8 @@ type cratertype
    real(DP) :: imp,imprad,impvel,sinimpang,impmass ! Impactor properties
    ! Real domain properties
    real(SP) :: xl,yl               ! Crater center in simulated surface size units 
-   real(SP) :: timestamp           ! The formation time of the crater
+   real(DP) :: timestamp           ! The formation time of the crater
+   real(DP) :: timestampGa         ! Crater formation time in Ga
    real(DP) :: rad                 ! Transient radius
    real(DP) :: grad                ! Strengthless material transient crater radius
    real(DP) :: frad                ! Final crater radius
@@ -151,13 +155,19 @@ type domaintype
    real(DP)     :: ejbres    ! Ejecta blanket lookup table resolution
    integer(I4B) :: pnum      ! size of production function array
    integer(I4B) :: vnum      ! size of velocity distribution array
-   integer(I4B) :: rcnum      ! size of real crater list array for quasi-MC
+   integer(I4B) :: rcnum     ! size of real crater list array for quasi-MC
+   integer(I4B) :: rccount   ! quasimc crater for iterating through the list of craters
+   integer(I2B) :: age_counter ! Current age bin for the production of new melt
+   integer(I4B) :: local     ! 
+   integer(I4B) :: nqmc      ! current Quasi-MC crater for regolith distribution
+   logical      :: currentqmc ! is the current crater a Quasi-MC crater?
    real(DP)     :: vescsq    ! Escape velocity at target
    integer(I4B) :: vlo       ! Index of lowest valid velocity in the velocity distribution file
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
    integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
    integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
    real(DP)     :: rmsvel            ! Root mean square impact velocity
+   real(DP),dimension(MAXAGEBINS) :: age_bin_times ! Time in Ga to move to the next age bin
 end type domaintype 
 
 ! Derived data type for user input variables
@@ -188,6 +198,7 @@ type usertype
    logical           :: docollapse ! Set T to use the slope collapse model (turning off speeds up the code for testing)
    logical           :: doangle    ! Set to F to only do vertical impacts, otherwise do range of angles (default is T)
    logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
+   logical           :: domixing   ! Set to F to turn off regolith mixing (useful for test craters when you don't want to simulate gardening). Default is T.
    logical           :: doquasimc  ! set to T for quasi-MC run. Default F.
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
@@ -220,6 +231,8 @@ type usertype
    logical           :: doscour  ! Set T to use the ejecta scouring model (EXPERIMENTAL)
    ! Crustal thinning variables
    logical           :: docrustal_thinning ! Set T to use the crustal thinning model (EXPERIMENTAL)
+   ! Diffusion variables
+   logical           :: dotopodiffusion ! set T to do subpixel diffusion; default T; should be F for melt distribution runs
 
    logical           :: killatmaxcrater ! Set T to end the run when a crater exceeds the maximum allowable size
    
@@ -320,9 +333,11 @@ character(*),parameter :: PDISTFILE  = 'pdistribution.dat'
 character(*),parameter :: CRTSCLFILE = 'craterscale.dat'
 character(*),parameter :: SFDFILE    = 'production.dat'
 character(*),parameter :: USERFILE   = 'ctem.in' 
-character(*),parameter :: DATFILE    = 'ctem.dat' !
+character(*),parameter :: DATFILE    = 'ctem.dat' 
 character(*),parameter :: MASSFILE   = 'impactmass.dat'
-character(*),parameter :: RCFILE     = 'craterlist.dat' !not sure if this is where this line should go, but putting it here for now...
+character(*),parameter :: RCFILE     = 'craterlist.dat'
+character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
+character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit
@@ -375,8 +390,5 @@ real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
 real(DP),parameter :: rayp = 2.0_DP 
 integer(I4B),parameter :: rayq = 4
 real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
-
-! quasi-MC test variables
-integer(I4B) :: rccount !start line to be read for quasi-MC (should be 0)
 
 end module module_globals

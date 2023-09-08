@@ -33,7 +33,7 @@ save
                                  mass,fracdone,nflux,ntotcrat,curyear,rclist)
       use module_globals
       implicit none
-      type(usertype),intent(in) :: user
+      type(usertype),intent(inout) :: user
       type(surftype),dimension(:,:),intent(inout)  :: surf
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain
@@ -97,7 +97,7 @@ save
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
+      subroutine crater_emplace(user,surf,crater,domain,deltaMtot,incval,nmeltsheet)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -105,6 +105,7 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
       real(DP),intent(out) :: deltaMtot
+      integer(I4B),intent(out) :: incval,nmeltsheet
       end subroutine crater_emplace
    end interface
 
@@ -327,12 +328,10 @@ save
    end interface
 
    interface
-      subroutine crater_superdomain(user,surf,age,age_resolution,prod,nflux,domain,finterval)
+      subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
       use module_globals
       type(usertype),intent(in)                           :: user
       type(surftype),dimension(:,:),intent(inout)         :: surf
-      real(DP),intent(in)                                 :: age
-      real(DP),intent(in)                                 :: age_resolution
       real(DP),dimension(:,:),intent(in)                  :: prod,nflux
       type(domaintype),intent(in)                         :: domain
       real(DP),intent(in)                                 :: finterval

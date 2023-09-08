@@ -95,7 +95,7 @@ subroutine io_read_porotrack(user,surf)
          do k= 2, stacks_num(i,j)
             newsurfi%depth    = depthk(k)
             newsurfi%porosity = porok(k)
-            call util_push(surf(i,j)%porolayer,newsurfi)
+            call util_push_array(surf(i,j)%porolayer,newsurfi)
          end do
 
          deallocate(depthk, porok)
