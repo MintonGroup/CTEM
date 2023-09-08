@@ -52,7 +52,6 @@
 
 subroutine util_random_number_uniform(u)
    use module_globals
-   use module_util 
    implicit none
    real(DP),intent(out) :: u
    real(DP) :: r
@@ -62,7 +61,6 @@ end subroutine util_random_number_uniform
 
 subroutine util_random_number_normal(x)
    use module_globals
-   use module_util 
    implicit none
    real(DP),intent(out) :: x
    real(DP) :: u1,u2

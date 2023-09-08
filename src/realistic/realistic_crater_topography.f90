@@ -33,7 +33,7 @@ subroutine realistic_crater_topography(user,surf,crater,domain,ejecta_dem)
    use module_globals
    use module_util
    use module_crater
-   use module_realistic!, EXCEPT_THIS_ONE => realistic_crater_topography
+   use module_realistic, EXCEPT_THIS_ONE => realistic_crater_topography
    implicit none
 
    ! in and out
@@ -68,7 +68,7 @@ subroutine realistic_rim(user,surf,crater,deltaMtot)
    use module_globals
    use module_util
    use module_crater
-   use module_realistic!, EXCEPT_THIS_ONE => realistic_rim
+   use module_realistic, EXCEPT_THIS_ONE => realistic_rim
    implicit none
 
    ! in and out
@@ -181,7 +181,7 @@ end subroutine realistic_rim
 
 subroutine Calculate_am_wl_phase_from_diameter(psd_1D,amplitude,wavelength,phase)
    use module_globals
-   use module_realistic
+   use module_realistic, EXCEPT_THIS_ONE => Calculate_am_wl_phase_from_diameter
    implicit none
    ! in and out
    type(psdtype),intent(inout) :: psd_1D
@@ -207,7 +207,7 @@ end subroutine Calculate_am_wl_phase_from_diameter
 
 subroutine Calculate_breakpoint_slope_from_diameter(psd_1D)
    use module_globals
-   use module_realistic
+   use module_realistic, EXCEPT_THIS_ONE => Calculate_breakpoint_slope_from_diameter
    use module_util
    implicit none
    ! in and out
@@ -266,7 +266,7 @@ end subroutine Calculate_breakpoint_slope_from_diameter
 
 subroutine Calculate_targetPSD_from_breakpoint_slope(psd_1D,wavelength,psd)
    use module_globals
-   use module_realistic
+   use module_realistic, EXCEPT_THIS_ONE => Calculate_targetPSD_from_breakpoint_slope
    use module_util
    implicit none
    !in and out
@@ -356,7 +356,7 @@ end subroutine Calculate_targetPSD_from_breakpoint_slope
 
 subroutine Calculate_am_wl_phase_from_targetPSD(psd_1D,wavelength,psd,amplitude,phase)
    use module_globals
-   use module_realistic
+   use module_realistic, EXCEPT_THIS_ONE => Calculate_am_wl_phase_from_targetPSD
    implicit none
    !in and out
    type(psdtype), intent(in)  :: psd_1D
@@ -380,7 +380,7 @@ end subroutine Calculate_am_wl_phase_from_targetPSD
 
 subroutine Create_rim(arc_length,psd_1D,amplitude,wavelength,phase,rim_parameter)
    use module_globals
-   use module_realistic
+   use module_realistic, EXCEPT_THIS_ONE => Create_rim
    implicit none
    ! in and out
    real(DP),intent(in) :: arc_length

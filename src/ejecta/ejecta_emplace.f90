@@ -1,4 +1,4 @@
-!****f* ejecta/ejecta_emplace
+!***** ejecta/ejecta_emplace
 ! Name
 !   ejecta_emplace -- Calculate ejecta mass during excavation stage.
 ! SYNOPSIS
