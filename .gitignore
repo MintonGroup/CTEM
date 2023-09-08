@@ -1,10 +1,14 @@
 # Whitelist ignore file: Ignore everything that isn't explicitly included
 *
+!*/
 !ctem/**
 !examples/**
-!/src/**
+!src/**
+!cmake/**
+!**/.gitignore
 !*.f90
 !*.py
+!*.cmake
 !README.md
 !ctem.in
 !craterlist.in
@@ -13,5 +17,9 @@
 !NPFextrap.dat
 !FassettCounts.txt
 !NonMareNonSpa-Highlands.csv
-
+!CMakeLists.txt
+!version.txt
+*.mod
+**/.idea
+**/__pycache__
 
