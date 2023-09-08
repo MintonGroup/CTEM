@@ -1,5 +1,1 @@
-*.jpg
-*.png
-savestate
-*.dat
-output_psd.txt
+!ctem.in
