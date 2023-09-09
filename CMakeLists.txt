@@ -15,7 +15,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.6.0...3.27.1)
 
 # Get version stored in text file
 FILE(READ "version.txt" VERSION)
-PROJECT(${SKBUILD_PROJECT_NAME} LANGUAGES C Fortran VERSION ${VERSION})
+PROJECT(CTEM LANGUAGES C Fortran VERSION ${VERSION})
 
 IF (CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
     SET(COMPILER_OPTIONS "Intel" CACHE STRING "Compiler identified as Intel")
@@ -70,7 +70,7 @@ SET(CTEM_LIBRARY ctem)
 # The source for the CTEM binary and have it placed in the bin folder
 ADD_SUBDIRECTORY(${SRC} ${BIN})
 
-ADD_SUBDIRECTORY(${PY})
+#ADD_SUBDIRECTORY(${PY})
 
 # Add a distclean target to the Makefile
 ADD_CUSTOM_TARGET(distclean 

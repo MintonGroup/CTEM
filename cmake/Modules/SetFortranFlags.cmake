@@ -112,6 +112,14 @@ ELSEIF (COMPILER_OPTIONS STREQUAL "Intel")
         SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
             Fortran "/Qpad" # Intel Windows
         )
+        #Enables byte record length
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
+            Fortran "/assume:byterecl" # Intel Windows
+        )
+        #Enables heap arrays
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
+            Fortran "/heap-arrays" 
+        )
     ELSE ()
         SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
             Fortran  "-no-wrap-margin" # Intel
@@ -123,6 +131,14 @@ ELSEIF (COMPILER_OPTIONS STREQUAL "Intel")
         # Enables changing the variable and array memory layout
         SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
             Fortran "-pad" # Intel Windows
+        )
+        #Enables byte record length
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
+            Fortran "-assume byterecl" 
+        )
+        #Enables heap arrays
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}"
+            Fortran "-heap-arrays" 
         )
     ENDIF ()
 ENDIF ()
@@ -590,81 +606,65 @@ IF (COMPILER_OPTIONS STREQUAL "Intel")
 
     IF (WINOPT)
         # Some subroutines require more strict floating point operation optimizations for repeatability
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "/fp:precise" # Intel Windows 
         )
 
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "/Qprec-div" # Intel Windows 
         ) 
 
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "/Qprec-sqrt" # Intel Windows 
         )
 
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "/assume:protect-parens" # Intel Windows 
         ) 
 
         # Improves floating-point precision and consistency
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "/Qprec" # Intel Windows
         ) 
-
-        # Most subroutines can use aggressive optimization of floating point operations without problems.       
-        SET_COMPILE_FLAG(FASTMATH_FLAGS "${FASTMATH_FLAGS}"
-            Fortran "/fp:fast"       # Intel Windows
-        )
     ELSE ()
         # Some subroutines require more strict floating point operation optimizations for repeatability
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "-fp-module=precise" # Intel 
         )
 
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "-prec-div" # Intel 
         ) 
 
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "-prec-sqrt" # Intel 
         )
 
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "-assume protect-parens" # Intel
         ) 
 
         # Improves floating-point precision and consistency
-        SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+        SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
             Fortran "-mp1" # Intel Windows
         ) 
-
-        # Most subroutines can use aggressive optimization of floating point operations without problems.       
-        SET_COMPILE_FLAG(FASTMATH_FLAGS "${FASTMATH_FLAGS}"
-            Fortran "-fp-model=fast"       # Intel Windows
-        )
-
     ENDIF ()    
 
 ELSEIF (COMPILER_OPTIONS STREQUAL "GNU")
 
     # Some subroutines require more strict floating point operation optimizations for repeatability
-    SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+    SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
         Fortran "-fno-unsafe-math-optimizations" # GNU
         )
     # Disable transformations and optimizations that assume default floating-point rounding behavior. 
-    SET_COMPILE_FLAG(STRICTMATH_FLAGS "${STRICTMATH_FLAGS}"
+    SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
         Fortran "-frounding-math"
-        )
-
-    # Most subroutines can use aggressive optimization of floating point operations without problems.       
-    SET_COMPILE_FLAG(FASTMATH_FLAGS "${FASTMATH_FLAGS}"
-        Fortran "-ffast-math"    # GNU
         )
 ENDIF ()
 
 # Debug mode always uses strict math
 SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" 
-    Fortran ${STRICTMATH_FLAGS}
+    Fortran ${CMAKE_Fortran_FLAGS_RELEASE}
 )
 
 #####################
