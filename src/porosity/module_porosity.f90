@@ -21,10 +21,10 @@ save
       subroutine porosity_form_interior(user, surfi, crater, lradsq)
       use module_globals
       implicit none
-		type(usertype),intent(in)    :: user
-		type(surftype),intent(inout) :: surfi
-		type(cratertype),intent(in)  :: crater
-		real(DP),intent(in)          :: lradsq
+      type(usertype),intent(in)    :: user
+      type(surftype),intent(inout) :: surfi
+      type(cratertype),intent(in)  :: crater
+      real(DP),intent(in)          :: lradsq
       end subroutine porosity_form_interior
    end interface
 

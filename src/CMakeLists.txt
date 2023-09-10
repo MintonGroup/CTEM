@@ -187,7 +187,7 @@ IF (CMAKE_SYSTEM_NAME STREQUAL "Windows")
    SET_PROPERTY(TARGET ${CTEM_LIBRARY} ${CTEM_DRIVER} APPEND_STRING PROPERTY LINK_FLAGS  "/NODEFAULTLIB")
 ENDIF()
 
-
+TARGET_LINK_LIBRARIES(${CTEM_DRIVER} PUBLIC ${CTEM_LIBRARY})
 # Check to see if the compiler allows for local-spec in do concurrent statements. Set a preprocessor variable if it does
 SET(TESTFILE "${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}")
 SET(TESTFILE "${TESTFILE}/CMakeTmp/testFortranDoConcurrentLoc.f90")
