@@ -1,1 +1,11 @@
 *
+/**
+!.gitignore
+!CMakeLists.txt
+!distclean.cmake
+!README.md
+!version.txt
+!src/**.f90
+!ctem/setup.py
+!ctem/ctem/*.py
+!cmake/Modules/*.cmake
