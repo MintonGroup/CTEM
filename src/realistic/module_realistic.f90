@@ -128,7 +128,7 @@ end interface
 
  
 interface
-   subroutine realistic_rim(user,surf,crater,deltaMtot)
+   subroutine make_realistic_crater(user,surf,crater,deltaMtot)
       use module_globals
       use module_util
       use module_crater
@@ -138,12 +138,9 @@ interface
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       real(DP),intent(inout) :: deltaMtot
-   end subroutine realistic_rim
+   end subroutine make_realistic_crater
 end interface
 
-
-
-! Rim_crest:
 interface 
  
    subroutine Calculate_am_wl_phase_from_diameter(psd_1D,amplitude,wavelength,phase)
@@ -180,7 +177,7 @@ interface
       real(DP) ,dimension(:),allocatable,intent(out) :: amplitude,phase 
    end subroutine Calculate_am_wl_phase_from_targetPSD
 
-   subroutine Create_rim(arc_length,psd_1D,amplitude,wavelength,phase,rim_parameter)
+   subroutine Make_outline(arc_length,psd_1D,amplitude,wavelength,phase,rim_parameter)
       use module_globals
       implicit none
       ! in and out
@@ -190,7 +187,7 @@ interface
       real(DP),dimension(:),intent(in) :: wavelength
       real(DP),dimension(:),intent(in) :: phase
       real(DP),intent(out) :: rim_parameter
-   end subroutine Create_rim
+   end subroutine Make_outline
 
 end interface
 

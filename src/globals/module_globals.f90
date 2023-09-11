@@ -291,13 +291,13 @@ type psdtype
    real(DP) :: bp2_y  
    real(DP) :: bp3_y   
    real(DP) :: bp4_y  
-   real(DP) :: slope1 
-   real(DP),dimension(5) :: bp2_x_k_b_sigma
-   real(DP),dimension(5) :: bp2_y_k_b_sigma
-   real(DP),dimension(5) :: bp3_y_k_b_sigma
-   real(DP),dimension(5) :: bp4_y_k_b_sigma
-   real(DP),dimension(5) :: slope1_k_b_sigma
-   real(DP),dimension(5) :: misfit_k_b_sigma
+   real(DP) :: slope12 
+   real(DP) :: misfit_k_b_sigma 
+   real(DP),dimension(6) :: bp2_x_k_b_sigma
+   real(DP),dimension(6) :: bp2_y_k_b_sigma
+   real(DP),dimension(6) :: bp3_y_k_b_sigma
+   real(DP),dimension(6) :: bp4_y_k_b_sigma
+   real(DP),dimension(6) :: slope12_k_b_sigma
 end type psdtype
 !----------------------------------------------------------
 
