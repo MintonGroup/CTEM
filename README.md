@@ -9,12 +9,17 @@ Navigate to the topmost directory in your CTEM repository. It is best practice t
 $ cmake -B build -S .
 $ cmake --build build
 ```
+The CTEM executable, called `CTEM`, should now be created in the ```bin/``` directory.
 
-The [CMake Fortran template](https://github.com/SethMMorton/cmake_fortran_template) comes with a script that can be used to clean out any build artifacts and start from scratch:
+If you wish to install CTEM into the system, execute the following command:
 
 ```
-$ cmake -P distclean.cmake
+$ cmake --install build
 ```
+
+This will install the project into the directory specified by `CMAKE_INSTALL_PREFIX` (the default is `/usr/local`), provided you have
+sufficient permissions.
+
 
 The CTEM CMake configuration comes with several customization options:
 
@@ -30,19 +35,20 @@ The CTEM CMake configuration comes with several customization options:
 | Install prefix                  | \-DCMAKE_INSTALL_PREFIX=["/path/to/install"\|**"/usr/local"**] |
 
 
-
 To see a list of all possible options available to CMake:
 ```
 $ cmake -B build -S . -LA
 ```
-
-The CTEM executable, called `CTEM`, should now be created in the ```bin/``` directory.
-
-If you wish to install CTEM into the system, execute the following command:
+For instance, if you wish to compile the project with debugging symbols enabled, run:
 
 ```
-$ cmake --install build
+$ cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
 ```
 
-This will install the project into the directory specified by `CMAKE_INSTALL_PREFIX` (the default is `/usr/local`), provided you have
-sufficient permissions.
+
+
+The [CMake Fortran template](https://github.com/SethMMorton/cmake_fortran_template) comes with a script that can be used to clean out any build artifacts and start from scratch:
+
+```
+$ cmake -P distclean.cmake
+```
