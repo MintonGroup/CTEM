@@ -51,7 +51,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
+subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb,volm)
    use module_globals
    use module_regolith, EXCEPT_THIS_ONE => regolith_melt_zone
    implicit none
@@ -60,12 +60,12 @@ subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
    type(usertype),intent(in) :: user
    type(cratertype),intent(inout) :: crater
    real(DP),intent(in)  :: dimp,vimp    ! diameter and impact velocity of projectile for testing case and a real run
-   real(DP),intent(out) :: rmelt, depthb
+   real(DP),intent(out) :: rmelt, depthb, volm
 
    ! Internal variables
    real(DP),parameter      :: Em = 3.42d06 ! specific internal energy for highland (Bjorkman and Holsapple 1987)
    real(DP)                :: rimp
-   real(DP)                :: volm,vtc
+   real(DP)                :: vtc
    real(DP)                :: b,c,d,e
 
    ! Executable code 
@@ -74,6 +74,8 @@ subroutine regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
    depthb = 0.5 * dimp
    vtc = PI/3.0 * (crater%rad)**3
    volm = 2.9 * vtc * Em**(-0.85) * (dimp)**0.66 * (user%gaccel) **0.66 * vimp**(0.37) 
+   !increase or decrease volm by and arbitrary amount to see what happens-- ***NOT PHYSICAL!!!***
+   !volm = volm / 3.0
    ! Calculate radius of melt zone (shifted melt zone model Pierazzo et al. 1997)
    ! rmelt = (rvapor**3 + 1.5/PI*volm)**(1.0/3.0) (hemisphere model)
    ! R_m ^3 + 1.5 * R_imp * R_m ^2 - 2.5 * R_imp ^3 - 3/(2 * PI) * volm = 0

@@ -38,7 +38,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
    logical :: firstrun
 
    ! Regotrack internal variables
-   real(DP) :: rmelt,depthb,dimp,vimp
+   real(DP) :: rmelt,depthb,dimp,vimp, volm
 
    ! Executable code
 
@@ -64,7 +64,7 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
          vimp = crater%impvel
       end if 
    
-      call regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb)
+      call regolith_melt_zone(user,crater,dimp,vimp,rmelt,depthb, volm)
    end if
  
    do k = 0,EJBTABSIZE

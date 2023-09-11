@@ -36,7 +36,7 @@ subroutine util_traverse_pop(elchange,surfi,poppedlist)
    ! Get initial layer's info and the 
    ! desired info that we want to modify! 
    !=======================================
-   depth = surfi%regolayer%regodata%thickness
+   depth = surfi%regolayer%thickness !we don't need '%regodata' anymore
    dz = 0._DP
    z = elchange
    mixedregodata%comp = 0.0_DP
@@ -44,25 +44,25 @@ subroutine util_traverse_pop(elchange,surfi,poppedlist)
    if (z < 0._DP) then
 
       do 
-         if (.not. associated(surfi%regolayer)) then
-            write(*,*) 'Major error in regolith_traverse_pop!'
-            exit
-         end if
+         ! if (.not. associated(surfi%regolayer)) then
+         !    write(*,*) 'Major error in regolith_traverse_pop!'
+         !    exit
+         ! end if
 
          if (abs(z) <= depth) then
             dz = depth - abs(z)
-            surfi%regolayer%regodata%thickness = dz
-            mixedregodata%comp = mixedregodata%comp + dz * surfi%regolayer%regodata%comp
-            mixedregodata%meltfrac = mixedregodata%meltfrac + dz * surfi%regolayer%regodata%meltfrac
+            surfi%regolayer%thickness = dz
+            mixedregodata%comp = mixedregodata%comp + dz * surfi%regolayer%comp
+            mixedregodata%meltfrac = mixedregodata%meltfrac + dz * surfi%regolayer%%meltfrac
             mixedregodata%thickness = mixedregodata%thickness + dz
             exit
          else
             z = abs(z) - surfi%regolayer%regodata%thickness
-            call util_pop(surfi,oldregodata)
+            call util_pop_array(surfi,oldregodata)
             mixedregodata%comp = mixedregodata%comp + oldregodata%thickness * oldregodata%comp
             mixedregodata%meltfrac = mixedregodata%meltfrac + oldregodata%thickness * oldregodata%meltfrac
             mixedregodata%thickness = mixedregodata%thickness + oldregodata%thickness
-            depth = surfi%regolayer%regodata%thickness
+            depth = surfi%regolayer%thickness
          end if
 
       end do

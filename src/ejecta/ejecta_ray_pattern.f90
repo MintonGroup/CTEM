@@ -26,12 +26,11 @@
 !   * domain  -- Simulation domain variable container
 !
 !   Output
-!   * ejdist -- logical array containing the pixels that contain ejecta
 ! 
 !***
 
 !**********************************************************************************************************************************
-subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,ejdistribution)
+subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
    use module_globals
    use module_util
    use module_io
@@ -42,23 +41,22 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
 
    ! Arguments
    type(usertype),intent(in) :: user
-   type(surftype),dimension(:,:),intent(in) :: surf
    type(cratertype),intent(inout) :: crater
-   integer(I4B),intent(in) :: inc,xi,xf,yi,yf
-   real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
-   real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
+   integer(I4B),intent(in) :: i,j
+   real(DP),intent(out) :: diffi
+   real(DP),intent(out) :: eji
 
    ! Internal variables
-   integer(I4B) :: nrays,i,j,k,n,nef,incsq,iradsq,xpi,ypi,ejpxsq
+   integer(I4B) :: nrays,k,n,nef,incsq,iradsq,xpi,ypi,ejpxsq
    real(DP) :: frac,mef,lrad,lradsq,xp,yp,binres,areafrac,xbar,ybar
    real(DP) :: rn
    real(DP) :: theta, lradp, maxdistance
    real(DP), parameter :: n1 = 4.0_DP
    real(DP) :: n2, mag
-   real(DP),dimension(xi:xf,yi:yf) :: isray
    real(DP),dimension(:),allocatable :: numinray,totnum
    real(DP),dimension(:),allocatable :: mefarray
-
+   real(DP) :: ans
+   logical :: bigej
 
    real(DP) :: C1,C2,p ! Fits to fe vs fd equation for the new ray pattern
    real(DP) :: rmin,rmax,r
@@ -73,11 +71,12 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
    logical :: ej
    real(DP),dimension(Nraymax) :: thetari
 
-   !TEMPORARY
+   eji = 0.0_DP
+   diffi = 0.0_DP
 
    if (user%dorays) then
-      do i = 1,Nraymax
-         thetari(i) = 2 * pi * i / Nraymax
+      do k = 1,Nraymax
+         thetari(k) = 2 * pi * k / Nraymax
       end do
       call shuffle(thetari) ! randomize the ray pattern
 
@@ -85,135 +84,111 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,
       rmax = user%ejecta_truncation 
       rmin = crater%continuous / crater%frad
       crater%fe = 10.0_DP ! Estimate the equivalent degradation radius
-      !ejdistribution = 0.0_DP
-      !diffdistribution = 0.0_DP
-      !!$OMP PARALLEL DO DEFAULT(PRIVATE) &
-      !!$OMP SHARED(user,crater) &
-      !!$OMP SHARED(xi,xf,yi,yf,rn,diffdistribution,ejdistribution,thetari,rmin)
-      do j = yi,yf
-         do i = xi,xf
-            xpi = crater%xlpx + i
-            ypi = crater%ylpx + j
+      xpi = crater%xlpx + i
+      ypi = crater%ylpx + j
 
-            ! Find distance from crater center to current pixel center in real space
-            xp = xpi * user%pix
-            yp = ypi * user%pix
+      ! Find distance from crater center to current pixel center in real space
+      xp = xpi * user%pix
+      yp = ypi * user%pix
 
-            xbar = xp - crater%xl 
-            ybar = yp - crater%yl
+      xbar = xp - crater%xl 
+      ybar = yp - crater%yl
 
-            areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
-            r = sqrt(xbar**2 + ybar**2) / crater%frad
-            theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
-            diffdistribution(i,j) = areafrac * pattern(theta,r,rmin,rmax,thetari,.false.) 
-            ejdistribution(i,j) = areafrac * pattern(theta,r,rmin,rmax,thetari,.true.) 
-         end do
-      end do
-      !!$OMP END PARALLEL DO
+      areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
+      r = sqrt(xbar**2 + ybar**2) / crater%frad
+      theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
+      diffi = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.false.) 
+      eji = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,.true.) 
 
-   
    else
-      !Do simple circular region
-      incsq = inc**2
-      ejdistribution = 0.0_DP
-      diffdistribution = 0.0_DP
-      !$OMP PARALLEL DO DEFAULT(PRIVATE) &
-      !$OMP SHARED(user,crater) &
-      !$OMP SHARED(inc,incsq,xi,xf,yi,yf,diffdistribution,ejdistribution)
-      do j = yi,yf
-         do i = xi,xf
-            iradsq = i*i + j*j
 
-            if (iradsq < incsq) then
+      xpi = crater%xlpx + i
+      ypi = crater%ylpx + j
 
-               xpi = crater%xlpx + i
-               ypi = crater%ylpx + j
+      ! Find distance from crater center to current pixel center in real space
+      xp = xpi * user%pix
+      yp = ypi * user%pix
 
-               ! Find distance from crater center to current pixel center in real space
-               xp = xpi * user%pix
-               yp = ypi * user%pix
-
-               xbar = xp - crater%xl 
-               ybar = yp - crater%yl
-               areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) ! uniform circular
-               diffdistribution(i,j) = areafrac 
-               ejdistribution(i,j) = areafrac
-            end if
-         end do
-      end do
-      !$OMP END PARALLEL DO
-
+      xbar = xp - crater%xl 
+      ybar = yp - crater%yl
+      areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) ! uniform circular
+      diffi = areafrac
+      eji = areafrac
    end if
+
    return  
    contains
 
-   pure function ray(theta,thetar,r,n,w) result(ans)
-   implicit none
-   real(DP) :: ans
-   real(DP),intent(in) :: theta,thetar,r,w
-   integer(I4B),intent(in) :: n
-   real(DP) :: thetap,thetapp,a,b,c,dtheta
+   ! pure function ray(theta,thetar,r,n,w) result(ans)
+   ! implicit none
+   ! real(DP) :: ans
+   ! real(DP),intent(in) :: theta,thetar,r,w
+   ! integer(I4B),intent(in) :: n
+   ! real(DP) :: thetap,thetapp,a,b,c,dtheta
 
-   c = w / r
-   b = thetar 
-   dtheta = min(2*pi - abs(theta - b),abs(theta - b))
-   a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c)))
-   ans = a * exp(-dtheta**2 / (2 * c**2))
+   ! c = w / r
+   ! b = thetar 
+   ! dtheta = min(2*pi - abs(theta - b),abs(theta - b))
+   ! a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c)))
+   ! ans = a * exp(-dtheta**2 / (2 * c**2))
 
-   return
-   end function ray
+   ! return
+   ! end function ray
 
-   pure function pattern(theta,r,rmin,rmax,thetari,ej) result(ans)
-   implicit none
-   real(DP) :: ans
-   real(DP),intent(in) :: r,rmin,rmax,theta
-   real(DP),dimension(:),intent(in) :: thetari
-   logical,intent(in) :: ej
-   real(DP) :: a,c
-   real(DP) :: thetar,rw,rw0,rw1
-   real(DP) :: f,rtrans,length,rpeak,minray,FF
-   integer(I4B) :: n,i
-
-
-   minray = rmin * 3
-
-   if (r > rmax) then
-      ans = 0._DP
-   else if (r < 1.0_DP) then
-      if (ej) then
-         ans = 1.0_DP
-      else
-         ans = 0.0_DP
-      end if
-   else
-      rw0 = rmin * pi / Nraymax / 2
-      rw1 = 2 * pi / Nraymax
-      rw = rw0 * (1._DP - (1.0_DP - rw1 / rw0) * exp(1._DP - (r / rmin)**2))
-      n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
-      ans = 0._DP
-      rtrans = r - 1.0_DP
-      c = rw / r
-      a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c)))
-      do i = 1,Nraymax
-         length = minray * exp(log(rray/minray) * ((Nraymax - i + 1)**rayp - 1_DP) / ((Nraymax**rayp - 1)))
-         rpeak = (length - 1_DP) * 0.5_DP
-         if (ej) then
-            FF = 1.0_DP
-            if (r > length) then
-               f = 0.0_DP
-            else
-               f = a 
-            end if
-         else
-            FF = rayfmult * (20 / rmax)**(0.5_DP) * 0.25_DP 
-            f = FF * fpeak * (rtrans / rpeak)**rayq * exp(1._DP / rayq * (1.0_DP - (rtrans / rpeak)**rayq)) 
-         end if
-         ans = ans + ray(theta,thetari(i),r,n,rw) * f / a 
-      end do
-   end if 
+   ! !pure function pattern(theta,r,rmin,rmax,thetari,ej) result(ans)
+   ! !function pattern(theta,r,rmin,rmax,thetari,ej) result(ans)
+   ! subroutine pattern(theta,r,rmin,rmax,thetari,ej,ans)
+   ! implicit none
+   ! real(DP) :: ans
+   ! real(DP),intent(in) :: r,rmin,rmax,theta
+   ! real(DP),dimension(:),intent(in) :: thetari
+   ! logical,intent(in) :: ej
+   ! real(DP) :: a,c
+   ! real(DP) :: thetar,rw,rw0,rw1
+   ! real(DP) :: f,rtrans,length,rpeak,minray,FF
+   ! integer(I4B) :: n,i
 
 
-   end function pattern
+   ! minray = rmin * 3
+
+   ! if (r > rmax) then
+   !    ans = 0._DP
+   ! else if (r < 1.0_DP) then
+   !    if (ej) then
+   !       ans = 1.0_DP
+   !    else
+   !       ans = 0.0_DP
+   !    end if
+   ! else
+   !    rw0 = rmin * pi / Nraymax / 2
+   !    rw1 = 2 * pi / Nraymax
+   !    rw = rw0 * (1._DP - (1.0_DP - rw1 / rw0) * exp(1._DP - (r / rmin)**2))
+   !    n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
+   !    ans = 0._DP
+   !    rtrans = r - 1.0_DP
+   !    c = rw / r
+   !    a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c)))
+   !    do i = 1,Nraymax
+   !       length = minray * exp(log(rray/minray) * ((Nraymax - i + 1)**rayp - 1_DP) / ((Nraymax**rayp - 1)))
+   !       rpeak = (length - 1_DP) * 0.5_DP
+   !       if (ej) then
+   !          FF = 1.0_DP
+   !          if (r > length) then
+   !             f = 0.0_DP
+   !          else
+   !             f = a 
+   !          end if
+   !       else
+   !          FF = rayfmult * (20 / rmax)**(0.5_DP) * 0.25_DP 
+   !          f = FF * fpeak * (rtrans / rpeak)**rayq * exp(1._DP / rayq * (1.0_DP - (rtrans / rpeak)**rayq)) 
+   !       end if
+   !       ans = ans + ray(theta,thetari(i),r,n,rw) * f / a 
+   !    end do
+   ! end if 
+
+
+   ! !end function pattern
+   ! end subroutine pattern
    
    subroutine shuffle(a)
    real(DP), intent(inout) :: a(:)

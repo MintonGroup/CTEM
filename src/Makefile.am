@@ -6,13 +6,13 @@ HEAPARR = -heap-arrays
 OPTREPORT = -qopt-report=5 
 IPRODUCTION = -g -traceback -no-wrap-margin -assume byterecl -O3 -qopt-prefetch=0 -sox $(PAR) $(SIMDVEC) $(HEAPARR)
 IDEBUG = -O0 -g -traceback -debug all -nogen-interfaces -assume byterecl -m64 -heap-arrays -FR -no-pie -no-ftz -fpe-all=0 -mp1 -fp-model strict -fpe0 -align all -pad -ip -prec-div -prec-sqrt -assume protect-parens -CB -no-wrap-margin -init=snan,arrays 
-AM_FCFLAGS =  $(IPRODUCTION)
+#AM_FCFLAGS =  $(IDEBUG)
 #ifort debug flags
 
 #gfortran optimized flags
-#AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace
+#AM_FCFLAGS =  -O3 -fopenmp -ffree-form  -g -fbounds-check -fbacktrace -ffree-line-length-512
 #gfortran debug flags
-#AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form -fsanitize-address-use-after-scope -fstack-check  -fsanitize=bounds-strict -fsanitize=undefined -fsanitize=signed-integer-overflow -fsanitize=object-size -fstack-protector-all
+AM_FCFLAGS =  -O0 -g -fopenmp -fbounds-check -Wall -Warray-bounds -Warray-temporaries -Wimplicit-interface -ffree-form -fstack-check -fstack-protector-all -ffree-line-length-512
 
 CTEM_SOURCES = globals/module_globals.f90\
 util/module_util.f90\
@@ -36,12 +36,16 @@ util/util_diffusion_solver.f90\
 util/util_area_intersection.f90\
 util/util_poisson.f90\
 util/util_pop.f90\
-util/util_push.f90\
-util/util_traverse_pop.f90\
+util/util_pop_array.f90\
+util/util_push_array.f90\
+util/util_traverse_pop_array.f90\
 util/util_destroy_list.f90\
-util/util_init_list.f90\
+util/util_init_array.f90\
 util/util_perlin_noise.f90\
 util/util_random_number_normal.f90\
+util/util_npf_timefunc.f90\
+util/util_tscale.f90\
+util/util_t_from_scale.f90\
 io/io_read_const.f90\
 io/io_get_token.f90\
 io/io_input.f90\
@@ -60,11 +64,11 @@ io/io_crater_profile.f90\
 io/io_updatePbar.f90\
 io/io_resetPbar.f90\
 io/io_splash.f90\
-io/io_write_age.f90\
 io/io_write_pindex_map.f90\
-io/io_write_age_depth.f90\
 ejecta/ejecta_emplace.f90\
 ejecta/ejecta_ray_pattern.f90\
+ejecta/ejecta_ray_pattern_func.f90\
+ejecta/ejecta_ray_func.f90\
 ejecta/ejecta_blanket.f90\
 ejecta/ejecta_blanket_func.f90\
 ejecta/ejecta_thickness.f90\
@@ -125,6 +129,7 @@ regolith/regolith_melt_zone_superdomain.f90\
 regolith/regolith_streamtube_volume_func.f90\
 regolith/regolith_shock_damage_zone.f90\
 regolith/regolith_shock_damage.f90\
+regolith/regolith_interior.f90\
 porosity/porosity_form_interior.f90\
 realistic/realistic_perlin_noise.f90\
 realistic/realistic_crater_topography.f90\

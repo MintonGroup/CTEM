@@ -38,7 +38,8 @@ subroutine io_write_age(user,surf,n_size,icrater,ncrat)
    integer(kind=8)                                     :: recsize
    real(SP)                                            :: stmp
    real(SP)                                            :: agetot, age_weighted
-   type(regolisttype),pointer                          :: current => null()
+   !type(regolisttype),pointer                          :: current => null()
+   type(regodatatype),dimension(:),allocatable         :: current
    real(DP)                                            :: depth, depth_prev
    real(SP)                                            :: recyclratio
    ! Output multiple "comphisto" files
@@ -55,8 +56,10 @@ subroutine io_write_age(user,surf,n_size,icrater,ncrat)
          
          depth       = 0.0 
          depth_prev  = 0.0 
-         current => surf(i,j)%regolayer
-         age_prev(:) = current%regodata%age(:)
+         !current => surf(i,j)%regolayer
+         !current = surf(i,j)%regolayer(:)
+         allocate(current,source=surf(i,j)%regolayer(:))
+         age_prev(:) = current%age(:)
          agedepthtot = 0.0_SP
          do 
           if (depth > sdepth) then
@@ -66,10 +69,10 @@ subroutine io_write_age(user,surf,n_size,icrater,ncrat)
              exit
            end if
            depth_prev     = depth
-           depth          = depth + current%regodata%thickness
-           agedepthtot(:) = agedepthtot(:) + current%regodata%age(:)
-           age_prev(:)    = current%regodata%age(:)
-           current => current%next
+           depth          = depth + current%thickness
+           agedepthtot(:) = agedepthtot(:) + current%age(:)
+           age_prev(:)    = current%age(:)
+           !current => current%next
          end do
 
          age_weighted = 0.0_SP

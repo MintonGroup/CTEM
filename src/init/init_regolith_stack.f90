@@ -18,7 +18,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_regolith_stack(user,surf)
+subroutine init_regolith_stack(user,surf,domain)
    use module_globals
    use module_util
    use module_init, EXCEPT_THIS_ONE => init_regolith_stack
@@ -27,36 +27,19 @@ subroutine init_regolith_stack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
-   type(regodatatype) :: bedrock 
-   integer(I4B) :: xp,yp,k
+   type(domaintype),intent(in)    :: domain
+   integer(I4B) :: xp,yp
 
    ! Internal variables
    logical :: initstat
-
-   ! Temporary variable setup for initialize a pre-exising structure
-   type(regodatatype) :: test_stratig
 
    !call init_regolith_parab(user,surf)
    !=======================================
    ! Initialize the grid space  
    !=======================================
-   bedrock%thickness = user%trad
-   bedrock%meltfrac  = 0._DP 
-   bedrock%comp      = 0._DP
-   bedrock%age(:)    = 0.0_SP
 
-   do yp = 1, user%gridsize
-      do xp = 1, user%gridsize
-
-         call util_init_list(surf(xp,yp)%regolayer,initstat)
-
-         if (initstat) then
-             call util_push(surf(xp,yp)%regolayer,bedrock)
-         else
-            write(*,*) 'init_regolith_stack: Initialization of regolayer failed.'
-         end if
-
-      end do
+   do concurrent(xp=1:user%gridsize,yp=1:user%gridsize)
+      call util_init_array(user,surf(xp,yp)%regolayer,domain,initstat)
    end do
 
    return

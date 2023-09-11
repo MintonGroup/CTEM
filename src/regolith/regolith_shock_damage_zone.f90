@@ -68,10 +68,11 @@ subroutine regolith_shock_damage_zone(crater,rm,eradi,depthb,xsfints)
    real(DP),parameter          :: c_dunite   = 6500.0
    real(DP),parameter          :: s_dunite   = 0.9
    real(DP),parameter          :: n          = -2.85
+   real(DP)                    :: pf         = 25.0e9    ! The shock pressure exceeding the hungoit elastic limit of common geological materials in Pa is 5 GPa.
    real(DP)                    :: pmax, up
    real(DP)                    :: rsh, xshints0
    real(DP)                    :: q1, q2, q3, thetaq 
-
+   
    ! Calculate the radius of shock pressure decay zone by a given shock 
    ! P(r) = Pmax * (r/r_p)**(n), where n is negative and we use -3 (fast decay
    ! that may be accounted for by acoustic fluidization).
@@ -80,7 +81,7 @@ subroutine regolith_shock_damage_zone(crater,rm,eradi,depthb,xsfints)
    ! The maximum peak shock pressure is estimated from planar impact 
    up       = crater%impvel * 0.5 
    pmax     = rho_dunite * (c_dunite + s_dunite * up) * up
-   rsh      = (crater%imp/2.0) * (PF / pmax)**(1.0/n)
+   rsh      = (crater%imp/2.0) * (pf / pmax)**(1.0/n)
    xshints0 = sqrt(rsh**2 - (crater%imp / 2.0)**2)
 
    if (eradi <= xshints0) then

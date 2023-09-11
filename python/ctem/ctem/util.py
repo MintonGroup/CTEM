@@ -10,6 +10,61 @@ from scipy.io import FortranFile
 
 # Set pixel scaling common for image writing, at 1 pixel/ array element
 dpi = 72.0
+class CTEMLightSource(LightSource):
+    """
+    Override one function in LightSource to prevent the contrast from being rescaled.
+    """
+    def shade_normals(self, normals, fraction=1.):
+        """
+        Calculate the illumination intensity for the normal vectors of a
+        surface using the defined azimuth and elevation for the light source.
+
+        Imagine an artificial sun placed at infinity in some azimuth and
+        elevation position illuminating our surface. The parts of the surface
+        that slope toward the sun should brighten while those sides facing away
+        should become darker.
+
+        Changes by David Minton: The matplotlib version of this rescales the intensity
+        in a way that causes the brightness level of the images to change between
+        simulation outputs. This makes movies of the surface evolution appear to flicker.
+
+        Parameters
+        ----------
+        fraction : number, optional
+            Increases or decreases the contrast of the hillshade.  Values
+            greater than one will cause intermediate values to move closer to
+            full illumination or shadow (and clipping any values that move
+            beyond 0 or 1). Note that this is not visually or mathematically
+            the same as vertical exaggeration.
+
+        Returns
+        -------
+        ndarray
+            A 2D array of illumination values between 0-1, where 0 is
+            completely in shadow and 1 is completely illuminated.
+        """
+
+        intensity = normals.dot(self.direction)
+
+        # Apply contrast stretch
+        imin, imax = intensity.min(), intensity.max()
+        intensity *= fraction
+
+        # Rescale to 0-1, keeping range before contrast stretch
+        # If constant slope, keep relative scaling (i.e. flat should be 0.5,
+        # fully occluded 0, etc.)
+        # if (imax - imin) > 1e-6:
+        #     # Strictly speaking, this is incorrect. Negative values should be
+        #     # clipped to 0 because they're fully occluded. However, rescaling
+        #     # in this manner is consistent with the previous implementation and
+        #     # visually appears better than a "hard" clip.
+        #     intensity -= imin
+        #     intensity /= (imax - imin)
+        intensity = np.clip(intensity, 0, 1)
+
+        return intensity
+
+
 
 # These are directories that are created by CTEM in order to store intermediate results
 
@@ -46,8 +101,8 @@ def image_dem(user, DEM):
     azimuth = 300.0  # user['azimuth']
     solar_angle = 20.0  # user['solar_angle']
     
-    ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
-    dem_img = ls.hillshade(np.flip(DEM, axis=0), vert_exag=ve, dx=pix, dy=pix)
+    ls = CTEMLightSource(azdeg=azimuth, altdeg=solar_angle)
+    dem_img = ls.hillshade(np.flip(DEM,axis=0), vert_exag=ve, dx=pix, dy=pix, fraction=1)
     
     # Generate image to put into an array
     height = gridsize / dpi
@@ -59,6 +114,7 @@ def image_dem(user, DEM):
     # Save image to file
     filename = os.path.join(user['workingdir'],'surf',"surf%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
+    plt.close()
     
     return
 
@@ -80,8 +136,9 @@ def image_regolith(user, regolith):
     height = user['gridsize'] / dpi
     width = height
     fig = plt.figure(figsize=(width, height), dpi=dpi)
-    fig.figimage(regolith_scaled, cmap=cm.cividis, origin='lower')
+    fig.figimage(regolith_scaled, cmap=cm.nipy_spectral, origin='lower')
     plt.savefig(filename)
+    plt.close()
     
     return
 
@@ -95,7 +152,7 @@ def image_shaded_relief(user, DEM):
     azimuth = 300.0  # user['azimuth']
     solar_angle = 20.0  # user['solar_angle']
     
-    ls = LightSource(azdeg=azimuth, altdeg=solar_angle)
+    ls = CTEMLightSource(azdeg=azimuth, altdeg=solar_angle)
     cmap = cm.cividis
     
     # If min and max appear to be reversed, then fix them
@@ -117,7 +174,7 @@ def image_shaded_relief(user, DEM):
     else:
         shadedmaxh = user['shadedmaxh']
     
-    dem_img = ls.shade(np.flip(DEM, axis=0), cmap=cmap, blend_mode=mode, fraction=1.0,
+    dem_img = ls.shade(np.flip(DEM,axis=0), cmap=cmap, blend_mode=mode, fraction=1.0,
                        vert_exag=ve, dx=pix, dy=pix,
                        vmin=shadedminh, vmax=shadedmaxh)
     
@@ -131,6 +188,8 @@ def image_shaded_relief(user, DEM):
     # Save image to file
     filename = os.path.join(user['workingdir'],'shaded',"shaded%06d.png" % user['ncount'])
     plt.savefig(filename, dpi=dpi, bbox_inches=0)
+    plt.close()
+    
     return user
 
 
@@ -372,11 +431,11 @@ def write_realcraters(filename, realcraters):
 
     return
 
-def write_temp_input(filename):
+def write_temp_input(user, filename):
     """Makes changes to a temporary input file for use when generating craterlist.dat for quasimc runs"""
 
     sed('testflag', 'testflag T!', filename)
-    sed('testimp', 'testimp 10 !', filename)
+    sed('testimp', f'testimp {user["pix"]*1e-3} !', filename) # Make a tiny test crater. We don't care about the crater itself, just that we run CTEM once to get all of the converted files
     sed('quasimc', 'quasimc F!', filename)
     sed('interval', 'interval 1 !', filename)
     sed('numinterval 1 !s', 'numintervals 1 !', filename)
