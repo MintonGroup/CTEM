@@ -68,7 +68,7 @@ subroutine make_realistic_crater(user,surf,crater,deltaMtot)
    use module_globals
    use module_util
    use module_crater
-   use module_realistic, EXCEPT_THIS_ONE => realistic_rim
+   use module_realistic, EXCEPT_THIS_ONE => make_realistic_crater
    implicit none
 
    ! in and out
@@ -401,7 +401,7 @@ end subroutine Calculate_am_wl_phase_from_targetPSD
 
 subroutine Make_outline(arc_length,psd_1D,amplitude,wavelength,phase,noise_component)
    use module_globals
-   use module_realistic, EXCEPT_THIS_ONE => Create_rim
+   use module_realistic, EXCEPT_THIS_ONE => Make_outline
    implicit none
    ! in and out
    real(DP),intent(in) :: arc_length
