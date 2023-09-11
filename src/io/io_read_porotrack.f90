@@ -42,7 +42,7 @@ subroutine io_read_porotrack(user,surf)
 
    ! Open a file for obtaining the number of stacks that is stored in each linked list
    ioerr = 0
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
+   recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
    open(LUP,file=STACKPORFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(STACKPORFILE))
@@ -95,7 +95,7 @@ subroutine io_read_porotrack(user,surf)
          do k= 2, stacks_num(i,j)
             newsurfi%depth    = depthk(k)
             newsurfi%porosity = porok(k)
-            call util_push(surf(i,j)%porolayer,newsurfi)
+            call util_push_array(surf(i,j)%porolayer,newsurfi)
          end do
 
          deallocate(depthk, porok)

@@ -19,7 +19,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,ypi,age,age_resolution,rm,depthb)
+subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,ypi,rm,depthb)
    use module_globals
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_superdomain
@@ -29,11 +29,9 @@ subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,
    type(usertype),intent(in)             :: user
    type(cratertype),intent(inout)        :: crater
    type(domaintype),intent(in)           :: domain
-   type(regolisttype),pointer            :: regolayer
+   type(regodatatype),dimension(:),allocatable,intent(inout)            :: regolayer
    real(DP),intent(in)                   :: ejdistribution
    integer(I4B),intent(in)               :: xpi, ypi
-   real(DP),intent(in)                   :: age
-   real(DP),intent(in)                   :: age_resolution
    real(DP),intent(in)                   :: rm 
    real(DP),intent(in)                   :: depthb
 
@@ -43,7 +41,7 @@ subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,
    real(DP)                     :: ebh
    real(DP)                     :: erad
    real(DP)                     :: cvpg
-   real(DP)                     :: deltar, xmints
+   real(DP)                     :: deltar, xmints, melt
    type(regodatatype)           :: newlayer   
    integer(I2B)                 :: n_age
 
@@ -60,8 +58,8 @@ subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,
    erad        = cvpg**(user%mu_b) * (lrad**(-0.5_DP * user%mu_b)) * (crater%rad)**(user%mu_b * 0.5_DP + 1.0_DP)
    vej         = cvpg * sqrt(user%gaccel * crater%grad) * (erad / crater%grad)**(-1.0_DP / user%mu_b) !equation 18 in Richardson 2009
    lrad        = ( vej **2 ) / user%gaccel !assume ejection angle is 45 degree.
-   call regolith_melt_glass(user,crater,age,age_resolution,ebh,rm,erad,lrad,deltar,newlayer,xmints) 
-   call util_push(regolayer,newlayer)
+   call regolith_melt_glass(user,crater,domain,ebh,rm,erad,lrad,deltar,newlayer,xmints,melt) 
+   call util_push_array(regolayer,newlayer)
 
    return
 end subroutine regolith_superdomain

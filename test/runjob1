@@ -1,9 +1,0 @@
-#PBS -q daminton
-#PBS -l walltime=720:00:00
-#PBS -l nodes=1:ppn=2,naccesspolicy=shared
-#PBS -N SHFRAGv2_hs
-source /etc/profile
-module load gcc
-module load idl
-cd $PBS_O_WORKDIR
-idl < start.in > output

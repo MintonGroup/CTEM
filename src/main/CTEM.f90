@@ -63,11 +63,17 @@ integer(I4B)            :: onum
 real(DP)                :: lambda
 !$ real(DP)             :: t1,t2
 real(DP),dimension(:,:),allocatable :: nflux
+integer(I4B)            :: narg, ierr 
 
 !$ t1 = omp_get_wtime()
 call io_splash()
-!write(*,*) 'Reading input files'
-infile="ctem.in"
+narg = command_argument_count() 
+if (narg /= 0) then
+   call get_command_argument(1, infile, status = ierr) ! Use first argument as the user input file name
+else
+   infile = USERFILE ! No arguments, so use the default file name for the user inputs
+end if
+write(*,*) 'Reading input file ',trim(adjustl(infile))
 call io_input(infile,user)
 
 ! Initialize distribution arrays (crater size, number)
@@ -107,9 +113,9 @@ call random_seed(put=crater%seedarr)
 
 ! Read in old grid arrays, production function, and velocity distributions
 if (restart .or. user%tallyonly) then
-   call io_read_surf(user,surf)
+   call io_read_surf(user,surf,domain)
 else
-   call init_surf(user,surf)
+   call init_surf(user,surf,domain)
 end if
 
 if (.not.user%tallyonly) then
@@ -129,23 +135,25 @@ if (.not.user%tallyonly) then
    call crater_tally_true(domain,truelist(:,1:ntrue),ntrue,truedist)
 end if
 
-write(*,*) "Tallying craters"
-if (.not.user%tallyonly) then
-   write(*,*) "Total craters generated:               ",ntotcrat
-   write(*,*) "Surface-affecting craters generated:   ",ntrue
-   write(*,*) "Visible craters generated:             ",vistrue
-end if
-call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
-ntotkilled = ntotkilled + nkilled
-write(*,*) 'Craters killed during tally: ',ntotkilled
-call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
-if (.not.user%tallyonly) then
-   write(*,*) "Writing surface files"
-   call io_write_surf(user,surf)
-end if
+if (ntrue > 0) then
+   write(*,*) "Tallying craters"
+   if (.not.user%tallyonly) then
+      write(*,*) "Total craters generated:               ",ntotcrat
+      write(*,*) "Surface-affecting craters generated:   ",ntrue
+      write(*,*) "Visible craters generated:             ",vistrue
+   end if
+   call crater_tally_observed(user,surf,domain,nkilled,onum,obsdist,obslist,oposlist,depthdiam,degradation_state)
+   ntotkilled = ntotkilled + nkilled
+   write(*,*) 'Craters killed during tally: ',ntotkilled
+   call io_write_tally(truedist,truelist(:,1:ntrue),obsdist,obslist,oposlist,depthdiam,degradation_state)
+   if (.not.user%tallyonly) then
+      write(*,*) "Writing surface files"
+      call io_write_surf(user,surf,domain)
+   end if
 
-if (user%testflag) then ! Draw a profile across the crater
-   call io_crater_profile(user,surf)
+   if (user%testflag) then ! Draw a profile across the crater
+      call io_crater_profile(user,surf)
+   end if
 end if
 write(*,*) 'Writing output files'
 
@@ -154,19 +162,20 @@ call io_write_dist(pdist,crtscl,domain,mass)
 if (user%doregotrack) then
    do yp = 1, user%gridsize
       do xp = 1, user%gridsize
-         call util_destroy_list(surf(xp,yp)%regolayer)
+         !call util_destroy_list(surf(xp,yp)%regolayer)
+         deallocate(surf(xp,yp)%regolayer)
       end do
    end do
 end if
 
 ! If doporosity is true, then destroy the linked list for porosity
-if (user%doporosity) then
-   do yp = 1, user%gridsize
-      do xp = 1, user%gridsize
-         call util_destroy_list(surf(xp,yp)%porolayer)
-      end do
-   end do
-end if
+! if (user%doporosity) then
+!    do yp = 1, user%gridsize
+!       do xp = 1, user%gridsize
+!          call util_destroy_list(surf(xp,yp)%porolayer)
+!       end do
+!    end do
+! end if
 
 
 !$ t2 = omp_get_wtime()

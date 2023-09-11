@@ -35,6 +35,7 @@ subroutine regolith_melt_zone_superdomain(user,crater,domain,rm,depthb)
    real(DP)                     :: vimp, sinimp, rimp, dimp
    real(DP)                     :: pvelv, pmass
    real(DP)                     :: c1, c2, pitwo, pithree, pifour, pivolg
+   real(DP)                     :: volm
 
       
    crater%grad   = crater%rad
@@ -52,6 +53,6 @@ subroutine regolith_melt_zone_superdomain(user,crater,domain,rm,depthb)
                     (pifour**(c2/3.0)) * user%trho_r / pmass )**(1.0 / (3.0 + c2))
    dimp          = rimp * 2.0_DP 
    crater%imp    = dimp
-   call regolith_melt_zone(user,crater,dimp,vimp,rm,depthb)
+   call regolith_melt_zone(user,crater,dimp,vimp,rm,depthb, volm)
    return
 end subroutine regolith_melt_zone_superdomain

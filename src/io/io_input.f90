@@ -31,7 +31,7 @@ subroutine io_input(infile,user)
    integer(I4B), parameter :: LUN = 7
    integer(I4B)            :: ierr, ilength, ifirst, ilast,i
    character(STRMAX)       :: line, token
-   integer(I4B), parameter :: numrequired=18
+   integer(I4B), parameter :: numrequired=17
    character(STRMAX),dimension(numrequired),parameter :: requiredvar = (/"GRIDSIZE ",&
                                                           "NUMLAYERS", &
                                                           "PIX      ", &
@@ -48,7 +48,6 @@ subroutine io_input(infile,user)
                                                           "TRHO_B   ", &
                                                           "MAT      ", &
                                                           "PRHO     ", &
-                                                          "SFDFILE  ", &
                                                           "VELFILE  "/)
 
    integer(I4B), parameter :: seismic_numrequired=5
@@ -94,6 +93,9 @@ subroutine io_input(infile,user)
    user%dorealistic = .false.
    user%doquasimc = .false.
    user%ejecta_truncation = 10.0_DP
+   user%domixing = .true.
+   user%dotopodiffusion = .true.
+   write(user%sfdfile,*) trim(adjustl(SFDFILE))
    
    open(unit=LUN,file=infile,status="old",iostat=ierr)
    if (ierr /= 0) then
@@ -212,14 +214,13 @@ subroutine io_input(infile,user)
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token, *) user%sfdfile
+            read(token, *) user%velfile
             ismissing(17)=.false.
-         case (trim(requiredvar(18)))
+         case ("SFDFILE")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
-            read(token,*) user%velfile
-            ismissing(18)=.false.
+            read(token, *) user%sfdfile
          case ("DEPLIMIT")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
@@ -330,6 +331,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%ejecta_truncation
+         case ("DOMIXING")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%domixing
          ! Porosity model
          case ("POROSITYFLG")
             ifirst = ilast + 1
@@ -483,6 +489,12 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%dorealistic
+
+         case ("DOTOPODIFFUSION")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%dotopodiffusion
 
          !**************************************************************************
          ! The following is for backwards compatibility with older style input files

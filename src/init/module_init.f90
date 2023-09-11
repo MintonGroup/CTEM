@@ -16,11 +16,12 @@ public
 save
 
    interface
-      subroutine init_surf(user,surf)
+      subroutine init_surf(user,surf,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(out) :: surf
+      type(domaintype),intent(in)    :: domain
       end subroutine init_surf
    end interface
 
@@ -48,11 +49,12 @@ save
    end interface 
   
    interface
-      subroutine init_regolith_stack(user,surf)
+      subroutine init_regolith_stack(user,surf,domain)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
+      type(domaintype),intent(in)    :: domain
       end subroutine init_regolith_stack
    end interface
 

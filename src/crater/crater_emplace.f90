@@ -24,6 +24,8 @@
 !   * surf   -- Outputs the new ejecta blanket onto the grid
 !   * crater -- May affects the value of the maximum affected distance
 !   * domain -- 
+!
+!   teswelktjrlkgjdlr
 ! 
 ! Notes
 !
@@ -49,7 +51,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
+subroutine crater_emplace(user,surf,crater,domain,deltaMtot,incval,nmeltsheet)
    use module_globals
    use module_util
    use module_porosity   
@@ -62,6 +64,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(inout) :: domain
    real(DP),intent(out) :: deltaMtot
+   integer(I4B),intent(out) :: incval,nmeltsheet
 
    ! Internal variables
    real(DP) :: lradsq,newelev, x_relative, y_relative 
@@ -79,6 +82,8 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
    fradsq = crater%frad**2
    deltaMtot = 0.0_DP !ejbmass
    incsq = inc**2
+   incval = inc
+   nmeltsheet = 0
 
    ! This loop may not be parallelizable because of the linked list operation inside crater_form_interior
    do j=-inc,inc  ! Do the loop in pixel space
@@ -104,6 +109,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
          if (lradsq > crater%frad**2) cycle
          call crater_form_interior(user,surf(xpi,ypi),crater,x_relative,y_relative,newelev,deltaMi)
          deltaMtot = deltaMtot + deltaMi
+         nmeltsheet = nmeltsheet + 1
 
          ! do porosity computation if (user%doporosity)
          ! It is still important to consider the physical meaning of frad and rad. 

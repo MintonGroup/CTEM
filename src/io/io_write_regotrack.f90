@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine io_write_regotrack(user,surf)
+subroutine io_write_regotrack(user,surf,domain)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_write_regotrack
    implicit none
@@ -24,122 +24,83 @@ subroutine io_write_regotrack(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(in) :: surf
+   type(domaintype),intent(in) :: domain
 
    ! Regotrack Internals
    integer(I4B) :: i,j,k
-   integer(I4B), parameter :: LUN=7
-   integer(I4B), parameter :: LUM=8
-   integer(I4B), parameter :: LUC=9
-   integer(I4B), parameter :: LUA=10
-   type(regolisttype),pointer :: current => null()
-   real(DP),dimension(user%gridsize,user%gridsize)     :: regotop,comp,melt
-   real(SP),dimension(user%gridsize,user%gridsize)     :: agetop
-   real(SP),dimension(user%gridsize,user%gridsize,60)   :: age  
+   integer(I4B), parameter :: LUN = 7
+   integer(I4B), parameter :: FMELT = 10
+   integer(I4B), parameter :: FREGO = 11
+   integer(I4B), parameter :: FCOMP = 12
+   integer(I4B), parameter :: FAGE = 13
+   integer(I4B), parameter :: FMD = 14
+   integer(I4B), parameter :: FEJM = 15
+   !type(regolisttype),pointer :: current => null()
+   type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
+   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
+   real(SP),dimension(:,:),allocatable :: age, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
-   integer(I4B) :: itmp
+   integer(I4B) :: itmp, N
    real(DP),dimension(user%gridsize,user%gridsize) :: comptop, rego
    real(DP),dimension(:),allocatable :: marehisto
-   real(DP) :: mare, z
 
-   ! Mixing 
-   !real(DP),parameter :: zmix = 0.0_DP 
-   !real(DP) :: z, zmare
-    
-   ! Output multiple "comphisto" files
-   character(len=255) :: fname
-   character(len=255), parameter :: clockfile = 'tic-toc.dat'
-   integer(I4B) :: tictoc
-   logical :: exist
- 
    ! Executable code
-   ! Output mulitple "comphisto" files
-   inquire(file=clockfile, exist=exist)
-   if (exist) then
-      open(LUN,file=clockfile,status='old')
-      read(LUN,*) tictoc
-   else
-      write(*,*) clockfile,' is missing!'
-   end if
-   tictoc = tictoc + 1
-   close(LUN)
-   open(LUN,file=clockfile,status='replace')
-   write(LUN,*) tictoc
-   close(LUN)
+   open(FMELT,file=MELTFILE,status='replace',form='unformatted')
+   open(FREGO,file=REGOFILE,status='replace',form='unformatted')
+   open(FCOMP,file=COMPFILE,status='replace',form='unformatted')
+   open(FAGE,file=AGEFILE,status='replace',form='unformatted')
+   open(FMD,file=MDFILE,status='replace',form='unformatted')
+   open(FEJM,file=EJMFILE,status='replace',form='unformatted')
 
-   write(fname,'(a,i4.4)') 'surface_melt',tictoc
-   open(LUN,file=fname,status='replace',form='unformatted')
-   write(fname,'(a,i4.4)') 'surface_rego',tictoc
-   open(LUM,file=fname,status='replace',form='unformatted')
-   write(fname,'(a,i4.4)') 'surface_comp',tictoc
-   open(LUC,file=fname,status='replace',form='unformatted')
-   write(fname,'(a,i4.4)') 'surface_age',tictoc
-   open(LUA,file=fname,status='replace',form='unformatted')
-
+   ! First pass to get stack numbers
+   stacks_num(:,:) = 0
    do j=1,user%gridsize
       do i=1,user%gridsize
-         stacks_num(i,j) = 0
-         current => surf(i,j)%regolayer
-         comptop(i,j) = current%regodata%comp
-         rego(i,j)    = current%regodata%thickness
-         agetop(i,j)  = current%regodata%age(1)
-         do 
-          if (.not. associated(current)) exit
-          stacks_num(i,j) = stacks_num(i,j) + 1
-          regotop(i,j) = current%regodata%thickness
-          comp(i,j) = current%regodata%comp
-          melt(i,j) = current%regodata%meltfrac
-          age(i,j,:)= current%regodata%age(:)
-          write(LUM) regotop(i,j)
-          write(LUC) comp(i,j)
-          write(LUN) melt(i,j) 
-          write(LUA) age(i,j,:)
-          current => current%next
-         end do
+         !current => surf(i,j)%regolayer
+         allocate(current,source=surf(i,j)%regolayer)
+         stacks_num(i,j) = size(current)
+         deallocate(current)
       end do 
    end do
-   close(LUN)
-   close(LUM)
-   close(LUC)
-   close(LUA)
 
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
-   open(LUN,file='agetop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
-   write(LUN,rec=1) agetop
-   close(LUN)
-
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
-   open(LUN,file='comptop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
-   write(LUN,rec=1) comptop
-   close(LUN)
-
-   allocate(marehisto(user%gridsize))
-   !open(LUN,file='comphisto',status='replace') ! Output comphisto one time
-   write(fname,'(a,i4.4)') 'comphisto',tictoc
-   open(LUN,file=fname,status='replace')
-
-   do i=1,user%gridsize
-      marehisto(i) = 0.0_DP
-      mare = 0.0_DP
-      do j=1,user%gridsize
-         mare = mare + comptop(i,j)
-      end do
-      marehisto(i) = mare/real(user%gridsize)
-      write(LUN,*) real(i-user%gridsize/2)*user%pix/1000.0,marehisto(i)*100.0
+   ! Second pass to get data and save it
+   do j=1,user%gridsize
+      do i=1,user%gridsize
+         !current => surf(i,j)%regolayer
+         N = stacks_num(i,j)
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
+         allocate(current,source=surf(i,j)%regolayer)
+         do k=1,N
+            meltvolume(k) = current(k)%meltvolume
+            thickness(k) = current(k)%thickness
+            comp(k) = current(k)%comp
+            age(:,k) = current(k)%age(:)
+            !write(*,*) i, j
+            distvol(:,k) = current(k)%distvol(:)
+            ejm(k) = current(k)%ejm
+         end do
+         deallocate(current)
+         write(FMELT) meltvolume(:)
+         write(FREGO) thickness(:)
+         write(FCOMP) comp(:)
+         write(FAGE) age(:,:)
+         write(FMD) distvol(:,:)
+         write(FEJM) ejm(:)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm)
+      end do 
    end do
-   close(LUN)
-   deallocate(marehisto)
+   close(FMELT)
+   close(FREGO)
+   close(FCOMP)
+   close(FAGE)
+   close(FMD)
+   close(FEJM)
 
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
-   open(LUN,file='regotop.dat',status='replace',form='unformatted',recl=recsize,access='direct')
-   write(LUN,rec=1) rego
-   close(LUN)
-
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
-   write(fname,'(a,i4.4)') 'surface_stacknum',tictoc
-   open(LUN,file=fname,status='replace',form='unformatted',recl=recsize,access='direct')
+   recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
+   open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) stacks_num
    close(LUN)
 

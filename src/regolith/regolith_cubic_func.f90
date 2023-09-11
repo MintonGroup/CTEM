@@ -27,8 +27,9 @@ real(DP)              :: deltar
 real(DP)              :: q,r,delta1
 real(DP)              :: k1,k2,theta,a,b
 
-q = c1**2/9.0
+q = c1**2/9.0_DP
 r = c1**3/27.0 - c2/2.0
+!r = ((2.0_DP*c1**3 + 27._DP*c2) / 54.0_DP)
 delta1 = q**3 - r**2
 
 if (delta1>0._DP) then
