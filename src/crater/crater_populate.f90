@@ -24,6 +24,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    use module_io
    use module_ejecta
    use module_util
+   use module_realistic
    !use module_crust
    use module_regolith ! simulate regolith mixing 
    use module_crater, EXCEPT_THIS_ONE => crater_populate
@@ -319,7 +320,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
 
-         if (user%dorealistic) call crater_realistic_topography(user,surf,crater,domain,ejecta_dem) 
+         if (user%dorealistic) call realistic_crater_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)
 
          ! Collapse any remaining unstable slopes

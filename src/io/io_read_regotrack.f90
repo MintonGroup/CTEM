@@ -51,7 +51,7 @@ subroutine io_read_regotrack(user,surf,domain)
 
    ! Open a file for obtaining the number of stacks that is stored in each linked list
    ioerr = 0
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
+   recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=STACKNUMFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(STACKNUMFILE))

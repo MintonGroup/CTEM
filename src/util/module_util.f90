@@ -278,6 +278,34 @@ interface
    end function util_perlin_noise
 end interface
 
+
+! added by jundu on 10/25/2022
+! generate random number with a normal distribution
+
+interface
+   subroutine util_random_number_uniform(u)
+      use module_globals
+      implicit none
+      real(DP),intent(out) :: u
+   end subroutine util_random_number_uniform
+   subroutine util_random_number_normal(x)
+      use module_globals
+      implicit none
+      real(DP),intent(out) :: x
+   end subroutine util_random_number_normal
+end interface
+
+
+
+
+
+
+
+
+
+
+
+
 interface
    function util_npf_timefunc(T) result(N1)
    use module_globals

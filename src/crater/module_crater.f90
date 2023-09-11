@@ -338,4 +338,62 @@ save
       end subroutine crater_superdomain
    end interface
 
+
+
+
+! new subroutines added by jundu on 10/15/2022
+
+
+! Rim_crest:
+
+   ! interface 
+ 
+   !    subroutine Calculate_am_wl_phase_from_diameter(psd_1D,amplitude,wavelength,phase)
+   !       use module_globals
+   !       implicit none
+   !       ! in and out
+   !       type(psdtype),intent(inout) :: psd_1D
+   !       real(DP),dimension(:), allocatable,intent(out) :: amplitude,wavelength,phase
+   !    end subroutine Calculate_am_wl_phase_from_diameter
+
+   !    subroutine Calculate_breakpoint_slope_from_diameter(psd_1D)
+   !       use module_globals
+   !       implicit none
+   !       ! in and out
+   !       type(psdtype),intent(inout) :: psd_1D
+   !    end subroutine Calculate_breakpoint_slope_from_diameter
+
+   !    subroutine Calculate_targetPSD_from_breakpoint_slope(psd_1D,wavelength,psd)
+   !       use module_globals
+   !       implicit none
+   !       !in and out
+   !       type(psdtype), intent(in)  :: psd_1D
+   !       real(DP) ,dimension(:),allocatable,intent(out) :: wavelength,psd 
+   !    end subroutine Calculate_targetPSD_from_breakpoint_slope
+
+   !    subroutine Calculate_am_wl_phase_from_targetPSD(psd_1D,wavelength,psd,amplitude,phase)
+   !       use module_globals
+   !       implicit none
+   !       !in and out
+   !       type(psdtype), intent(in)  :: psd_1D
+   !       real(DP) ,dimension(:),intent(in) :: wavelength,psd 
+   !       real(DP) ,dimension(:),allocatable,intent(out) :: amplitude,phase 
+   !    end subroutine Calculate_am_wl_phase_from_targetPSD
+
+
+   !    subroutine Create_rim(arc_length,psd_1D,amplitude,wavelength,phase,rim_parameter)
+   !       use module_globals
+   !       implicit none
+   !       ! in and out
+   !       real(DP),intent(in) :: arc_length
+   !       type(psdtype), intent(in)  :: psd_1D
+   !       real(DP),dimension(:),intent(in) :: amplitude
+   !       real(DP),dimension(:),intent(in) :: wavelength
+   !       real(DP),dimension(:),intent(in) :: phase
+   !       real(DP),intent(out) :: rim_parameter
+   !    end subroutine Create_rim
+
+   ! end interface
+
+
 end module

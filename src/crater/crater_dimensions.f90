@@ -71,6 +71,7 @@ subroutine crater_dimensions(user,crater,domain)
    crater%ejrim = 0.14_DP * (crater%fcrat * 0.5_DP)**(0.74_DP) ! McGetchin et al. (1973) Thickness of ejecta at rim
    crater%ejrad = max(crater_profile_find_r_inner_wall(user,crater) * crater%frad, crater%rad)
 
+   ! print *,'in _dimension.f90',crater%rimheight,crater%ejrim
    !find rim for counting purposes
    crater%frim = RIMFAC * crater%frad
 

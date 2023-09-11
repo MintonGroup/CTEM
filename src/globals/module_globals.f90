@@ -276,6 +276,32 @@ type ejbtype
 !   real(SP) :: bedrock ! Fraction of bedrock contained in mixture
 end type ejbtype
 
+
+
+! added by jundu on 10/17/2022
+!----------------------------------------------------------
+! power spectral density
+type psdtype
+   real(DP) :: diameter_in_km                         ! diameter in km
+   integer(I4B) :: num_vertices                       ! how many vertices along the linear feature?
+   integer(I4B) :: num_sine                           ! how many sine waves needed at a given vertex?
+   real(DP) :: input_x_max                                 ! period
+   real(DP) :: diameter_in_km_trans 
+   real(DP) :: bp2_x   
+   real(DP) :: bp2_y  
+   real(DP) :: bp3_y   
+   real(DP) :: bp4_y  
+   real(DP) :: slope12 
+   real(DP) :: misfit_k_b_sigma 
+   real(DP),dimension(6) :: bp2_x_k_b_sigma
+   real(DP),dimension(6) :: bp2_y_k_b_sigma
+   real(DP),dimension(6) :: bp3_y_k_b_sigma
+   real(DP),dimension(6) :: bp4_y_k_b_sigma
+   real(DP),dimension(6) :: slope12_k_b_sigma
+end type psdtype
+!----------------------------------------------------------
+
+
 ! Progress bar variables
 integer(I4B),parameter :: PBARRES = 100
 integer(I4B),parameter :: PBARSIZE = 50 

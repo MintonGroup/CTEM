@@ -94,7 +94,7 @@ subroutine io_write_age(user,surf,n_size,icrater,ncrat)
    deallocate(age_prev,agedepthtot)
 
    n_age   = max(int(icrater/ncrat), 1)
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
+   recsize = storage_size(stmp) * user%gridsize * user%gridsize / 8
    write(fname,'(a,i6.6)') 'agetop', n_age
    open(LUN,file=fname,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) agetop

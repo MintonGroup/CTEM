@@ -39,7 +39,7 @@ subroutine io_write_surf(user,surf,domain)
 
 
    ! Write matrix files
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
+   recsize = storage_size(dtmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=DEMFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) surf%dem
    close(LUN)
@@ -60,7 +60,7 @@ subroutine io_write_surf(user,surf,domain)
    end do
    close(LUN)
 
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
+   recsize = storage_size(stmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=POSFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    do i=1,user%numlayers 
       write(LUN,rec=2*i-1) surf%xl(i)
@@ -70,13 +70,5 @@ subroutine io_write_surf(user,surf,domain)
 
    if (user%doregotrack) call io_write_regotrack(user,surf,domain) 
    
-!   if (user%docrustal_thinning) then
-!      recsize = sizeof(itmp) * user%gridsize * user%gridsize
-!      open(LUN,file=THICKFILE,status='replace',form='unformatted',recl=recsize,access='direct')
-!      write(LUN,rec=1) surf%mantle
-!      close(LUN)
-!   end if
-
-
    return
 end subroutine io_write_surf

@@ -38,7 +38,7 @@ subroutine io_write_pindex_map(user,pindex,icrater,ncrat)
    ! Executable code
 
    n_age   = int(icrater/ncrat)
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
+   recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
    write(fname,'(a,i6.6)') 'pindex', n_age
    open(LUN,file=fname,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) pindex

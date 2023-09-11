@@ -1,39 +1,54 @@
 ### Installing CTEM for code development
 ************************************
 
-CTEM uses Autotools to automate makefile generation. To set up your system, 
-first run the script 
+CTEM uses CMake to automate the build process. You will need at least version 3.6.0.
 
-`$ ./autogen.sh`
-
-You may have to modify the contents of src/Makefile.am in order to set the 
-appropriate flags for your compiler.  The default file contains examples of 
-common flags (optimized code vs. debugging code) for gfortran and ifort.  Simply
-activate the appropriate set of flags for your system.
-
-From then on, you simply need to execute the following:
+Navigate to the topmost directory in your CTEM repository. It is best practice to create a ```build``` directory in your topmost directory from which you will compile CTEM. This way, temporary CMake files will not clutter up the project sub-directories. The commands to build the source code into a ```build``` directory and compile CTEM are:
 
 ```
-$ cd build
-$ ../configure
-$ make clean
-$ make
+$ cmake -B build -S .
+$ cmake --build build
+```
+The CTEM executable, called `CTEM`, should now be created in the ```bin/``` directory.
+
+If you wish to install CTEM into the system, execute the following command:
+
+```
+$ cmake --install build
 ```
 
-The executable that is generated is `build/src/CTEM`
+This will install the project into the directory specified by `CMAKE_INSTALL_PREFIX` (the default is `/usr/local`), provided you have
+sufficient permissions.
 
 
-************************************
-### Running CTEM
-************************************
-An example CTEM simulation is included in the idl directory. You can execute the
-CTEM run using the IDL frontend using:
+The CTEM CMake configuration comes with several customization options:
 
-`$ idl < start.in`
+| Option                          | CMake command                                              |
+| --------------------------------|------------------------------------------------------------|
+| Build type                      | \-DCMAKE_BUILD_TYPE=[**RELEASE**\|DEBUG\|TESTING\|PROFILE] |
+| Enable/Disable OpenMP support   | \-DUSE_OPENMP=[**ON**\|OFF]                                |
+| Enable/Disable SIMD directives  | \-DUSE_SIMD=[**ON**\|OFF]                                  |
+| Set Fortran compiler path       | \-DCMAKE_Fortran_COMPILER=/path/to/fortran/compiler        |
+| Set path to make program        | \-DCMAKE_MAKE_PROGRAM=/path/to/make                        |
+| Enable/Disable shared libraries (Intel only) | \-DBUILD_SHARED_LIBS=[**ON\|OFF]              |
+| Add additional include path     | \-DCMAKE_Fortran_FLAGS="-I/path/to/libraries                 |
+| Install prefix                  | \-DCMAKE_INSTALL_PREFIX=["/path/to/install"\|**"/usr/local"**] |
 
-Alternatively you may wish to use the Python front end.
+
+To see a list of all possible options available to CMake:
+```
+$ cmake -B build -S . -LA
+```
+For instance, if you wish to compile the project with debugging symbols enabled, run:
+
+```
+$ cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
+```
 
 
-`$ python3 ctem_driver.py`
 
-The run parameters are controlled by the ctem.in file.
+The [CMake Fortran template](https://github.com/SethMMorton/cmake_fortran_template) comes with a script that can be used to clean out any build artifacts and start from scratch:
+
+```
+$ cmake -P distclean.cmake
+```
