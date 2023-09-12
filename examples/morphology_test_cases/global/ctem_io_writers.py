@@ -273,10 +273,3 @@ def create_rplot(parameters,odist,pdist,tdist,ph1):
    
     return
 
-def write_realcraters(parameters, realcraters):
-    """writes file of real craters for use in quasi-MC runs"""
-
-    filename = parameters['workingdir'] + 'craterlist.dat'
-    numpy.savetxt(filename, realcraters, fmt='%1.8e', delimiter='\t')
-
-    return
