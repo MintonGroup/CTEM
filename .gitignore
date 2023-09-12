@@ -6,6 +6,5 @@
 !README.md
 !version.txt
 !src/**.f90
-!ctem/setup.py
-!ctem/ctem/*.py
+!ctem/**.py
 !cmake/Modules/*.cmake
