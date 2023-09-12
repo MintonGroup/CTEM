@@ -662,11 +662,6 @@ ELSEIF (COMPILER_OPTIONS STREQUAL "GNU")
         )
 ENDIF ()
 
-# Debug mode always uses strict math
-SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG}" 
-    Fortran ${CMAKE_Fortran_FLAGS_RELEASE}
-)
-
 #####################
 ### PROFILE FLAGS ###
 #####################
