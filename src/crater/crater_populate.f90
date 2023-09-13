@@ -81,6 +81,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: hmax, hmin
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet
    real(DP)                :: vmeltsheet
+   real(DP)                :: deltaMtot
+
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -320,7 +322,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
 
-         if (user%dorealistic) call realistic_crater_topography(user,surf,crater,domain,ejecta_dem) 
+         deltaMtot=0.0_DP
+         if (user%dorealistic) call realistic_make_a_crater(user,surf,crater,deltaMtot) 
          deallocate(ejecta_dem)
 
          ! Collapse any remaining unstable slopes
