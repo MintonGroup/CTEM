@@ -356,12 +356,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
       end do
    end if
 
-   if (totmelt > vmelt) then
-      vmeltsheet = totmelt - vmelt
-   else !give the craters a melt sheet of 1m
-      vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+   if (user%doregotrack) then
+      if (totmelt > vmelt) then
+         vmeltsheet = totmelt - vmelt
+      else !give the craters a melt sheet of 1m
+         vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+      end if
    end if
-
+   
    ! extra soften calculation
    if (user%dosoftening) then
       cel = 0.0_DP
