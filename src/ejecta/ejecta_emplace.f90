@@ -347,7 +347,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
                ebh = cumulative_elchange(i,j) - crater_profile(user, crater, lrad)
             end if
 
-      
             if (user%doregotrack .and. ebh>1.0e-8_DP) then
                call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
                vmelt = vmelt + volm
@@ -356,10 +355,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
       end do
    end if
 
-   if (totmelt > vmelt) then
-      vmeltsheet = totmelt - vmelt
-   else !give the craters a melt sheet of 1m
-      vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+   if (user%doregotrack) then
+      if (totmelt > vmelt) then
+         vmeltsheet = totmelt - vmelt
+      else !give the craters a melt sheet of 1m
+         vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+      end if
    end if
 
    ! extra soften calculation
