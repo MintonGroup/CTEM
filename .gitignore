@@ -8,3 +8,5 @@
 !src/**.f90
 !ctem/**.py
 !cmake/Modules/*.cmake
+!pyproject.toml
+!LICENSE
