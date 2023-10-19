@@ -145,20 +145,22 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    ! Reset age
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
-   maxage = user%interval * user%numintervals
-   if (maxage < 0._DP ) then
-      write(*,*) "MAJOR ERROR: Negative age!"
-      stop
-   else if (maxage < 2330._DP) then
-      maxageGa = util_t_from_scale(maxage,1e-11_DP,4.5_DP)
-   else
-      maxageGa = 4.5_DP !util_t_from_scale only supports ages <4.5 Ga
+   if (user%doregotrack) then
+      maxage = user%interval * user%numintervals
+      if (maxage < 0._DP ) then
+         write(*,*) "MAJOR ERROR: Negative age!"
+         stop
+      else if (maxage < 2330._DP) then
+         maxageGa = util_t_from_scale(maxage,1e-11_DP,4.5_DP)
+      else
+         maxageGa = 4.5_DP !util_t_from_scale only supports ages <4.5 Ga
+      end if
+      age_resolution = maxageGa / real(MAXAGEBINS)
+      write(*,*) "Age resolution: ", age_resolution, " Ga."
+      do i = 1,MAXAGEBINS
+         domain%age_bin_times(i) = maxageGa-(i*age_resolution)
+      end do
    end if
-   age_resolution = maxageGa / real(MAXAGEBINS)
-   write(*,*) "Age resolution: ", age_resolution, " Ga."
-   do i = 1,MAXAGEBINS
-      domain%age_bin_times(i) = maxageGa-(i*age_resolution)
-   end do
    domain%age_counter = 1
    oldGa = 0._DP
 
@@ -175,25 +177,27 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
-      if (icrater .eq. 1) then
-         agemin = crater%timestamp * 0.9_DP
-      end if
-      if (crater%timestamp < 2330._DP) then
-         if (oldGa > 0._DP) then 
-            if (user%numintervals .eq. 1) then
-               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
+      if (user%doregotrack) then
+         if (icrater .eq. 1) then
+            agemin = crater%timestamp * 0.9_DP
+         end if
+         if (crater%timestamp < 2330._DP) then
+            if (oldGa > 0._DP) then 
+               if (user%numintervals .eq. 1) then
+                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
+               else
+                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,oldGa)
+               end if
             else
-               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,oldGa)
+               if (user%numintervals .eq. 1) then
+                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
+               else
+                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
+               end if
             end if
          else
-            if (user%numintervals .eq. 1) then
-               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
-            else
-               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
-            end if
+            crater%timestampGa = 4.5_DP
          end if
-      else
-         crater%timestampGa = 4.5_DP
       end if
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
       if (crater%timestampGa < domain%age_bin_times(domain%age_counter)) then
