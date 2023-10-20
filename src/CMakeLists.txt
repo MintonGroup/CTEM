@@ -143,10 +143,11 @@ SET(SRC_FILES
     ${SRC}/porosity/porosity_form_interior.f90
     ${SRC}/realistic/realistic_perlin_noise.f90
     ${SRC}/realistic/realistic_crater_topography.f90
+    ${SRC}/main/ctem_driver.f90
 )
 
 
-SET(DRIVER_src ${SRC}/main/CTEM.f90)
+SET(DRIVER_src ${SRC}/main/ctem.f90)
 
 # Combine all source files 
 set(CTEM_src ${SRC_FILES})
