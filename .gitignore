@@ -9,3 +9,6 @@
 !ctem/**.py
 !cmake/Modules/*.cmake
 !*.bash
+
+!pyproject.toml
+!LICENSE
