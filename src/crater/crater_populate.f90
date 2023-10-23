@@ -225,7 +225,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) then
-         write(message,'("Dc=",F9.1," Dt=",F9.1)') crater%fcrat, crater%rad*2
+         write(message,'("Dc=",ES11.4," Dt=",ES11.4)') crater%fcrat, crater%rad*2
          call io_updatePbar(message)
       end if
       if (crater%fcrat > domain%biggest_crater) then ! End the run if the crater is too big
@@ -233,7 +233,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
             if (user%killatmaxcrater) then 
                fracdone = real(icrater,kind=DP) / real(ntotcrat,kind=DP)
                write(*,*)
-               write(*,'("Ended run at ",F7.2,"% due to crater of size: ",ES13.4)') fracdone * 100,crater%fcrat
+               write(*,'("Ended run at ",ES11.4,"% due to crater of size: ",ES11.4)') fracdone * 100,crater%fcrat
                exit
             else
                makecrater = .false. ! Ignore this big crater
