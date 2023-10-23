@@ -305,7 +305,7 @@ end type psdtype
 ! Progress bar variables
 integer(I4B),parameter :: PBARRES = 100
 integer(I4B),parameter :: PBARSIZE = 50 
-integer(I4B),parameter :: MESSAGESIZE = 32
+integer(I4B),parameter :: MESSAGESIZE = 48
 integer(I4B) :: pbarival
 integer(I4B) :: pbarpos
 character(len=PBARSIZE) :: pbarchar
