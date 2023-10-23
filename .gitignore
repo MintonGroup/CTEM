@@ -1,11 +1,12 @@
 *
-/**
+!src/
+!src/*/
+!*.f90
 !.gitignore
 !CMakeLists.txt
 !distclean.cmake
 !README.md
 !version.txt
-!src/**.f90
 !ctem/**.py
 !cmake/Modules/*.cmake
 !*.bash
