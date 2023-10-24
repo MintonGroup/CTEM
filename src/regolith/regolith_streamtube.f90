@@ -53,7 +53,7 @@
 !    Arguments : surf      ::  surface 
 !           
 ! 
-!  Notes       :  
+!  Notes       :  'eradc' is the center of the ejection radius. 'eradi' is inner, 'erado' is outer. 'cnt' is counting number. 'cmax', 'ri', and 'rip1' concern streamtube geometry.
 !
 !**********************************************************************************************************************************
 subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
