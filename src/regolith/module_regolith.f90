@@ -102,7 +102,7 @@ save
       type(surftype),intent(inout) :: surfi
       real(DP),intent(in)            :: deltar,ri,rip1,eradi,erado
       type(regodatatype),intent(inout) :: newlayer
-      real(DP),intent(inout)            :: meltinejecta,totvol
+      real(DP),intent(out)            :: meltinejecta,totvol
       real(DP),intent(out) :: vmare,totseb
       real(SP),dimension(:),intent(inout) :: age_collector
       real(DP),intent(in)             :: xmints

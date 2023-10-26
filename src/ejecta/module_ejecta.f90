@@ -43,14 +43,15 @@ save
    end interface
 
    interface
-      subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
+      subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,ejdistribution)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
       type(cratertype),intent(inout) :: crater
-      integer(I4B),intent(in) :: i,j
-      real(DP),intent(out) :: diffi
-      real(DP),intent(out) :: eji
+      integer(I4B),intent(in) :: inc,xi,xf,yi,yf
+      real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
+      real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
       end subroutine ejecta_ray_pattern
    end interface
 

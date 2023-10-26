@@ -42,8 +42,8 @@ subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
    real(DP),dimension(2)    :: rn  
    real(DP) :: superlen,rayfrac
    type(cratertype) :: crater
-   real(DP) :: diffi, eji
-   logical :: ejisray
+   real(DP),dimension(:,:),allocatable :: ejdistribution, diffdistribution
+   integer(I4B),dimension(:,:),allocatable :: ejisray
 
    ! Melt or glassy ray test
    real(DP) :: xp, yp, lradsq, lrad, erad
@@ -144,9 +144,24 @@ subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
          lrad  = minval(lradif)
          if (lrad > crater%ejdis) cycle
 
+         allocate(ejdistribution(xi:xf,yi:yf))
+         allocate(diffdistribution(xi:xf,yi:yf))
+         allocate(ejisray(xi:xf,yi:yf))
          ! Now generate ray pattern
+         call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,ejdistribution)
          ! Now if doregotrack is on, do melt zone calculation
          if (user%doregotrack) call regolith_melt_zone_superdomain(user,crater,domain,rm,depthb)
+
+         do j = yi,yf
+            do i = xi,xf
+               ! Ejecta ray distribution
+               if (ejdistribution(i,j) > 0.0001_DP) then
+                  ejisray(i,j) = 1
+               else
+                  ejisray(i,j) = 0
+               end if  
+            end do
+         end do
 
          if (user%doregotrack) then
             do j = 1, user%gridsize
@@ -154,16 +169,15 @@ subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
                   xpi = i - crater%xlpx 
                   ypi = j - crater%ylpx 
                   if ((abs(xpi) > inc) .or. (abs(ypi) > inc)) cycle
-                  call ejecta_ray_pattern(user,crater,i,j,diffi,eji)
-                  ejisray = (eji > 0.0001_DP) 
-                  if (.not.ejisray) cycle  
-                  call regolith_superdomain(user,crater,domain,surf(i,j)%regolayer,eji,&
+                  if (ejisray(xpi,ypi) == 0) cycle  
+                  call regolith_superdomain(user,crater,domain,surf(i,j)%regolayer,ejdistribution(xpi,ypi),&
                        i,j,rm,depthb)
                end do
             end do
 
          end if
 
+         deallocate(ejdistribution,diffdistribution,ejisray)
 
        end do
 
