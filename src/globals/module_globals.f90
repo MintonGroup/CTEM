@@ -384,8 +384,8 @@ real(DP),parameter :: GFAC = 0.487_DP       ! gravitational acceleration exponen
 real(DP),parameter :: DFAC = 0.556_DP       ! impact distance exponent
 
 ! Crater ray parameters
-real(DP),parameter :: rray = 16_DP
-integer(I4B),parameter :: Nraymax = 16
+real(DP),parameter :: rray = 24_DP ! I think this is "L16" in Minton et al. (2019)
+integer(I4B),parameter :: Nraymax = 16 ! "Nrays" in Minton et al. (2019)
 real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
 real(DP),parameter :: rayp = 2.0_DP 
 integer(I4B),parameter :: rayq = 4
