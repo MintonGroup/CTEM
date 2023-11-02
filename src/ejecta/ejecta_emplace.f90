@@ -168,20 +168,24 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
        end if
    endif
 
+
+   allocate(ejdistribution(-inc:inc,-inc:inc))
+   allocate(diffdistribution(-inc:inc,-inc:inc))
+   !the other two temporary arrays get allocated here
+
+
+   ! *************************** Continuous Ejecta Formula  *****************************!
+   call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,diffdistribution,ejdistribution)
+
+
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(cel(-inc:inc,-inc:inc))
    allocate(kdiff(-inc:inc,-inc:inc))
    allocate(indarray(2,-inc:inc,-inc:inc))
-   allocate(ejdistribution(-inc:inc,-inc:inc))
-   allocate(diffdistribution(-inc:inc,-inc:inc))
-
    cumulative_elchange = 0.0_DP
    kdiff = 0.0_DP
    indarray = inc - 1 ! initialize this array to point to a corner (this should have 0 elevation change since we're only doing work
                 ! within a circle of radius irad
-
-   ! *************************** Continuous Ejecta Formula  *****************************!
-   call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,diffdistribution,ejdistribution)
 
    ejbmass = 0.0_DP
    nin = 0

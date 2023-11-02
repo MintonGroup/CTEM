@@ -39,9 +39,11 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
     real(DP) :: thetar,rw,rw0,rw1
     real(DP) :: f,rtrans,length,rpeak,minray,FF
     integer(I4B) :: n,i
+    real(DP) :: tmp
  
  
-    minray = rmin * 3
+    minray = rmin * 3 !"L1" in Minton et al. (2019)
+    !minray = 11.0_DP 
  
     if (r > rmax) then
        ans = 0._DP
@@ -55,7 +57,12 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
        rw0 = rmin * pi / Nraymax / 2
        rw1 = 2 * pi / Nraymax
        rw = rw0 * (1._DP - (1.0_DP - rw1 / rw0) * exp(1._DP - (r / rmin)**2)) ! equation 40 Minton et al. 2019
-       n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
+       tmp = (Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))
+       if (tmp < 0.0_DP) then
+         n = Nraymax ! "Nrays" in Minton et al. (2019)
+       else
+         n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
+       end if
        ans = 0._DP
        rtrans = r - 1.0_DP
        c = rw / r
