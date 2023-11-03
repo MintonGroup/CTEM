@@ -105,12 +105,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP),dimension(:,:),allocatable :: big_cumulative_elchange,kdiff,big_kdiff,cel,big_cel
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
    real(DP),dimension(:,:),allocatable :: ejdistribution,diffdistribution,maxdiff, maxej
-   real(DP),dimension(:,:,:),allocatable :: tempdiff,tempej
+   real(DP),dimension(:,:),allocatable :: tempdiff,tempej
    integer(I4B) :: bigi,bigj,maxhits,nin,nnot,dradsq
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP) :: vmelt, totmelt, volm
-   real(DP), dimension(:), allocatable :: freduction
-   integer(I4B) :: Npatt = 6 !Number of times to call ray pattern
+   real(DP) :: frayreduction = 0.5_DP ! Factor to apply to reduce the relative thickness of the ray for each subsequent pattern
+   integer(I4B), parameter :: Npatt = 10 ! Number of times to call ray pattern
    
 
    ! Ray mixing model variables 
@@ -174,41 +174,24 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
 
    allocate(ejdistribution(-inc:inc,-inc:inc))
    allocate(diffdistribution(-inc:inc,-inc:inc))
-   allocate(tempdiff(1:Npatt,-inc:inc,-inc:inc))
-   allocate(tempej(1:Npatt,-inc:inc,-inc:inc))
-   allocate(freduction(Npatt))
-   allocate(maxej(-inc:inc,-inc:inc))
-   allocate(maxdiff(-inc:inc,-inc:inc))
-   ! Set freduction parameters (Manually) <--for now this assumes Npatt=6
-   freduction(1) = 0.8_DP
-   freduction(2) = 0.1_DP
-   freduction(3) = 0.04_DP
-   freduction(4) = 0.03_DP
-   freduction(5) = 0.02_DP
-   freduction(6) = 0.01_DP
-
-
-   ! *************************** Continuous Ejecta Formula  *****************************!
-   do i=1,Npatt
-      call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,diffdistribution,ejdistribution)
-      tempej(i,:,:) = ejdistribution(:,:)
-      tempdiff(i,:,:) = ejdistribution(:,:)
-   end do
-
-   maxdiff(:,:) = maxval(tempdiff(:,:,:))
-   maxej(:,:) = maxval(tempej(:,:,:))
+   allocate(tempdiff(-inc:inc,-inc:inc))
+   allocate(tempej(-inc:inc,-inc:inc))
 
    ejdistribution(:,:) = 0.0_DP
    diffdistribution(:,:) = 0.0_DP
+
+   ! *************************** Layered Ejecta Rays *****************************!
    do i=1,Npatt
-      ejdistribution(:,:) = ejdistribution(:,:) + (freduction(i) * tempej(i,:,:))
-      diffdistribution(:,:) = diffdistribution(:,:) + (freduction(i) * tempdiff(i,:,:))
+      call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,tempdiff,tempej)
+      diffdistribution(:,:) = diffdistribution(:,:) + frayreduction**(i-1) * tempdiff(:,:)
+      ejdistribution(:,:) = ejdistribution(:,:) + frayreduction**(i-1) * tempej(:,:)
    end do
+   
+   diffdistribution(:,:) = diffdistribution(:,:) / maxval(ejdistribution)
+   ejdistribution(:,:) = ejdistribution(:,:) / maxval(diffdistribution)
 
-   ejdistribution(:,:) = ejdistribution(:,:) / maxej(:,:)
-   diffdistribution(:,:) = diffdistribution(:,:) / maxdiff(:,:)
-
-   deallocate(maxdiff,maxej,tempdiff,tempej,freduction)
+   deallocate(tempdiff,tempej)
+   ! *****************************************************************************!
 
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(cel(-inc:inc,-inc:inc))
