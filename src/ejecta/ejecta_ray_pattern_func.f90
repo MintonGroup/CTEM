@@ -27,13 +27,15 @@
 !***
 
 !**********************************************************************************************************
-function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
+function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,ej) result(ans)
     use module_globals
     use module_ejecta, EXCEPT_THIS_ONE => ejecta_ray_pattern_func
     implicit none
     real(DP) :: ans
     real(DP),intent(in) :: r,rmin,rmax,theta
     real(DP),dimension(:),intent(in) :: thetari
+    real(DP),intent(in) :: rray, fpeak, rayp, rayfmult
+    integer(I4B),intent(in) :: Nraymax, rayq
     logical,intent(in) :: ej
     real(DP) :: a,c
     real(DP) :: thetar,rw,rw0,rw1
@@ -42,8 +44,8 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
     real(DP) :: tmp
  
  
-    minray = rmin * 3 !"L1" in Minton et al. (2019)
-    !minray = 11.0_DP 
+    !minray = rmin * 3 !"L1" in Minton et al. (2019)
+    minray = rray / 2
  
     if (r > rmax) then
        ans = 0._DP

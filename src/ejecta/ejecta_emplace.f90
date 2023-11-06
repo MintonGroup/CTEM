@@ -128,6 +128,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    ! Age
    real(SP) :: age_mean
 
+   ! Crater ray parameters
+   real(DP) :: rray = 48_DP ! "L16" in Minton et al. (2019)
+   integer(I4B) :: Nraymax = 12
+   real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
+   real(DP) :: rayp = 2.0_DP 
+   integer(I4B) :: rayq = 4
+   real(DP) :: rayfmult = (5)**(-4.0_DP / (1.2_DP))
+
 
    ! Executable code
 
@@ -182,7 +190,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
 
    ! *************************** Layered Ejecta Rays *****************************!
    do i=1,Npatt
-      call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,tempdiff,tempej)
+      call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,rray,Nraymax+i,fpeak,rayp,rayq,rayfmult,tempdiff,tempej)
       diffdistribution(:,:) = diffdistribution(:,:) + frayreduction**(i-1) * tempdiff(:,:)
       ejdistribution(:,:) = ejdistribution(:,:) + frayreduction**(i-1) * tempej(:,:)
    end do

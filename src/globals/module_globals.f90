@@ -383,12 +383,4 @@ real(DP),parameter :: VFAC = 0.485_DP       ! impactor velocity exponent
 real(DP),parameter :: GFAC = 0.487_DP       ! gravitational acceleration exponent
 real(DP),parameter :: DFAC = 0.556_DP       ! impact distance exponent
 
-! Crater ray parameters
-real(DP),parameter :: rray = 48_DP ! "L16" in Minton et al. (2019)
-integer(I4B),parameter :: Nraymax = 14 ! "Nrays" in Minton et al. (2019)
-real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
-real(DP),parameter :: rayp = 2.0_DP 
-integer(I4B),parameter :: rayq = 4
-real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
-
 end module module_globals
