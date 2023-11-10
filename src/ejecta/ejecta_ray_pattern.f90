@@ -31,7 +31,7 @@
 !***
 
 !**********************************************************************************************************************************
-subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution)
+subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
    use module_globals
    use module_util
    use module_io
@@ -49,6 +49,7 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpea
    integer(I4B),intent(in) :: Nraymax, rayq
    real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
    real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
+   real(DP),intent(in) :: l1
 
    ! Internal variables
    integer(I4B) :: nrays,i,j,k,n,nef,incsq,iradsq,xpi,ypi,ejpxsq
@@ -87,6 +88,8 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpea
       call random_number(rn) ! randomize the ray orientation
       rmax = user%ejecta_truncation 
       rmin = crater%continuous / crater%frad
+      !rmax = rray / crater%frad
+      !rmin = l1 / crater%frad
       crater%fe = 10.0_DP ! Estimate the equivalent degradation radius
       !ejdistribution = 0.0_DP
       !diffdistribution = 0.0_DP
@@ -108,8 +111,8 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpea
             areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
             r = sqrt(xbar**2 + ybar**2) / crater%frad
             theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
-            diffdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,.false.) 
-            ejdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,.true.) 
+            diffdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,l1,.false.) 
+            ejdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,l1,.true.) 
          end do
       end do
       !!$OMP END PARALLEL DO

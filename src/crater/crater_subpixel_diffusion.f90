@@ -51,13 +51,16 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    integer(I8B),dimension(user%gridsize,user%gridsize) :: Ngrid
 
    ! Crater ray parameters
-   real(DP) :: rray = 48_DP ! "L16" in Minton et al. (2019)
-   integer(I4B) :: Nraymax = 14
+   real(DP) :: rray != 48_DP ! "L16" in Minton et al. (2019)
+   integer(I4B) :: Nraymax = 12
    real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
    real(DP) :: rayp = 2.0_DP 
    integer(I4B) :: rayq = 4
    real(DP) :: rayfmult = (5)**(-4.0_DP / (1.2_DP))
+   real(DP) :: l1
    
+   rray = 11.95*crater%frad**1.32
+   l1 = 5.32*crater%frad**1.27
 
    ! Create box for soften calculation (will be no bigger than the grid itself)
    do j = 0,user%gridsize + 1
@@ -184,7 +187,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          
             allocate(diffdistribution(imin:imax,jmin:jmax))
             allocate(ejdistribution(imin:imax,jmin:jmax))
-            call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution)
+            call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
             ! Loop over affected matrix area
             !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
             !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &
