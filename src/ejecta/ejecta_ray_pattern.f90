@@ -79,14 +79,14 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpea
 
    !TEMPORARY
 
-   if (user%dorays) then
+   if (user%dorays .and. crater%fcrat<1500000._DP) then
       do i = 1,Nraymax
          thetari(i) = 2 * pi * i / Nraymax
       end do
       call shuffle(thetari) ! randomize the ray pattern
 
       call random_number(rn) ! randomize the ray orientation
-      rmax = user%ejecta_truncation 
+      rmax = rray
       rmin = crater%continuous / crater%frad
       !rmax = rray / crater%frad
       !rmin = l1 / crater%frad
@@ -108,7 +108,8 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpea
             xbar = xp - crater%xl 
             ybar = yp - crater%yl
 
-            areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
+            !areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
+            areafrac = util_area_intersection(rray * crater%frad,xbar,ybar,user%pix)
             r = sqrt(xbar**2 + ybar**2) / crater%frad
             theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)
             diffdistribution(i,j) = areafrac * ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,l1,.false.) 
