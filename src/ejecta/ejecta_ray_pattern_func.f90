@@ -72,12 +72,12 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,ra
        c = rw / r
        a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c))) !equation 39 Minton et al., 2019
        do i = 1,Nraymax
-          length = minray * exp(log(rray/minray) * ((Nraymax - i + 1)**rayp - 1_DP) / ((Nraymax**rayp - 1)))
-          rpeak = (length - 1_DP) * 0.5_DP
+          length = minray * exp(log(rray/minray) * ((Nraymax - i + 1)**rayp - 1.0_DP) / ((Nraymax**rayp - 1)))
+          rpeak = (length - 1.0_DP) * 0.5_DP
           if (ej) then
              FF = 1.0_DP
              if (r > length) then
-                f = 0.0_DP
+                cycle ! Don't add any material beyond the length of the ray
              else
                 f = a 
              end if
@@ -85,7 +85,8 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,ra
              FF = rayfmult * (20 / rmax)**(0.5_DP) * 0.25_DP 
              f = FF * fpeak * (rtrans / rpeak)**rayq * exp(1._DP / rayq * (1.0_DP - (rtrans / rpeak)**rayq)) !equation 42 Minton et al. 2019
           end if
-          ans = ans + ejecta_ray_func(theta,thetari(i),r,n,rw) * f / a 
+          tmp = ejecta_ray_func(theta,thetari(i),r,n,rw)
+          if (tmp > epsilon(ans) .and. (f/a > epsilon(ans))) ans = ans + tmp * f / a  ! Ensure that we don't get an underflow
        end do
     end if 
  
