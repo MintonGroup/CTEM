@@ -112,6 +112,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP) :: frayreduction = 0.5_DP ! Factor to apply to reduce the relative thickness of the ray for each subsequent pattern
    integer(I4B), parameter :: Npatt = 10 ! Number of times to call ray pattern
    
+   
 
    ! Ray mixing model variables 
    real(DP)      :: dsc
@@ -138,9 +139,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP) :: l1
 
 
-   rray = 11.95*crater%frad**1.32
-   l1 = 5.32*crater%frad**1.27
-   write(*,*) "L16 = ", rray, "; L1 = ", l1
+   rray = (11.95*(crater%frad/1000)**1.32)/(crater%frad/1000)
+   l1 = (5.32*(crater%frad/1000)**1.27)/(crater%frad/1000)
+   write(*,*) 'L16 = ', rray, 'L1 = ', l1
 
 
    ! Executable code
