@@ -131,7 +131,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
 
    ! Crater ray parameters
    real(DP) :: rray != 48_DP ! "L16" in Minton et al. (2019)
-   integer(I4B) :: Nraymax = 12
+   integer(I4B) :: Nraymax = 5
    real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
    real(DP) :: rayp = 2.0_DP 
    integer(I4B) :: rayq = 4
