@@ -110,7 +110,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
    real(DP) :: vmelt, totmelt, volm
    real(DP) :: frayreduction = 0.5_DP ! Factor to apply to reduce the relative thickness of the ray for each subsequent pattern
-   integer(I4B), parameter :: Npatt = 10 ! Number of times to call ray pattern
+   integer(I4B), parameter :: Npatt = 8 ! Number of times to call ray pattern
    
    
 
