@@ -146,7 +146,11 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
    if (user%doregotrack) then
-      maxage = user%interval * user%numintervals
+      if (user%runtype .eq. 'STATISTICAL') then
+         maxage = user%interval
+      else
+         maxage = user%interval * user%numintervals
+      end if
       if (maxage < 0._DP ) then
          write(*,*) "MAJOR ERROR: Negative age!"
          stop
@@ -183,13 +187,13 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          end if
          if (crater%timestamp < 2330._DP) then
             if (oldGa > 0._DP) then 
-               if (user%numintervals .eq. 1) then
+               if ((user%numintervals .eq. 1) .or. (user%runtype .eq. 'STATISTICAL')) then
                   crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
                else
                   crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,oldGa)
                end if
             else
-               if (user%numintervals .eq. 1) then
+               if ((user%numintervals .eq. 1) .or. (user%runtype .eq. 'STATISTICAL')) then
                   crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
                else
                   crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)

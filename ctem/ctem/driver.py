@@ -169,7 +169,10 @@ class Simulation:
                     rclist[:,0] = np.exp(interp(np.log(rclist[:,0])))
     
                     #Convert age in Ga to "interval time"
-                    rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+                    if (self.user['runtype'].upper() == 'STATISTICAL'):
+                        rclist[:,5] = (self.user['interval']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+                    else:
+                        rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
                     rclist = rclist[rclist[:,5].argsort()]
 
                     #Export to dat file
