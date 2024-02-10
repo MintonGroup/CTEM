@@ -35,16 +35,16 @@ subroutine io_read_craterlist(rclist, user, domain)
 
    ! Read the next crater from the craterlist
 
-   open(unit=LUN,file=rcfile,status='old',iostat=ierr)
+   open(unit=LUN,file=trim(adjustl(rcfile)),status='old',iostat=ierr)
    if (ierr /= 0) then
-      write(*,*) "Unable to open file ",trim(rcfile)
+      write(*,*) "Unable to open file ",trim(adjustl(rcfile))
       stop
    end if 
 
    do i=1,domain%rcnum
       read(LUN,*,iostat=ierr) rclist(1:6,i)
       if (ierr/=0) then
-         write(*,*) "Unable to read file ",trim(rcfile)
+         write(*,*) "Unable to read file ",trim(adjustl(rcfile))
          stop
       end if
    end do

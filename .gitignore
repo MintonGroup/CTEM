@@ -7,6 +7,7 @@
 !distclean.cmake
 !README.md
 !version.txt
+!ctem/
 !ctem/**.py
 !cmake/Modules/*.cmake
 !*.bash

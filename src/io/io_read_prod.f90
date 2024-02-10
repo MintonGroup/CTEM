@@ -35,7 +35,7 @@ subroutine io_read_prod(prod,user,domain)
    ! Executable code
 
    ! Read in the size-frequency distribution file
-   open(unit=LUN,file=user%sfdfile,status='old',iostat=ierr)
+   open(unit=LUN,file=trim(adjustl(user%sfdfile)),status='old',iostat=ierr)
    if (ierr /= 0) then
       write(*,*) "Unable to open file ",trim(user%sfdfile)
       stop

@@ -59,9 +59,6 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    real(DP) :: rayfmult = (5)**(-4.0_DP / (1.2_DP))
    real(DP) :: l1
    
-   rray = 11.95*crater%frad**1.32
-   l1 = 5.32*crater%frad**1.27
-
    ! Create box for soften calculation (will be no bigger than the grid itself)
    do j = 0,user%gridsize + 1
       do i = 0,user%gridsize + 1
@@ -187,7 +184,10 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          
             allocate(diffdistribution(imin:imax,jmin:jmax))
             allocate(ejdistribution(imin:imax,jmin:jmax))
-            call ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
+            rray = 11.95_DP*crater%frad**1.32
+            l1 = 5.32_DP*crater%frad**1.27
+
+            call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
             ! Loop over affected matrix area
             !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
             !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &

@@ -254,7 +254,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
          klo = int((log(lrad) - log(crater%ejrad)) / domain%ejbres)
          do n = 1,MAXLOOP
             call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad,melt=melt)
-            if ((n > 1).and.((abs(ebh0 - ebh) / ebh0) < domain%small)) exit
+            if (n > 1) then
+               if ((abs(ebh0 - ebh) / ebh0) < domain%small) exit
+            endif
             ebh0 = ebh
                
             erad = exp(erad)
