@@ -102,5 +102,11 @@ subroutine regolith_melt_fraction(dimp,depthb,erad1,erad2,rmelt,meltfrac)
      write(*,*) 'regolith_melt_fraction: this is a bug!'
    end if
 
+   if (meltfrac < epsilon(1.0_DP)) then
+      meltfrac = 0.0_DP
+   else if (meltfrac > 1.0_DP) then
+      meltfrac = 1.0_DP
+   end if
+
    return
 end subroutine regolith_melt_fraction

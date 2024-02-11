@@ -45,7 +45,7 @@ integer(I4B), parameter :: LOWERCASE_END    = iachar('z')
 integer(I4B), parameter :: UPPERCASE_OFFSET = iachar('A') - iachar('a')
 
 ! Miscellaneous constants:
-real(DP),parameter :: VSMALL  = tiny(1._DP)    ! Very small number
+real(DP),parameter :: VSMALL  = 10*tiny(1._DP)    ! Very small number
 real(DP),parameter :: LOGVSMALL = log(VSMALL)  ! log of a very small number
 real(DP),parameter :: VBIG    = huge(1._DP)    ! Very big number
 real(DP),parameter :: SMALLFAC = 1e-5_DP       ! Smallest unit of measurement proportional to pixel size

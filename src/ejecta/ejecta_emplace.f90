@@ -253,13 +253,16 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
          maxslp = -huge(maxslp)
          klo = int((log(lrad) - log(crater%ejrad)) / domain%ejbres)
          do n = 1,MAXLOOP
-            call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad,melt=melt)
+            if (user%doregotrack) then
+               call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad,melt=melt)
+            else
+               call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad)
+            end if
             if (n > 1) then
                if ((abs(ebh0 - ebh) / ebh0) < domain%small) exit
             endif
             ebh0 = ebh
                
-            erad = exp(erad)
             lrange = lrad - erad
 
             baseline = ((i * crater%xslp) + (j * crater%yslp)) * user%pix
@@ -378,10 +381,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
       end do
    end if
 
-   if (totmelt > vmelt) then
-      vmeltsheet = totmelt - vmelt
-   else !give the craters a melt sheet of 1m
-      vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+   if (user%doregotrack) then
+      if (totmelt > vmelt) then
+         vmeltsheet = totmelt - vmelt
+      else !give the craters a melt sheet of 1m
+         vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+      end if
    end if
 
    ! Create box for soften calculation (will be no bigger than the grid itself)

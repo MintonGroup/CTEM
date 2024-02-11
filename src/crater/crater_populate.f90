@@ -315,10 +315,8 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          if (crater%ejdis > domain%smallest_ejecta) then ! Estimated size is big enough, so proceed with precise calculation
             if (user%doregotrack) then 
                call ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
-               !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             else 
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
-               !call ejecta_interpolate(crater,domain,crater%frad,ejb(1:ejtble),ejtble,crater%ejrim)
             end if
             call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,&
                ejecta_dem,nmeltsheet,vmeltsheet)
