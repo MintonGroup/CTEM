@@ -57,7 +57,7 @@ subroutine util_sort_layer(user,surf,crater)
             temptime = surf(mx,my)%timestamp(1:user%numlayers)
 
             ! Sort the layers by crater diameter
-            call util_mrgrnk(surf(mx,my)%diam(1:user%numlayers),ind)
+            call util_mrgrnk(tempdiam,ind)
 
             do k=1,user%numlayers
                surf(mx,my)%diam(k)=tempdiam(ind(k))

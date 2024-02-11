@@ -69,7 +69,11 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
       if (present(melt)) melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac) 
       if (present(erad)) erad = ejb(k)%erad - ((ejb(k)%erad - ejb(k+1)%erad) * frac) 
    end if
-   ebh = exp(ebh) 
+   if (ebh < LOGVSMALL) then 
+      ebh = 0.0_DP
+   else
+      ebh = exp(ebh) 
+   end if
    if (lrad > crater%ejdis) then
       ebh = 0._DP
       if (present(vsq)) vsq = 0._DP
@@ -77,10 +81,34 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
       if (present(melt)) melt = 0._DP
       if (present(erad)) erad = 0._DP
    else
-      if (present(vsq)) vsq = exp(vsq)
-      if (present(theta)) theta = exp(theta)
-      if (present(melt)) melt = exp(melt)
-      if (present(erad)) erad = exp(erad)
+      if (present(vsq)) then 
+         if (vsq < LOGVSMALL) then
+            vsq = 0.0_DP
+         else 
+            vsq = exp(vsq)
+         end if
+      end if
+      if (present(theta)) then
+         if (theta < LOGVSMALL) then
+            theta = 0.0_DP
+         else
+            theta = exp(theta)
+         end if
+      end if
+      if (present(melt)) then
+         if (melt < LOGVSMALL) then
+            melt = 0.0_DP
+         else
+            melt = exp(melt)
+         end if
+      end if
+      if (present(erad)) then
+         if (erad < LOGVSMALL) then
+            erad = 0.0_DP
+         else
+            erad = exp(erad)
+         end if
+      end if
    end if
    
    return

@@ -258,6 +258,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
             else
                call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad)
             end if
+            if (ebh < VSMALL) exit
             if (n > 1) then
                if ((abs(ebh0 - ebh) / ebh0) < domain%small) exit
             endif
