@@ -37,9 +37,10 @@ subroutine init_regolith_stack(user,surf,domain)
    !=======================================
    ! Initialize the grid space  
    !=======================================
-
-   do concurrent(xp=1:user%gridsize,yp=1:user%gridsize)
-      call util_init_array(user,surf(xp,yp)%regolayer,domain,initstat)
+   do yp=1,user%gridsize
+      do xp=1,user%gridsize
+         call util_init_array(user,surf(xp,yp)%regolayer,domain,initstat)
+      end do
    end do
 
    return
