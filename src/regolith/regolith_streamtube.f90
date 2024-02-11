@@ -154,7 +154,7 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
    end if
 
    if (eradc<=0.0_DP) then
-   write(*,*) k,ebh,crater%ejdis,lrad,exp(ejb(k-1)%lrad),exp(ejb(k)%lrad),eradc,ejb(k-1)%erad,ejb(k)%erad
+   write(*,*) k,ebh,crater%ejdis,lrad,exp(ejb(k-1)%lrad),exp(ejb(k)%lrad),eradc,exp(ejb(k-1)%erad),exp(ejb(k)%erad)
    stop
    end if
  

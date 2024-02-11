@@ -63,6 +63,11 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
       frac = (loglrad - logtablerad) / logdelta 
       melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac)
    end if 
+   if (melt < LOGVSMALL) then
+      melt = 0.0_DP
+   else
+      melt = exp(melt)
+   end if
 
    newlayer%meltvolume = melt * newlayer%totvolume
    
