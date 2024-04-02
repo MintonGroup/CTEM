@@ -301,6 +301,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          ! find the average height and slope at crater location
          call crater_averages(user,surf,crater)
 
+         ! Add initial thermal distribution from impact
+         call thermal_initial_temperature(user,crater,thermal)
+
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
          if (abs(ejbmass) < 2*tiny(1.0_DP)) cycle

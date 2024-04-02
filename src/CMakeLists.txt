@@ -34,6 +34,7 @@ SET(SRC_FILES
     ${SRC}/regolith/module_regolith.f90
     ${SRC}/porosity/module_porosity.f90
     ${SRC}/realistic/module_realistic.f90
+    ${SRC}/thermal/module_thermal.f90
     ${SRC}/util/util_toupper.f90
     ${SRC}/util/util_mrgrnk.f90
     ${SRC}/util/util_add_to_layer.f90
@@ -114,6 +115,7 @@ SET(SRC_FILES
     ${SRC}/init/init_dist.f90
     ${SRC}/init/init_surf.f90
     ${SRC}/init/init_regolith_stack.f90
+    ${SRC}/init/init_thermal.f90
     ${SRC}/seismic/seismic_shake.f90
     ${SRC}/seismic/seismic_distance.f90
     ${SRC}/seismic/seismic_kdiff_func.f90
@@ -143,6 +145,7 @@ SET(SRC_FILES
     ${SRC}/porosity/porosity_form_interior.f90
     ${SRC}/realistic/realistic_perlin_noise.f90
     ${SRC}/realistic/realistic_crater_topography.f90
+    ${SRC}/thermal/thermal_dist.f90
     ${SRC}/main/ctem_driver.f90
 )
 

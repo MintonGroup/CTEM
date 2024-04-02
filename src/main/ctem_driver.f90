@@ -42,6 +42,9 @@ module driver
       ! Crater properties
       type(cratertype) :: crater
 
+      !3D temperature grid
+      type(thermaltype),dimension(:,:,:),allocatable :: thermal
+
       ! Distribution arrays
       real(DP),dimension(:,:),allocatable  :: prod,vdist,pdist,crtscl,truedist,obsdist,truelist,rclist
       real(DP),dimension(:),allocatable :: obslist
@@ -92,6 +95,13 @@ module driver
       allocate(rclist(6,domain%rcnum))
       allocate(surf(user%gridsize,user%gridsize))
       allocate(production_list(domain%pnum))
+      allocate(thermal(user%gridsize,user%gridsize,user%zgridsize))
+      if (size(thermal) > 268435455) then
+         write(*,*) "WARNING: thermal grid too large for analysis in Python!"
+      else if (size(thermal) > 2147483647) then
+         write(*,*) "Thermal grid size larger than allowed! Must be less than 2147483647"
+         stop
+      end if
 
       ! Read in production impactor population
       call io_read_prod(prod,user,domain)
@@ -119,8 +129,10 @@ module driver
       ! Read in old grid arrays, production function, and velocity distributions
       if (restart .or. user%tallyonly) then
          call io_read_surf(user,surf,domain)
+         !Add the ability to read the thermal grid here
       else
          call init_surf(user,surf,domain)
+         if (user%dothermal) call init_thermal(user,thermal)
       end if
 
       if (.not.user%tallyonly) then

@@ -62,6 +62,11 @@ real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous eject
 real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
 real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
+type thermaltype
+   real(DP) :: temperature
+   real(DP) :: background
+   real(DP) :: depth
+end type thermaltype
 
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
@@ -200,9 +205,12 @@ type usertype
    logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
    logical           :: domixing   ! Set to F to turn off regolith mixing (useful for test craters when you don't want to simulate gardening). Default is T.
    logical           :: doquasimc  ! set to T for quasi-MC run. Default F.
+   logical           :: dothermal  ! set to T for a run that includes thermal diffusion. Default F.
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
    real(DP)          :: deplimit  ! complex crater depth limit
+   real(DP)          :: zpix      ! 3D pixel depth in the z-direction
+   integer(I4B)      :: zgridsize ! number of pixels in the z-direction
 
    ! Seismic input variables 
    logical ::  doseismic   ! Set to T if you want to do the seismic shaking model

@@ -58,4 +58,13 @@ save
       end subroutine init_regolith_stack
    end interface
 
+   interface
+      subroutine init_thermal(user,thermal)
+      use module_globals
+      implicit none
+      type(usertype),intent(in) :: user
+      type(thermaltype),dimension(:,:),intent(out) :: thermal
+      end subroutine init_thermal
+   end interface
+
 end module module_init

@@ -95,6 +95,9 @@ subroutine io_input(infile,user)
    user%ejecta_truncation = 10.0_DP
    user%domixing = .true.
    user%dotopodiffusion = .true.
+   user%dothermal = .false.
+   user%zpix = 1e3_DP
+   user%zgridsize = 1
    write(user%sfdfile,*) trim(adjustl(SFDFILE))
    
    open(unit=LUN,file=trim(adjustl(infile)),status="old",iostat=ierr)
@@ -226,6 +229,16 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%deplimit
+         case ("ZPIX")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%zpix
+         case ("ZGRIDSIZE")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%zgridsize
          case ("TESTFLAG")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)
@@ -336,6 +349,11 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%domixing
+         case ("DOTHERMAL")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%dothermal
          ! Porosity model
          case ("POROSITYFLG")
             ifirst = ilast + 1
