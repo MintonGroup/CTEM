@@ -231,4 +231,12 @@ save
       end subroutine io_write_age_depth
   end interface
 
+  interface
+      subroutine io_write_thermal(thermal)
+      use module_globals
+      implicit none
+      type(thermaltype),dimension(:,:,:),intent(in) :: thermal
+      end subroutine io_write_thermal
+  end interface
+
 end module module_io

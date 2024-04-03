@@ -16,12 +16,12 @@ public
 save
 
     interface
-        subroutine thermal_initial_temperature(user,crater,thermal,distance)
+        subroutine thermal_initial_temperature(user,crater,thermi,distance)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
         type(cratertype),intent(in) :: crater
-        type(thermaltype),intent(inout) :: thermal
+        type(thermaltype),intent(inout) :: thermi
         real(DP),intent(in) :: distance
         end subroutine thermal_initial_temperature
     end interface
@@ -31,7 +31,7 @@ save
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
-        type(surftype),dimension(:,:),intent(inout) :: surf
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(cratertype),intent(in) :: crater
         end subroutine thermal_dist
     end interface

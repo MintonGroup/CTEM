@@ -17,7 +17,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
+subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass, &
                            fracdone,nflux,ntotcrat,curyear,rclist)
    use module_globals
    use module_seismic
@@ -35,6 +35,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    type(surftype),dimension(:,:),intent(inout)     :: surf
    type(cratertype),intent(inout)                  :: crater
    type(domaintype),intent(inout)                  :: domain
+   type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
    real(DP),dimension(:,:),intent(in)              :: prod,vdist
    integer(I8B),dimension(:),intent(inout)         :: production_list
    integer(I4B),intent(out)                        :: ntrue
@@ -302,7 +303,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
          call crater_averages(user,surf,crater)
 
          ! Add initial thermal distribution from impact
-         call thermal_initial_temperature(user,crater,thermal)
+         call thermal_dist(user,thermal,crater)
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)

@@ -26,17 +26,19 @@ subroutine thermal_dist(user,thermal,crater)
 
     ! Arguments
     type(usertype),intent(in) :: user
-    type(thermaltype),intent(inout) :: thermal
+    type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: inc,i,j,xpi,ypi
-    real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative
+    integer(I4B) :: inc,i,j,xpi,ypi,zinc,k
+    real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative,distance
 
     ! Executable code
 
     inc = max(min(13*crater%imprad,real(user%gridsize,kind=DP)),1.0_DP) +1 ! setting this to 13*impactor radius for now; 
                                                                            ! calculations show the temperature increase is ~10 K.
+    zinc = max(min(13*crater%imprad,real(user%zgridsize,kind=DP)),1.0_DP) +1
+
     do j=-inc,inc
         do i = -inc,inc
             iradsq = i**2 + j**2
@@ -50,9 +52,16 @@ subroutine thermal_dist(user,thermal,crater)
             x_relative = (crater%xl - xp)
             y_relative = (crater%yl - yp)
             lradsq = x_relative**2 + y_relative**2
-
-            !call thermal_initial_temperature(user,crater,thermal,lradsq)
-            !Decide how best to perform the Abramov calculations on a fixed grid: Its own subroutine or in this one? What about the data structure?
+            
+            do k=1,zinc
+                !calculate the 3-dimensional distance from layer depth
+                distance = sqrt(lradsq+(thermal(i,j,k)%depth**2)) !currently uses "top left" instead of midpoint..
+                if (distance == 0.0_DP) then
+                    distance = 1e-6_DP !this could be avoided by using midpoint; results won't matter since it's vapor anyway
+                end if
+                call thermal_initial_temperature(user,crater,thermal(i,j,k),distance)
+            end do
+            
         end do
     end do
 

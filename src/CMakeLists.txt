@@ -76,6 +76,7 @@ SET(SRC_FILES
     ${SRC}/io/io_resetPbar.f90
     ${SRC}/io/io_splash.f90
     ${SRC}/io/io_write_pindex_map.f90
+    ${SRC}/io/io_write_thermal.f90
     ${SRC}/ejecta/ejecta_emplace.f90
     ${SRC}/ejecta/ejecta_ray_pattern.f90
     ${SRC}/ejecta/ejecta_ray_pattern_func.f90
@@ -146,6 +147,7 @@ SET(SRC_FILES
     ${SRC}/realistic/realistic_perlin_noise.f90
     ${SRC}/realistic/realistic_crater_topography.f90
     ${SRC}/thermal/thermal_dist.f90
+    ${SRC}/thermal/thermal_initial_temperature.f90
     ${SRC}/main/ctem_driver.f90
 )
 

@@ -19,7 +19,7 @@
 !  Notes       : 
 !
 !**********************************************************************************************************************************
-subroutine thermal_initial_temperature(user,crater,thermal)
+subroutine thermal_initial_temperature(user,crater,thermi,distance)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_initial_temperature
     implicit none
@@ -27,4 +27,30 @@ subroutine thermal_initial_temperature(user,crater,thermal)
     ! Arguments
     type(usertype),intent(in) :: user
     type(cratertype),intent(in) :: crater
-    type(thermaltype),intent(inout) :: thermal
+    type(thermaltype),intent(inout) :: thermi
+    real(DP),intent(in) :: distance
+
+    ! Internal variables
+    real(DP) :: term1,term2,term3, deltaT, deltaEw, P, k, A, V0, K0, n
+
+    ! Executable code
+    V0 = 1.0_DP / user%trho_r
+    K0 = 35.7e9 !This is the value for granite. need adiabatic bulk modulus for anorthosite at zero pressure
+    n = 3.94 !This is the value for granite. need pressure derivative of bulk modulus for anorthosite
+
+    k = 0.625_DP*log10(crater%impvel/1000._DP) + 1.25
+    A = 0.25_DP * user%prho * crater%impvel**2 * crater%sinimpang !prho assumed to be the same as target density
+                                                                  ! Collins et al. (2002) may have the derivation for this equation
+                                                                  ! (in case I need to modify it for when densities are different)
+    P = A*(distance/crater%imprad)**(-k)
+
+    term1 = 0.5_DP * (P * V0 - (2 * K0 * V0) / n)
+    term2 = 1 - ((P * n / K0) + 1)**(-1/n)
+    term3 = (K0 * V0 / (n * (1 - n))) * (1 - ((P * n / K0) + 1)**(1 - (1/n)))
+    deltaEw = term1 * term2 + term3
+    deltaT = deltaEw / 837. !837 is the value for granite. need specific waste heat for anorthosite
+
+    thermi%temperature = thermi%temperature + deltaT
+
+    return
+end subroutine thermal_initial_temperature

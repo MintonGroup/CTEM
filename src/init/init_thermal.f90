@@ -1,6 +1,6 @@
 !**********************************************************************************************************************************
 !
-!  Unit Name   : init_surf
+!  Unit Name   : init_thermal
 !  Unit Type   : subroutine
 !  Project     : CTEM
 !  Language    : Fortran 2003
@@ -16,14 +16,14 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_surf(user,thermal)
+subroutine init_thermal(user,thermal)
     use module_globals
-    use module_init, EXCEPT_THIS_ONE => init_surf
+    use module_init, EXCEPT_THIS_ONE => init_thermal
     implicit none
  
     ! Arguments
     type(usertype),intent(in) :: user
-    type(thermaltype),dimension(:,:),intent(out) :: thermal
+    type(thermaltype),dimension(:,:,:),intent(out) :: thermal
 
     ! Internal variables
     integer(I4B) :: i,j,k
@@ -42,5 +42,5 @@ subroutine init_surf(user,thermal)
         end do
     end do
     return
-end subroutine init_surf
+end subroutine init_thermal
 

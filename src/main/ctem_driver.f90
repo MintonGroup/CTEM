@@ -143,7 +143,7 @@ module driver
          else
             call crater_make_list(domain,prod,ntotcrat,production_list)
          end if
-         call crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
+         call crater_populate(user,surf,crater,domain,thermal,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,mass,&
                               fracdone,nflux,ntotcrat,curyear,rclist)
 
          ! Get the last seed and save it to file
@@ -183,6 +183,11 @@ module driver
                deallocate(surf(xp,yp)%regolayer)
             end do
          end do
+      end if
+
+      if (user%dothermal) then
+         call io_write_thermal(thermal)
+         deallocate(thermal)
       end if
 
       ! If doporosity is true, then destroy the linked list for porosity

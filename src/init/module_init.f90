@@ -63,7 +63,7 @@ save
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
-      type(thermaltype),dimension(:,:),intent(out) :: thermal
+      type(thermaltype),dimension(:,:,:),intent(out) :: thermal
       end subroutine init_thermal
    end interface
 
