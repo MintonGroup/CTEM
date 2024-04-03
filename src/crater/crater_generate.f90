@@ -115,6 +115,7 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       crater%imp = crater%imp * (1._DP + 1.0e-3_DP*rn(3)) ! Some user-input SFDs can result in many craters having identical 
                                                           ! diameters. This random number prevents more than one crater from having 
                                                           ! exactly the same diameter, as diameter is used as identification.
+      crater%imprad = crater%imp * 0.5_DP
    end if
                                                        
 

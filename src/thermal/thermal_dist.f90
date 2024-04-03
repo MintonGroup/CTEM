@@ -35,9 +35,9 @@ subroutine thermal_dist(user,thermal,crater)
 
     ! Executable code
 
-    inc = max(min(13*crater%imprad,real(user%gridsize,kind=DP)),1.0_DP) +1 ! setting this to 13*impactor radius for now; 
+    inc = max(min(13*crater%imprad,real(user%gridsize-1,kind=DP)),1.0_DP) +1 ! setting this to 13*impactor radius for now; 
                                                                            ! calculations show the temperature increase is ~10 K.
-    zinc = max(min(13*crater%imprad,real(user%zgridsize,kind=DP)),1.0_DP) +1
+    zinc = max(min(13*crater%imprad,real(user%zgridsize-1,kind=DP)),1.0_DP) +1
 
     do j=-inc,inc
         do i = -inc,inc
@@ -45,7 +45,7 @@ subroutine thermal_dist(user,thermal,crater)
             xpi = crater%xlpx + i
             ypi = crater%ylpx + j
             xp = xpi*user%pix
-            yp = xpi*user%pix
+            yp = ypi*user%pix
 
             ! periodic boundary conditions
             call util_periodic(xpi,ypi,user%gridsize)
@@ -55,11 +55,11 @@ subroutine thermal_dist(user,thermal,crater)
             
             do k=1,zinc
                 !calculate the 3-dimensional distance from layer depth
-                distance = sqrt(lradsq+(thermal(i,j,k)%depth**2)) !currently uses "top left" instead of midpoint..
+                distance = sqrt(lradsq+(thermal(xpi,ypi,k)%depth**2)) !currently uses "top left" instead of midpoint..
                 if (distance == 0.0_DP) then
                     distance = 1e-6_DP !this could be avoided by using midpoint; results won't matter since it's vapor anyway
                 end if
-                call thermal_initial_temperature(user,crater,thermal(i,j,k),distance)
+                call thermal_initial_temperature(user,crater,thermal(xpi,ypi,k),distance)
             end do
             
         end do

@@ -27,6 +27,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    use module_realistic
    !use module_crust
    use module_regolith ! simulate regolith mixing 
+   use module_thermal
    use module_crater, EXCEPT_THIS_ONE => crater_populate
    implicit none
 
