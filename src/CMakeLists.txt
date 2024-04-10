@@ -148,6 +148,7 @@ SET(SRC_FILES
     ${SRC}/realistic/realistic_crater_topography.f90
     ${SRC}/thermal/thermal_dist.f90
     ${SRC}/thermal/thermal_initial_temperature.f90
+    ${SRC}/thermal/thermal_diffusion.f90
     ${SRC}/main/ctem_driver.f90
 )
 

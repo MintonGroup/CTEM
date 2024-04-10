@@ -36,4 +36,13 @@ save
         end subroutine thermal_dist
     end interface
 
+    interface
+        subroutine thermal_diffusion(user,thermal)
+        use module_globals
+        implicit none
+        type(usertype),intent(in) :: user
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        end subroutine thermal_diffusion
+    end interface
+
 end module

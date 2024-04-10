@@ -304,7 +304,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          call crater_averages(user,surf,crater)
 
          ! Add initial thermal distribution from impact
-         call thermal_dist(user,thermal,crater)
+         if (user%dothermal) call thermal_dist(user,thermal,crater)
+
+         ! Let's test a basic diffusion model for 3D. This won't be where diffusion is called in the finished product.
+         if (user%dothermal .and. user%testflag) call thermal_diffusion(user,thermal)
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
@@ -329,13 +332,17 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ejtble = 0
          end if
 
-         if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
+         if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet) !Need to modify thermal grid for melt sheet
 
          if (user%dorealistic) call realistic_crater_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)
 
          ! Collapse any remaining unstable slopes
          if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,(CRITSLP * user%pix)**2,ejbmass)
+
+         !Thermal diffusion should probably be called here, except the gradient needs to be "pushed up" first.
+         !if (user%dothermal) call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
+         if (user%dothermal) call thermal_diffusion(user,thermal)
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater)
