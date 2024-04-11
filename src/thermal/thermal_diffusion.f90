@@ -35,13 +35,13 @@ subroutine thermal_diffusion(user,thermal)
 
     ! Test variables that will not be used in the actual release
     character(5) :: num
-    character(18) :: filename
+    character(19) :: filename
 
     ! Executable code
     maxtime = 500 !number of timesteps; eventually may make this very high or perhaps devise a way to calculate. For now it's just a test
 
     kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
-    delta_t = (1.0_DP/2.0_DP * kappa) * ((1.0_DP/(user%gridsize**2))+(1.0_DP/(user%gridsize**2))+(1.0_DP/(user%zgridsize**2)))**(-1.0_DP) !in s
+    delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
 
     ! allocate(prev(user%gridsize,user%gridsize,user%zgridsize))
     ! prev(:,:,:)%temperature = thermal(:,:,:)%temperature
