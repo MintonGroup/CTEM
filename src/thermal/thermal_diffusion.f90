@@ -38,17 +38,15 @@ subroutine thermal_diffusion(user,thermal)
     character(19) :: filename
 
     ! Executable code
-    maxtime = 500 !number of timesteps; eventually may make this very high or perhaps devise a way to calculate. For now it's just a test
+    maxtime = 1000 !number of timesteps; eventually may make this very high or perhaps devise a way to calculate. For now it's just a test
 
     kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
 
-    ! allocate(prev(user%gridsize,user%gridsize,user%zgridsize))
-    ! prev(:,:,:)%temperature = thermal(:,:,:)%temperature
     allocate(prev,source=thermal)
 
     top = 0.0_DP !Temperature at top of stack
-    bottom = thermal(1,1,1)%background !For now make it equal to the geothermal gradient value at the bottom voxel
+    bottom = thermal(1,1,user%zgridsize)%background !For now make it equal to the geothermal gradient value at the bottom voxel
 
     do time = 1,maxtime
         nchanged = 0
@@ -81,14 +79,11 @@ subroutine thermal_diffusion(user,thermal)
                         yminusone = y - 1
                     end if
 
-                    ! Skip pixels where the temperature is already equal to the background
-                    if (thermal(x,y,z)%temperature == thermal(x,y,z)%background) cycle
-
                     ! Actually do the diffusion, factoring in the boundary conditions in the z dimension
                     if (k == 1) then
-                        term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + bottom) / (user%zpix**2))
+                        term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + top) / (user%zpix**2))
                     else if (k == user%zgridsize) then
-                        term3 = ((top - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
+                        term3 = ((bottom - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
                     else
                         term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
                     end if
@@ -96,15 +91,21 @@ subroutine thermal_diffusion(user,thermal)
                     term2 = ((prev(x,yplusone,z)%temperature - (2*prev(x,y,z)%temperature) + prev(x,yminusone,z)%temperature) / (user%pix**2))
                     thermal(x,y,z)%temperature = prev(x,y,z)%temperature + delta_t * kappa * (term1 + term2 + term3)
 
-                    if (abs(thermal(x,y,z)%temperature - thermal(x,y,z)%background) .lt. 1e-1) then !high tolerance for now; if needed make closer to 1e-16
+                    if (thermal(x,y,z)%temperature .le. (thermal(x,y,z)%background+1.0_DP))  then
                         thermal(x,y,z)%temperature = thermal(x,y,z)%background
                     else
                         nchanged = nchanged+1
                     end if
-                    if (nchanged == 0) exit !every voxel has cooled to the background temperature
                 end do
             end do
         end do
+
+        if (time == 1) then
+            open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
+            write(3) prev(:,:,:)%temperature
+            close(3)
+        end if
+
         prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
         ! Write out the timestep to the "misc" folder, which should be created already in the Python <--this is just for the test example
@@ -113,6 +114,8 @@ subroutine thermal_diffusion(user,thermal)
         open(3,file=filename,status='replace',form='unformatted')
         write(3) thermal(:,:,:)%temperature
         close(3)
+
+        if (nchanged == 0) exit !every voxel has cooled to the background temperature
 
     end do
     deallocate(prev)
