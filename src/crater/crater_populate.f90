@@ -342,7 +342,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          !Thermal diffusion should probably be called here, except the gradient needs to be "pushed up" first.
          !if (user%dothermal) call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
-         if (user%dothermal) call thermal_diffusion(user,thermal)
+         !if (user%dothermal) call thermal_diffusion(user,thermal)
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater)
