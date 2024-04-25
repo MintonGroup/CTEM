@@ -130,7 +130,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(SP) :: age_mean
 
    ! Crater ray parameters
-   real(DP) :: rray != 48_DP ! "L16" in Minton et al. (2019)
+   real(DP) :: rray != 48.0_DP ! "L16" in Minton et al. (2019)
    integer(I4B) :: Nraymax = 5
    real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
    real(DP) :: rayp = 2.0_DP 
@@ -139,8 +139,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP) :: l1
 
 
-   rray = (11.95*(crater%frad/1000)**1.32)/(crater%frad/1000)
-   l1 = (5.32*(crater%frad/1000)**1.27)/(crater%frad/1000)
+   rray = (11.95_DP*(crater%frad/1000)**1.32)/(crater%frad/1000)
+   l1 = (5.32_DP*(crater%frad/1000)**1.27)/(crater%frad/1000)
 
 
    ! Executable code
