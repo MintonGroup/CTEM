@@ -61,7 +61,7 @@ subroutine regolith_subpixel_streamtube(user,surfi,deltar,ri,rip1,eradi,newlayer
    type(surftype),intent(inout) :: surfi
    real(DP),intent(in)       :: deltar,ri,rip1,eradi
    type(regodatatype),intent(inout)    :: newlayer
-   real(DP),intent(out)              :: meltinejecta, totvol
+   real(DP),intent(inout)              :: meltinejecta, totvol
    real(DP),intent(out)                :: vmare,totseb
    real(SP),dimension(:),intent(inout) :: age_collector
    real(DP),intent(in)                 :: xmints

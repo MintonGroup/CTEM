@@ -93,7 +93,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
-   real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
+   real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
    integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
 
