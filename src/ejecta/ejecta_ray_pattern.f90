@@ -108,7 +108,6 @@ subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpea
             xbar = xp - crater%xl 
             ybar = yp - crater%yl
 
-            !areafrac = util_area_intersection(user%ejecta_truncation * crater%frad,xbar,ybar,user%pix) 
             areafrac = util_area_intersection(rray * crater%frad,xbar,ybar,user%pix)
             r = sqrt(xbar**2 + ybar**2) / crater%frad
             theta = mod(atan2(ybar,xbar) + pi + rn * 2 * pi,2 * pi)

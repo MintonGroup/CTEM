@@ -73,7 +73,7 @@ Kd1             0.00312669649143281
 psi             2.000
 fe              10.0
 dorays          T
-ejecta_truncation 10.0
+ejecta_truncation 50.0
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties

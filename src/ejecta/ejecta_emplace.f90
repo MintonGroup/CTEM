@@ -139,9 +139,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP) :: l1
 
 
-   rray = (11.95_DP*(crater%frad/1000)**1.32)/(crater%frad/1000)
    l1 = (5.32_DP*(crater%frad/1000)**1.27)/(crater%frad/1000)
-
+   rray = user%ejecta_truncation 
 
    ! Executable code
 
@@ -179,7 +178,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    if (inc >= user%gridsize / 2) then
       if (user%testflag) then
           write(*,*) 'Big ejecta: fcrat =',crater%fcrat, ' Ej/S =',(crater%ejdispx*user%pix)/domain%side, ' Ejrim =', crater%ejrim
-          write(*,*) 'L16 = ', rray, 'L1 = ', l1
+          write(*,*) 'Rray = ', rray, 'L1 = ', l1
        else
          write(message,'("Ejb: Dc=",ES9.2," Ej/S=",F0.3)') crater%fcrat,(crater%ejdispx*user%pix)/domain%side
          call io_updatePbar(message)
