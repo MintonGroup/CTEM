@@ -20,9 +20,9 @@ runtype      single                             ! Run type: options are normal /
 
 ! CTEM required inputs
 seed         1108267                            ! Random number generator seed
-gridsize     1000                            ! Size of grid in pixels
+gridsize     2000                            ! Size of grid in pixels
 numlayers    10                                 ! Number of perched layers
-pix          6.16e3                              ! Pixel size (m)
+pix          10.0                              ! Pixel size (m)
 mat          rock                               ! Material (rock or ice)
 ! Bedrock scaling parameters
 mu_b         0.41d0                             ! Experimentally derived parameter for bedrock crater scaling law 
@@ -73,11 +73,11 @@ Kd1             0.00312669649143281
 psi             2.000
 fe              10.0
 dorays          T
-ejecta_truncation 50.0
+ejecta_truncation 60.0
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
 testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties
-testimp      15e3                             ! Diameter of test impactor (m)
+testimp      15.0                             ! Diameter of test impactor (m)
 testvel      18.3e3                             ! Velocity of test crater (m/s)
 testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
 testxoffset  0.0d0                             ! x-axis offset of crater center from grid center (m) - Default 0.0
