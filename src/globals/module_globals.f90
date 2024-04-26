@@ -53,6 +53,7 @@ integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you n
                                                ! resolution
 real(DP),parameter :: TALLYCOVERAGE = 0.01_DP  ! The total area coverage to reach before a tally step is executed
 real(DP),parameter :: SUBPIXELCOVERAGE = 0.00025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
+real(DP),parameter :: THERMALCOVERAGE = 0.01_DP ! The total area coverage to reach before a thermal diffusion step is executed
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
@@ -171,6 +172,7 @@ type domaintype
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
    integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
    integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
+   integer(I4B) :: thermalcoverage ! Estimated areal coverage of craters since the last thermal diffusion step
    real(DP)     :: rmsvel            ! Root mean square impact velocity
    real(DP),dimension(MAXAGEBINS) :: age_bin_times ! Time in Ga to move to the next age bin
 end type domaintype 

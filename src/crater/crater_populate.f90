@@ -83,6 +83,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    real(DP)                :: hmax, hmin
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet
    real(DP)                :: vmeltsheet
+   real(DP)                :: time_since_diff, tstart
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -147,7 +148,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    ! Reset age
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
-   if (user%doregotrack) then
+   if (user%doregotrack .or. user%dothermal) then
       if (user%runtype .eq. 'STATISTICAL') then
          maxage = user%interval
       else
@@ -169,6 +170,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    end if
    domain%age_counter = 1
    oldGa = 0._DP
+   tstart = maxageGa
 
    ! Reset coverage map
    domain%tallycoverage = 0
@@ -214,6 +216,18 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             end if
          end do
       end if 
+
+      if (user%dothermal) then !Do thermal diffusion from the last diffusion time until now
+
+         if ((domain%thermalcoverage / real(user%gridsize**2,kind=DP) > THERMALCOVERAGE)) then
+            !calculate how much time has passed between thermal diffusion timesteps
+            time_since_diff = tstart - crater%timestampGa
+            
+            if (user%dothermal) call thermal_diffusion(user,thermal,time_since_diff)
+            tstart = crater%timestampGa
+            domain%thermalcoverage = 0
+         end if
+      end if
       !if in quasiMC mode: check to see if it's time for a real crater
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
@@ -305,9 +319,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          ! Add initial thermal distribution from impact
          if (user%dothermal) call thermal_dist(user,thermal,crater)
-
-         ! Let's test a basic diffusion model for 3D. This won't be where diffusion is called in the finished product.
-         if (user%dothermal .and. user%testflag) call thermal_diffusion(user,thermal)
+         
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
@@ -340,10 +352,6 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          ! Collapse any remaining unstable slopes
          if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,(CRITSLP * user%pix)**2,ejbmass)
 
-         !Thermal diffusion should probably be called here, except the gradient needs to be "pushed up" first.
-         !if (user%dothermal) call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
-         !if (user%dothermal) call thermal_diffusion(user,thermal)
-
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater)
          call util_sort_layer(user,surf,crater)
@@ -357,6 +365,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
 
          !if (user%docrustal_thinning) call crust_thin(user,surf,crater,domain,mdepth)
+
+         !Add ejecta to thermal distribution
+
+         !if (user%dothermal) call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
          
          ! Find out if the current crater is the largest or smallest and if so record it
          if (crater%fcrat > cmax ) then
@@ -383,9 +395,14 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
       end if
 
-
+      if (icrater == ntotcrat) then !Do diffusion from time of the last crater emplaced to 0
+         time_since_diff = crater%timestampGa ! - 0
+            
+         if (user%dothermal) call thermal_diffusion(user,thermal,time_since_diff)
+      end if
 
       ! Do periodic subpixel processes on the whole grid
+
 
       !if ((domain%subpixelcoverage / real(user%gridsize**2,kind=DP) > SUBPIXELCOVERAGE).or.(icrater == ntotcrat)) then
       if (makecrater) then

@@ -19,7 +19,7 @@
 !  Notes       : -Currently uses the whole grid
 !
 !**********************************************************************************************************************************
-subroutine thermal_diffusion(user,thermal)
+subroutine thermal_diffusion(user,thermal,difftime)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_diffusion
     implicit none
@@ -27,9 +27,10 @@ subroutine thermal_diffusion(user,thermal)
     ! Arguments
     type(usertype),intent(in) :: user
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+    real(DP),intent(in) :: difftime !in Ga
 
     ! Internal variables
-    real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3
+    real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3, ts
     integer(I4B) :: i,j,k,x,y,z,time,maxtime,nchanged,xplusone,xminusone,yplusone,yminusone
     type(thermaltype),dimension(:,:,:),allocatable :: prev !Temperature at previous timestep (to prevent "new" temperature values from being used in diffusion)
 
@@ -38,10 +39,11 @@ subroutine thermal_diffusion(user,thermal)
     character(19) :: filename
 
     ! Executable code
-    maxtime = 1000 !number of timesteps; eventually may make this very high or perhaps devise a way to calculate. For now it's just a test
 
     kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
+    ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
+    maxtime = ts / delta_t
 
     allocate(prev,source=thermal)
 
@@ -49,6 +51,7 @@ subroutine thermal_diffusion(user,thermal)
     bottom = thermal(1,1,user%zgridsize)%background !For now make it equal to the geothermal gradient value at the bottom voxel
 
     do time = 1,maxtime
+        !write(*,*) "Doing diffusion for", maxtime, "timesteps."
         nchanged = 0
         do k = 1,user%zgridsize
             do j = 1,user%gridsize
@@ -100,20 +103,23 @@ subroutine thermal_diffusion(user,thermal)
             end do
         end do
 
-        if (time == 1) then
-            open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
-            write(3) prev(:,:,:)%temperature
+        if (user%testflag) then !for now, only write if it's a test crater. Eventually, this will need to be changed for QMC runs.
+
+            if (time == 1) then
+                open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
+                write(3) prev(:,:,:)%temperature
+                close(3)
+            end if
+
+            prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+
+            ! Write out the timestep to the "misc" folder, which should be created already in the Python
+            write(num,'(I0.5)') time
+            filename = 'misc/therm'//trim(num)//'.dat'
+            open(3,file=filename,status='replace',form='unformatted')
+            write(3) thermal(:,:,:)%temperature
             close(3)
         end if
-
-        prev(:,:,:)%temperature = thermal(:,:,:)%temperature
-
-        ! Write out the timestep to the "misc" folder, which should be created already in the Python <--this is just for the test example
-        write(num,'(I0.5)') time
-        filename = 'misc/therm'//trim(num)//'.dat'
-        open(3,file=filename,status='replace',form='unformatted')
-        write(3) thermal(:,:,:)%temperature
-        close(3)
 
         if (nchanged == 0) exit !every voxel has cooled to the background temperature
 

@@ -37,11 +37,12 @@ save
     end interface
 
     interface
-        subroutine thermal_diffusion(user,thermal)
+        subroutine thermal_diffusion(user,thermal,difftime)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        real(DP), intent(in) :: difftime
         end subroutine thermal_diffusion
     end interface
 

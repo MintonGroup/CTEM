@@ -124,6 +124,7 @@ subroutine crater_emplace(user,surf,crater,domain,deltaMtot,incval,nmeltsheet)
 
    domain%tallycoverage = domain%tallycoverage + int(fradsq * PI / user%pix**2)
    domain%subpixelcoverage = domain%subpixelcoverage + int(fradsq * PI / user%pix**2)
+   domain%thermalcoverage = domain%thermalcoverage + int(fradsq * PI / user%pix**2)
 
    return
 end subroutine crater_emplace
