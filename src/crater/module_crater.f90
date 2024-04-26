@@ -33,7 +33,7 @@ save
                                  mass,fracdone,nflux,ntotcrat,curyear,rclist)
       use module_globals
       implicit none
-      type(usertype),intent(in) :: user
+      type(usertype),intent(inout) :: user
       type(surftype),dimension(:,:),intent(inout)  :: surf
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain

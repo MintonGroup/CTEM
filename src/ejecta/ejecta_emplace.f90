@@ -93,7 +93,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
-   real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
+   real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
    integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
 
@@ -130,7 +130,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(SP) :: age_mean
 
    ! Crater ray parameters
-   real(DP) :: rray != 48_DP ! "L16" in Minton et al. (2019)
+   real(DP) :: rray != 48.0_DP ! "L16" in Minton et al. (2019)
    integer(I4B) :: Nraymax = 5
    real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
    real(DP) :: rayp = 2.0_DP 
@@ -139,9 +139,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP) :: l1
 
 
-   rray = (11.95*(crater%frad/1000)**1.32)/(crater%frad/1000)
-   l1 = (5.32*(crater%frad/1000)**1.27)/(crater%frad/1000)
-
+   l1 = (5.32_DP*(crater%frad/1000)**1.27)/(crater%frad/1000)
+   rray = user%ejecta_truncation 
 
    ! Executable code
 
@@ -179,7 +178,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    if (inc >= user%gridsize / 2) then
       if (user%testflag) then
           write(*,*) 'Big ejecta: fcrat =',crater%fcrat, ' Ej/S =',(crater%ejdispx*user%pix)/domain%side, ' Ejrim =', crater%ejrim
-          write(*,*) 'L16 = ', rray, 'L1 = ', l1
+          write(*,*) 'Rray = ', rray, 'L1 = ', l1
        else
          write(message,'("Ejb: Dc=",ES9.2," Ej/S=",F0.3)') crater%fcrat,(crater%ejdispx*user%pix)/domain%side
          call io_updatePbar(message)
