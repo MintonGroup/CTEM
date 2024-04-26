@@ -49,9 +49,9 @@ subroutine thermal_diffusion(user,thermal,difftime)
 
     top = 0.0_DP !Temperature at top of stack
     bottom = thermal(1,1,user%zgridsize)%background !For now make it equal to the geothermal gradient value at the bottom voxel
+    write(*,*) "Doing diffusion for", maxtime, "timesteps."
 
     do time = 1,maxtime
-        !write(*,*) "Doing diffusion for", maxtime, "timesteps."
         nchanged = 0
         do k = 1,user%zgridsize
             do j = 1,user%gridsize

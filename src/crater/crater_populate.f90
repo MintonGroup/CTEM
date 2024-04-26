@@ -219,10 +219,13 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
       if (user%dothermal) then !Do thermal diffusion from the last diffusion time until now
 
-         if ((domain%thermalcoverage / real(user%gridsize**2,kind=DP) > THERMALCOVERAGE)) then
+         if ((domain%thermalcoverage / real(user%gridsize**2,kind=DP) > THERMALCOVERAGE) .or. icrater == ntotcrat) then
             !calculate how much time has passed between thermal diffusion timesteps
-            time_since_diff = tstart - crater%timestampGa
-            
+            if (icrater == ntotcrat) then
+               time_since_diff = tstart ! - 0
+            else
+               time_since_diff = tstart - crater%timestampGa
+            end if        
             if (user%dothermal) call thermal_diffusion(user,thermal,time_since_diff)
             tstart = crater%timestampGa
             domain%thermalcoverage = 0
@@ -393,12 +396,6 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             end if
             call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
          end if
-      end if
-
-      if (icrater == ntotcrat) then !Do diffusion from time of the last crater emplaced to 0
-         time_since_diff = crater%timestampGa ! - 0
-            
-         if (user%dothermal) call thermal_diffusion(user,thermal,time_since_diff)
       end if
 
       ! Do periodic subpixel processes on the whole grid
