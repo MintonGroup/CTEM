@@ -16,13 +16,14 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_thermal(user,thermal)
+subroutine init_thermal(user,domain,thermal)
     use module_globals
     use module_init, EXCEPT_THIS_ONE => init_thermal
     implicit none
  
     ! Arguments
     type(usertype),intent(in) :: user
+    type(domaintype),intent(inout) :: domain
     type(thermaltype),dimension(:,:,:),intent(out) :: thermal
 
     ! Internal variables
@@ -35,12 +36,14 @@ subroutine init_thermal(user,thermal)
             do k=1,user%zgridsize
                 !calculate pixel depth
                 thermal(i,j,k)%depth = (k-1) * user%zpix !this is depth at top of grid; can modify later
+                thermal(i,j,k)%relative_depth = thermal(i,j,k)%depth !start with a flat surface
                 !Add geothermal gradient
                 thermal(i,j,k)%background = (13._DP/1000._DP) * thermal(i,j,k)%depth !13K/km for now; eventually could make it change over time?
                 thermal(i,j,k)%temperature = thermal(i,j,k)%background
             end do
         end do
     end do
+    domain%hmax = maxval(thermal(:,:,:)%temperature)
     return
 end subroutine init_thermal
 

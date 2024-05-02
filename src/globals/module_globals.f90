@@ -66,7 +66,8 @@ real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of p
 type thermaltype
    real(DP) :: temperature
    real(DP) :: background
-   real(DP) :: depth
+   real(DP) :: depth !Depth relative to surface value at that pixel
+   real(DP) :: relative_depth !Depth relative to highest point in DEM
 end type thermaltype
 
 type regodatatype 
@@ -174,6 +175,7 @@ type domaintype
    integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
    integer(I4B) :: thermalcoverage ! Estimated areal coverage of craters since the last thermal diffusion step
    real(DP)     :: rmsvel            ! Root mean square impact velocity
+   real(DP)     :: hmax       ! maximum height of DEM
    real(DP),dimension(MAXAGEBINS) :: age_bin_times ! Time in Ga to move to the next age bin
 end type domaintype 
 

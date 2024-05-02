@@ -55,11 +55,13 @@ subroutine thermal_dist(user,thermal,crater)
             
             do k=1,zinc
                 !calculate the 3-dimensional distance from layer depth
-                distance = sqrt(lradsq+(thermal(xpi,ypi,k)%depth**2)) !currently uses "top left" instead of midpoint..
-                if (distance == 0.0_DP) then
-                    distance = 750. !this could be avoided by using midpoint. 750 is just a test for now
+                if (thermal(xpi,ypi,k)%depth > 0) then
+                    distance = sqrt(lradsq+(thermal(xpi,ypi,k)%depth**2)) !currently uses "top left" instead of midpoint..
+                    if (distance == 0.0_DP) then
+                        distance = 750. !this could be avoided by using midpoint. 750 is just a test for now
+                    end if
+                    call thermal_initial_temperature(user,crater,thermal(xpi,ypi,k),distance)
                 end if
-                call thermal_initial_temperature(user,crater,thermal(xpi,ypi,k),distance)
             end do
             
         end do

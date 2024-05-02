@@ -132,7 +132,7 @@ module driver
          !Add the ability to read the thermal grid here
       else
          call init_surf(user,surf,domain)
-         if (user%dothermal) call init_thermal(user,thermal)
+         if (user%dothermal) call init_thermal(user,domain,thermal)
       end if
 
       if (.not.user%tallyonly) then

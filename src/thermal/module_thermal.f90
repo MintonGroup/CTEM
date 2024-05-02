@@ -46,4 +46,14 @@ save
         end subroutine thermal_diffusion
     end interface
 
+    interface
+        subroutine thermal_depth_calculation(user,surf,domain,thermal)
+        use module_globals
+        type(usertype),intent(in) :: user
+        type(surftype),dimension(:,:),intent(in) :: surf
+        type(domaintype),intent(inout) :: domain
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        end subroutine thermal_depth_calculation
+    end interface
+
 end module

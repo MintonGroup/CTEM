@@ -43,6 +43,7 @@ subroutine thermal_diffusion(user,thermal,difftime)
     kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
     ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
+    write(*,*) "delta_t:", delta_t/(60*60*24*365), "yr."
     maxtime = ts / delta_t
 
     allocate(prev,source=thermal)
@@ -119,6 +120,8 @@ subroutine thermal_diffusion(user,thermal,difftime)
             open(3,file=filename,status='replace',form='unformatted')
             write(3) thermal(:,:,:)%temperature
             close(3)
+        else
+            prev(:,:,:)%temperature = thermal(:,:,:)%temperature
         end if
 
         if (nchanged == 0) exit !every voxel has cooled to the background temperature

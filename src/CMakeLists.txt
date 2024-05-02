@@ -149,6 +149,7 @@ SET(SRC_FILES
     ${SRC}/thermal/thermal_dist.f90
     ${SRC}/thermal/thermal_initial_temperature.f90
     ${SRC}/thermal/thermal_diffusion.f90
+    ${SRC}/thermal/thermal_depth_calculation.f90
     ${SRC}/main/ctem_driver.f90
 )
 

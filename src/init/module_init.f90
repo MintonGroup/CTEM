@@ -59,10 +59,11 @@ save
    end interface
 
    interface
-      subroutine init_thermal(user,thermal)
+      subroutine init_thermal(user,domain,thermal)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
+      type(domaintype),intent(inout) :: domain
       type(thermaltype),dimension(:,:,:),intent(out) :: thermal
       end subroutine init_thermal
    end interface
