@@ -35,9 +35,9 @@ subroutine thermal_dist(user,thermal,crater)
 
     ! Executable code
 
-    inc = max(min(13*crater%imprad,real(user%gridsize-1,kind=DP)),1.0_DP) +1 ! setting this to 13*impactor radius for now; 
+    inc = max(min((13*crater%imprad/user%pix),real(user%gridsize-1,kind=DP)),1.0_DP) +1 ! setting this to 13*impactor radius for now; 
                                                                            ! calculations show the temperature increase is ~10 K.
-    zinc = max(min(13*crater%imprad,real(user%zgridsize-1,kind=DP)),1.0_DP) +1
+    zinc = max(min((13*crater%imprad/user%zpix),real(user%zgridsize-1,kind=DP)),1.0_DP) +1
 
     do j=-inc,inc
         do i = -inc,inc

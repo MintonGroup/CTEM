@@ -226,7 +226,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             else
                time_since_diff = tstart - crater%timestampGa
             end if        
-            call thermal_diffusion(user,thermal,time_since_diff)
+            if (icrater .gt. 1) call thermal_diffusion(user,thermal,time_since_diff)
             tstart = crater%timestampGa
             domain%thermalcoverage = 0
          end if
@@ -373,10 +373,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          !Add ejecta to thermal distribution
 
-         if (user%dothermal) then
-            call thermal_depth_calculation(user,surf,domain,thermal)
-            !call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
-         end if
+         ! if (user%dothermal) then
+         !    call thermal_depth_calculation(user,surf,domain,thermal)
+         !    !call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
+         ! end if
          
          ! Find out if the current crater is the largest or smallest and if so record it
          if (crater%fcrat > cmax ) then
