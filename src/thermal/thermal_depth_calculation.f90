@@ -1,6 +1,6 @@
 !**********************************************************************************************************************************
 !
-!  Unit Name   : regolith_depth_calculation.f90
+!  Unit Name   : thermal_depth_calculation.f90
 !  Unit Type   : subroutine
 !  Project     : CTEM
 !  Language    : Fortran 2003

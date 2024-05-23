@@ -56,4 +56,25 @@ save
         end subroutine thermal_depth_calculation
     end interface
 
+    interface
+        subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
+        use module_globals
+        type(usertype),intent(in) :: user
+        type(surftype),dimension(:,:),intent(in) :: surf
+        type(cratertype),intent(in) :: crater
+        type(thermaltype),dimension(:,:,:),intent(in) :: thermal
+        real(DP),intent(out) :: avgtemp
+        end subroutine thermal_ejecta_average
+    end interface
+
+    interface
+        subroutine thermal_add_ejecta(user,thermi,avgtemp,thickness)
+        use module_globals
+        type(usertype),intent(in) :: user
+        type(thermaltype),intent(inout) :: thermi
+        real(DP),intent(in) :: avgtemp
+        real(DP),intent(in) :: thickness
+        end subroutine thermal_add_ejecta
+    end interface
+    
 end module

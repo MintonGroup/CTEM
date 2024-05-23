@@ -82,7 +82,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    real(DP),dimension(:,:),allocatable   :: ejecta_dem
    real(DP)                :: hmax, hmin
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet
-   real(DP)                :: vmeltsheet
+   real(DP)                :: vmeltsheet, avgtemp
    real(DP)                :: time_since_diff, tstart
 
    ! ejecta blanket array
@@ -324,6 +324,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          if (user%dothermal) then
             call thermal_depth_calculation(user,surf,domain,thermal)
             call thermal_dist(user,thermal,crater)
+            call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
          end if
 
          ! Place crater onto the surface
