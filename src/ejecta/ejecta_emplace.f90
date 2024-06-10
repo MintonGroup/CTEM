@@ -75,13 +75,14 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange,&
-   nmeltsheet,vmeltsheet)
+subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,cumulative_elchange,&
+   nmeltsheet,vmeltsheet,avgtemp)
    use module_globals
    use module_util
    use module_io
    use module_crater
    use module_regolith
+   use module_thermal
    use module_ejecta, EXCEPT_THIS_ONE => ejecta_emplace
    implicit none
 
@@ -90,12 +91,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
+   type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
    integer(I4B),intent(in) :: ejtble
    type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
    real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
    integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
+   real(DP),intent(in) :: avgtemp
 
    ! Internal variables
    real(DP) :: lrad,lradsq
@@ -306,6 +309,8 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
 
          ebh = areafrac * ejdistribution(idistorted,jdistorted) * ebh
          cumulative_elchange(i,j) = ebh + crater_profile(user, crater, lrad)
+
+         if (user%dothermal .and. ebh > 0 .and. avgtemp > 0) call thermal_add_ejecta(user,thermal(xpi,ypi,:),avgtemp,ebh) !Assuming ebh is the correct parameter for ejecta blanket thickness
 
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region

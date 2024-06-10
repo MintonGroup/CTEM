@@ -344,8 +344,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             else 
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
             end if
-            call ejecta_emplace(user,surf,crater,domain,ejb(1:ejtble),ejtble,ejbmass,&
-               ejecta_dem,nmeltsheet,vmeltsheet)
+            call ejecta_emplace(user,surf,crater,domain,thermal,ejb(1:ejtble),ejtble,ejbmass,&
+               ejecta_dem,nmeltsheet,vmeltsheet,avgtemp)
          else
             ejtble = 0
          end if

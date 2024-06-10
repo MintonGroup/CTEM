@@ -25,20 +25,22 @@ public
 save
 
    interface
-      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange,&
-         nmeltsheet,vmeltsheet)
+      subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,cumulative_elchange,&
+         nmeltsheet,vmeltsheet,avgtemp)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
+      type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
       integer(I4B),intent(in) :: ejtble
       type(ejbtype),dimension(:),intent(inout)   :: ejb
       real(DP),intent(in) :: deltaMtot
       real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
       integer(I4B),intent(in) :: nmeltsheet
       real(DP),intent(out) :: vmeltsheet
+      real(DP),intent(in) :: avgtemp
       end subroutine ejecta_emplace
    end interface
 
