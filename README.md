@@ -23,7 +23,7 @@ $ ctem
 ### Installing CTEM for code development
 ****************************************
 
-CTEM uses CMake to automate the build process. You will need at least version 3.6.0.
+Installing CTEM via pip automatically builds the standalone executable from the Fortran source code. For code development, it can be useful to compile the Fortran code on its own. CTEM uses CMake to automate the build process. You will need at least version 3.6.0.
 
 Navigate to the topmost directory in your CTEM repository. It is best practice to create a ```build``` directory in your topmost directory from which you will compile CTEM. This way, temporary CMake files will not clutter up the project sub-directories. The commands to build the source code into a `build` directory and compile CTEM are:
 
