@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine io_write_surf(user,surf)
+subroutine io_write_surf(user,surf,domain)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_write_surf
    implicit none
@@ -24,6 +24,7 @@ subroutine io_write_surf(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(in) :: surf
+   type(domaintype),intent(in) :: domain
 
    ! Internals
    integer(I4B) :: i
@@ -38,7 +39,7 @@ subroutine io_write_surf(user,surf)
 
 
    ! Write matrix files
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
+   recsize = storage_size(dtmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=DEMFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) surf%dem
    close(LUN)
@@ -59,7 +60,7 @@ subroutine io_write_surf(user,surf)
    end do
    close(LUN)
 
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
+   recsize = storage_size(stmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=POSFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    do i=1,user%numlayers 
       write(LUN,rec=2*i-1) surf%xl(i)
@@ -67,21 +68,7 @@ subroutine io_write_surf(user,surf)
    end do
    close(LUN)
 
-   if (user%doregotrack) then
-      !call io_write_regodist(user,surf)
-      call io_write_regotrack(user,surf) 
-   end if
+   if (user%doregotrack) call io_write_regotrack(user,surf,domain) 
    
-   ! write data from porosity analysis
-   if (user%doporosity) call io_write_porotrack(user, surf)
-   
-!   if (user%docrustal_thinning) then
-!      recsize = sizeof(itmp) * user%gridsize * user%gridsize
-!      open(LUN,file=THICKFILE,status='replace',form='unformatted',recl=recsize,access='direct')
-!      write(LUN,rec=1) surf%mantle
-!      close(LUN)
-!   end if
-
-
    return
 end subroutine io_write_surf

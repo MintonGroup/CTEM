@@ -43,10 +43,10 @@ subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
    real(DP) :: resultat,AA,BB,CC,DD,EE,FA,FB,FC,Tol1,PP,QQ,RR,SS,xm
    integer(I4B) :: i,j, ev,br
    integer(I4B),parameter :: NTRY = 50
-   integer(I4B),parameter :: NBRACKET = 5
+   integer(I4B),parameter :: NBRACKET =20 
    real(DP),parameter :: FIRSTFACTOR = 1.6_DP
    real(DP) :: factor
-   real(DP) :: f1,f2
+   real(DP) :: f1, f2, fmin
    integer(I4B) :: numev,numbr
 
    ! Executable code
@@ -64,22 +64,32 @@ subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
          numbr=numbr+1
          erad = starterad
          x2 = starterad/factor
-
          ! First bracket the root
          f1 = ejecta_blanket_func(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
          f2 = ejecta_blanket_func(user,crater,domain,x2,lrad,vejsq,ejang,firstrun)
+         fmin = abs(f1)
          do j=1,NTRY
-            if (f1*f2 < 0._DP) exit
+            if ((f1 * f2 < 0._DP)) exit bracket
             if (abs(f1) < abs(f2)) then
-               erad=erad+factor*(erad-x2)
-               f1=ejecta_blanket_func(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
+               erad = erad + factor * (erad - x2)
+               if (erad < 0.0_DP) exit
+               f1 = ejecta_blanket_func(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
+               if (abs(f1) < fmin) then
+                  fmin = abs(f1)
+                  starterad = erad
+               end if
             else
-               x2=x2+factor*(x2-erad)
-               f2=ejecta_blanket_func(user,crater,domain,x2,lrad,vejsq,ejang,firstrun)
+               x2 = x2 + factor * (x2 - erad)
+               if (x2 < 0.0_DP) exit
+               f2 = ejecta_blanket_func(user,crater,domain,x2,lrad,vejsq,ejang,firstrun)
+               if (abs(f2) < fmin) then
+                  fmin = abs(f2)
+                  starterad = x2
+               end if
             end if
          end do
-         if ((erad<=crater%ejrad).and.(erad>0._DP)) exit
-         factor=0.5_DP*(factor+1._DP)
+         erad = x2
+         factor = 0.5_DP * (factor + 1._DP)
       end do bracket
 
       ! Now do a Brent's method to find the root
@@ -153,7 +163,7 @@ subroutine ejecta_rootfind(user,crater,domain,erad,lrad,vejsq,ejang,firstrun)
       end if
       niter = i
       erad = resultat
-      if ((erad <= crater%ejrad).and.(lrad >= crater%ejrad).and.(erad >= 0._DP)) exit
+      if (erad >= 0._DP) exit
       factor = 0.5_DP  * (factor + 1.0_DP) ! Failed. Try again with a new factor
    end do everything
 

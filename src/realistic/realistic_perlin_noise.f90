@@ -605,17 +605,9 @@ subroutine realistic_ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    real(DP)                      :: splatmag           ! The magnitude of the splat features relative to the ejecta thickness
    integer(I4B)         :: nsplat_octaves
    integer(I4B)         :: nseed
-   integer(I4B),dimension(:),allocatable :: seed 
    real(DP),dimension(:),allocatable :: Sarr,Aarr
    real(DP),dimension(:,:),allocatable :: anchor
 
-
-   !Executable code
-   call random_seed(size = nseed)
-   allocate(seed(nseed))
-   seed = 42 * (/ (i - 1, i = 1, nseed) /)
-   call random_seed(put = seed)
-   deallocate(seed)
 
    ! Copernicus values
    num_octaves = 20

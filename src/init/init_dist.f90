@@ -33,7 +33,7 @@ subroutine init_dist(user,domain)
    ! Executable code
 
    ! Get size of crater production function array
-   open(unit=LUN,file=user%sfdfile,status="old",iostat=ierr)
+   open(unit=LUN,file=trim(adjustl(user%sfdfile)),status="old",iostat=ierr)
    if (ierr /= 0) then
       write(*,*) "Unable to open file ", trim(user%sfdfile)
       stop
@@ -47,12 +47,12 @@ subroutine init_dist(user,domain)
    end do
 
    if (domain%pnum == 0) then
-      write(*,*) "No valid entries in ",trim(user%sfdfile)
+      write(*,*) "No valid entries in ",trim(adjustl(user%sfdfile))
    end if
    close(LUN)
 
    ! Get size of velocity distribution array
-   open(unit=LUN,file=user%velfile,status="old",iostat=ierr)
+   open(unit=LUN,file=trim(adjustl(user%velfile)),status="old",iostat=ierr)
    if (ierr /= 0) then
    write(*,*) "Unable to open file ",trim(user%velfile)
       stop
@@ -65,9 +65,32 @@ subroutine init_dist(user,domain)
       domain%vnum = domain%vnum + 1
    end do
    if (domain%vnum == 0) then
-      write(*,*) "No valid entries in ",trim(user%velfile)
+      write(*,*) "No valid entries in ",trim(adjustl(user%velfile))
    end if
    close(LUN)
+
+   ! Get size of real crater list array
+   if (user%doquasimc) then
+      open(unit=LUN,file=trim(adjustl(rcfile)),status="old",iostat=ierr)
+      if (ierr /= 0) then
+         write(*,*) "Unable to open file ", trim(adjustl(rcfile))
+         stop
+      end if
+
+      domain%rcnum = 0
+      do
+         read(LUN,*,iostat=ierr) testreal,testreal,testreal,testreal,testreal,testreal
+         if (ierr/=0) exit
+         domain%rcnum = domain%rcnum + 1
+      end do
+
+      if (domain%rcnum == 0) then
+         write(*,*) "No valid entries in ",trim(rcfile)
+      end if
+      close(LUN)
+   else
+      domain%rcnum = 1
+   end if
 
 
    return

@@ -16,43 +16,68 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine regolith_mix(surfi,mixing_depth)
+subroutine regolith_mix(user,surfi,mixing_depth,domain)
    use module_globals
    use module_util
    use module_regolith, EXCEPT_THIS_ONE => regolith_mix
    implicit none
 
    ! Arguments
+   type(usertype),intent(in) :: user
    type(surftype),intent(inout) :: surfi
    real(DP), intent(in) :: mixing_depth
+   type(domaintype),intent(in) :: domain
 
    ! Internal variables
    type(regodatatype) :: newlayer
-   type(regolisttype),pointer :: poppedlist,poppedlist_top
+   !type(regolisttype),pointer :: poppedlist,poppedlist_top
+   type(regodatatype),dimension(:),allocatable :: poppedarray
+   integer(I4B) :: i, j, N
 
    !===============================================
    ! Add up all layers' info until a desired depth
-   !===============================================          
-   call util_traverse_pop(surfi%regolayer,mixing_depth,poppedlist_top)
+   !=============================================== 
+   ! !test code to create a situation for a breakpoint, since vscode debugger won't recognize the conditional breakpoint
+   ! if(domain%currentqmc .eqv. .true.) then
+   !    j = 0
+   ! end if     
+   call util_traverse_pop_array(user,surfi%regolayer,mixing_depth,poppedarray)
 
    newlayer%thickness = 0.0_DP
-   newlayer%comp = 0.0_DP
-   newlayer%meltfrac = 0.0_DP
+   newlayer%comp      = 0.0_DP
+   newlayer%age(:)    = 0.0_SP
+   allocate(newlayer%distvol(1+domain%rcnum))
+   newlayer%distvol(:) = 0.0_SP
+   newlayer%ejm       = 0.0_DP
+   newlayer%meltvolume = 0.0_DP
+   newlayer%totvolume = 0.0_DP
 
-   poppedlist => poppedlist_top
-   do while(associated(poppedlist%next))
-      newlayer%thickness = newlayer%thickness + poppedlist%regodata%thickness
-      newlayer%comp = newlayer%comp + poppedlist%regodata%thickness * poppedlist%regodata%comp       
-      newlayer%meltfrac = newlayer%meltfrac + poppedlist%regodata%thickness * poppedlist%regodata%meltfrac
-      poppedlist => poppedlist%next
+   !poppedlist => poppedlist_top
+   !do while(associated(poppedlist%next))
+   N = size(poppedarray)
+   do i = N,1,-1
+      newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
+      newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
+      newlayer%age(:)    = newlayer%age(:) + poppedarray(i)%age(:)
+      newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%distvol(:)
+      newlayer%ejm       = newlayer%ejm + poppedarray(i)%ejm
+      newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%meltvolume
    end do
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
-   newlayer%meltfrac = newlayer%meltfrac / newlayer%thickness 
+
+   newlayer%totvolume = newlayer%thickness * user%pix * user%pix
    
-   call util_push(surfi%regolayer, newlayer)
-   call util_destroy_list(poppedlist_top)
+   call util_push_array(surfi%regolayer, newlayer)
+   !call util_destroy_list(poppedlist_top)
+
+
+   ! do i = N,1,-1
+   !    if (abs(surfi%regolayer(i)%meltvolume - sum(surfi%regolayer(i)%distvol) > 1e-5)) then
+   !    write(*,*) "melt array =/= melt value!", domain%nqmc, domain%currentqmc, abs(surfi%regolayer(i)%meltvolume - sum(surfi%regolayer(i)%distvol))
+   !    end if
+   ! end do
 
    return
 end subroutine regolith_mix

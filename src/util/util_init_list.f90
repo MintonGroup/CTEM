@@ -54,7 +54,7 @@
 !                layer. 
 !
 !**********************************************************************************************************************************
-subroutine util_init_list(regolayer, initstat)
+subroutine util_init_list(regolayer,initstat)
    use module_globals
    use module_util, EXCEPT_THIS_ONE => util_init_list
    implicit none
@@ -73,12 +73,18 @@ subroutine util_init_list(regolayer, initstat)
       if (allocstat == 0) then
          initstat = .true.
          nullify(regolayer%next)
-         regolayer%regodata%thickness = VBIG ! This generates a buffer layer that the model should never reach if the run is structured properly
-         regolayer%regodata%comp      = 0.0_DP
-         regolayer%regodata%meltfrac  = 0.0_DP
-         regolayer%regodata%porosity  = 0.07_DP      ! This is also the initial bedrock porosity, Should be in the input file. 
-         regolayer%regodata%depth     = - 30000.0_DP ! The depth at the boundary of the crust. 
-                                                     ! This must be defined in the input file. But not in this version. 
+         ! regolayer%regodata%thickness = sqrt(VBIG) ! This generates a buffer layer that the model should never reach if the run is structured properly
+         ! regolayer%regodata%comp = 0.0_DP
+         ! regolayer%regodata%meltfrac = 0.0_DP
+         ! regolayer%regodata%porosity = 0.0_DP
+         ! regolayer%regodata%age(:)   = 0.0_SP
+         if allocated(regolayer) deallocate(regolayer)
+         allocate(regolayer(1))
+         regolayer(1)%thickness = sqrt(VBIG) ! This generates a buffer layer that the model should never reach if the run is structured properly
+         regolayer(1)%comp = 0.0_DP
+         regolayer(1)%meltfrac = 0.0_DP
+         regolayer(1)%porosity = 0.0_DP
+         regolayer(1)%age(:)   = 0.0_SP
       else
          write(*,*) 'util_init_list: Initialization failed. Exhausted memory.'
       end if
@@ -88,3 +94,4 @@ subroutine util_init_list(regolayer, initstat)
 
    return
 end subroutine util_init_list
+

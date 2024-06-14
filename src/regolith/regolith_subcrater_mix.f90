@@ -36,6 +36,11 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
    real(DP) :: dd, ds !mixing depth for shallow and deep
    integer(I4B) :: klo, khi
 
+   ! Test age
+   real(SP) :: age_mean
+
+   integer(I4B) :: N
+
    ! Find the deepest depth for 100% true saturation
    klo = 1
    ds = p(1,1) 
@@ -58,8 +63,10 @@ subroutine regolith_subcrater_mix(user,surf,domain,nflux,finterval,p)
                  dd = p(1,domain%smallest_impactor_index)
          end if
 
-         if (surf(i,j)%regolayer%regodata%thickness < dd) then             
-            call regolith_mix(surf(i,j),dd)
+         N = size(surf(i,j)%regolayer)
+
+         if (surf(i,j)%regolayer(N)%thickness < dd) then             
+            call regolith_mix(user,surf(i,j),dd,domain)
          end if
          
        end do

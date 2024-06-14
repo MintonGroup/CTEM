@@ -27,7 +27,7 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
    type(domaintype),intent(in) :: domain
    real(DP),intent(in)  :: lrad
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(in) :: ejb
+   type(ejbtype),dimension(:),intent(in) :: ejb
    real(DP),intent(out) :: ebh
    real(DP),intent(out),optional :: vsq,theta,erad
    real(DP),intent(out),optional :: melt
@@ -46,7 +46,13 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
    logtablerad = ejb(k)%lrad 
 
    ! Interpolate in logspace (this saves on the number of table elements we need)
-   if (k == ejtble) then
+   if (ejtble == 1) then
+      ebh = ejb(k)%thick
+      if (present(vsq)) vsq = ejb(k)%vesq
+      if (present(theta)) theta= ejb(k)%angle
+      if (present(melt)) melt = ejb(k)%meltfrac
+      if (present(erad)) erad = ejb(k)%erad
+   else if (k == ejtble) then
       logdelta = logtablerad - ejb(k - 1)%lrad
       frac = (loglrad - logtablerad) / logdelta
       ebh = ejb(k)%thick - ((ejb(k)%thick - LOGVSMALL) * frac)
@@ -63,9 +69,48 @@ subroutine ejecta_interpolate(crater,domain,lrad,ejb,ejtble,ebh,vsq,theta,erad,m
       if (present(melt)) melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac) 
       if (present(erad)) erad = ejb(k)%erad - ((ejb(k)%erad - ejb(k+1)%erad) * frac) 
    end if
-   ebh = exp(ebh) 
-   if (lrad > crater%ejdis) ebh = 0._DP
-  
+   if (ebh < LOGVSMALL) then 
+      ebh = 0.0_DP
+   else
+      ebh = exp(ebh) 
+   end if
+   if (lrad > crater%ejdis) then
+      ebh = 0._DP
+      if (present(vsq)) vsq = 0._DP
+      if (present(theta)) theta = 0._DP
+      if (present(melt)) melt = 0._DP
+      if (present(erad)) erad = 0._DP
+   else
+      if (present(vsq)) then 
+         if (vsq < LOGVSMALL) then
+            vsq = 0.0_DP
+         else 
+            vsq = exp(vsq)
+         end if
+      end if
+      if (present(theta)) then
+         if (theta < LOGVSMALL) then
+            theta = 0.0_DP
+         else
+            theta = exp(theta)
+         end if
+      end if
+      if (present(melt)) then
+         if (melt < LOGVSMALL) then
+            melt = 0.0_DP
+         else
+            melt = exp(melt)
+         end if
+      end if
+      if (present(erad)) then
+         if (erad < LOGVSMALL) then
+            erad = 0.0_DP
+         else
+            erad = exp(erad)
+         end if
+      end if
+   end if
+   
    return
 
 end subroutine ejecta_interpolate

@@ -49,8 +49,16 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    integer(I4B),dimension(:,:),allocatable :: ejisray
    real(DP) :: xbar,ybar,dD,xp,yp,areafrac,krad,supersize,lrad
    integer(I8B),dimension(user%gridsize,user%gridsize) :: Ngrid
-   
 
+   ! Crater ray parameters
+   real(DP) :: rray != 48_DP ! "L16" in Minton et al. (2019)
+   integer(I4B) :: Nraymax = 12
+   real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
+   real(DP) :: rayp = 2.0_DP 
+   integer(I4B) :: rayq = 4
+   real(DP) :: rayfmult = (5)**(-4.0_DP / (1.2_DP))
+   real(DP) :: l1
+   
    ! Create box for soften calculation (will be no bigger than the grid itself)
    do j = 0,user%gridsize + 1
       do i = 0,user%gridsize + 1
@@ -94,6 +102,7 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          end if
 
          lambda = dN * domain%parea
+         if (lambda > 1.0_DP * huge(N)) cycle ! Too many impactors. 
 
          ! Don't parallelize the random
          do j = 1,user%gridsize
@@ -175,11 +184,14 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
          
             allocate(diffdistribution(imin:imax,jmin:jmax))
             allocate(ejdistribution(imin:imax,jmin:jmax))
-            call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,diffdistribution,ejdistribution)
+            rray = 11.95_DP*crater%frad**1.32
+            l1 = 5.32_DP*crater%frad**1.27
+
+            call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
             ! Loop over affected matrix area
-            !$OMP PARALLEL DO DEFAULT(PRIVATE) IF(inc > INCPAR) &
-            !$OMP SHARED(jmin,jmax,imin,imax,kdiff,dKdN,krad,diffdistribution,ejdistribution) &
-            !$OMP SHARED(crater,user,surf) 
+            !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
+            !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &
+            !!$OMP PRIVATE(i, xp, yp, xpi, ypi, lrad)
             do j = jmin,jmax
                do i = imin,imax
                   xpi = crater%xlpx + i
@@ -190,10 +202,10 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
                   yp = ypi * user%pix
                   lrad = sqrt((xp - crater%xl)**2 + (yp - crater%yl)**2)
                   surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ejdistribution(i,j) &
-                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3.0_DP)
+                  * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3)
                end do
             end do
-            !$OMP END PARALLEL DO
+            !!$OMP END PARALLEL DO
             deallocate(diffdistribution,ejdistribution)
          end do
       end if
@@ -206,14 +218,6 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    kdiff(:,0) = kdiff(:,user%gridsize)
    kdiff(user%gridsize + 1,:) = kdiff(1,:)
    kdiff(:,user%gridsize + 1) = kdiff(:,1)  
-
-   write(*,*)
-   write(*,*) 'avgkdiff = ',sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   write(*,*)
-   open(unit=55,file='avgkdiff.dat',status='unknown',position='append')
-   write(55,*) sum(kdiff) / (user%gridsize + 2)**2 / finterval
-   close(55)
-
 
    call util_diffusion_solver(user,surf,user%gridsize + 2,indarray,kdiff,cumulative_elchange,maxhits)
    do j = 1,user%gridsize

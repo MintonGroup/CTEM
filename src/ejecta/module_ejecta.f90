@@ -25,7 +25,8 @@ public
 save
 
    interface
-      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange)
+      subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange,&
+         nmeltsheet,vmeltsheet)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -33,23 +34,53 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(inout)   :: ejb
+      type(ejbtype),dimension(:),intent(inout)   :: ejb
       real(DP),intent(in) :: deltaMtot
       real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
+      integer(I4B),intent(in) :: nmeltsheet
+      real(DP),intent(out) :: vmeltsheet
       end subroutine ejecta_emplace
    end interface
 
    interface
-      subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,diffdistribution,ejdistribution)
+      subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(in) :: surf
       type(cratertype),intent(inout) :: crater
       integer(I4B),intent(in) :: inc,xi,xf,yi,yf
+      real(DP),intent(in) :: rray, fpeak, rayp, rayfmult
+      integer(I4B),intent(in) :: Nraymax, rayq
       real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
       real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
+      real(DP),intent(in) :: l1
+
       end subroutine ejecta_ray_pattern
+   end interface
+
+   interface
+      function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,l1,ej) result(ans)
+      use module_globals
+      implicit none
+      real(DP) :: ans
+      real(DP),intent(in) :: r,rmin,rmax,theta
+      real(DP),dimension(:),intent(in) :: thetari
+      real(DP),intent(in) :: rray, fpeak, rayp, rayfmult
+      integer(I4B),intent(in) :: Nraymax, rayq
+      real(DP),intent(in) :: l1
+      logical,intent(in) :: ej
+      end function ejecta_ray_pattern_func
+   end interface
+
+   interface
+      function ejecta_ray_func(theta,thetar,r,n,w) result(ans)
+      use module_globals
+      implicit none
+      real(DP) :: ans
+      real(DP),intent(in) :: theta,thetar,r,w
+      integer(I4B),intent(in) :: n
+      end function ejecta_ray_func
    end interface
 
    interface
@@ -111,7 +142,7 @@ save
       type(usertype),intent(in) :: user
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
-      type(ejbtype),dimension(EJBTABSIZE),intent(out) :: ejb
+      type(ejbtype),dimension(:),intent(inout) :: ejb
       integer(I4B),intent(out) :: ejtble
       real(DP),intent(out),optional :: melt
       end subroutine ejecta_table_define
@@ -125,7 +156,7 @@ save
       type(domaintype),intent(in) :: domain
       real(DP),intent(in)  :: lrad
       integer(I4B),intent(in) :: ejtble
-      type(ejbtype),dimension(ejtble),intent(in) :: ejb
+      type(ejbtype),dimension(:),intent(in) :: ejb
       real(DP),intent(out) :: ebh
       real(DP),intent(out),optional :: vsq,theta
       real(DP),intent(out),optional :: erad,melt

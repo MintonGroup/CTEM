@@ -39,12 +39,15 @@ subroutine crater_generate(user,crater,domain,prod,production_list,vdist,surf)
    integer(I4B)             :: k,khi,klo,Nk
    integer(I8B)             :: random_index,numremaining,nabove,nabovep1
 
-   !TESTING FOR VARIABLE FE MODERL
-   real(DP) :: mfe,bfe
-
-
    ! Get all six random numbers we need in one call
-   if (.not.domain%initialize) call random_number(rn)
+   if (.not.domain%initialize) then
+      ! Initialize the random number generator with the current value of the seeds
+      call random_seed(put=crater%seedarr)
+      call random_number(rn)
+      ! Save the current value of the seeds for the next time we need a new crater. This ensures we can get a repeatable population population of craters, 
+      ! regardless of whether other procedures that use the random number generator are used or not
+      call random_seed(get=crater%seedarr)
+   end if
 
    ! Find crater center position
    if (domain%initialize) then

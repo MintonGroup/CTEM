@@ -30,24 +30,25 @@ save
 
    interface
       subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,ntrue,vistrue,ntotkilled,truelist,&
-                                 mass,fracdone,nflux,ntotcrat,curyear)
+                                 mass,fracdone,nflux,ntotcrat,curyear,rclist)
       use module_globals
       implicit none
-      type(usertype),intent(in) :: user
+      type(usertype),intent(inout) :: user
       type(surftype),dimension(:,:),intent(inout)  :: surf
       type(cratertype),intent(inout)               :: crater
       type(domaintype),intent(inout)               :: domain
       real(DP),dimension(:,:),intent(in)           :: prod,vdist
-      integer(I8B),dimension(:),intent(inout)         :: production_list            
+      integer(I8B),dimension(:),intent(inout)      :: production_list            
       integer(I4B),intent(out)                     :: ntrue
       integer(I4B),intent(out)                     :: vistrue
       integer(I4B),intent(out)                     :: ntotkilled
-      real(DP),dimension(:,:),intent(out)          :: truelist
+      real(DP),dimension(:,:),allocatable,intent(inout) :: truelist
       real(DP),intent(out)                         :: mass
       real(DP),intent(out)                         :: fracdone
       real(DP),dimension(:,:),intent(in)           :: nflux 
       integer(I8B),intent(in)                      :: ntotcrat
       real(DP),intent(in)                          :: curyear
+      real(DP),dimension(:,:), intent(in)              :: rclist !array of 'real' craters for quasiMC
       end subroutine crater_populate
    end interface
 
@@ -96,7 +97,7 @@ save
    end interface
 
    interface
-      subroutine crater_emplace(user,surf,crater,domain,deltaMtot)
+      subroutine crater_emplace(user,surf,crater,domain,deltaMtot,incval,nmeltsheet)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -104,6 +105,7 @@ save
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(inout) :: domain
       real(DP),intent(out) :: deltaMtot
+      integer(I4B),intent(out) :: incval,nmeltsheet
       end subroutine crater_emplace
    end interface
 
@@ -186,7 +188,7 @@ save
       implicit none
       type(domaintype),intent(in) :: domain
       integer(I4B),intent(in)   :: ntrue
-      real(DP),dimension(TRUECOLS,ntrue),intent(inout)  :: truelist
+      real(DP),dimension(:,:),intent(inout)  :: truelist
       real(DP),dimension(:,:),intent(out) :: truedist
       end subroutine crater_tally_true
    end interface
@@ -208,14 +210,14 @@ save
    end interface
 
    interface
-      subroutine crater_slope_collapse(user,surf,crater,domain,critical,deltaMtot)
+      subroutine crater_slope_collapse(user,surf,crater,domain,critical_value,deltaMtot)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
       type(domaintype),intent(in) :: domain
-      real(DP),intent(in) :: critical
+      real(DP),intent(in) :: critical_value
       real(DP),intent(inout) :: deltaMtot
       end subroutine crater_slope_collapse
    end interface
@@ -323,6 +325,17 @@ save
       type(cratertype),intent(in) :: crater
       real(DP) :: r_inner_wall
       end function crater_profile_find_r_inner_wall
+   end interface
+
+   interface
+      subroutine crater_superdomain(user,surf,prod,nflux,domain,finterval)
+      use module_globals
+      type(usertype),intent(in)                           :: user
+      type(surftype),dimension(:,:),intent(inout)         :: surf
+      real(DP),dimension(:,:),intent(in)                  :: prod,nflux
+      type(domaintype),intent(in)                         :: domain
+      real(DP),intent(in)                                 :: finterval
+      end subroutine crater_superdomain
    end interface
 
 end module

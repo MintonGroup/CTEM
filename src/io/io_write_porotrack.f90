@@ -63,7 +63,7 @@ subroutine io_write_porotrack(user,surf)
    close(LUN)
    close(LUM)
 
-   recsize = sizeof(itmp) * user%gridsize * user%gridsize
+   recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=STACKPORFILE,status='replace',form='unformatted',recl=recsize,access='direct')
    write(LUN,rec=1) stacks_num
    close(LUN)

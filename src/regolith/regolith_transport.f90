@@ -33,7 +33,7 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(in)   :: ejb
+   type(ejbtype),dimension(:),intent(in)   :: ejb
    real(DP),intent(in)          :: lrad,ebh
    type(regodatatype), intent(inout) :: newlayer
 
@@ -63,10 +63,15 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
       frac = (loglrad - logtablerad) / logdelta 
       melt = ejb(k)%meltfrac - ((ejb(k)%meltfrac - ejb(k+1)%meltfrac) * frac)
    end if 
+   if (melt < LOGVSMALL) then
+      melt = 0.0_DP
+   else
+      melt = exp(melt)
+   end if
 
-   newlayer%meltfrac = melt
+   newlayer%meltvolume = melt * newlayer%totvolume
    
-   call util_push(surfi%regolayer,newlayer)
+   call util_push_array(surfi%regolayer,newlayer)
 
    return
 end subroutine regolith_transport

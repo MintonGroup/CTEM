@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine io_read_surf(user,surf)
+subroutine io_read_surf(user,surf,domain)
    use module_globals
    use module_io, EXCEPT_THIS_ONE => io_read_surf
    implicit none
@@ -24,6 +24,7 @@ subroutine io_read_surf(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(out) :: surf
+   type(domaintype),intent(in)    :: domain
 
    ! Internals
    integer(I4B) :: ioerr,i
@@ -36,10 +37,7 @@ subroutine io_read_surf(user,surf)
    ! Executable code
 
    ! Read in matrix files
-   recsize = sizeof(dtmp) * user%gridsize * user%gridsize
-   !write(*,*) 'recsize = ',recsize
-   !write(*,*) 'alternate = ', sizeof(dtmp) * user%gridsize * user%gridsize
-   !read(*,*) 
+   recsize = storage_size(dtmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=DEMFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
       write(*,*) 'Error! Cannot read file ',trim(adjustl(DEMFILE))
@@ -69,7 +67,7 @@ subroutine io_read_surf(user,surf)
 
    open(LUN,file=TIMEFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
-      write(*,*) 'Error! Cannot read file ',trim(adjustl(DIAMFILE))
+      write(*,*) 'Error! Cannot read file ',trim(adjustl(TIMEFILE))
       stop
    end if
    do i=1,user%numlayers 
@@ -77,8 +75,7 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-
-   recsize = sizeof(stmp) * user%gridsize * user%gridsize
+   recsize = storage_size(stmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=POSFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
    if (ioerr/=0) then
       write(*,*) 'Error! Cannot read file ',trim(adjustl(POSFILE))
@@ -90,21 +87,7 @@ subroutine io_read_surf(user,surf)
    end do
    close(LUN)
 
-   if (user%doregotrack) call io_read_regotrack(user,surf)
+   if (user%doregotrack) call io_read_regotrack(user,surf,domain)
    
-	! if doporosity, call io_read_porotrack to define the porosity linked list from the read files. 
-   if (user%doporosity)  call io_read_porotrack(user,surf)
-
-   !if (user%docrustal_thinning) then
-   !   recsize=sizeof(itmp)*user%gridsize*user%gridsize
-   !   open(LUN,file=THICKFILE,status='old',form='unformatted',recl=recsize,access='direct',iostat=ioerr)
-   !   if (ioerr/=0) then
-   !      write(*,*) 'Error! Cannot read file ',trim(adjustl(THICKFILE))
-   !      stop
-   !   end if
-   !   read(LUN,rec=1) surf%mantle
-   !   close(LUN)
-   !end if
-
    return
 end subroutine io_read_surf

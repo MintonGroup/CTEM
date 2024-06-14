@@ -51,7 +51,7 @@ subroutine crater_dimensions(user,crater,domain)
          crater%rimheight  = 0.236_DP * (crater%fcrat * 1e-3_DP)**(0.399_DP) * 1e3_DP !* crater%fcrat
          crater%rimwidth   = 0.467_DP * (crater%fcrat * 1e-3_DP)**(0.836_DP) * 1e3_DP !* crater%fcrat
          crater%floordepth = 1.044_DP * (crater%fcrat * 1e-3_DP)**(0.301_DP) * 1e3_DP !* crater%fcrat
-         crater%floordiam  = 0.187_DP * (crater%fcrat * 1e-3_DP)**(1.249_DP) * 1e3_DP !* crater%fcrat
+         crater%floordiam  = min(0.187_DP * (crater%fcrat * 1e-3_DP)**(1.249_DP) * 1e3_DP, 0.9_DP * crater%fcrat) !* crater%fcrat
          crater%peakheight = 0.032_DP * (crater%fcrat * 1e-3_DP)**(0.900_DP) * 1e3_DP !* crater%fcrat 
    end select
 
@@ -68,8 +68,10 @@ subroutine crater_dimensions(user,crater,domain)
 
    ! Calculate the radius where the inner wall meets the original pre-existing surface
    ! This is used to demark the location where excavation transitions to deposition
-   crater%ejrad = crater_profile_find_r_inner_wall(user,crater) * crater%frad
+   crater%ejrim = 0.14_DP * (crater%fcrat * 0.5_DP)**(0.74_DP) ! McGetchin et al. (1973) Thickness of ejecta at rim
+   crater%ejrad = max(crater_profile_find_r_inner_wall(user,crater) * crater%frad, crater%rad)
 
+   ! print *,'in _dimension.f90',crater%rimheight,crater%ejrim
    !find rim for counting purposes
    crater%frim = RIMFAC * crater%frad
 

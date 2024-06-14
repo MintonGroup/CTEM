@@ -75,7 +75,8 @@
 !                The cutoff of ejecta thickness is still buggy.  
 !
 !**********************************************************************************************************************************
-subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange)
+subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulative_elchange,&
+   nmeltsheet,vmeltsheet)
    use module_globals
    use module_util
    use module_io
@@ -90,9 +91,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    type(cratertype),intent(inout) :: crater
    type(domaintype),intent(in) :: domain
    integer(I4B),intent(in) :: ejtble
-   type(ejbtype),dimension(ejtble),intent(inout)    :: ejb
+   type(ejbtype),dimension(:),intent(inout)    :: ejb
    real(DP),intent(in) :: deltaMtot
-   real(DP),dimension(:,:),allocatable,intent(out) :: cumulative_elchange
+   real(DP),dimension(:,:),allocatable,intent(inout) :: cumulative_elchange
+   integer(I4B),intent(in) :: nmeltsheet
+   real(DP),intent(out) :: vmeltsheet
 
    ! Internal variables
    real(DP) :: lrad,lradsq
@@ -101,9 +104,14 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP) :: xp,yp,fradsq,fradpxsq,radsq,ebh,ejdissq,ejbmass,fmasscons,areafrac,xbar,ybar,krad,kdiffmax
    real(DP),dimension(:,:),allocatable :: big_cumulative_elchange,kdiff,big_kdiff,cel,big_cel
    integer(I4B),dimension(:,:,:),allocatable :: indarray,big_indarray
-   real(DP),dimension(:,:),allocatable :: ejdistribution,diffdistribution
+   real(DP),dimension(:,:),allocatable :: ejdistribution,diffdistribution,maxdiff, maxej
+   real(DP),dimension(:,:),allocatable :: tempdiff,tempej
    integer(I4B) :: bigi,bigj,maxhits,nin,nnot,dradsq
    character(len=MESSAGESIZE) :: message  ! message for the progress bar
+   real(DP) :: vmelt, totmelt, volm
+   real(DP) :: frayreduction = 0.5_DP ! Factor to apply to reduce the relative thickness of the ray for each subsequent pattern
+   integer(I4B), parameter :: Npatt = 8 ! Number of times to call ray pattern
+   
    
 
    ! Ray mixing model variables 
@@ -118,12 +126,30 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    real(DP)      :: vsq, ejtheta
    integer(I4B) :: ind,klo
 
+   ! Age
+   real(SP) :: age_mean
+
+   ! Crater ray parameters
+   real(DP) :: rray != 48.0_DP ! "L16" in Minton et al. (2019)
+   integer(I4B) :: Nraymax = 5
+   real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
+   real(DP) :: rayp = 2.0_DP 
+   integer(I4B) :: rayq = 4
+   real(DP) :: rayfmult = (5)**(-4.0_DP / (1.2_DP))
+   real(DP) :: l1
+
+
+   l1 = (5.32_DP*(crater%frad/1000)**1.27)/(crater%frad/1000)
+   rray = user%ejecta_truncation 
+
    ! Executable code
 
-   !call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm)
+   if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm,totmelt)
+   vmelt = 0.0_DP
+   vmeltsheet = 0.0_DP
 
-   crater%vdepth = crater%ejrim + crater%floordepth
-   crater%vrim   = crater%ejrim + crater%rimheight
+   crater%vdepth = crater%rimheight + crater%floordepth
+   crater%vrim   = crater%rimheight
    
    if (crater%ejdis <= crater%ejrad) return
 
@@ -136,7 +162,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    inc = ceiling(inc * 1.5_DP)
    krad = user%ejecta_truncation * crater%frad
    dradsq = int(krad / user%pix) + 3
-   inc = max(inc,dradsq)
+   inc = min(nint(PI * user%trad / user%pix),max(inc,dradsq)) ! Ensure that the ejecta doesn't get any bigger than the surface can accomodate
    dradsq = dradsq**2
 
    if (user%dosoftening) kdiffmax = crater_degradation_function(user,crater%frad)
@@ -152,26 +178,43 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    if (inc >= user%gridsize / 2) then
       if (user%testflag) then
           write(*,*) 'Big ejecta: fcrat =',crater%fcrat, ' Ej/S =',(crater%ejdispx*user%pix)/domain%side, ' Ejrim =', crater%ejrim
+          write(*,*) 'Rray = ', rray, 'L1 = ', l1
        else
          write(message,'("Ejb: Dc=",ES9.2," Ej/S=",F0.3)') crater%fcrat,(crater%ejdispx*user%pix)/domain%side
          call io_updatePbar(message)
        end if
    endif
 
+
+   allocate(ejdistribution(-inc:inc,-inc:inc))
+   allocate(diffdistribution(-inc:inc,-inc:inc))
+   allocate(tempdiff(-inc:inc,-inc:inc))
+   allocate(tempej(-inc:inc,-inc:inc))
+
+   ejdistribution(:,:) = 0.0_DP
+   diffdistribution(:,:) = 0.0_DP
+
+   ! *************************** Layered Ejecta Rays *****************************!
+   do i=1,Npatt
+      call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,rray,Nraymax+i,fpeak,rayp,rayq,rayfmult,tempdiff,tempej,l1)
+      diffdistribution(:,:) = diffdistribution(:,:) + frayreduction**(i-1) * tempdiff(:,:)
+      ejdistribution(:,:) = ejdistribution(:,:) + frayreduction**(i-1) * tempej(:,:)
+   end do
+   
+   diffdistribution(:,:) = diffdistribution(:,:) / maxval(ejdistribution)
+   ejdistribution(:,:) = ejdistribution(:,:) / maxval(diffdistribution)
+
+   deallocate(tempdiff,tempej)
+   ! *****************************************************************************!
+
    allocate(cumulative_elchange(-inc:inc,-inc:inc))
    allocate(cel(-inc:inc,-inc:inc))
    allocate(kdiff(-inc:inc,-inc:inc))
    allocate(indarray(2,-inc:inc,-inc:inc))
-   allocate(ejdistribution(-inc:inc,-inc:inc))
-   allocate(diffdistribution(-inc:inc,-inc:inc))
-
    cumulative_elchange = 0.0_DP
    kdiff = 0.0_DP
    indarray = inc - 1 ! initialize this array to point to a corner (this should have 0 elevation change since we're only doing work
                 ! within a circle of radius irad
-
-   ! *************************** Continuous Ejecta Formula  *****************************!
-   call ejecta_ray_pattern(user,surf,crater,inc,-inc,inc,-inc,inc,diffdistribution,ejdistribution)
 
    ejbmass = 0.0_DP
    nin = 0
@@ -181,6 +224,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    !!$OMP SHARED(user,domain,crater,surf,ejb,ejtble) &
    !!$OMP SHARED(inc,incsq) &
    !!$OMP SHARED(cumulative_elchange,kdiff,kdiffmax,indarray,ejdistribution,diffdistribution) 
+   !open(74, file='meltvserad.csv', status='replace')
    do j = -inc,inc
       do i = -inc,inc
          ! find distance from crater center
@@ -200,6 +244,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
 
          lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
          lrad = sqrt(lradsq)
+         if (lrad < crater%ejrad) cycle
 
          ! Estimate ejecta pattern distortion due to target surface angle and topography
          ! This must be done iteratively because the ejection distance and ejection angle vary
@@ -207,20 +252,27 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
          maxslp = -huge(maxslp)
          klo = int((log(lrad) - log(crater%ejrad)) / domain%ejbres)
          do n = 1,MAXLOOP
-            call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad,melt=melt)
-            if ((n > 1).and.((abs(ebh0 - ebh) / ebh0) < domain%small)) exit
+            if (user%doregotrack) then
+               call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad,melt=melt)
+            else
+               call ejecta_interpolate(crater,domain,distance,ejb,ejtble,ebh,vsq=vsq,theta=ejtheta,erad=erad)
+            end if
+            if (ebh < VSMALL) exit
+            if (n > 1) then
+               if ((abs(ebh0 - ebh) / ebh0) < domain%small) exit
+            endif
             ebh0 = ebh
                
-            erad = exp(erad)
             lrange = lrad - erad
 
             baseline = ((i * crater%xslp) + (j * crater%yslp)) * user%pix
-            craterslope = atan(baseline / lrad)
+            craterslope = atan2(baseline,lrad)
+            if ((n == 1) .and. abs(craterslope) < epsilon(1._DP)) exit
             if (craterslope > maxslp) maxslp = craterslope
 
             ejheight = erad * sin(craterslope) + crater%melev
            
-            landslope = atan((surf(xpi,ypi)%dem - ejheight) / lrange)
+            landslope = atan2((surf(xpi,ypi)%dem - ejheight),lrange)
 
             ! Calculate corrected landing velocity for this location
             vsq = (lrange * user%gaccel * cos(craterslope)) / &
@@ -229,10 +281,10 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
 
             ! Find out where in the table this new velocity corresponds to
             ind = 1
-            call util_search(ejb%vesq,ind,ejtble,vsq,klo)
+            call util_search(ejb%vesq,ind,ejtble,log(vsq),klo)
             klo = min(max(klo,1),ejtble-1)
             ! Interpolate on the table to find the flat plane equivalent landing distance for this velocity
-            frac = (vsq - ejb(klo)%vesq) / (ejb(klo+1)%vesq - ejb(klo)%vesq)
+            frac = (vsq - exp(ejb(klo)%vesq)) / (exp(ejb(klo+1)%vesq) - exp(ejb(klo)%vesq))
             distance = exp(ejb(klo)%lrad) + frac * (exp(ejb(klo+1)%lrad) - exp(ejb(klo)%lrad))
          end do 
 
@@ -253,7 +305,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
          areafrac =  (1.0_DP - util_area_intersection(crater%ejrad,xbar,ybar,user%pix)) 
 
          ebh = areafrac * ejdistribution(idistorted,jdistorted) * ebh
-         cumulative_elchange(i,j) = areafrac * cumulative_elchange(i,j) + ebh
+         cumulative_elchange(i,j) = ebh + crater_profile(user, crater, lrad)
 
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region
@@ -261,16 +313,17 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
             areafrac = areafrac * util_area_intersection(crater%fe * crater%frad,xbar,ybar,user%pix)
             kdiff(i,j) = areafrac * diffdistribution(idistorted,jdistorted) * kdiffmax
          end if
-
-
-         !if (user%doregotrack .and. ebh>1.0e-8_DP) then
-         !   call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm)
-         !end if
-
             
       end do
    end do
+   !close(74)
    !!$OMP END PARALLEL DO
+   ! if(user%doregotrack .and. user%testflag) then
+   !    write(*,*) 'Ejected Melt: ', vmelt
+   !    write(*,*) 'Total Melt: ', totmelt
+   !    write(*,*) 'ejected / total melt:', vmelt/totmelt
+   ! end if 
+   
    ejbmass = sum(cumulative_elchange)
 
    ! Create buffer to prevent infinite hole bug
@@ -288,8 +341,54 @@ subroutine ejecta_emplace(user,surf,crater,domain,ejb,ejtble,deltaMtot,cumulativ
    fmasscons = (-deltaMtot)/ ejbmass
    cumulative_elchange = cumulative_elchange * fmasscons
    crater%ejrim = crater%ejrim * fmasscons
-   ejb(:)%thick = ejb(:)%thick * fmasscons
+   if (abs(fmasscons) < tiny(1.0_DP)) return
+   ejb(:)%thick = ejb(:)%thick + log(fmasscons)
    maxhits = 1
+   
+   if (user%doregotrack) then
+      do j = -inc,inc
+         do i = -inc, inc
+            ! find distance from crater center
+            iradsq = i*i + j*j
+            xpi = crater%xlpx + i
+            ypi = crater%ylpx + j
+   
+            ! Find distance from crater center to current pixel center in real space
+            xp = xpi * user%pix
+            yp = ypi * user%pix
+   
+            ! periodic boundary conditions
+            call util_periodic(xpi,ypi,user%gridsize)
+   
+            indarray(1,i,j) = xpi
+            indarray(2,i,j) = ypi
+   
+            lradsq = (crater%xl - xp)**2 + (crater%yl - yp)**2
+            lrad = sqrt(lradsq)
+            if (lrad < crater%ejrad) cycle
+      
+      
+      
+            ebh = cumulative_elchange(i,j) - crater_profile(user, crater, lrad)
+      
+      
+               if (user%doregotrack .and. ebh>1.0e-8_DP) then
+                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
+                  vmelt = vmelt + volm
+                  !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
+               end if
+         end do
+      end do
+   end if
+
+   if (user%doregotrack) then
+      if (totmelt > vmelt) then
+         vmeltsheet = totmelt - vmelt
+      else !give the craters a melt sheet of 1m
+         vmeltsheet = 1.0_DP * user%pix * user%pix * nmeltsheet
+      end if
+   end if
+
    ! Create box for soften calculation (will be no bigger than the grid itself)
    if (2 * inc + 1 < user%gridsize) then
 

@@ -16,7 +16,7 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine init_surf(user,surf)
+subroutine init_surf(user,surf,domain)
    use module_globals
    use module_init, EXCEPT_THIS_ONE => init_surf
    implicit none
@@ -24,12 +24,14 @@ subroutine init_surf(user,surf)
    ! Arguments
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(out) :: surf
+   type(domaintype),intent(in)    :: domain
 
    ! Internal variables
    integer(I4B) :: layer
 
    surf%ejcov  = 0.0_DP
    surf%dem    = 0.0_DP
+   surf%abselc = 0.0_DP
    do layer = 1,user%numlayers
       surf%diam(layer)   = 0.0_DP
       surf%xl(layer)     = 0.0_SP
@@ -37,10 +39,7 @@ subroutine init_surf(user,surf)
    end do
    !if (user%docrustal_thinning) surf%mantle = 0._DP
 
-   if (user%doregotrack) call init_regolith_stack(user,surf)
-   
-   ! If doporosity, call init_porosity_stack to define the porolayer linked list. 
- 	if (user%doporosity)  call init_porosity_stack(user,surf)
+   if (user%doregotrack) call init_regolith_stack(user,surf,domain)
 
    return
-end subroutine init_surf
+   end subroutine init_surf

@@ -85,6 +85,18 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       real(DP),intent(inout) :: deltaMtot
       end subroutine complex_terrace
 
+
+      ! subroutine realistic_rim(user,surf,crater,deltaMtot)
+      ! use module_globals
+      ! use module_util
+      ! use module_crater 
+      ! implicit none
+      ! type(usertype),intent(in) :: user
+      ! type(surftype),dimension(:,:),intent(inout) :: surf
+      ! type(cratertype),intent(inout) :: crater
+      ! real(DP),intent(inout) :: deltaMtot
+      ! end subroutine realistic_rim
+
       subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
       use module_globals
       implicit none
@@ -96,11 +108,11 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
       real(DP),dimension(-inc:inc,-inc:inc),intent(inout) :: ejecta_dem
       end subroutine ejecta_texture
 
-      subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
+      subroutine crater_realistic_slope_texture(user,critical_value,inc,critarray)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
-      real(DP),intent(in) :: critical
+      real(DP),intent(in) :: critical_value
       integer(I4B),intent(in) :: inc
       real(DP),dimension(-inc:inc,-inc:inc),intent(out) :: critarray
       end subroutine crater_realistic_slope_texture
@@ -108,24 +120,29 @@ subroutine crater_realistic_topography(user,surf,crater,domain,ejecta_dem)
 
    end interface
 
-   ! Executable code
-
-   if (crater%morphtype .eq. 'COMPLEX') then
-      call complex_terrace(user,surf,crater,deltaMtot)
-      call complex_wall_texture(user,surf,crater,domain,deltaMtot)
-      call complex_floor(user,surf,crater,deltaMtot)
-      call complex_peak(user,surf,crater,deltaMtot)
-   end if
+   deltaMtot = 0.0_DP
+   select case(crater%morphtype)
+   case("COMPLEX","PEAKRING","MULTIRING")
+      
+      !call realistic_rim(user,surf,crater,deltaMtot)
+      !call complex_terrace(user,surf,crater,deltaMtot)
+      !call complex_wall_texture(user,surf,crater,domain,deltaMtot)
+      !call complex_floor(user,surf,crater,deltaMtot)
+      !call complex_peak(user,surf,crater,deltaMtot)
+   end select
 
    ! Retrieve the size of the ejecta dem and correct for indexing
-   inc = (size(ejecta_dem,1) - 1) / 2
-   call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
+   !inc = (size(ejecta_dem,1) - 1) / 2
+   !call ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
-   if ((crater%morphtype .eq. 'COMPLEX').and.(user%docollapse)) then
-      ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
-      call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
+   ! Do a final pass of the slope collapse with a shallower slope than normal to smooth out all of the sharp edges
+
+   if (user%docollapse) then
+      select case(crater%morphtype)
+      case("COMPLEX","PEAKRING","MULTIRING")
+         call crater_slope_collapse(user,surf,crater,domain,(complex_collapse_slope * user%pix)**2,deltaMtot)
+      end select
    end if
-
 
    return
 end subroutine crater_realistic_topography
@@ -170,6 +187,7 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
    !FWHM = 0.3_DP !Lansberg 
    a = crater%peakheight
    b = 0.003_DP * ((1e-3_DP * crater%fcrat)**(1.75_DP)) / (1e-3_DP * crater%fcrat) ! Make peak rings for sufficiently large craters
+   b = min(b, 0.5_DP)
    c = FWHM / (2 * sqrt(2 * log(2._DP)))
    !*********************
 
@@ -181,12 +199,12 @@ subroutine complex_peak(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
@@ -252,12 +270,12 @@ subroutine complex_floor(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
-
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
 
          areafrac = util_area_intersection(0.5_DP * crater%floordiam,xbar,ybar,user%pix)
 
@@ -310,14 +328,15 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
    integer(I4B), parameter :: num_octaves  = 10   ! Number of Perlin noise octaves
    integer(I4B), parameter :: offset = 4000 ! Scales the random xy-offset so that each crater's random noise is unique 
    real(DP), parameter :: xy_noise_fac = 3.0_DP  ! Spatial "size" of noise features at the first octave
-   real(DP), parameter :: noise_height = 7.0e-3_DP  ! Spatial "size" of noise features at the first octave
+   real(DP), parameter :: noise_height = 3.0e-3_DP  ! Spatial "size" of noise features at the first octave
    real(DP), parameter :: freq = 2.0_DP     ! Spatial size scale factor multiplier at each octave level
    real(DP), parameter :: pers = 1.20_DP  ! The relative size scaling at each octave level
+   real(DP), parameter :: outer_wall_size = 1.2_DP
 
    !Executable code
    call random_number(rn)
 
-   inc = max(min(nint(2.1_DP * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
+   inc = max(min(nint(outer_wall_size * crater%frad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
@@ -327,19 +346,19 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
-
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          areafrac = 1.0 - util_area_intersection(0.3_DP * crater%floordiam,xbar,ybar,user%pix)
-         areafrac = areafrac * util_area_intersection(2.1_DP * crater%frad,xbar,ybar,user%pix)
+         areafrac = areafrac * util_area_intersection(outer_wall_size * crater%frad,xbar,ybar,user%pix)
          areafrac = areafrac * min((r / flr)**12,1.0_DP) ! Smooth out interface between wall and floor
-         areafrac = areafrac * max(min(2._DP - r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
+         areafrac = areafrac * max(min(outer_wall_size- r,1.0_DP),0.0_DP) ! Smooth out region outside of the rim
 
          ! Add some roughness to the walls
          noise = 0.0_DP
@@ -349,8 +368,8 @@ subroutine complex_wall_texture(user,surf,crater,domain,deltaMtot)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2))* znoise
          end do
-         newdem = max(newdem + noise * areafrac,crater%melev - crater%floordepth)
-         if (r > 1.1_DP) newdem = max(newdem,crater%melev + crater%ejrim * r**(-3))
+         newdem = newdem + noise * areafrac
+         if (r < flr) newdem = max(newdem,crater%melev - crater%floordepth)
 
          elchange  = newdem - surf(xpi,ypi)%dem
          deltaMtot = deltaMtot + elchange
@@ -399,6 +418,7 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    real(DP)                      :: router          ! The radius of the terrace outer edge
    real(DP)                      :: rinner          ! The radius of the terrace outer edge
    real(DP)                      :: upshift,dfloor
+   real(DP)                      :: h_scallop_profile ! Profile of the scallop wall
    integer(I4B)                  :: num_oct_tfloor 
    real(DP)                      :: noise_height_tfloor
    real(DP)                      :: freq_tfloor
@@ -418,14 +438,15 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    nscallops = 16 
    scallop_p = 0.6_DP 
    scallop_width = 0.20_DP 
-   rimfloor = crater%melev
+   h_scallop_profile = 2.0_DP
+   rimfloor = crater%melev + 0.5_DP * crater%rimheight
+   upshift = 0.0_DP
 
    num_oct_tfloor  = 4
    noise_height_tfloor = crater%floordepth / nterraces
    freq_tfloor = 1.5_DP
    pers_tfloor = 0.5_DP
    xy_size_tfloor = 5.0_DP / crater%fcrat 
-
 
    ! Lansberg values
    !terracefac = 1.0_DP
@@ -435,72 +456,69 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
    !scallop_width = 0.10_DP 
    !^^^^^^^^^^^^^^^
 
-
-
-
-
    rad = 2.0_DP * crater%frad
-   upshift = 0._DP
  
    inc = max(min(nint(rad / user%pix),PBCLIM*user%gridsize),1) + 1
    crater%maxinc = max(crater%maxinc,inc)
 
    flr = crater%floordiam / crater%fcrat
-   do terrace = 1, nterraces 
-      router = flr + (1._DP - flr) * (terrace / real(nterraces,kind=DP))**(terracefac) ! The radius of the outer edge of the terrace
-      rinner = flr + (1._DP - flr) * ((terrace - 1) / real(nterraces,kind=DP))**(terracefac) ! The radius of the inner edge of the terrace
+   ! do terrace = 1, nterraces
+   !    router = flr + (1._DP - flr) * (terrace / real(nterraces,kind=DP))**(terracefac) ! The radius of the outer edge of the terrace
+   !    rinner = flr + (1._DP - flr) * ((terrace - 1) / real(nterraces,kind=DP))**(terracefac) ! The radius of the inner edge of the terrace
 
-      do j = -inc,inc
-         do i = -inc,inc
-            xpi = crater%xlpx + i
-            ypi = crater%ylpx + j
+   !    do j = -inc,inc
+   !       do i = -inc,inc
+   !          xpi = crater%xlpx + i
+   !          ypi = crater%ylpx + j
 
-            ! periodic boundary conditions
-            call util_periodic(xpi,ypi,user%gridsize)
-            newdem = surf(xpi,ypi)%dem
+   !          xbar = xpi * user%pix - crater%xl 
+   !          ybar = ypi * user%pix - crater%yl
 
-            xbar = xpi * user%pix - crater%xl 
-            ybar = ypi * user%pix - crater%yl
+   !          ! periodic boundary conditions
+   !          call util_periodic(xpi,ypi,user%gridsize)
+   !          newdem = surf(xpi,ypi)%dem
 
-            r = sqrt(xbar**2 + ybar**2) / crater%frad
+   !          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
-            ! Make scalloped terraces
-            znoise = scallop_width**(1._DP / (2 * scallop_p)) 
-            xynoise = (nscallops / PI) / crater%fcrat
-            dnoise = util_perlin_noise(xynoise * xbar + terrace * offset * rn(1), &
-                                       xynoise * ybar + terrace * offset * rn(2)) * znoise
-            noise = (dnoise**2)**scallop_p
-            hprof = (r / router)**(-1)
+   !          ! Make scalloped terraces
+   !          znoise = scallop_width**(1._DP / (2 * scallop_p)) 
+   !          xynoise = (nscallops / PI) / crater%fcrat
+   !          dnoise = util_perlin_noise(xynoise * xbar + terrace * offset * rn(1), &
+   !                                     xynoise * ybar + terrace * offset * rn(2)) * znoise
+   !          noise = (dnoise**2)**scallop_p
+   !          hprof = (r / router)**(-1)
 
-            ! Make textured floor of terrace 
-            tnoise = 0.0_DP
-            do octave = 1, num_oct_tfloor
-               xynoise = xy_size_tfloor * freq_tfloor ** (octave - 1) 
-               znoise = noise_height_tfloor  * (pers_tfloor ) ** (octave - 1) 
-               tnoise = tnoise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
-                                                 xynoise * ybar + offset * rn(2))* znoise
-            end do
+   !          ! Make textured floor of terrace 
+   !          tnoise = 0.0_DP
+   !          do octave = 1, num_oct_tfloor
+   !             xynoise = xy_size_tfloor * freq_tfloor ** (octave - 1) 
+   !             znoise = noise_height_tfloor  * (pers_tfloor ) ** (octave - 1) 
+   !             tnoise = tnoise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
+   !                                               xynoise * ybar + offset * rn(2))* znoise
+   !          end do
 
+   !          isterrace = 1.0_DP - noise < hprof
 
-            isterrace = 1.0_DP - noise < hprof
+   !          if (r < 1.0_DP) then
+   !             tprof = crater_profile(user,crater,rinner) * (r/rinner)**h_scallop_profile + tnoise ! This is the floor profile that replaces the old one at each terrace
+   !          else
+   !             tprof = (crater_profile(user,crater,rinner) + crater%ejrim * (rinner)**(-EJPROFILE)) + tnoise ! This is the floor profile that replaces the old one at each terrace
+   !          end if
 
+   !          if (isterrace) then
+   !             newdem = min(tprof,newdem) 
+   !             elchange  = newdem - surf(xpi,ypi)%dem
+   !             deltaMtot = deltaMtot + elchange
+   !             surf(xpi,ypi)%dem = newdem
+   !             ! Save the minimum elevation below the floor
+   !             dfloor = crater%melev - crater%floordepth - newdem
+   !             if (dfloor > 0.0_DP) upshift = max(upshift,dfloor) 
+   !          end if
 
-            tprof = crater_profile(user,crater,rinner) * (r/rinner)**2 + tnoise ! This is the floor profile that replaces the old one at each terrace
+   !       end do
+   !    end do
 
-            if (isterrace) then
-               newdem = min(tprof,newdem) 
-               elchange  = newdem - surf(xpi,ypi)%dem
-               deltaMtot = deltaMtot + elchange
-               surf(xpi,ypi)%dem = newdem
-               ! Save the minimum elevation below the floor
-               dfloor = crater%melev - crater%floordepth - newdem
-               if (dfloor > 0.0_DP) upshift = max(upshift,dfloor) 
-            end if
-
-         end do
-      end do
-
-   end do
+   ! end do
 
    ! Now make the scalloped rim
    do j = -inc,inc
@@ -508,17 +526,17 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
-
          r = sqrt(xbar**2 + ybar**2) / crater%frad
 
          ! Make scalloped rim
-         znoise = scallop_width**(1._DP / (2 * scallop_p))
+         znoise = (scallop_width)**(1._DP / (2 * scallop_p))
          xynoise = (nscallops / PI) / crater%fcrat
          dnoise = util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                     xynoise * ybar + offset * rn(2)) * znoise
@@ -554,17 +572,17 @@ subroutine complex_terrace(user,surf,crater,deltaMtot)
          xpi = crater%xlpx + i
          ypi = crater%ylpx + j
 
+         xbar = xpi * user%pix - crater%xl 
+         ybar = ypi * user%pix - crater%yl
+
          ! periodic boundary conditions
          call util_periodic(xpi,ypi,user%gridsize)
          newdem = surf(xpi,ypi)%dem
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
-
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          
          if (r > flr) then
-            newdem = newdem + upshift * max(min(3.0_DP - 2 * r,1.0_DP),0.0_DP)
+            newdem = newdem + upshift * max(min(3.0_DP - 2 * r**2,1.0_DP),0.0_DP)
             elchange  = newdem - surf(xpi,ypi)%dem
             deltaMtot = deltaMtot + elchange
             surf(xpi,ypi)%dem = newdem
@@ -643,14 +661,15 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
    splat_stretch = 16.0_DP
    splatmag = 0.10_DP
    
-   open(unit=12,file='params.txt',status='old')
-   read(12,*) num_octaves
-   read(12,*) xy_noise_fac
-   read(12,*) noise_height
-   close(12)
+   ! open(unit=12,file='params.txt',status='old')
+   ! read(12,*) num_octaves
+   ! read(12,*) xy_noise_fac
+   ! read(12,*) noise_height
+   ! close(12)
 
    ! Get the ejecta mass
    ejbmass = sum(ejecta_dem)
+   if (ejbmass <= VSMALL) return
 
    ! First strip away the original ejecta from the surface
 
@@ -671,15 +690,14 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 
 
    ! Add the base texture to the ejecta proportional to the thickness
-
    do j = -inc,inc
       do i = -inc,inc
 
          xpi = indarray(1,i,j)
          ypi = indarray(2,i,j)
 
-         xbar = xpi * user%pix - crater%xl 
-         ybar = ypi * user%pix - crater%yl
+         xbar = (crater%xlpx + i) * user%pix - crater%xl 
+         ybar = (crater%ylpx + j) * user%pix - crater%yl
 
          r = sqrt(xbar**2 + ybar**2) / crater%frad
          phi = atan2(ybar,xbar)
@@ -693,9 +711,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
       
          areafrac = areafrac * (1.0_DP - max(min(2._DP - r,1.0_DP),0.0_DP)) ! Blend in with the wall texture
 
-
          ! Make the splat pattern
-
          splatnoise = 0.0_DP
          do octave = 1,nsplat_octaves
             xysplat = (nsplats / PI) * freq ** (octave -1) / crater%fcrat 
@@ -747,7 +763,7 @@ subroutine ejecta_texture(user,surf,crater,deltaMtot,inc,ejecta_dem)
 end subroutine ejecta_texture
 
 
-subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
+subroutine crater_realistic_slope_texture(user,critical_value,inc,critarray)
    ! Adds noise to the critical slope to give texture to regions that undergo slope collapse
    use module_globals
    use module_util
@@ -756,7 +772,7 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
 
    ! Arguments
    type(usertype),intent(in) :: user
-   real(DP),intent(in) :: critical
+   real(DP),intent(in) :: critical_value
    integer(I4B),intent(in) :: inc
    real(DP),dimension(-inc:inc,-inc:inc),intent(out) :: critarray
 
@@ -791,11 +807,336 @@ subroutine crater_realistic_slope_texture(user,critical,inc,critarray)
             noise = noise + util_perlin_noise(xynoise * xbar + offset * rn(1), &
                                               xynoise * ybar + offset * rn(2)) * znoise
          end do
-         !write(*,*) i,j,noise
-         critarray(i,j) = max(critical * (1.0_DP + noise),0.0_DP)
+         
+         critarray(i,j) = max(critical_value * (1.0_DP + noise),0.0_DP)
       end do
    end do
 
    return
 end subroutine crater_realistic_slope_texture
 
+
+
+
+
+
+
+
+
+
+
+
+
+! new subroutines added by jundu on 9/28/2022
+
+
+
+
+! subroutine realistic_rim(user,surf,crater,deltaMtot)
+!    !Makes terraced walls by applying noisy topographic diffusion in discrete radial zones along the wall
+!    use module_globals
+!    use module_util
+!    use module_crater 
+!    implicit none
+
+!    ! in and out
+!    type(usertype),intent(in) :: user
+!    type(surftype),dimension(:,:),intent(inout) :: surf
+!    type(cratertype),intent(inout) :: crater
+!    real(DP),intent(inout) :: deltaMtot
+   
+!    ! internal
+!    type(psdtype) :: psd_distance,psd_elevation                                                  ! PSDs of rim distance and elevation
+!    real(DP) :: newdem,elchange,rad_roi,xbar,ybar
+!    integer(I4B) :: xpi,ypi,i,j,inc 
+!    real(DP) :: arc_length,radial_distance
+!    real(DP) :: rim_distance,rim_distance_delta,rim_elevation,rim_elevation_delta                ! rim distance and elevation and their variations. PSD only characterizes the variation.
+!    real(DP) :: diameter_in_m,gridsize
+!    real(DP) :: rim_elevation_old 
+!    integer(I4B),parameter :: infile = 14
+!    integer(I4B),parameter :: outfile = 15
+!    real(DP),dimension(:), allocatable :: amplitude_distance,wavelength_distance,phase_distance
+!    real(DP),dimension(:), allocatable :: amplitude_elevation,wavelength_elevation,phase_elevation
+    
+!    ! executable  
+!    gridsize=user%pix
+!    diameter_in_m=crater%fcrat
+!    rad_roi = 2.0_DP * crater%frad 
+!    inc = max(min(nint(rad_roi / user%pix),PBCLIM*user%gridsize),1) + 1
+!    crater%maxinc = max(crater%maxinc,inc)
+
+!    ! PSDs of rim distance
+!    psd_distance%diameter_in_km=diameter_in_m/1000                                        
+!    psd_distance%num_vertices=5000 
+!    psd_distance%num_sine=psd_distance%num_vertices/2
+!    psd_distance%input_x_max=PI*psd_distance%diameter_in_km
+!    psd_distance%diameter_in_km_trans=20.0_DP
+!    psd_distance%bp2_x_k_b_sigma=[0.06294416243654823, -0.23388324873096447, 0.0056111111111111145, 0.9127777777777776, 0.06082223144489516]
+!    psd_distance%bp2_y_k_b_sigma=[0.17451428571428573, 0.5097142857142856, 0.0015652173913043492, 3.968695652173913, 0.39645422747641196]
+!    psd_distance%bp3_y_k_b_sigma=[0.13316666666666666, 1.836666666666667, 0.0004552129221732701, 4.4908957415565345, 0.27156105098740746]
+!    psd_distance%bp4_y_k_b_sigma=[0.200561797752809, -2.4412359550561797, 0.005084745762711865, 1.4683050847457628, 0.349619629586608]
+!    psd_distance%slope1_k_b_sigma=[0.004916013437849945, 2.9333146696528556, -9999.9, -9999.9,0.36717269233927413]
+
+
+!    ! PSDs of rim elevation
+!    psd_elevation%diameter_in_km=diameter_in_m/1000                                        
+!    psd_elevation%num_vertices=5000 
+!    psd_elevation%num_sine=psd_elevation%num_vertices/2
+!    psd_elevation%input_x_max=PI*psd_elevation%diameter_in_km
+!    psd_elevation%diameter_in_km_trans=20.0_DP
+!    psd_elevation%bp2_x_k_b_sigma=[0.05533333333333333, -0.10666666666666666, 0.0040595399188092015, 0.918809201623816,0.11430090458471147]
+!    psd_elevation%bp2_y_k_b_sigma=[0.12594736842105264, -0.2859473684210526, 0.003978349120433018, 2.1534330175913396, 0.40875902323519153]
+!    psd_elevation%bp3_y_k_b_sigma=[0.0, 4.0, 0.0, 4.0,0.7435034294351548]
+!    psd_elevation%bp4_y_k_b_sigma(1)=-9999.9
+!    psd_elevation%slope1_k_b_sigma=[0.09919786096256683, 1.7070427807486632, -0.008135593220338983, 3.8537118644067796,0.42722290048928596]
+
+!    call Calculate_am_wl_phase_from_diameter(psd_distance,amplitude_distance,wavelength_distance,phase_distance)
+!    call Calculate_am_wl_phase_from_diameter(psd_elevation,amplitude_elevation,wavelength_elevation,phase_elevation)
+
+
+!    rim_elevation_old=(crater%rimheight - crater%ejrim)
+
+!    do j = -inc,inc
+!       do i = -inc,inc
+!          xpi = crater%xlpx + i
+!          ypi = crater%ylpx + j
+!          xbar = xpi * user%pix - crater%xl 
+!          ybar = ypi * user%pix - crater%yl
+
+!          arc_length=(atan2(real(j,8),real(i,8))+PI)*diameter_in_m/2.0_DP/1000.0_DP
+!          radial_distance=  sqrt(xbar**2 + ybar**2) 
+
+!          call Create_rim(arc_length,psd_distance,amplitude_distance,wavelength_distance,phase_distance,rim_distance_delta)
+!          call Create_rim(arc_length,psd_elevation,amplitude_elevation,wavelength_elevation,phase_elevation,rim_elevation_delta)
+         
+!          rim_distance=rim_distance_delta+diameter_in_m/2.0_DP
+!          rim_elevation=rim_elevation_delta+rim_elevation_old
+!          crater%rimheight=rim_elevation
+
+!          if (radial_distance>rim_distance) then 
+!             newdem=crater_profile(user,crater,radial_distance/rim_distance)
+!             elchange  = newdem-surf(xpi,ypi)%dem       
+!             deltaMtot = deltaMtot + elchange
+!             surf(xpi,ypi)%dem = newdem
+!          endif
+
+!          if (radial_distance<rim_distance .and. radial_distance>crater%floordiam/2.0_DP) then 
+!             newdem=crater_profile(user,crater,radial_distance/rim_distance)
+!             elchange  = newdem-surf(xpi,ypi)%dem       
+!             deltaMtot = deltaMtot + elchange
+!             surf(xpi,ypi)%dem = newdem
+!          endif
+
+!       end do
+!    end do
+
+
+! end subroutine realistic_rim
+
+ ! Universal shapde model from PSD
+
+! subroutine Calculate_am_wl_phase_from_diameter(psd_1D,amplitude,wavelength,phase)
+!    use module_globals
+!    use module_crater
+!    implicit none
+!    ! in and out
+!    type(psdtype),intent(inout) :: psd_1D
+!    real(DP),dimension(:), allocatable,intent(out) :: amplitude,wavelength,phase
+!    ! internal  
+!    integer(I4B) :: i
+!    real(DP) :: phase_random,random_number_normal
+!    real(DP),dimension(:), allocatable :: psd
+!    integer(I4B),parameter :: infile = 14
+!    integer(I4B),parameter :: outfile = 15
+
+
+!    ! excutable
+ 
+
+!    call Calculate_breakpoint_slope_from_diameter(psd_1D)
+!    call Calculate_targetPSD_from_breakpoint_slope(psd_1D,wavelength,psd)
+!    call Calculate_am_wl_phase_from_targetPSD(psd_1D,wavelength,psd,amplitude,phase)
+
+
+!    open(outfile,file="output_psd.txt",status='replace')
+!       do i = 1,  size(wavelength)
+!          write(outfile,'(ES18.10,1(",",ES18.10))') wavelength(i) ,psd(i) 
+!       end do
+!    close(outfile)
+
+! end subroutine Calculate_am_wl_phase_from_diameter
+
+! subroutine Calculate_breakpoint_slope_from_diameter(psd_1D)
+!    use module_globals
+!    use module_crater
+!    implicit none
+!    ! in and out
+!    type(psdtype),intent(inout) :: psd_1D
+   
+!    ! excutable
+
+!    if (  psd_1D%diameter_in_km  <  psd_1D%diameter_in_km_trans  ) then
+
+!       psd_1D%bp2_x=psd_1D%bp2_x_k_b_sigma(1)*psd_1D%diameter_in_km+psd_1D%bp2_x_k_b_sigma(2)
+!       psd_1D%bp2_y=psd_1D%bp2_y_k_b_sigma(1)*psd_1D%diameter_in_km+psd_1D%bp2_y_k_b_sigma(2)
+!       psd_1D%bp3_y=psd_1D%bp3_y_k_b_sigma(1)*psd_1D%diameter_in_km+psd_1D%bp3_y_k_b_sigma(2)
+!       psd_1D%bp4_y=psd_1D%bp4_y_k_b_sigma(1)*psd_1D%diameter_in_km+psd_1D%bp4_y_k_b_sigma(2)
+   
+!    else
+
+!       psd_1D%bp2_x=psd_1D%bp2_x_k_b_sigma(3)*psd_1D%diameter_in_km+psd_1D%bp2_x_k_b_sigma(4)
+!       psd_1D%bp2_y=psd_1D%bp2_y_k_b_sigma(3)*psd_1D%diameter_in_km+psd_1D%bp2_y_k_b_sigma(4)
+!       psd_1D%bp3_y=psd_1D%bp3_y_k_b_sigma(3)*psd_1D%diameter_in_km+psd_1D%bp3_y_k_b_sigma(4)
+!       psd_1D%bp4_y=psd_1D%bp4_y_k_b_sigma(3)*psd_1D%diameter_in_km+psd_1D%bp4_y_k_b_sigma(4)
+
+!    endif
+
+
+!    if   (psd_1D%slope1_k_b_sigma(3)>-100.0_DP) then
+!       if (  psd_1D%diameter_in_km  <  psd_1D%diameter_in_km_trans  ) then
+!          psd_1D%slope1=psd_1D%slope1_k_b_sigma(1)*psd_1D%diameter_in_km+psd_1D%slope1_k_b_sigma(2)
+!       else
+!          psd_1D%slope1=psd_1D%slope1_k_b_sigma(3)*psd_1D%diameter_in_km+psd_1D%slope1_k_b_sigma(4)
+!       endif
+!    else
+!       psd_1D%slope1=psd_1D%slope1_k_b_sigma(1)*psd_1D%diameter_in_km+psd_1D%slope1_k_b_sigma(2)
+!    endif
+   
+
+! end subroutine Calculate_breakpoint_slope_from_diameter
+
+! subroutine Calculate_targetPSD_from_breakpoint_slope(psd_1D,wavelength,psd)
+!    use module_globals
+!    use module_crater
+!    implicit none
+!    !in and out
+!    type(psdtype), intent(in)  :: psd_1D
+!    real(DP) ,dimension(:),allocatable,intent(out) :: wavelength,psd 
+!    ! internal
+!    integer(I4B) ::  i,bp2_x_index,bp3_x_index
+!    real(DP) ::  bp3_x,bp4_x
+!    real(DP) ::  slope_12,intercept_12,slope_23,intercept_23,slope_34,intercept_34
+!    real(DP) :: random_number_normal
+
+   
+!    ! excutable
+
+!    allocate(wavelength(psd_1D%num_sine))
+!    allocate(psd(psd_1D%num_sine))
+!   !----------------------------------------------------------------------------------------------------------------------
+!    do i = 1, psd_1D%num_sine
+!       wavelength(i) =  psd_1D%input_x_max / (psd_1D%num_sine-i+1)
+!    end do
+!   !----------------------------------------------------------------------------------------------------------------------
+      
+!    if (psd_1D%bp4_y_k_b_sigma(1)>-100.0_DP  ) then 
+
+!       ! 3 segments, 4 breakpoints
+!       bp3_x=log10(psd_1D%input_x_max/2.0_DP) 
+!       bp4_x=log10(psd_1D%input_x_max) 
+
+!       do i = 1, psd_1D%num_sine
+!          bp2_x_index = i
+!          if (wavelength(i) > 10**psd_1D%bp2_x) exit
+!       end do
+!       do i = 1, psd_1D%num_sine
+!          bp3_x_index = i
+!          if (wavelength(i) > 10**bp3_x) exit
+!       end do
+!    !----------------------------------------------------------------------------------------------------------------------
+!       slope_12=psd_1D%slope1
+!       intercept_12 = psd_1D%bp2_y - slope_12 * psd_1D%bp2_x 
+
+!       slope_23=(psd_1D%bp3_y-psd_1D%bp2_y)/(bp3_x-psd_1D%bp2_x)
+!       intercept_23 = psd_1D%bp3_y - slope_23 * bp3_x 
+
+!       slope_34=(psd_1D%bp4_y-psd_1D%bp3_y)/(bp4_x-bp3_x)
+!       intercept_34 = psd_1D%bp4_y - slope_34 * bp4_x 
+!    !----------------------------------------------------------------------------------------------------------------------
+!       do i = 1, bp2_x_index-1
+!          psd(i) = 10** (   slope_12*log10(wavelength(i))    +  intercept_12  )
+!       end do     
+!       do i = bp2_x_index, bp3_x_index-1
+!          psd(i) = 10** (   slope_23*log10(wavelength(i))    +  intercept_23  )
+!       end do     
+!       do i = bp3_x_index, psd_1D%num_sine
+!          psd(i) = 10** (   slope_34*log10(wavelength(i))    +  intercept_34 ) 
+!       end do
+
+!    else
+
+!       ! 2 segments, 3 breakpoints
+!       bp3_x=log10(psd_1D%input_x_max) 
+ 
+!       do i = 1, psd_1D%num_sine
+!          bp2_x_index = i
+!          if (wavelength(i) > 10**psd_1D%bp2_x) exit
+!       end do
+!    !----------------------------------------------------------------------------------------------------------------------
+!       slope_12=psd_1D%slope1
+!       intercept_12 = psd_1D%bp2_y - slope_12 * psd_1D%bp2_x 
+
+!       slope_23=(psd_1D%bp3_y-psd_1D%bp2_y)/(bp3_x-psd_1D%bp2_x)
+!       intercept_23 = psd_1D%bp3_y - slope_23 * bp3_x 
+!    !----------------------------------------------------------------------------------------------------------------------
+!       do i = 1, bp2_x_index-1
+!          psd(i) = 10** (   slope_12*log10(wavelength(i))    +  intercept_12  )
+!       end do     
+!       do i = bp2_x_index, psd_1D%num_sine
+!          psd(i) = 10** (   slope_23*log10(wavelength(i))    +  intercept_23 ) 
+!       end do
+!    endif
+! end subroutine Calculate_targetPSD_from_breakpoint_slope
+
+! subroutine Calculate_am_wl_phase_from_targetPSD(psd_1D,wavelength,psd,amplitude,phase)
+!    use module_globals
+!    use module_crater
+!    implicit none
+!    !in and out
+!    type(psdtype), intent(in)  :: psd_1D
+!    real(DP) ,dimension(:),intent(in) :: wavelength,psd 
+!    real(DP) ,dimension(:),allocatable,intent(out) :: amplitude,phase 
+!    ! internal
+!    integer(I4B) ::  i
+!    real(DP) ::  phase_random
+!    ! excutable
+!    allocate(amplitude(psd_1D%num_sine))
+!    allocate(phase(psd_1D%num_sine))
+
+!   !----------------------------------------------------------------------------------------------------------------------
+!    do i = 1, psd_1D%num_sine
+!       amplitude(i)=  sqrt(psd(i) * psd_1D%input_x_max / (psd_1D%num_vertices ** 2))
+!       call RANDOM_NUMBER(phase_random)
+!       phase(i)=wavelength(i) *phase_random   
+!    end do
+   
+! end subroutine Calculate_am_wl_phase_from_targetPSD
+
+! subroutine Create_rim(arc_length,psd_1D,amplitude,wavelength,phase,rim_parameter)
+
+!    use module_globals
+!    implicit none
+!    ! in and out
+!    real(DP),intent(in) :: arc_length
+!    type(psdtype),intent(in) :: psd_1D
+!    real(DP),dimension(:),intent(in) :: amplitude
+!    real(DP),dimension(:),intent(in) :: wavelength
+!    real(DP),dimension(:),intent(in) :: phase
+!    real(DP),intent(out) :: rim_parameter
+!    ! internal
+!    integer(I4B) :: i
+!    real(DP) :: rim_parameter_ind
+
+!    ! excutable
+!    rim_parameter = 0.0_DP
+!    do i = 1, psd_1D%num_sine
+!       rim_parameter_ind= amplitude(i) * sin( 2 * PI* 1/wavelength(i) * (  arc_length-   phase(i)   )     )      
+!       rim_parameter=rim_parameter+rim_parameter_ind
+!    end do
+!    rim_parameter=rim_parameter*1000.0_DP
+
+! end subroutine Create_rim
+
+
+
+  
