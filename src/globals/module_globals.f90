@@ -45,7 +45,7 @@ integer(I4B), parameter :: LOWERCASE_END    = iachar('z')
 integer(I4B), parameter :: UPPERCASE_OFFSET = iachar('A') - iachar('a')
 
 ! Miscellaneous constants:
-real(DP),parameter :: VSMALL  = tiny(1._DP)    ! Very small number
+real(DP),parameter :: VSMALL  = 10*tiny(1._DP)    ! Very small number
 real(DP),parameter :: LOGVSMALL = log(VSMALL)  ! log of a very small number
 real(DP),parameter :: VBIG    = huge(1._DP)    ! Very big number
 real(DP),parameter :: SMALLFAC = 1e-5_DP       ! Smallest unit of measurement proportional to pixel size
@@ -221,7 +221,7 @@ type usertype
 
    ! Ejecta softening variables
    logical           :: dosoftening  ! Set T to use the extra crater softening model
-   real(DP)          :: ejecta_truncation ! Set the number of crater diameters to truncate the ejecta
+   real(DP)          :: ejecta_truncation ! Set the number of crater radii to truncate the ejecta
    logical           :: dorays       ! Set T to use ray model
    logical           :: superdomain  ! Set T to include the superdomain
 
@@ -382,13 +382,5 @@ real(DP),parameter :: PFAC = 0.809_DP       ! impactor diameter exponent
 real(DP),parameter :: VFAC = 0.485_DP       ! impactor velocity exponent
 real(DP),parameter :: GFAC = 0.487_DP       ! gravitational acceleration exponent
 real(DP),parameter :: DFAC = 0.556_DP       ! impact distance exponent
-
-! Crater ray parameters
-real(DP),parameter :: rray = 16_DP
-integer(I4B),parameter :: Nraymax = 16
-real(DP),parameter :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
-real(DP),parameter :: rayp = 2.0_DP 
-integer(I4B),parameter :: rayq = 4
-real(DP),parameter :: rayfmult  = (5)**(-4.0_DP / (1.2_DP))  
 
 end module module_globals

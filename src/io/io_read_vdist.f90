@@ -35,16 +35,16 @@ subroutine io_read_vdist(vdist,user,domain)
    ! Executable code
 
    ! Read in velocity distribution file
-   open(unit=LUN,file=user%velfile,status='old',iostat=ierr)
+   open(unit=LUN,file=trim(adjustl(user%velfile)),status='old',iostat=ierr)
    if (ierr /= 0) then
-      write(*,*) "Unable to open file ",trim(user%velfile)
+      write(*,*) "Unable to open file ",trim(adjustl(user%velfile))
       stop
    end if   
 
    do i=1,domain%vnum
       read(LUN,*,iostat=ierr) vdist(1:3,i)
       if (ierr/=0) then
-         write(*,*) "Unable to read file ",trim(user%velfile)
+         write(*,*) "Unable to read file ",trim(adjustl(user%velfile))
          stop
       end if
    end do

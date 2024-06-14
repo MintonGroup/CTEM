@@ -80,12 +80,12 @@ subroutine ejecta_table_define(user,crater,domain,ejb,ejtble,melt)
             thick = max(crater_profile(user,crater,r),VSMALL)
          end if
          ejb(k)%thick = log(thick) 
-         ejb(k)%vesq = vejsq
-         ejb(k)%angle = ejang
+         ejb(k)%vesq = log(vejsq)
+         ejb(k)%angle = log(ejang)
          ejb(k)%erad = log(erad)
          if (present(melt)) then
             call regolith_melt_fraction(dimp,depthb,erad,eradold,rmelt,melt)
-            ejb(k)%meltfrac = melt
+            ejb(k)%meltfrac = log(melt)
          end if
          if ((thick <= VSMALL) .or. (abs(eradold - erad) < VSMALL)) then
             ejtble = k

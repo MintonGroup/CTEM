@@ -11,11 +11,12 @@
 ##################################################
 # Define the project and the depencies that it has
 ##################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 3.6.0...3.27.1)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.24.0...3.27.1)
+SET(SKBUILD_PROJECT_NAME "ctem" CACHE STRING "Name of project set by scikit-build")
 
 # Get version stored in text file
 FILE(READ "version.txt" VERSION)
-PROJECT(CTEM LANGUAGES C Fortran VERSION ${VERSION})
+PROJECT(${SKBUILD_PROJECT_NAME} LANGUAGES C Fortran VERSION ${VERSION})
 
 IF (CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
     SET(COMPILER_OPTIONS "Intel" CACHE STRING "Compiler identified as Intel")
@@ -26,7 +27,6 @@ ELSE ()
 ENDIF ()
 
 # Set some options the user may choose
-OPTION(USE_COARRAY "Use Coarray Fortran for parallelization of test particles" OFF)
 OPTION(USE_OPENMP "Use OpenMP for parallelization" ON)
 OPTION(USE_SIMD "Use SIMD vectorization" ON)
 OPTION(BUILD_SHARED_LIBS "Build using shared libraries" ON)
@@ -39,30 +39,40 @@ ENDIF()
 # Ensure scikit-build modules
 FIND_PACKAGE(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
-# Add our local modules to the module path
-FILE(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules" LOCAL_MODULE_PATH)
-LIST(APPEND CMAKE_MODULE_PATH ${LOCAL_MODULE_PATH})
-
 # Define some directories that are important to the build
 SET(SRC "${CMAKE_SOURCE_DIR}/src")
-SET(LIB "${CMAKE_SOURCE_DIR}/lib")
-SET(BIN "${CMAKE_SOURCE_DIR}/bin")
-SET(MOD "${CMAKE_SOURCE_DIR}/include")
 SET(PY "${CMAKE_SOURCE_DIR}/ctem")
 
 # Make sure paths are correct for Unix or Windows style
 FILE(TO_CMAKE_PATH ${SRC} SRC)
-FILE(TO_CMAKE_PATH ${LIB} LIB)
-FILE(TO_CMAKE_PATH ${BIN} BIN)
-FILE(TO_CMAKE_PATH ${MOD} MOD)
 FILE(TO_CMAKE_PATH ${PY} PY)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
+INCLUDE(GNUInstallDirs)
+IF (SKBUILD)
+    SET(INSTALL_BINDIR ${SKBUILD_SCRIPTS_DIR})
+    SET(INSTALL_LIBDIR ${SKBUILD_DATA_DIR}/lib) 
+    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
+    SET(INSTALL_PYPROJ ${SKBUILD_PLATLIB_DIR}/${SKBUILD_PROJECT_NAME}) 
+    IF (APPLE)
+        SET(CMAKE_INSTALL_RPATH "@loader_path;${CMAKE_BINARY_DIR}/bin")
+    ELSEIF (LINUX)
+        SET(CMAKE_INSTALL_RPATH "@ORIGIN;${CMAKE_BINARY_DIR}/bin")
+    ENDIF ()
+ELSE ()
+    SET(INSTALL_PYPROJ ${PY})
+    SET(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
+    SET(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+    SET(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
+ENDIF ()
+
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Have the .mod files placed in the lib folder
-SET(CMAKE_Fortran_MODULE_DIRECTORY ${MOD})
+SET(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod)
+
+# Add our local modules to the module path
+FILE(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules" LOCAL_MODULE_PATH)
+LIST(APPEND CMAKE_MODULE_PATH ${LOCAL_MODULE_PATH})
 
 # Set the name of the ctem library
 SET(CTEM_LIBRARY ctem)

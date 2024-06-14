@@ -52,14 +52,10 @@ class Simulation:
         }
 
         # Get the location of the CTEM executable
-        self.ctem_executable = Path(_pyfile).parent.parent.parent / "bin" / "CTEM"
-        if not self.ctem_executable.exists():
-            print(f"CTEM driver not found at {self.ctem_executable}. Trying current directory.")
-            self.ctem_executable = Path(currentdir) / "CTEM"
-            if not self.ctem_executable.exists():
-                warnings.warn(f"Cannot find the CTEM driver {str(self.ctem_executable)}", stacklevel=2)
-                self.ctem_executable = None
-
+        self.ctem_executable = shutil.which("CTEM")
+        if not self.ctem_executable:
+            warnings.warn(f"Cannot find the CTEM driver {str(self.ctem_executable)}", stacklevel=2)
+            self.ctem_executable = None
 
         self.user = util.read_user_input(self.user)
 
@@ -169,7 +165,10 @@ class Simulation:
                     rclist[:,0] = np.exp(interp(np.log(rclist[:,0])))
     
                     #Convert age in Ga to "interval time"
-                    rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+                    if (self.user['runtype'].upper() == 'STATISTICAL'):
+                        rclist[:,5] = (self.user['interval']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
+                    else:
+                        rclist[:,5] = (self.user['interval'] * self.user['numintervals']) - craterproduction.Tscale(rclist[:,5], 'NPF_Moon')
                     rclist = rclist[rclist[:,5].argsort()]
 
                     #Export to dat file

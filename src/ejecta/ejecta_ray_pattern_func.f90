@@ -27,21 +27,27 @@
 !***
 
 !**********************************************************************************************************
-function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
+function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,l1,ej) result(ans)
     use module_globals
     use module_ejecta, EXCEPT_THIS_ONE => ejecta_ray_pattern_func
     implicit none
     real(DP) :: ans
     real(DP),intent(in) :: r,rmin,rmax,theta
     real(DP),dimension(:),intent(in) :: thetari
+    real(DP),intent(in) :: rray, fpeak, rayp, rayfmult
+    integer(I4B),intent(in) :: Nraymax, rayq
+    real(DP),intent(in) :: l1
     logical,intent(in) :: ej
     real(DP) :: a,c
     real(DP) :: thetar,rw,rw0,rw1
     real(DP) :: f,rtrans,length,rpeak,minray,FF
     integer(I4B) :: n,i
+    real(DP) :: tmp
  
  
-    minray = rmin * 3
+    !minray = rmin * 3 !"L1" in Minton et al. (2019)
+    !minray = rray / 2
+    minray = l1
  
     if (r > rmax) then
        ans = 0._DP
@@ -55,18 +61,23 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
        rw0 = rmin * pi / Nraymax / 2
        rw1 = 2 * pi / Nraymax
        rw = rw0 * (1._DP - (1.0_DP - rw1 / rw0) * exp(1._DP - (r / rmin)**2)) ! equation 40 Minton et al. 2019
-       n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
+       tmp = (Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))
+       if (tmp < 0.0_DP) then
+         n = Nraymax ! "Nrays" in Minton et al. (2019)
+       else
+         n = max(min(floor((Nraymax**rayp - (Nraymax**rayp - 1) * log(r/minray) / log(rray/minray))**(1._DP/rayp)),Nraymax),1) ! Exponential decay of ray number with distance
+       end if
        ans = 0._DP
        rtrans = r - 1.0_DP
        c = rw / r
        a = sqrt(2 * pi) / (n * c * erf(pi / (2 *sqrt(2._DP) * c))) !equation 39 Minton et al., 2019
        do i = 1,Nraymax
-          length = minray * exp(log(rray/minray) * ((Nraymax - i + 1)**rayp - 1_DP) / ((Nraymax**rayp - 1)))
-          rpeak = (length - 1_DP) * 0.5_DP
+          length = minray * exp(log(rray/minray) * ((Nraymax - i + 1)**rayp - 1.0_DP) / ((Nraymax**rayp - 1)))
+          rpeak = (length - 1.0_DP) * 0.5_DP
           if (ej) then
              FF = 1.0_DP
              if (r > length) then
-                f = 0.0_DP
+                cycle ! Don't add any material beyond the length of the ray
              else
                 f = a 
              end if
@@ -74,7 +85,8 @@ function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
              FF = rayfmult * (20 / rmax)**(0.5_DP) * 0.25_DP 
              f = FF * fpeak * (rtrans / rpeak)**rayq * exp(1._DP / rayq * (1.0_DP - (rtrans / rpeak)**rayq)) !equation 42 Minton et al. 2019
           end if
-          ans = ans + ejecta_ray_func(theta,thetari(i),r,n,rw) * f / a 
+          tmp = ejecta_ray_func(theta,thetari(i),r,n,rw)
+          if (tmp > epsilon(ans) .and. (f/a > epsilon(ans))) ans = ans + tmp * f / a  ! Ensure that we don't get an underflow
        end do
     end if 
  

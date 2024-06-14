@@ -97,7 +97,7 @@ subroutine io_input(infile,user)
    user%dotopodiffusion = .true.
    write(user%sfdfile,*) trim(adjustl(SFDFILE))
    
-   open(unit=LUN,file=infile,status="old",iostat=ierr)
+   open(unit=LUN,file=trim(adjustl(infile)),status="old",iostat=ierr)
    if (ierr /= 0) then
    write(*,*) "Unable to open file ",trim(infile)
       stop

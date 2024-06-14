@@ -35,12 +35,12 @@ subroutine io_ejecta_table(crater,domain,ejb,ejtble,filename)
    integer(I4B) :: k
 
    ! Executable code
-   open(LUN, FILE=filename, status='replace')
+   open(LUN, FILE=trim(adjustl(filename)), status='replace')
       write(LUN,'("# trad  = ",ES12.5, " frad = ",ES12.5)') crater%rad,crater%frad
       write(LUN,'("# ejrim = ",ES12.5, " ejdis = ",ES12.5," imp = ",ES12.5)') crater%ejrim,crater%ejdis,crater%imp
       write(LUN,'(A63)') '# "r (m)"     "h (m)"      "v (m/s)"    "ang (deg)"  "erad (m)"'
       do k=1,ejtble 
-         write(LUN,'(5(ES13.5E3,1X))') exp(ejb(k)%lrad),exp(ejb(k)%thick),sqrt(ejb(k)%vesq),ejb(k)%angle/DEG2RAD, &
+         write(LUN,'(5(ES13.5E3,1X))') exp(ejb(k)%lrad),exp(ejb(k)%thick),sqrt(exp(ejb(k)%vesq)),exp(ejb(k)%angle)/DEG2RAD, &
                                      exp(ejb(k)%erad)
       end do
    close(LUN)

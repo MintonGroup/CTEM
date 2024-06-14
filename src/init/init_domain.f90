@@ -75,8 +75,8 @@ subroutine init_domain(user,crater,domain,prod,pdist,vdist,crtscl,nflux)
    end select
 
    ! Preliminary seismic property calculations
-   user%seisk = THIRD * user%tvel * user%tfrac
-   user%cohaccel = user%regcoh / user%trho_r
+   ! user%seisk = THIRD * user%tvel * user%tfrac
+   ! user%cohaccel = user%regcoh / user%trho_r
 
    ! Now we build an idealized production population
    domain%initialize = .true.

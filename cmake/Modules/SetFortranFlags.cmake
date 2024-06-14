@@ -533,10 +533,10 @@ IF (CMAKE_BUILD_TYPE STREQUAL "RELEASE" OR CMAKE_BUILD_TYPE STREQUAL "PROFILE")
             )
 
             # Tells the compiler to link to certain libraries in the Intel oneAPI Math Kernel Library (oneMKL). 
-            SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
-                Fortran "/Qmkl:cluster" # Intel Windows
-                        "/Qmkl"     # Intel Windows
-            ) 
+            # SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
+            #     Fortran "/Qmkl:cluster" # Intel Windows
+            #             "/Qmkl"     # Intel Windows
+            # ) 
 
             # Enables additional interprocedural optimizations for a single file compilation
             SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
@@ -574,10 +574,10 @@ IF (CMAKE_BUILD_TYPE STREQUAL "RELEASE" OR CMAKE_BUILD_TYPE STREQUAL "PROFILE")
             )
 
             # Tells the compiler to link to certain libraries in the Intel oneAPI Math Kernel Library (oneMKL). 
-            SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
-                Fortran "-qmkl=cluster" # Intel
-                        "-qmkl"     # Intel
-            ) 
+            # SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
+            #     Fortran "-qmkl=cluster" # Intel
+            #             "-qmkl"     # Intel
+            # ) 
 
             # Enables additional interprocedural optimizations for a single file compilation
             SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
@@ -671,11 +671,11 @@ IF (CMAKE_BUILD_TYPE STREQUAL "PROFILE")
     # Enables the optimization reports to be generated
         IF (WINOPT)
             SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE}"
-                Fortran "/O2 /Qopt-report:5 /traceback /Z7"    # Intel Windows
+                Fortran "/O2 /Qopt-report:3 /traceback /Z7"    # Intel Windows
             )
         ELSE ()
             SET_COMPILE_FLAG(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE}"
-                Fortran "-O2 -pg -qopt-report=5 -traceback -p -g3" # Intel
+                Fortran "-O2 -pg -qopt-report=3 -traceback -p -g3" # Intel
             )
         ENDIF ()
     ELSEIF (COMPILER_OPTIONS STREQUAL "GNU")

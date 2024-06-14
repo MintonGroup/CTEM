@@ -43,24 +43,32 @@ save
    end interface
 
    interface
-      subroutine ejecta_ray_pattern(user,crater,i,j,diffi,eji)
+      subroutine ejecta_ray_pattern(user,surf,crater,inc,xi,xf,yi,yf,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
       type(cratertype),intent(inout) :: crater
-      integer(I4B),intent(in) :: i,j
-      real(DP),intent(out) :: diffi
-      real(DP),intent(out) :: eji
+      integer(I4B),intent(in) :: inc,xi,xf,yi,yf
+      real(DP),intent(in) :: rray, fpeak, rayp, rayfmult
+      integer(I4B),intent(in) :: Nraymax, rayq
+      real(DP),dimension(xi:xf,yi:yf),intent(out) :: diffdistribution
+      real(DP),dimension(xi:xf,yi:yf),intent(out) :: ejdistribution
+      real(DP),intent(in) :: l1
+
       end subroutine ejecta_ray_pattern
    end interface
 
    interface
-      function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,ej) result(ans)
+      function ejecta_ray_pattern_func(theta,r,rmin,rmax,thetari,rray,Nraymax,fpeak,rayp,rayq,rayfmult,l1,ej) result(ans)
       use module_globals
       implicit none
       real(DP) :: ans
       real(DP),intent(in) :: r,rmin,rmax,theta
       real(DP),dimension(:),intent(in) :: thetari
+      real(DP),intent(in) :: rray, fpeak, rayp, rayfmult
+      integer(I4B),intent(in) :: Nraymax, rayq
+      real(DP),intent(in) :: l1
       logical,intent(in) :: ej
       end function ejecta_ray_pattern_func
    end interface

@@ -136,7 +136,7 @@ def image_regolith(user, regolith):
     height = user['gridsize'] / dpi
     width = height
     fig = plt.figure(figsize=(width, height), dpi=dpi)
-    fig.figimage(regolith_scaled, cmap=cm.nipy_spectral, origin='lower')
+    fig.figimage(regolith_scaled, cmap=cm.magma, origin='lower')
     plt.savefig(filename)
     plt.close()
     

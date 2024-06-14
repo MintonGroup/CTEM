@@ -45,12 +45,20 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
    real(DP),dimension(3)    :: rn  
    real(DP) :: superlen,rayfrac,cutout,fe,fd
    type(cratertype) :: crater
-   real(DP) :: eji, diffi
+   real(DP),dimension(:,:),allocatable :: diffdistribution,ejdistribution
    integer(I4B),dimension(:,:),allocatable :: ejisray
    real(DP) :: xbar,ybar,dD,xp,yp,areafrac,krad,supersize,lrad
    integer(I8B),dimension(user%gridsize,user%gridsize) :: Ngrid
-   
 
+   ! Crater ray parameters
+   real(DP) :: rray != 48_DP ! "L16" in Minton et al. (2019)
+   integer(I4B) :: Nraymax = 12
+   real(DP) :: fpeak = 8000_DP ! narrow ray: rw0 propto 1/4
+   real(DP) :: rayp = 2.0_DP 
+   integer(I4B) :: rayq = 4
+   real(DP) :: rayfmult = (5)**(-4.0_DP / (1.2_DP))
+   real(DP) :: l1
+   
    ! Create box for soften calculation (will be no bigger than the grid itself)
    do j = 0,user%gridsize + 1
       do i = 0,user%gridsize + 1
@@ -174,6 +182,12 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
             jmax = ypi - crater%ylpx
  
          
+            allocate(diffdistribution(imin:imax,jmin:jmax))
+            allocate(ejdistribution(imin:imax,jmin:jmax))
+            rray = 11.95_DP*crater%frad**1.32
+            l1 = 5.32_DP*crater%frad**1.27
+
+            call ejecta_ray_pattern(user,surf,crater,inc,imin,imax,jmin,jmax,rray,Nraymax,fpeak,rayp,rayq,rayfmult,diffdistribution,ejdistribution,l1)
             ! Loop over affected matrix area
             !!$OMP PARALLEL DO DEFAULT(SHARED) IF(inc > INCPAR) &
             !!$OMP FIRSTPRIVATE(jmin,jmax,imin,imax) &
@@ -182,17 +196,17 @@ subroutine crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiffin)
                do i = imin,imax
                   xpi = crater%xlpx + i
                   ypi = crater%ylpx + j
-                  call ejecta_ray_pattern(user,crater,i,j,diffi,eji)
-                  kdiff(xpi,ypi) = kdiff(xpi,ypi) + dKdN * diffi
+                  kdiff(xpi,ypi) = kdiff(xpi,ypi) + dKdN * diffdistribution(i,j)
                   !TEMP
                   xp = xpi * user%pix
                   yp = ypi * user%pix
                   lrad = sqrt((xp - crater%xl)**2 + (yp - crater%yl)**2)
-                  surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + eji &
+                  surf(xpi,ypi)%ejcov = surf(xpi,ypi)%ejcov + ejdistribution(i,j) &
                   * 0.14_DP * crater%frad**(0.74_DP) * (lrad / crater%frad)**(-3)
                end do
             end do
             !!$OMP END PARALLEL DO
+            deallocate(diffdistribution,ejdistribution)
          end do
       end if
 
