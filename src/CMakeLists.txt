@@ -8,9 +8,9 @@
 # If not, see: https://www.gnu.org/licenses. 
 
 # Communicate version number and other CMake build variables to the source code
-#set(GLOBAL_MODULE_IN ${SRC}/globals/globals_module.f90.in)
-#set(GLOBAL_MODULE_OUT ${SRC}/globals/globals_module.f90)
-#CONFIGURE_FILE(${GLOBAL_MODULE_IN} ${GLOBAL_MODULE_OUT})
+set(GLOBAL_MODULE_IN ${SRC}/globals/module_globals.f90.in)
+set(GLOBAL_MODULE_OUT ${SRC}/globals/module_globals.f90)
+CONFIGURE_FILE(${GLOBAL_MODULE_IN} ${GLOBAL_MODULE_OUT})
 
 IF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
     MESSAGE(FATAL_ERROR "Fortran compiler does not support F90")
