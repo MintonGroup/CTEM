@@ -14,7 +14,7 @@ module module_globals
 implicit none
 public
 
-character(len=*),parameter :: CTEMVER = "2024.6.0"
+character(len=*),parameter :: CTEMVER = "${CMAKE_PROJECT_VERSION}"
 
 ! Symbolic names for kind types of 4-, 2-, and 1-byte integers:
 integer, parameter :: I8B = selected_int_kind(17)
@@ -53,7 +53,6 @@ integer(I4B),parameter :: MAXLAYER=20          ! Maximum number of layers (you n
                                                ! resolution
 real(DP),parameter :: TALLYCOVERAGE = 0.01_DP  ! The total area coverage to reach before a tally step is executed
 real(DP),parameter :: SUBPIXELCOVERAGE = 0.00025_DP ! The total area coverage to reach before a subpixel evaluate step is executed: 0.05_DP
-real(DP),parameter :: THERMALCOVERAGE = 0.01_DP ! The total area coverage to reach before a thermal diffusion step is executed
 real(DP),parameter :: COOKIESIZE = 3.0_DP      ! Relative size of old crater to new crater that cookie cutting is applied
                                                ! Only craters smaller than COOKIESIZE times the new crater are cookie cut
 integer(I2B),parameter :: MAXAGEBINS=60       ! Maximum number of bins in age distribution reset by impact melting
@@ -63,12 +62,6 @@ real(DP),parameter :: RCONT = 2.25267_DP       ! Coefficient of continuous eject
 real(DP),parameter :: EXPCONT = 1.006_DP       ! Exponent of continuous ejecta size power law from Moore et al. (1974) 
 real(DP),parameter :: RAD_GP = 1.0_DP         ! The maximum radial position of producing impact glass spherules within a transient crater (unit of crater radii, crater%rad)
 
-type thermaltype
-   real(DP) :: temperature
-   real(DP) :: background
-   real(DP) :: depth !Depth relative to surface value at that pixel
-   real(DP) :: relative_depth !Depth relative to highest point in DEM
-end type thermaltype
 
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
@@ -173,9 +166,7 @@ type domaintype
    integer(I4B) :: vhi       ! Index of highest valid velocity in the velocity distribution file
    integer(I4B) :: tallycoverage  ! Estimated areal coverage of craters since the last tally
    integer(I4B) :: subpixelcoverage  ! Estimated areal coverage of craters since the last subpixel step
-   integer(I4B) :: thermalcoverage ! Estimated areal coverage of craters since the last thermal diffusion step
    real(DP)     :: rmsvel            ! Root mean square impact velocity
-   real(DP)     :: hmax       ! maximum height of DEM
    real(DP),dimension(MAXAGEBINS) :: age_bin_times ! Time in Ga to move to the next age bin
 end type domaintype 
 
@@ -209,12 +200,9 @@ type usertype
    logical           :: doporosity ! Porosity on/off flg. Set to F to turn the model off. Default F. 
    logical           :: domixing   ! Set to F to turn off regolith mixing (useful for test craters when you don't want to simulate gardening). Default is T.
    logical           :: doquasimc  ! set to T for quasi-MC run. Default F.
-   logical           :: dothermal  ! set to T for a run that includes thermal diffusion. Default F.
    real(DP)          :: basinimp  ! Impactor size to switch to multiring basin
    real(DP)          :: maxcrat   ! fraction that maximum crater can be relative to grid
    real(DP)          :: deplimit  ! complex crater depth limit
-   real(DP)          :: zpix      ! 3D pixel depth in the z-direction
-   integer(I4B)      :: zgridsize ! number of pixels in the z-direction
 
    ! Seismic input variables 
    logical ::  doseismic   ! Set to T if you want to do the seismic shaking model
@@ -350,7 +338,6 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat'
 character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
 character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
-character(*),parameter :: THERMFILE  = 'surface_therm.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

@@ -2,6 +2,7 @@
 !src/
 !src/*/
 !*.f90
+!src/globals/module_globals.f90.in
 !.gitignore
 !CMakeLists.txt
 !distclean.cmake
