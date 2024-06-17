@@ -1,5 +1,5 @@
-# Copyright 2022 - David Minton, Carlisle Wishard, Jennifer Pouplin, Jake Elliott, & Dana Singh
-# This file is part of Swiftest.
+# Copyright 2024 - The Minton Group at Purdue University
+# This file is part of CTEM
 # Swiftest is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 # Swiftest is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
@@ -17,6 +17,34 @@ SET(SKBUILD_PROJECT_NAME "ctem" CACHE STRING "Name of project set by scikit-buil
 # Get version stored in text file
 FILE(READ "version.txt" VERSION)
 PROJECT(${SKBUILD_PROJECT_NAME} LANGUAGES C Fortran VERSION ${VERSION})
+SET(SKBUILD_SCRIPTS_DIR "${CMAKE_SOURCE_DIR}/bin" CACHE STRING "Install location of binary executable")
+
+IF (SKBUILD)
+    set(ENV_PREFIX "$ENV{PREFIX}")
+    string(REPLACE "<ENV_PREFIX>" "${ENV_PREFIX}" CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+ENDIF ()
+
+IF(DEFINED ENV{CIBUILDWHEEL})
+    SET(CIBUILDWHEEL ON)
+ENDIF()
+
+# Check for a Fortran compiler 
+IF(DEFINED ENV{FC})
+    SET(CMAKE_Fortran_COMPILER $ENV{FC} CACHE STRING "Fortran compiler")
+ELSE()
+    # If FC is not set, search for the Fortran compilers in the specified order.
+    FIND_PROGRAM(Fortran_COMPILER
+               NAMES gfortran-14 gfortran-13 gfortran-12 gfortran ifort mpiifort
+               DOC "Fortran compiler")
+
+    # If a compiler is found, set it as the Fortran compiler.
+    IF(Fortran_COMPILER)
+        SET(CMAKE_Fortran_COMPILER ${Fortran_COMPILER} CACHE STRING "Fortran compiler")
+    ELSE()
+        MESSAGE(FATAL_ERROR "No suitable Fortran compiler was found.")
+    ENDIF()
+ENDIF()
+MESSAGE(STATUS "Using Fortran compiler: ${CMAKE_Fortran_COMPILER}")
 
 IF (CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
     SET(COMPILER_OPTIONS "Intel" CACHE STRING "Compiler identified as Intel")
@@ -49,15 +77,16 @@ FILE(TO_CMAKE_PATH ${PY} PY)
 
 INCLUDE(GNUInstallDirs)
 IF (SKBUILD)
-    SET(INSTALL_BINDIR ${SKBUILD_SCRIPTS_DIR})
-    SET(INSTALL_LIBDIR ${SKBUILD_DATA_DIR}/lib) 
-    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
     SET(INSTALL_PYPROJ ${SKBUILD_PLATLIB_DIR}/${SKBUILD_PROJECT_NAME}) 
-    IF (APPLE)
-        SET(CMAKE_INSTALL_RPATH "@loader_path;${CMAKE_BINARY_DIR}/bin")
-    ELSEIF (LINUX)
-        SET(CMAKE_INSTALL_RPATH "@ORIGIN;${CMAKE_BINARY_DIR}/bin")
-    ENDIF ()
+    SET(INSTALL_BINDIR ${INSTALL_PYPROJ})
+    IF (CIBUILDWHEEL)
+        SET(INSTALL_LIBDIR ${CMAKE_BINARY_DIR}/lib)
+        SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/bin")
+    ELSE()
+        SET(INSTALL_LIBDIR ${INSTALL_BINDIR})
+        SET(CMAKE_INSTALL_RPATH "${INSTALL_LIBDIR}")
+    ENDIF()
+    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
 ELSE ()
     SET(INSTALL_PYPROJ ${PY})
     SET(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
@@ -65,6 +94,11 @@ ELSE ()
     SET(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
 ENDIF ()
 
+MESSAGE(STATUS "INSTALL_BINDIR: ${INSTALL_BINDIR}")
+MESSAGE(STATUS "INSTALL_LIBDIR: ${INSTALL_LIBDIR}")
+MESSAGE(STATUS "INSTALL_INCLUDEDIR: ${INSTALL_INCLUDEDIR}")
+MESSAGE(STATUS "INSTALL_PYPROJ: ${INSTALL_PYPROJ}")
+MESSAGE(STATUS "CMAKE_INSTALL_RPATH: ${CMAKE_INSTALL_RPATH}")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Have the .mod files placed in the lib folder
@@ -74,8 +108,21 @@ SET(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod)
 FILE(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules" LOCAL_MODULE_PATH)
 LIST(APPEND CMAKE_MODULE_PATH ${LOCAL_MODULE_PATH})
 
+MESSAGE(STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR})
+#####################################
+# Tell how to install this executable
+#####################################
+IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    SET(CMAKE_INSTALL_PREFIX "C:\\Program Files\\swiftest")
+    FILE(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} CMAKE_INSTALL_PREFIX)
+    SET(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Path for install")
+ELSE()
+    SET(CMAKE_INSTALL_PREFIX /usr/local CACHE PATH "Path for install")
+ENDIF()
+
+
 # Set the name of the ctem library
-SET(CTEM_LIBRARY ctem)
+SET(CTEM_LIBRARY ${SKBUILD_PROJECT_NAME})
 
 # The source for the CTEM binary and have it placed in the bin folder
 ADD_SUBDIRECTORY(${SRC} ${BIN})

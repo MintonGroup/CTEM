@@ -1,6 +1,6 @@
 [project]
 name = "ctem"
-version = "2024.2.0"
+version = "2024.6.0"
 authors=[
     {name = 'David A. Minton', email='daminton@purdue.edu'},
     {name = 'James E. Richardson'},
@@ -28,11 +28,15 @@ dependencies = [
     'scipy>=1.10.1',
     'matplotlib>=3.7',
     'cython>=3.0.0',
-    'mkdocs>=1.5.3'
+    'mkdocs>=1.5.3',
+    'pandas>=2.2'
 ]
 
 [project.urls]
 Repository = 'https://github.itap.purdue.edu/MintonGroup/ctem'
+
+[project.scripts]
+CTEM = "ctem.cli:main"
 
 [build-system]
 requires = [
