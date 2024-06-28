@@ -77,21 +77,33 @@ FILE(TO_CMAKE_PATH ${PY} PY)
 
 INCLUDE(GNUInstallDirs)
 IF (SKBUILD)
+    SET(CMAKE_LIBRARY_PATH "${CMAKE_CURRENT_BINARY_DIR}/deps/usr/lib")
+    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
     SET(INSTALL_PYPROJ ${SKBUILD_PLATLIB_DIR}/${SKBUILD_PROJECT_NAME}) 
     SET(INSTALL_BINDIR ${INSTALL_PYPROJ})
+    # The following is needed so that the shared libraries get installed into the correct place. cibuildwheel behaves differently 
+    # than just running pip install directly. When running pip install directly, the libraries will be installed to the environment's
+    # lib directory by specifing ${SKBUILD_DATA_DIR}/lib as the library directory. 
+    # However, when running cibuildwheel, the libraries are repaired and placed in a special directory of all libraries
+    # that are packed up into the wheel. Currently, cibuildwheel cannot find the compiled libraries if they are installed to there,
+    # so we need to make sure the rpath is set to the original build directory so that the library repair step can reset the rpaths
+    # when running cibuildwheel.
     IF (CIBUILDWHEEL)
         SET(INSTALL_LIBDIR ${CMAKE_BINARY_DIR}/lib)
         SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/bin")
     ELSE()
         SET(INSTALL_LIBDIR ${INSTALL_BINDIR})
-        SET(CMAKE_INSTALL_RPATH "${INSTALL_LIBDIR}")
+        IF (APPLE)
+            SET(CMAKE_INSTALL_RPATH "@loader_path;${INSTALL_LIBDIR}")
+        ELSEIF (LINUX)
+            SET(CMAKE_INSTALL_RPATH "$ORIGIN;${INSTALL_LIBDIR}")
+        ENDIF ()
     ENDIF()
-    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
 ELSE ()
+    SET(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
     SET(INSTALL_PYPROJ ${PY})
     SET(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
     SET(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
-    SET(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
 ENDIF ()
 
 MESSAGE(STATUS "INSTALL_BINDIR: ${INSTALL_BINDIR}")
