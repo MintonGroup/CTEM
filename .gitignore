@@ -15,3 +15,8 @@
 
 !pyproject.toml
 !LICENSE
+!tests/
+!tests/**.py 
+!tests/ctem.in
+!tests/NPFextrap.dat
+!tests/lunar-MBA-impactor-velocities.dat

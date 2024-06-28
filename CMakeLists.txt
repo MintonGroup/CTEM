@@ -1,13 +1,13 @@
 # Copyright 2024 - The Minton Group at Purdue University
 # This file is part of CTEM
-# Swiftest is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+# CTEM is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-# Swiftest is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+# CTEM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
 # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License along with Swiftest. 
+# You should have received a copy of the GNU General Public License along with CTEM. 
 # If not, see: https://www.gnu.org/licenses. 
 
-# CMake project file for Swiftest
+# CMake project file for CTEM
 ##################################################
 # Define the project and the depencies that it has
 ##################################################
@@ -125,7 +125,7 @@ MESSAGE(STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR})
 # Tell how to install this executable
 #####################################
 IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    SET(CMAKE_INSTALL_PREFIX "C:\\Program Files\\swiftest")
+    SET(CMAKE_INSTALL_PREFIX "C:\\Program Files\\CTEM")
     FILE(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} CMAKE_INSTALL_PREFIX)
     SET(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Path for install")
 ELSE()
@@ -135,6 +135,8 @@ ENDIF()
 
 # Set the name of the ctem library
 SET(CTEM_LIBRARY ${SKBUILD_PROJECT_NAME})
+
+SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # The source for the CTEM binary and have it placed in the bin folder
 ADD_SUBDIRECTORY(${SRC} ${BIN})
