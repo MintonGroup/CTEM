@@ -1,13 +1,13 @@
 # Copyright 2024 - The Minton Group at Purdue University
 # This file is part of CTEM
-# Swiftest is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+# CTEM is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
 # as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-# Swiftest is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+# CTEM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
 # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License along with Swiftest. 
+# You should have received a copy of the GNU General Public License along with CTEM. 
 # If not, see: https://www.gnu.org/licenses. 
 
-# CMake project file for Swiftest
+# CMake project file for CTEM
 ##################################################
 # Define the project and the depencies that it has
 ##################################################
@@ -77,21 +77,33 @@ FILE(TO_CMAKE_PATH ${PY} PY)
 
 INCLUDE(GNUInstallDirs)
 IF (SKBUILD)
+    SET(CMAKE_LIBRARY_PATH "${CMAKE_CURRENT_BINARY_DIR}/deps/usr/lib")
+    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
     SET(INSTALL_PYPROJ ${SKBUILD_PLATLIB_DIR}/${SKBUILD_PROJECT_NAME}) 
     SET(INSTALL_BINDIR ${INSTALL_PYPROJ})
+    # The following is needed so that the shared libraries get installed into the correct place. cibuildwheel behaves differently 
+    # than just running pip install directly. When running pip install directly, the libraries will be installed to the environment's
+    # lib directory by specifing ${SKBUILD_DATA_DIR}/lib as the library directory. 
+    # However, when running cibuildwheel, the libraries are repaired and placed in a special directory of all libraries
+    # that are packed up into the wheel. Currently, cibuildwheel cannot find the compiled libraries if they are installed to there,
+    # so we need to make sure the rpath is set to the original build directory so that the library repair step can reset the rpaths
+    # when running cibuildwheel.
     IF (CIBUILDWHEEL)
         SET(INSTALL_LIBDIR ${CMAKE_BINARY_DIR}/lib)
         SET(CMAKE_INSTALL_RPATH "${CMAKE_BINARY_DIR}/bin")
     ELSE()
         SET(INSTALL_LIBDIR ${INSTALL_BINDIR})
-        SET(CMAKE_INSTALL_RPATH "${INSTALL_LIBDIR}")
+        IF (APPLE)
+            SET(CMAKE_INSTALL_RPATH "@loader_path;${INSTALL_LIBDIR}")
+        ELSEIF (LINUX)
+            SET(CMAKE_INSTALL_RPATH "$ORIGIN;${INSTALL_LIBDIR}")
+        ENDIF ()
     ENDIF()
-    SET(INSTALL_INCLUDEDIR ${SKBUILD_HEADERS_DIR}) 
 ELSE ()
+    SET(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
     SET(INSTALL_PYPROJ ${PY})
     SET(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
     SET(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
-    SET(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
 ENDIF ()
 
 MESSAGE(STATUS "INSTALL_BINDIR: ${INSTALL_BINDIR}")
@@ -113,7 +125,7 @@ MESSAGE(STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR})
 # Tell how to install this executable
 #####################################
 IF(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    SET(CMAKE_INSTALL_PREFIX "C:\\Program Files\\swiftest")
+    SET(CMAKE_INSTALL_PREFIX "C:\\Program Files\\CTEM")
     FILE(TO_CMAKE_PATH ${CMAKE_INSTALL_PREFIX} CMAKE_INSTALL_PREFIX)
     SET(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Path for install")
 ELSE()
@@ -123,6 +135,8 @@ ENDIF()
 
 # Set the name of the ctem library
 SET(CTEM_LIBRARY ${SKBUILD_PROJECT_NAME})
+
+SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # The source for the CTEM binary and have it placed in the bin folder
 ADD_SUBDIRECTORY(${SRC} ${BIN})
