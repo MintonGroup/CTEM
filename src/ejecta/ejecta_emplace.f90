@@ -115,7 +115,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
    real(DP) :: frayreduction = 0.5_DP ! Factor to apply to reduce the relative thickness of the ray for each subsequent pattern
    integer(I4B), parameter :: Npatt = 8 ! Number of times to call ray pattern
    
-   
 
    ! Ray mixing model variables 
    real(DP)      :: dsc
@@ -310,7 +309,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
          ebh = areafrac * ejdistribution(idistorted,jdistorted) * ebh
          cumulative_elchange(i,j) = ebh + crater_profile(user, crater, lrad)
 
-         if (user%dothermal .and. ebh > 0 .and. avgtemp > 0) call thermal_add_ejecta(user,thermal(xpi,ypi,:),avgtemp,ebh) !Assuming ebh is the correct parameter for ejecta blanket thickness
+         if (user%dothermal .and. ebh > 0 .and. avgtemp > 0) then
+            call thermal_add_ejecta(user,thermal(:,:,:),avgtemp,ebh,xpi,ypi) !Assuming ebh is the correct parameter for ejecta blanket thickness
+         end if
 
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region
