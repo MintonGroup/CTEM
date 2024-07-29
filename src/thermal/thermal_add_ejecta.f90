@@ -38,7 +38,7 @@ subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
 
     if (thickness < user%zpix) then ! Ejecta layer less than z-pixel; will average
         voxtemp = ((avgtemp * (thickness/user%zpix)) + (thermal(tx,ty,1)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
-        thermal(tx,ty,1)%temperature = thermal(tx,ty,i)%temperature + voxtemp
+        thermal(tx,ty,1)%temperature = thermal(tx,ty,1)%temperature + voxtemp
     else ! Ejecta layer more than one z-pixel. Need to fill the top number of pixels with the ejecta value, then average the other one
         npix = int(thickness / user%zpix)
         rem = mod(thickness,user%zpix)
