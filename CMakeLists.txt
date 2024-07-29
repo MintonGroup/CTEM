@@ -11,7 +11,7 @@
 ##################################################
 # Define the project and the depencies that it has
 ##################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 3.24.0...3.27.1)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.28.3...3.29.4)
 SET(SKBUILD_PROJECT_NAME "ctem" CACHE STRING "Name of project set by scikit-build")
 
 # Get version stored in text file
