@@ -309,10 +309,6 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
          ebh = areafrac * ejdistribution(idistorted,jdistorted) * ebh
          cumulative_elchange(i,j) = ebh + crater_profile(user, crater, lrad)
 
-         if (user%dothermal .and. ebh > 0 .and. avgtemp > 0) then
-            call thermal_add_ejecta(user,thermal(:,:,:),avgtemp,ebh,xpi,ypi) !Assuming ebh is the correct parameter for ejecta blanket thickness
-         end if
-
          if (user%dosoftening) then
             ! Do extra diffusive degradation over ejecta region
             areafrac =  (1.0_DP - util_area_intersection(crater%frad,xbar,ybar,user%pix)) 
@@ -376,6 +372,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
       
       
             ebh = cumulative_elchange(i,j) - crater_profile(user, crater, lrad)
+
+            !This ebh is much closer to the McGetchin estimate than the one above. Using this value for thermal ejecta thickness
+            if (user%dothermal .and. ebh > 1.0e-8_DP .and. avgtemp > 1.0e-8_DP) then
+               call thermal_add_ejecta(user,thermal(:,:,:),avgtemp,ebh,xpi,ypi)
+            end if
       
       
                if (user%doregotrack .and. ebh>1.0e-8_DP) then

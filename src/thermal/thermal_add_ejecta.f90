@@ -51,7 +51,7 @@ subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
                     thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
                 end if
             else
-                thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + thermal(tx,ty,i-npix)%temperature
+                thermal(tx,ty,i)%temperature = thermal(tx,ty,i-npix)%temperature
             end if
         end do
     end if
