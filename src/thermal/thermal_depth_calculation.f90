@@ -49,7 +49,8 @@ subroutine thermal_depth_calculation(user,surf,domain,thermal)
             h = surf(i,j)%dem
             do k=1,user%zgridsize
                 surfdepth = hmax - h
-                thermal(i,j,k)%relative_depth = thermal(i,j,k)%depth - hmax
+                thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - hmax
+                thermal(i,j,k)%elevation = hmax - thermal(i,j,k)%relative_depth
                 if (thermal(i,j,k)%relative_depth < surfdepth) then !voxel is empty space above the surface
                     thermal(i,j,k)%temperature = 0.0_DP
                     thermal(i,j,k)%background = 0.0_DP

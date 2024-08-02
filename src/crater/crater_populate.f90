@@ -374,10 +374,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          !Add ejecta to thermal distribution
 
-         ! if (user%dothermal) then
-         !    call thermal_depth_calculation(user,surf,domain,thermal)
+         if (user%dothermal) then
+            call thermal_depth_calculation(user,surf,domain,thermal)
          !    !call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
-         ! end if
+         end if
          
          ! Find out if the current crater is the largest or smallest and if so record it
          if (crater%fcrat > cmax ) then
