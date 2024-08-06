@@ -350,7 +350,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ejtble = 0
          end if
 
+         !if (user%dothermal) call thermal_remove(user,crater,)
+
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet) !Need to modify thermal grid for melt sheet
+         !if (user%dothermal call thermal_interior())
 
          if (user%dorealistic) call realistic_crater_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)
@@ -376,7 +379,6 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if (user%dothermal) then
             call thermal_depth_calculation(user,surf,domain,thermal)
-         !    !call thermal_modify_gradient() <--probably won't be called that, since it's the actual temperatures that are modified, not the gradient.
          end if
          
          ! Find out if the current crater is the largest or smallest and if so record it

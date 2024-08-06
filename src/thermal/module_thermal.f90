@@ -77,5 +77,8 @@ save
         integer(I4B) :: tx, ty
         end subroutine thermal_add_ejecta
     end interface
+
+    !interface
+        
     
 end module

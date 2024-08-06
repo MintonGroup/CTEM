@@ -38,23 +38,29 @@ subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
 
     if (thickness < user%zpix) then ! Ejecta layer less than z-pixel; will average
         voxtemp = ((avgtemp * (thickness/user%zpix)) + (thermal(tx,ty,1)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
-        thermal(tx,ty,1)%temperature = thermal(tx,ty,1)%temperature + voxtemp
-    else ! Ejecta layer more than one z-pixel. Need to fill the top number of pixels with the ejecta value, then average the other one
-        npix = int(thickness / user%zpix)
-        rem = mod(thickness,user%zpix)
-        ! Shift thermal distribution down by the npix
-        do i=user%zgridsize,1,-1
-            if (i <= npix) then
-                if (i == npix) then
-                    thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
-                else
-                    thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
-                end if
-            else
-                thermal(tx,ty,i)%temperature = thermal(tx,ty,i-npix)%temperature
-            end if
-        end do
     end if
+    npix = int(thickness / user%zpix)
+    rem = mod(thickness,user%zpix)
+    ! Shift thermal distribution down by the npix
+    do i=user%zgridsize,1,-1
+        if (thermal(tx,ty,i)%depth > 0) then
+            if (thickness < user%zpix) then
+                thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + voxtemp
+                exit
+            else
+                if (i <= npix) then
+                    if (i == npix) then
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
+                    else
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
+                    end if
+                else
+                    thermal(tx,ty,i)%temperature = thermal(tx,ty,i-npix)%temperature
+                end if
+            end if
+        end if
+    end do
+        
 
     return
 end subroutine thermal_add_ejecta
