@@ -86,6 +86,18 @@ save
         type(cratertype),intent(in) :: crater
         end subroutine thermal_remove
     end interface
+
+    interface
+        subroutine thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
+        use module_globals 
+        implicit none
+        type(usertype),intent(in) :: user
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        type(cratertype),intent(in) :: crater
+        integer(I4B),intent(in)     :: incval, nmeltsheet
+        real(DP),intent(in)         :: vmeltsheet
+        end subroutine thermal_interior
+    end interface
     
     ! interface
     !     subroutine thermal_uplift(user,thermal,crater,oldtemps)

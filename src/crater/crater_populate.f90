@@ -352,8 +352,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if (user%dothermal) call thermal_remove(user,thermal,crater)
 
-         if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet) !Need to modify thermal grid for melt sheet
-         !if (user%dothermal call thermal_interior())
+         if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
+         if (user%dothermal) call thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
 
          if (user%dorealistic) call realistic_crater_topography(user,surf,crater,domain,ejecta_dem) 
          deallocate(ejecta_dem)
