@@ -350,7 +350,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ejtble = 0
          end if
 
-         !if (user%dothermal) call thermal_remove(user,crater,)
+         if (user%dothermal) call thermal_remove(user,thermal,crater)
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet) !Need to modify thermal grid for melt sheet
          !if (user%dothermal call thermal_interior())

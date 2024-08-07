@@ -78,7 +78,24 @@ save
         end subroutine thermal_add_ejecta
     end interface
 
-    !interface
-        
+    interface
+        subroutine thermal_remove(user,thermal,crater)
+        use module_globals
+        type(usertype),intent(in) :: user
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        type(cratertype),intent(in) :: crater
+        end subroutine thermal_remove
+    end interface
+    
+    ! interface
+    !     subroutine thermal_uplift(user,thermal,crater,oldtemps)
+    !     use module_globals
+    !     type(usertype),intent(in) :: user
+    !     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+    !     type(cratertype),intent(in) :: crater
+    !     type(thermaltype),dimension(:,:,:), intent(in) :: oldtemps
+    !     end subroutine thermal_uplift
+    ! end interface
+    
     
 end module
