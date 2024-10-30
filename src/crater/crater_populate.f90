@@ -325,6 +325,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             call thermal_depth_calculation(user,surf,domain,thermal)
             call thermal_dist(user,thermal,crater)
             call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
+            !Debug
+            open(52,file='thermA.dat',status='replace',form='unformatted')
+            write(52) thermal(:,:,:)%temperature
+            close(52)
          end if
 
          ! Place crater onto the surface
@@ -350,7 +354,13 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ejtble = 0
          end if
 
-         if (user%dothermal) call thermal_remove(user,thermal,crater)
+         if (user%dothermal) then 
+            call thermal_remove(user,thermal,crater)
+            !Debug
+            open(53,file='thermB.dat',status='replace',form='unformatted')
+            write(53) thermal(:,:,:)%temperature
+            close(53)
+         end if
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
          if (user%dothermal) call thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
@@ -378,6 +388,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          !Add ejecta to thermal distribution
 
          if (user%dothermal) then
+            !Debug
+            open(54,file='thermC.dat',status='replace',form='unformatted')
+            write(54) thermal(:,:,:)%temperature
+            close(54)
             call thermal_depth_calculation(user,surf,domain,thermal)
          end if
          

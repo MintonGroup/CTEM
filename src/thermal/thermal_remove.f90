@@ -43,7 +43,7 @@ subroutine thermal_remove(user,thermal,crater)
     rpix = crater%rad / user%pix
     inc = min(rpix,user%gridsize-1)
 
-    maxdisp = 0.06*(crater%fcrat/1000)**1.1 ! eq. 8 in Abramov et al. (2013)
+    maxdisp = (0.06*(crater%fcrat/1000)**1.1) * 1000 ! eq. 8 in Abramov et al. (2013), converted to m
 
     maxtdepth =  -0.5 * (0.0_DP/crater%rad)**2 + (crater%rad/2._DP)
     maxtdepthpix = maxtdepth / user%zpix
