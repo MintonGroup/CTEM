@@ -62,36 +62,45 @@ subroutine thermal_remove(user,thermal,crater)
             call util_periodic(xpi,ypi,user%gridsize)
 
             ! calculate the depth of the transient crater at this pixel, assuming parabolic shape:
-            r = sqrt(xp**2 + yp**2)
+            r = sqrt((crater%xl-xp)**2 + (crater%yl-yp)**2)
             tdepth = -0.5 * (r/crater%rad)**2 + (crater%rad/2._DP)
             tdepthpix = tdepth / user%zpix
 
-            horiz = ((r - (0.22*(crater%frad/1000))**2)) / maxdisp !max depth at this horizontal distance
+            if (r<(0.22*crater%frad)) then !Too far for uplift if r>0.22*Rf
 
-            do k=1,user%zgridsize
-                if (thermal(xpi,ypi,k)%depth > 0) then
-                    if(thermal(xpi,ypi,k)%depth < maxtdepth) then
-                        if (thermal(xpi,ypi,k)%depth < user%zpix) then
-                            reference = k
-                        end if
-
-                        vert = horiz - ((horiz / (1.25*maxtdepth))*thermal(xpi,ypi,k)%depth) !vertical uplift
-                        npix = vert / user%zpix !number of pixels to shift
-                        
-
-                        if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
-                            thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
-                        else
-                            thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature
-                        end if
-                        
-                        ! thermal(xpi,ypi,k)%depth = oldtemps(xpi,ypi,k)%depth
-                        ! thermal(xpi,ypi,k)%relative_depth = oldtemps(xpi,ypi,k)%relative_depth
-                        ! thermal(xpi,ypi,k)%elevation = oldtemps(xpi,ypi,k)%elevation
-                        ! thermal(xpi,ypi,k)%background = oldtemps(xpi,ypi,k)%background
-                    end if
+                horiz = (((r/1000) - (0.22*(crater%frad/1000)))**2) * 1000 !max depth at this horizontal distance
+                if (horiz > maxdisp) then
+                    horiz = maxdisp
                 end if
-            end do
+
+                do k=1,user%zgridsize
+                    if (thermal(xpi,ypi,k)%depth > 0) then
+                        if(thermal(xpi,ypi,k)%depth < maxtdepth) then
+                            if (thermal(xpi,ypi,k)%depth < user%zpix) then
+                                reference = k
+                            end if
+
+                            !vert = horiz - ((horiz / (1.25*maxtdepth))*thermal(xpi,ypi,k)%depth) !vertical uplift
+                            vert = horiz - ((horiz / 1.25*maxtdepth)* thermal(xpi,ypi,k)%depth)
+                            npix = vert / user%zpix !number of pixels to shift
+                            
+
+                            if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
+                                thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
+                            else
+                                thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature
+                            end if
+                            
+                            ! thermal(xpi,ypi,k)%depth = oldtemps(xpi,ypi,k)%depth
+                            ! thermal(xpi,ypi,k)%relative_depth = oldtemps(xpi,ypi,k)%relative_depth
+                            ! thermal(xpi,ypi,k)%elevation = oldtemps(xpi,ypi,k)%elevation
+                            ! thermal(xpi,ypi,k)%background = oldtemps(xpi,ypi,k)%background
+                        !else
+                            !Need to shift pixels under the transient crater depth
+                        end if
+                    end if
+                end do
+            end if
         end do
     end do
 
