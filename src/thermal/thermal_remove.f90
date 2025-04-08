@@ -45,7 +45,9 @@ subroutine thermal_remove(user,thermal,crater)
 
     maxdisp = (0.06*(crater%fcrat/1000)**1.1) * 1000 ! eq. 8 in Abramov et al. (2013), converted to m
 
-    maxtdepth =  -0.5 * (0.0_DP/crater%rad)**2 + (crater%rad/2._DP)
+    maxtdepth =  -0.5 * (0.0_DP/crater%rad)**2 + (crater%rad/2._DP) ! Parabolic relationship between r and depth of transient crater: 
+                                                                    ! depth h = -0.5(r/R)**2 + (R/2) where r is radial distance and R is radius. 
+                                                                    ! Max depth of transient crater is assumed to be at r=0, and goes to 0 at r=R.
     maxtdepthpix = maxtdepth / user%zpix
 
     do j=-inc,inc
@@ -63,12 +65,15 @@ subroutine thermal_remove(user,thermal,crater)
 
             ! calculate the depth of the transient crater at this pixel, assuming parabolic shape:
             r = sqrt((crater%xl-xp)**2 + (crater%yl-yp)**2)
-            tdepth = -0.5 * (r/crater%rad)**2 + (crater%rad/2._DP)
+            tdepth = -0.5 * (r/crater%rad)**2 + (crater%rad/2._DP) ! General use case of parabolic relationship described above
             tdepthpix = tdepth / user%zpix
 
-            if (r<(0.22*crater%frad)) then !Too far for uplift if r>0.22*Rf
+            if (r<(0.22*crater%frad)) then !Too far for uplift if r>0.22*Rf according to p.8 of Abramov et al. (2013)
 
-                horiz = (((r/1000) - (0.22*(crater%frad/1000)))**2) * 1000 !max depth at this horizontal distance
+                horiz = (((r/1000) - (0.22*(crater%frad/1000)))**2) * 1000 ! max depth at this horizontal distance
+                                                                            ! vertical displacement decreases with distance x as
+                                                                            ! (x-Rcp**2) where Rcp is "lateral extent of the uplift, approximiately 0.22 of the final radius"
+                                                                            ! Abramov et al. (2013) p. 7-8
                 if (horiz > maxdisp) then
                     horiz = maxdisp
                 end if
@@ -80,7 +85,10 @@ subroutine thermal_remove(user,thermal,crater)
                                 reference = k
                             end if
 
-                            vert = horiz - ((horiz / (1.25*maxtdepth))*thermal(xpi,ypi,k)%depth) !vertical uplift
+                            vert = horiz - ((horiz / (1.25*maxtdepth))*thermal(xpi,ypi,k)%depth) !vertical uplift 
+                                                                                                ! According to Abramov et al. (2013) immediately after eq.8, vertical displacement decreases linearly with depth
+                                                                                                ! and reaches zero at 1.25x the depth of the transient crater. 
+                                                                                                ! This appears to be point-slope form of such a linear equation
                             npix = vert / user%zpix !number of pixels to shift
                             
 

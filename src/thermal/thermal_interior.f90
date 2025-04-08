@@ -40,7 +40,7 @@ subroutine thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
 
     allocate(oldtemps,source=thermal(:,:,:))
 
-    hmeltsheet = vmeltsheet / (nmeltsheet*user%pix*user%pix)
+    hmeltsheet = vmeltsheet / (nmeltsheet*user%pix*user%pix) !melt sheet thickness
     npix = hmeltsheet / user%zpix
 
     inc = incval
