@@ -98,6 +98,16 @@ save
         real(DP),intent(in)         :: vmeltsheet
         end subroutine thermal_interior
     end interface
+
+    ! interface
+    !     subroutine thermal_warp(user,thermal,crater)
+    !     use module_globals
+    !     type(usertype),intent(in) :: user
+    !     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+    !     type(cratertype),intent(in) :: crater
+    !     end subroutine thermal_warp
+    ! end interface
+        
     
     ! interface
     !     subroutine thermal_uplift(user,thermal,crater,oldtemps)
