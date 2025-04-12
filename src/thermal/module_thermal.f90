@@ -102,6 +102,7 @@ save
     interface
         subroutine thermal_warp(user,thermal,crater)
         use module_globals
+        implicit none
         type(usertype),intent(in) :: user
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(cratertype),intent(in) :: crater

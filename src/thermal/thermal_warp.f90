@@ -31,8 +31,8 @@ subroutine thermal_warp(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix
-    real(DP) :: Rcp, trans_depth, maxdisp, rpix, r, uz, maxz, z
+    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix
+    real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp
 
     ! Executable code
 
@@ -83,7 +83,7 @@ subroutine thermal_warp(user,thermal,crater)
     !         end do
     !     end do
     ! end do
-
+    return
 end subroutine thermal_warp
 
 
