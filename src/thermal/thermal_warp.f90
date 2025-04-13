@@ -31,7 +31,7 @@ subroutine thermal_warp(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix
+    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix!,dummy
     real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp
 
     ! Executable code
@@ -66,7 +66,9 @@ subroutine thermal_warp(user,thermal,crater)
                 do k=1,maxzpix
                     z = k * user%zpix
                     uz = maxdisp * (1.0_DP - (z/maxz)) * (1.0_DP - (r/Rcp)**2) ! vertical displacement
-                    thermal(i,j,k)%warp = z - uz
+                    uz = min(z,uz) !No negative values-- things above the surface are removed
+                    thermal(xpi,ypi,k)%warp = z - uz
+                    !dummy = 1 ! for debugging the line above
                 end do
             end if
         end do
