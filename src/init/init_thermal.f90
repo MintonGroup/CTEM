@@ -41,6 +41,7 @@ subroutine init_thermal(user,thermal)
                 thermal(i,j,k)%background = (13._DP/1000._DP) * thermal(i,j,k)%depth !13K/km for now; eventually could make it change over time?
                 thermal(i,j,k)%temperature = thermal(i,j,k)%background
                 thermal(i,j,k)%warp = 0.0_DP
+                thermal(i,j,k)%warpedbg = 0.0_DP
             end do
         end do
     end do

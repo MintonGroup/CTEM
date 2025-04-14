@@ -70,6 +70,7 @@ type thermaltype
    real(DP) :: relative_depth !Depth relative to highest point in DEM
    real(DP) :: elevation !Elevation in DEM standard (0 is baseline)
    real(DP) :: warp
+   real(DP) :: warpedbg ! warped background temperature
 end type thermaltype
 
 type regodatatype 

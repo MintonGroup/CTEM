@@ -31,7 +31,7 @@ subroutine thermal_warp(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix!,dummy
+    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix
     real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp
 
     ! Executable code
@@ -68,13 +68,28 @@ subroutine thermal_warp(user,thermal,crater)
                     uz = maxdisp * (1.0_DP - (z/maxz)) * (1.0_DP - (r/Rcp)**2) ! vertical displacement
                     uz = min(z,uz) !No negative values-- things above the surface are removed
                     thermal(xpi,ypi,k)%warp = z - uz
-                    !dummy = 1 ! for debugging the line above
+                    ! Assign background temperature from warping
+                    wpix = max(0,nint(thermal(xpi,ypi,k)%warp / user%zpix))
+                    thermal(xpi,ypi,k)%warpedbg = thermal(xpi,ypi,k+wpix)%background
                 end do
             end if
         end do
     end do
 
-    ! Assign background temperature from warping
+    ! write out the background for testing
+    do i = 1,user%gridsize
+        do j = 1,user%gridsize
+            do k = 1,user%zgridsize
+                if (thermal(i,j,k)%warpedbg == 0) then
+                    thermal(i,j,k)%warpedbg = thermal(i,j,k)%background
+                end if
+            end do
+        end do
+    end do
+
+    open(51,file='bgtest.dat',status='replace',form='unformatted')
+    write(51) thermal(:,:,:)%warpedbg
+    close(51)
 
     ! Make warp go back to 0
 
