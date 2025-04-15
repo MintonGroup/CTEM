@@ -115,9 +115,9 @@ subroutine thermal_warp(user,thermal,crater)
         end do
     end do
 
-    open(51,file='bgtest.dat',status='replace',form='unformatted')
-    write(51) thermal(:,:,:)%warpedbg
-    close(51)
+    ! open(51,file='bgtest.dat',status='replace',form='unformatted')
+    ! write(51) thermal(:,:,:)%warpedbg
+    ! close(51)
 
     ! Make warp go back to 0
 
