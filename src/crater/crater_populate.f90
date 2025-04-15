@@ -355,8 +355,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
 
          if (user%dothermal) then 
-            call thermal_remove(user,thermal,crater)
             call thermal_warp(user,thermal,crater)
+            call thermal_remove(user,thermal,crater)
             !Debug
             open(53,file='thermB.dat',status='replace',form='unformatted')
             write(53) thermal(:,:,:)%temperature

@@ -31,8 +31,10 @@ subroutine thermal_warp(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix
+    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix,z_warp
     real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp
+    real(kind=8), dimension(:),allocatable :: temp_accum, temp_count
+
 
     ! Executable code
 
@@ -42,6 +44,17 @@ subroutine thermal_warp(user,thermal,crater)
 
     rpix = crater%rad / user%pix
     inc = min(rpix,user%gridsize-1)
+
+    ! write out the background for testing
+    do i = 1,user%gridsize
+        do j = 1,user%gridsize
+            do k = 1,user%zgridsize
+                if (thermal(i,j,k)%warpedbg == 0) then
+                    thermal(i,j,k)%warpedbg = thermal(i,j,k)%background
+                end if
+            end do
+        end do
+    end do
 
 
     do j = -inc,inc
@@ -63,27 +76,36 @@ subroutine thermal_warp(user,thermal,crater)
             maxzpix = maxz / user%zpix
 
             if (r <= Rcp) then
+                allocate(temp_accum(maxzpix))
+                allocate(temp_count(maxzpix))
+                temp_accum = 0.0_DP
+                temp_count = 0.0_DP
                 do k=1,maxzpix
                     z = k * user%zpix
                     uz = maxdisp * (1.0_DP - (z/maxz)) * (1.0_DP - (r/Rcp)**2) ! vertical displacement
                     uz = min(z,uz) !No negative values-- things above the surface are removed
                     thermal(xpi,ypi,k)%warp = z - uz
                     ! Assign background temperature from warping
-                    wpix = max(0,nint(thermal(xpi,ypi,k)%warp / user%zpix))
-                    thermal(xpi,ypi,k)%warpedbg = thermal(xpi,ypi,k+wpix)%background
-                end do
-            end if
-        end do
-    end do
+                    wpix = nint(thermal(xpi,ypi,k)%warp / user%zpix)
 
-    ! write out the background for testing
-    do i = 1,user%gridsize
-        do j = 1,user%gridsize
-            do k = 1,user%zgridsize
-                if (thermal(i,j,k)%warpedbg == 0) then
-                    thermal(i,j,k)%warpedbg = thermal(i,j,k)%background
-                end if
-            end do
+                    if (wpix >= 1 .and. wpix <= maxzpix) then
+                        !thermal(xpi,ypi,k)%warpedbg = thermal(xpi,ypi,wpix)%background
+                        temp_accum(wpix) = temp_accum(wpix) + thermal(xpi, ypi, k)%background
+                        temp_count(wpix) = temp_count(wpix) + 1.0_DP
+                    else
+                        thermal(xpi,ypi,k)%warpedbg = 0.0_DP  ! handle out-of-bounds
+                    end if
+                end do
+                ! Assign averaged values back to the warpedbg field
+                do k = 1, maxzpix
+                    if (temp_count(k) > 0.0_DP) then
+                        thermal(xpi, ypi, k)%warpedbg = temp_accum(k) / temp_count(k)
+                    else
+                        thermal(xpi, ypi, k)%warpedbg = thermal(xpi, ypi, k)%background
+                    end if
+                end do
+                deallocate(temp_accum,temp_count)
+            end if
         end do
     end do
 
