@@ -31,8 +31,8 @@ subroutine thermal_warp(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix,z_warp
-    real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp
+    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix, k1, k2
+    real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp,z_warp,zfrac, w1, w2
     real(kind=8), dimension(:),allocatable :: temp_accum, temp_count
 
 
@@ -86,12 +86,18 @@ subroutine thermal_warp(user,thermal,crater)
                     uz = min(z,uz) !No negative values-- things above the surface are removed
                     thermal(xpi,ypi,k)%warp = z - uz
                     ! Assign background temperature from warping
-                    wpix = nint(thermal(xpi,ypi,k)%warp / user%zpix)
-
-                    if (wpix >= 1 .and. wpix <= maxzpix) then
-                        !thermal(xpi,ypi,k)%warpedbg = thermal(xpi,ypi,wpix)%background
-                        temp_accum(wpix) = temp_accum(wpix) + thermal(xpi, ypi, k)%background
-                        temp_count(wpix) = temp_count(wpix) + 1.0_DP
+                    z_warp = z - uz
+                    zfrac = z_warp / user%zpix
+                    k1 = floor(zfrac)
+                    k2 = k1 + 1
+                    w2 = zfrac - real(k1, DP)
+                    w1 = 1.0_DP - w2
+                    ! Deposit fractionally into both k1 and k2
+                    if (k1 >= 1 .and. k2 <= maxzpix) then
+                        temp_accum(k1) = temp_accum(k1) + thermal(xpi, ypi, k)%background * w1
+                        temp_accum(k2) = temp_accum(k2) + thermal(xpi, ypi, k)%background * w2
+                        temp_count(k1) = temp_count(k1) + w1
+                        temp_count(k2) = temp_count(k2) + w2
                     else
                         thermal(xpi,ypi,k)%warpedbg = 0.0_DP  ! handle out-of-bounds
                     end if
