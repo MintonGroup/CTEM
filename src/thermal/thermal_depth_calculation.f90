@@ -80,4 +80,3 @@ subroutine thermal_depth_calculation(user,surf,domain,thermal)
 end subroutine thermal_depth_calculation
 
 
-

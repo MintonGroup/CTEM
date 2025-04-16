@@ -32,8 +32,8 @@ subroutine thermal_remove(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix
-    real(DP) :: xp, yp, r, tdepth, maxtdepth
+    integer(I4B) :: i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix, k1,k2
+    real(DP) :: xp, yp, r, tdepth, maxtdepth, dz, depth_above, z1,z2, T1, T2, frac, old_depth, depth_below
     type(thermaltype),dimension(:,:,:),allocatable :: oldtemps
     !real(DP),dimension(:,:,:),allocatable :: oldtemps
 
@@ -64,28 +64,91 @@ subroutine thermal_remove(user,thermal,crater)
             ! calculate the depth of the transient crater at this pixel, assuming parabolic shape:
             r = sqrt((crater%xl-xp)**2 + (crater%yl-yp)**2)
             tdepth = -0.5 * (r/crater%rad)**2 + (crater%rad/2._DP) ! General use case of parabolic relationship described above
-            tdepthpix = tdepth / user%zpix
+            !tdepthpix = tdepth / user%zpix
 
-                do k=1,tdepthpix
-                    if (thermal(xpi,ypi,k)%depth > 0) then
-                        if(thermal(xpi,ypi,k)%depth < maxtdepth) then
-                            if (thermal(xpi,ypi,k)%depth < user%zpix) then
-                                reference = k
-                            end if
+            dz = tdepth  ! continuous uplift
 
-                            if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
-                                thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
-                            else
-                                thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix+npix)%temperature + oldtemps(xpi,ypi,k+tdepthpix+npix)%warpedbg
-                            end if
-                            
-                            ! thermal(xpi,ypi,k)%depth = oldtemps(xpi,ypi,k)%depth
-                            ! thermal(xpi,ypi,k)%relative_depth = oldtemps(xpi,ypi,k)%relative_depth
-                            ! thermal(xpi,ypi,k)%elevation = oldtemps(xpi,ypi,k)%elevation
-                            ! thermal(xpi,ypi,k)%background = oldtemps(xpi,ypi,k)%background
-                        end if
+            do k = 1, user%zgridsize
+                old_depth = thermal(xpi, ypi, k)%depth
+            
+                ! If voxel is inside the transient crater (material removed), skip it
+                if (old_depth <= dz) then
+                    thermal(xpi, ypi, k)%temperature = thermal(xpi, ypi, user%zgridsize)%background
+                    cycle
+                end if
+            
+                ! This voxel is filled by material that used to be deeper — so add dz
+                depth_below = old_depth + dz
+            
+                ! Search for bracket depths in oldtemps
+                do k2 = 2, user%zgridsize
+                    if (oldtemps(xpi, ypi, k2)%depth >= depth_below) then
+                        k1 = k2 - 1
+                        exit
                     end if
                 end do
+            
+                ! If outside the model, assign background
+                if (depth_below > oldtemps(xpi, ypi, user%zgridsize)%depth) then
+                    thermal(xpi, ypi, k)%temperature = thermal(xpi, ypi, user%zgridsize)%background
+                else
+                    z1 = oldtemps(xpi, ypi, k1)%depth
+                    z2 = oldtemps(xpi, ypi, k2)%depth
+            
+                    T1 = oldtemps(xpi, ypi, k1)%temperature + oldtemps(xpi, ypi, k1)%warpedbg
+                    T2 = oldtemps(xpi, ypi, k2)%temperature + oldtemps(xpi, ypi, k2)%warpedbg
+            
+                    frac = (depth_below - z1) / (z2 - z1)
+            
+                    thermal(xpi, ypi, k)%temperature = (1.0_DP - frac) * T1 + frac * T2
+                end if
+            end do
+
+                ! do k=1,tdepthpix
+                !     depth_above = thermal(xpi,ypi,k)%depth + dz
+
+                !     ! Find bracketing indices for depth_above
+                !     do k2 = 2, user%zgridsize
+                !         if (oldtemps(xpi, ypi, k2)%depth >= depth_above) then
+                !             k1 = k2 - 1
+                !             exit
+                !         end if
+                !     end do
+
+                !     ! If outside bounds (below or above model), just assign background
+                !     if (depth_above < oldtemps(xpi, ypi, 1)%depth .or. depth_above > oldtemps(xpi, ypi, user%zgridsize)%depth) then
+                !         thermal(xpi, ypi, k)%temperature = thermal(xpi, ypi, user%zgridsize)%background
+                !     else
+                !         ! Linear interpolation
+                !         z1 = oldtemps(xpi, ypi, k1)%depth
+                !         z2 = oldtemps(xpi, ypi, k2)%depth
+
+                !         T1 = oldtemps(xpi, ypi, k1)%temperature + oldtemps(xpi, ypi, k1)%warpedbg
+                !         T2 = oldtemps(xpi, ypi, k2)%temperature + oldtemps(xpi, ypi, k2)%warpedbg
+
+                !         frac = (depth_above - z1) / (z2 - z1)
+
+                !         thermal(xpi, ypi, k)%temperature = (1.0_DP - frac) * T1 + frac * T2
+                !     end if
+                !     ! if (thermal(xpi,ypi,k)%depth > 0) then
+                !     !     if(thermal(xpi,ypi,k)%depth < maxtdepth) then
+                !     !         if (thermal(xpi,ypi,k)%depth < user%zpix) then
+                !     !             reference = k
+                !     !         end if
+
+                !     !         if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
+                !     !             thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
+                !     !         else
+                !     !             thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg ! Missing "npix"?
+                !     !         end if
+                            
+                !     !         ! thermal(xpi,ypi,k)%depth = oldtemps(xpi,ypi,k)%depth
+                !     !         ! thermal(xpi,ypi,k)%relative_depth = oldtemps(xpi,ypi,k)%relative_depth
+                !     !         ! thermal(xpi,ypi,k)%elevation = oldtemps(xpi,ypi,k)%elevation
+                !     !         ! thermal(xpi,ypi,k)%background = oldtemps(xpi,ypi,k)%background
+                !     !     end if
+                !     ! end if
+                ! end do
         end do
     end do
 
