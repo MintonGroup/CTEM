@@ -67,10 +67,10 @@ subroutine thermal_remove(user,thermal,crater)
 
             dz = tdepth * crater%rad ! continuous uplift
 
-            tdepthpix = dz / user%pix
+            tdepthpix = dz / user%zpix
 
             if (dz > 0.0_DP) then
-                do k=1,tdepthpix
+                 do k=1,tdepthpix
                     if (thermal(xpi,ypi,k)%depth > 0) then
                         if(thermal(xpi,ypi,k)%depth < maxtdepth) then
                             if (thermal(xpi,ypi,k)%depth < user%zpix) then
@@ -80,7 +80,7 @@ subroutine thermal_remove(user,thermal,crater)
                             if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                                 thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
                             else
-                                thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix+npix)%temperature + oldtemps(xpi,ypi,k+tdepthpix+npix)%warpedbg
+                                thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
                             end if
                             
                             ! thermal(xpi,ypi,k)%depth = oldtemps(xpi,ypi,k)%depth
