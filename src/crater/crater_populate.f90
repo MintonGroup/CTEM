@@ -322,7 +322,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          ! Add initial thermal distribution from impact
          if (user%dothermal) then
-            call thermal_depth_calculation(user,surf,domain,thermal)
+            call thermal_depth_calculation(user,surf,crater,domain,thermal)
             call thermal_dist(user,thermal,crater)
             call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
             !Debug
@@ -393,7 +393,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             open(54,file='thermC.dat',status='replace',form='unformatted')
             write(54) thermal(:,:,:)%temperature
             close(54)
-            call thermal_depth_calculation(user,surf,domain,thermal)
+            call thermal_depth_calculation(user,surf,crater,domain,thermal)
          end if
          
          ! Find out if the current crater is the largest or smallest and if so record it

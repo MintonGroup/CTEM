@@ -47,10 +47,11 @@ save
     end interface
 
     interface
-        subroutine thermal_depth_calculation(user,surf,domain,thermal)
+        subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
         use module_globals
         type(usertype),intent(in) :: user
         type(surftype),dimension(:,:),intent(in) :: surf
+        type(cratertype),intent(in) :: crater
         type(domaintype),intent(inout) :: domain
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         end subroutine thermal_depth_calculation
