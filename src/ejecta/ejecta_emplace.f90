@@ -375,7 +375,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
 
             !This ebh is much closer to the McGetchin estimate than the one above. Using this value for thermal ejecta thickness
             if (user%dothermal .and. ebh > 1.0e-8_DP .and. avgtemp > 1.0e-8_DP) then
-               call thermal_add_ejecta(user,thermal(:,:,:),avgtemp,ebh,xpi,ypi)
+               call thermal_add_ejecta(user,thermal(:,:,:),crater,avgtemp,ebh,xpi,ypi)
             end if
       
       

@@ -18,7 +18,7 @@
 !  Notes       : The uppermost elevation must be the baseline for the array 
 !
 !**********************************************************************************************************************************
-subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
+subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_add_ejecta
     implicit none
@@ -26,6 +26,7 @@ subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
     ! Arguments
     type(usertype),intent(in) :: user
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+    type(cratertype),intent(in) :: crater
     real(DP),intent(in) :: avgtemp
     real(DP),intent(in) :: thickness
     integer(I4B) :: tx, ty
@@ -44,18 +45,22 @@ subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
     ! Shift thermal distribution down by the npix
     do i=user%zgridsize,1,-1
         if (thermal(tx,ty,i)%depth > 0) then
-            if (thickness < user%zpix) then
-                thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + voxtemp
-                exit
+            if (thermal(tx,ty,i)%relative_depth > (13*crater%imprad)) then
+                continue
             else
-                if (i <= npix) then
-                    if (i == npix) then
-                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
-                    else
-                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
-                    end if
+                if (thickness < user%zpix) then
+                    thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + voxtemp
+                    exit
                 else
-                    thermal(tx,ty,i)%temperature = thermal(tx,ty,i-npix)%temperature
+                    if (i <= npix) then
+                        if (i == npix) then
+                            thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
+                        else
+                            thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
+                        end if
+                    else
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i-npix)%temperature
+                    end if
                 end if
             end if
         end if

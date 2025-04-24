@@ -69,10 +69,11 @@ save
     end interface
 
     interface
-        subroutine thermal_add_ejecta(user,thermal,avgtemp,thickness,tx,ty)
+        subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
         use module_globals
         type(usertype),intent(in) :: user
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        type(cratertype),intent(in) :: crater
         real(DP),intent(in) :: avgtemp
         real(DP),intent(in) :: thickness
         integer(I4B) :: tx, ty

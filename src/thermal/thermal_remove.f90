@@ -90,41 +90,6 @@ subroutine thermal_remove(user,thermal,crater)
                         end if
                     end if
                 end do
-                !do k = 1, user%zgridsize
-                !     old_depth = thermal(xpi, ypi, k)%depth
-                
-                !     ! If voxel is inside the transient crater (material removed), skip it
-                !     if (old_depth <= dz) then
-                !         thermal(xpi, ypi, k)%temperature = thermal(xpi, ypi, user%zgridsize)%background
-                !         cycle
-                !     end if
-                
-                !     ! This voxel is filled by material that used to be deeper — so add dz
-                !     depth_below = old_depth + dz
-                
-                !     ! Search for bracket depths in oldtemps
-                !     do k2 = 2, user%zgridsize
-                !         if (oldtemps(xpi, ypi, k2)%depth >= depth_below) then
-                !             k1 = k2 - 1
-                !             exit
-                !         end if
-                !     end do
-                
-                !     ! If outside the model, assign background
-                !     if (depth_below > oldtemps(xpi, ypi, user%zgridsize)%depth) then
-                !         thermal(xpi, ypi, k)%temperature = thermal(xpi, ypi, user%zgridsize)%background
-                !     else
-                !         z1 = oldtemps(xpi, ypi, k1)%depth
-                !         z2 = oldtemps(xpi, ypi, k2)%depth
-                
-                !         T1 = oldtemps(xpi, ypi, k1)%temperature + oldtemps(xpi, ypi, k1)%warpedbg
-                !         T2 = oldtemps(xpi, ypi, k2)%temperature + oldtemps(xpi, ypi, k2)%warpedbg
-                
-                !         frac = (depth_below - z1) / (z2 - z1)
-                
-                !         thermal(xpi, ypi, k)%temperature = (1.0_DP - frac) * T1 + frac * T2
-                !     end if
-                ! end do
             end if
         end do
     end do
