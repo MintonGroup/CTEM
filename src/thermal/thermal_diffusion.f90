@@ -42,9 +42,14 @@ subroutine thermal_diffusion(user,thermal,difftime)
 
     kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
-    ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
     write(*,*) "delta_t:", delta_t/(60*60*24*365), "yr."
-    maxtime = ts / delta_t
+
+    if (user%testflag == .false.) then
+        ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
+        maxtime = ts / delta_t
+    else
+        maxtime = 1000 !diffusion test for testflag is an arbitrary number of timesteps
+    end if
 
     allocate(prev,source=thermal)
 
@@ -104,25 +109,21 @@ subroutine thermal_diffusion(user,thermal,difftime)
             end do
         end do
 
-        if (user%testflag) then !for now, only write if it's a test crater. Eventually, this will need to be changed for QMC runs.
 
-            if (time == 1) then
-                open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
-                write(3) prev(:,:,:)%temperature
-                close(3)
-            end if
-
-            prev(:,:,:)%temperature = thermal(:,:,:)%temperature
-
-            ! Write out the timestep to the "misc" folder, which should be created already in the Python
-            write(num,'(I0.5)') time
-            filename = 'misc/therm'//trim(num)//'.dat'
-            open(3,file=filename,status='replace',form='unformatted')
-            write(3) thermal(:,:,:)%temperature
+        if (time == 1) then
+            open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
+            write(3) prev(:,:,:)%temperature
             close(3)
-        else
-            prev(:,:,:)%temperature = thermal(:,:,:)%temperature
         end if
+
+        prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+
+        ! Write out the timestep to the "misc" folder, which should be created already in the Python
+        write(num,'(I0.5)') time
+        filename = 'misc/therm'//trim(num)//'.dat'
+        open(3,file=filename,status='replace',form='unformatted')
+        write(3) thermal(:,:,:)%temperature
+        close(3)
 
         if (nchanged == 0) exit !every voxel has cooled to the background temperature
 

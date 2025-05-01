@@ -394,6 +394,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             write(54) thermal(:,:,:)%temperature
             close(54)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            if (user%testflag) call thermal_diffusion(user,thermal,1.0_DP) !test diffusion with 3rd argument unused for test case
          end if
          
          ! Find out if the current crater is the largest or smallest and if so record it
