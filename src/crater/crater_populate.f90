@@ -226,9 +226,11 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             else
                time_since_diff = tstart - crater%timestampGa
             end if        
-            if (icrater .gt. 1) call thermal_diffusion(user,thermal,time_since_diff)
-            tstart = crater%timestampGa
-            domain%thermalcoverage = 0
+            if (icrater .gt. 1) then 
+               call thermal_diffusion(user,thermal,time_since_diff,domain%nqmc)
+               tstart = crater%timestampGa
+               domain%thermalcoverage = 0
+            end if
          end if
       end if
       !if in quasiMC mode: check to see if it's time for a real crater
@@ -325,10 +327,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
             call thermal_dist(user,thermal,crater)
             call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
-            !Debug
-            open(52,file='thermA.dat',status='replace',form='unformatted')
-            write(52) thermal(:,:,:)%temperature
-            close(52)
+            ! !Debug
+            ! open(52,file='thermA.dat',status='replace',form='unformatted')
+            ! write(52) thermal(:,:,:)%temperature
+            ! close(52)
          end if
 
          ! Place crater onto the surface
@@ -357,10 +359,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          if (user%dothermal) then 
             call thermal_warp(user,thermal,crater)
             call thermal_remove(user,thermal,crater)
-            !Debug
-            open(53,file='thermB.dat',status='replace',form='unformatted')
-            write(53) thermal(:,:,:)%temperature
-            close(53)
+            ! !Debug
+            ! open(53,file='thermB.dat',status='replace',form='unformatted')
+            ! write(53) thermal(:,:,:)%temperature
+            ! close(53)
          end if
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
@@ -390,11 +392,11 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if (user%dothermal) then
             !Debug
-            open(54,file='thermC.dat',status='replace',form='unformatted')
-            write(54) thermal(:,:,:)%temperature
-            close(54)
+            ! open(54,file='thermC.dat',status='replace',form='unformatted')
+            ! write(54) thermal(:,:,:)%temperature
+            ! close(54)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            if (user%testflag) call thermal_diffusion(user,thermal,1.0_DP) !test diffusion with 3rd argument unused for test case
+            if (user%testflag) call thermal_diffusion(user,thermal,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
          end if
          
          ! Find out if the current crater is the largest or smallest and if so record it
@@ -472,6 +474,14 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          error stop "Invalid surface elevation detected. Halting."
       end if
       oldGa = crater%timestampGa
+
+      if (user%dothermal) then
+         if (icrater == (ntotcrat)) then
+            time_since_diff = tstart - crater%timestampGa
+            call thermal_diffusion(user,thermal,time_since_diff,domain%nqmc)
+            tstart = crater%timestampGa
+         end if
+      end if
    end do  ! end crater production loop 
 
    if (ntrue > 0) then
