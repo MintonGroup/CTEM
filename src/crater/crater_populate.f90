@@ -237,14 +237,16 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
       if (user%doquasimc) then
          if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
             domain%currentqmc = .true.
-            write(message, '("Real @ ",F8.1)') crater%timestampGa
-            call io_updatePbar(message)
             user%testflag = .true.
             user%testimp = rclist(1, domain%rccount)
             user%testvel = rclist(2, domain%rccount)
             user%testang = rclist(3, domain%rccount)
             user%testxoffset = rclist(4, domain%rccount)
-            user%testyoffset = rclist(5, domain%rccount) 
+            user%testyoffset = rclist(5, domain%rccount)
+            crater%timestamp = rclist(6, domain%rccount)
+            crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
+            write(message, '("Real @ ",F8.1)') crater%timestampGa
+            call io_updatePbar(message)
          end if
       end if
       ! generate random crater
@@ -266,7 +268,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
       end if 
       if (user%doquasimc) then
-         if (crater%timestamp > user%rctime) then
+         if (domain%currentqmc) then
             user%testflag = .false.
             domain%nqmc = domain%rccount
             domain%rccount = domain%rccount + 1
