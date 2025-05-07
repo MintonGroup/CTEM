@@ -19,7 +19,7 @@
 !  Notes       : -Currently uses the whole grid
 !
 !**********************************************************************************************************************************
-subroutine thermal_diffusion(user,thermal,difftime,icrater)
+subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_diffusion
     implicit none
@@ -27,6 +27,7 @@ subroutine thermal_diffusion(user,thermal,difftime,icrater)
     ! Arguments
     type(usertype),intent(in) :: user
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+    type(domaintype),intent(in) :: domain
     real(DP),intent(in) :: difftime !in Ga
     integer(I4B),intent(in) :: icrater !for testing purposes only
 
@@ -45,11 +46,11 @@ subroutine thermal_diffusion(user,thermal,difftime,icrater)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
     write(*,*) "delta_t:", delta_t/(60*60*24*365), "yr."
 
-    if (user%testflag == .false.) then
+    if (user%testflag == .false. .or. domain%currentqmc == .true.) then
         ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
         maxtime = ts / delta_t
     else
-        maxtime = 100 !diffusion test for testflag is an arbitrary number of timesteps
+        maxtime = 1 !diffusion test for testflag is an arbitrary number of timesteps
     end if
 
     allocate(prev,source=thermal)

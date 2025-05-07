@@ -148,7 +148,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    ! Reset age
    clock = 0.0_DP
    finterval = 1.0_DP / real(ntotcrat,kind=DP)
-   if (user%doregotrack .or. user%dothermal) then
+   if (user%dothermal) then
       if (user%runtype .eq. 'STATISTICAL') then
          maxage = user%interval
       else
@@ -185,26 +185,45 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
       icrater = icrater + 1
       crater%timestamp = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
-      if (user%doregotrack) then
-         if (icrater .eq. 1) then
-            agemin = crater%timestamp * 0.9_DP
+      if (user%doquasimc) then ! check to see if it's time for a real crater
+         if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
+            domain%currentqmc = .true.
+            user%testflag = .true.
+            user%testimp = rclist(1, domain%rccount)
+            user%testvel = rclist(2, domain%rccount)
+            user%testang = rclist(3, domain%rccount)
+            user%testxoffset = rclist(4, domain%rccount)
+            user%testyoffset = rclist(5, domain%rccount)
+            crater%timestamp = rclist(6, domain%rccount)
+            if (user%dothermal) then
+               crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
+            end if
+            write(message, '("Real @ ",F8.1)') crater%timestampGa
+            call io_updatePbar(message)
          end if
-         if (crater%timestamp < 2330._DP) then
-            if (oldGa > 0._DP) then 
-               if ((user%numintervals .eq. 1) .or. (user%runtype .eq. 'STATISTICAL')) then
-                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
+      end if
+      if (user%dothermal) then
+         if (domain%currentqmc .eqv. .false.) then
+            if (icrater .eq. 1) then
+               agemin = crater%timestamp * 0.9_DP
+            end if
+            if (crater%timestamp < 2330._DP) then
+               if (oldGa > 0._DP) then 
+                  if ((user%numintervals .eq. 1) .or. (user%runtype .eq. 'STATISTICAL')) then
+                     crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,oldGa)
+                  else
+                     crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,oldGa)
+                  end if
                else
-                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,oldGa)
+                  if ((user%numintervals .eq. 1) .or. (user%runtype .eq. 'STATISTICAL')) then
+                     crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
+                  else
+                     crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
+                  end if
                end if
             else
-               if ((user%numintervals .eq. 1) .or. (user%runtype .eq. 'STATISTICAL')) then
-                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,agemin,maxageGa)
-               else
-                  crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
-               end if
+               crater%timestampGa = 4.5_DP
             end if
-         else
-            crater%timestampGa = 4.5_DP
          end if
       end if
       pbarpos = nint(real(icrater) / real(ntotcrat) * PBARRES)
@@ -227,26 +246,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
                time_since_diff = tstart - crater%timestampGa
             end if        
             if (icrater .gt. 1) then 
-               call thermal_diffusion(user,thermal,time_since_diff,domain%nqmc)
+               call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
                tstart = crater%timestampGa
                domain%thermalcoverage = 0
             end if
-         end if
-      end if
-      !if in quasiMC mode: check to see if it's time for a real crater
-      if (user%doquasimc) then
-         if ((user%rctime > timestamp_old) .and. (user%rctime < crater%timestamp)) then
-            domain%currentqmc = .true.
-            user%testflag = .true.
-            user%testimp = rclist(1, domain%rccount)
-            user%testvel = rclist(2, domain%rccount)
-            user%testang = rclist(3, domain%rccount)
-            user%testxoffset = rclist(4, domain%rccount)
-            user%testyoffset = rclist(5, domain%rccount)
-            crater%timestamp = rclist(6, domain%rccount)
-            crater%timestampGa = util_t_from_scale(maxage-crater%timestamp,1e-10_DP,maxageGa)
-            write(message, '("Real @ ",F8.1)') crater%timestampGa
-            call io_updatePbar(message)
          end if
       end if
       ! generate random crater
@@ -398,7 +401,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! write(54) thermal(:,:,:)%temperature
             ! close(54)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            if (user%testflag) call thermal_diffusion(user,thermal,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
+            if (user%testflag) call thermal_diffusion(user,thermal,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
          end if
          
          ! Find out if the current crater is the largest or smallest and if so record it
@@ -480,7 +483,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
       if (user%dothermal) then
          if (icrater == (ntotcrat)) then
             time_since_diff = tstart - crater%timestampGa
-            call thermal_diffusion(user,thermal,time_since_diff,domain%nqmc)
+            call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
             tstart = crater%timestampGa
          end if
       end if
