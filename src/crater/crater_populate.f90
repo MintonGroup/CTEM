@@ -427,6 +427,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             end if
             call io_ejecta_table(crater,domain,ejb,ejtble,"ejecta_table_min.dat")
          end if
+      else
+         if (ntrue == 0) then
+            tstart = crater%timestampGa
+         end if
       end if
 
       ! Do periodic subpixel processes on the whole grid
@@ -482,9 +486,9 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
       if (user%dothermal) then
          if (icrater == (ntotcrat)) then
-            time_since_diff = tstart - crater%timestampGa
-            call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
-            tstart = crater%timestampGa
+            !time_since_diff = tstart - crater%timestampGa
+            call thermal_diffusion(user,thermal,domain,crater%timestampGa,domain%nqmc)
+            tstart = 0.0_DP !should cause an error if diffusion is called again, which it shouldn't be
          end if
       end if
    end do  ! end crater production loop 
