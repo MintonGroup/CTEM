@@ -81,7 +81,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    integer(I4B)            :: oldpbarpos
    real(DP),dimension(:,:),allocatable   :: ejecta_dem
    real(DP)                :: hmax, hmin
-   integer(I4B)            :: nmixingtimes, incval, nmeltsheet
+   integer(I4B)            :: nmixingtimes, incval, nmeltsheet, firstmc
    real(DP)                :: vmeltsheet, avgtemp
    real(DP)                :: time_since_diff, tstart
 
@@ -117,6 +117,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    end if
 
    ! read initial quasi-MC position
+   domain%nqmc = 0
    if (user%doquasimc) then
       domain%rccount = 1
       user%rctime = rclist(6,domain%rccount)
@@ -179,6 +180,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    pbarpos = 0
    call io_updatePbar("")
    oldpbarpos = 0
+   firstmc = 0
    do while (icrater < ntotcrat)
       makecrater = .true.
       domain%currentqmc = .false.
@@ -204,8 +206,9 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
       end if
       if (user%dothermal) then
          if (domain%currentqmc .eqv. .false.) then
-            if (icrater .eq. 1) then
+            if (firstmc == 0) then
                agemin = crater%timestamp * 0.9_DP
+               firstmc = 1
             end if
             if (crater%timestamp < 2330._DP) then
                if (oldGa > 0._DP) then 
@@ -240,11 +243,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if ((domain%thermalcoverage / real(user%gridsize**2,kind=DP) > THERMALCOVERAGE) .or. icrater == ntotcrat) then
             !calculate how much time has passed between thermal diffusion timesteps
-            if (icrater == ntotcrat) then
-               time_since_diff = tstart ! - 0
-            else
-               time_since_diff = tstart - crater%timestampGa
-            end if        
+            time_since_diff = tstart - crater%timestampGa  
             if (icrater .gt. 1) then 
                call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
                tstart = crater%timestampGa
@@ -333,9 +332,9 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             call thermal_dist(user,thermal,crater)
             call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
             ! !Debug
-            ! open(52,file='thermA.dat',status='replace',form='unformatted')
-            ! write(52) thermal(:,:,:)%temperature
-            ! close(52)
+            open(52,file='thermA.dat',status='replace',form='unformatted')
+            write(52) thermal(:,:,:)%temperature
+            close(52)
          end if
 
          ! Place crater onto the surface
@@ -365,9 +364,9 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             call thermal_warp(user,thermal,crater)
             call thermal_remove(user,thermal,crater)
             ! !Debug
-            ! open(53,file='thermB.dat',status='replace',form='unformatted')
-            ! write(53) thermal(:,:,:)%temperature
-            ! close(53)
+            open(53,file='thermB.dat',status='replace',form='unformatted')
+            write(53) thermal(:,:,:)%temperature
+            close(53)
          end if
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)
@@ -397,9 +396,9 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if (user%dothermal) then
             !Debug
-            ! open(54,file='thermC.dat',status='replace',form='unformatted')
-            ! write(54) thermal(:,:,:)%temperature
-            ! close(54)
+            open(54,file='thermC.dat',status='replace',form='unformatted')
+            write(54) thermal(:,:,:)%temperature
+            close(54)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
             if (user%testflag) call thermal_diffusion(user,thermal,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
          end if

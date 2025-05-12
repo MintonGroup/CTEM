@@ -42,7 +42,7 @@ function util_t_from_scale(scale,start,finish) result(time)
             c = (a+b)/2
             temp = util_tscale(c)
 
-            if (abs(temp-scale)<tol) then
+            if (abs(temp-scale)<tol .or. c .eq. b .or. c .eq. a) then
                 time = c
                 exit
             else if ((temp-scale)>0) then
@@ -54,6 +54,7 @@ function util_t_from_scale(scale,start,finish) result(time)
             else if (abs(a-b)<tol) then
                 write(*,*) "ERROR in util_t_from_scale: Convergence failed!"
                 write(*,*) scale, start, finish
+                time = c
                 exit
             end if
         end do
@@ -62,6 +63,7 @@ function util_t_from_scale(scale,start,finish) result(time)
     if (time .lt. 0) then
         write(*,*) "ERROR in util_t_from_scale: Maximum iterations reached!"
         write(*,*) scale, start, finish, maxiter
+        time = c
     end if
 end function util_t_from_scale
 
