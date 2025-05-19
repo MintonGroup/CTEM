@@ -328,8 +328,14 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          ! Add initial thermal distribution from impact
          if (user%dothermal) then
+            open(50,file='therm00.dat',status='replace',form='unformatted')
+            write(50) thermal(:,:,:)%temperature
+            close(50)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            call thermal_dist(user,thermal,crater)
+            open(51,file='therm0.dat',status='replace',form='unformatted')
+            write(51) thermal(:,:,:)%temperature
+            close(51)
+            call thermal_dist(user,surf,thermal,crater)
             call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
             ! !Debug
             open(52,file='thermA.dat',status='replace',form='unformatted')
@@ -400,6 +406,9 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             write(54) thermal(:,:,:)%temperature
             close(54)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            open(56,file='thermD.dat',status='replace',form='unformatted')
+            write(56) thermal(:,:,:)%temperature
+            close(56)
             if (user%testflag) call thermal_diffusion(user,thermal,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
          end if
          

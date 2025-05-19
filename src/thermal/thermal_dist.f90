@@ -19,19 +19,20 @@
 !  Notes       : 
 !
 !**********************************************************************************************************************************
-subroutine thermal_dist(user,thermal,crater)
+subroutine thermal_dist(user,surf,thermal,crater)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_dist
     implicit none
 
     ! Arguments
     type(usertype),intent(in) :: user
+    type(surftype),dimension(:,:),intent(in) :: surf
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
     integer(I4B) :: inc,i,j,xpi,ypi,zinc,k
-    real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative,distance
+    real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative,distance,lradcubed
 
     ! Executable code
 
@@ -52,6 +53,7 @@ subroutine thermal_dist(user,thermal,crater)
             x_relative = (crater%xl - xp)
             y_relative = (crater%yl - yp)
             lradsq = x_relative**2 + y_relative**2
+            lradcubed = lradsq + surf(xpi,ypi)%dem
             
             do k=1,zinc
                 !calculate the 3-dimensional distance from layer depth

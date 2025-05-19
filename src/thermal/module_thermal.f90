@@ -27,10 +27,11 @@ save
     end interface
 
     interface
-        subroutine thermal_dist(user,thermal,crater)
+        subroutine thermal_dist(user,surf,thermal,crater)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
+        type(surftype),dimension(:,:),intent(in) :: surf
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(cratertype),intent(in) :: crater
         end subroutine thermal_dist

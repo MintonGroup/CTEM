@@ -82,11 +82,6 @@ subroutine thermal_remove(user,thermal,crater)
                             else
                                 thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
                             end if
-                            
-                            ! thermal(xpi,ypi,k)%depth = oldtemps(xpi,ypi,k)%depth
-                            ! thermal(xpi,ypi,k)%relative_depth = oldtemps(xpi,ypi,k)%relative_depth
-                            ! thermal(xpi,ypi,k)%elevation = oldtemps(xpi,ypi,k)%elevation
-                            ! thermal(xpi,ypi,k)%background = oldtemps(xpi,ypi,k)%background
                         end if
                     end if
                 end do
