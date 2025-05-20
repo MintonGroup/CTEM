@@ -331,6 +331,11 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             open(50,file='therm00.dat',status='replace',form='unformatted')
             write(50) thermal(:,:,:)%temperature
             close(50)
+         end if
+
+         ! Place crater onto the surface
+         call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
+         if (user%dothermal) then
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
             open(51,file='therm0.dat',status='replace',form='unformatted')
             write(51) thermal(:,:,:)%temperature
@@ -342,9 +347,6 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             write(52) thermal(:,:,:)%temperature
             close(52)
          end if
-
-         ! Place crater onto the surface
-         call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
          if (abs(ejbmass) < 2*tiny(1.0_DP)) cycle
 
          call ejecta_distance_estimate(user,crater,domain,crater%ejdis) ! Fast but imprecise estimate of the total ejecta distance
