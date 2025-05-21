@@ -32,10 +32,10 @@ subroutine thermal_remove(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix, k1,k2
+    integer(I4B) :: h, i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix, k1,k2, taper
     real(DP) :: xp, yp, r, tdepth, maxtdepth, dz, depth_above, z1,z2, T1, T2, frac, old_depth, depth_below
     type(thermaltype),dimension(:,:,:),allocatable :: oldtemps
-    !real(DP),dimension(:,:,:),allocatable :: oldtemps
+    real(DP) :: taper_factor, taperdepth, temp_warped
 
     allocate(oldtemps,source=thermal(:,:,:))
 
@@ -69,21 +69,40 @@ subroutine thermal_remove(user,thermal,crater)
 
             tdepthpix = dz / user%zpix
 
+            taperdepth = maxtdepth * 1.5
+
+            do h=1,user%zgridsize
+                if (thermal(xpi,ypi,h)%depth>=taperdepth) then
+                    taper = h
+                    exit
+                else if (h==user%zgridsize) then
+                    taper = user%zgridsize
+                    exit
+                end if
+            end do
+
+
             if (dz > 0.0_DP) then
                  do k=1,user%zgridsize
                     if (thermal(xpi,ypi,k)%depth > 0) then
-                        if(thermal(xpi,ypi,k)%depth < maxtdepth) then
-                            if (thermal(xpi,ypi,k)%depth < user%zpix) then
-                                reference = k
-                            end if
-
+                        if(thermal(xpi,ypi,k)%depth < taperdepth) then
                             if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                                 thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
                             else
-                                thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
+                                if (thermal(xpi,ypi,k)%depth < maxtdepth) then
+                                    ! Inside the uplifted crater zone
+                                    thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + &
+                                                                     oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
+                                else
+                                    ! Transition zone: blend to background
+                                    taper_factor = (taperdepth - thermal(xpi,ypi,k)%depth) / (taperdepth - maxtdepth)
+                                    taper_factor = max(min(taper_factor, 1.0_DP), 0.0_DP)
+                                    temp_warped = oldtemps(xpi,ypi,k+tdepthpix)%temperature + &
+                                                  oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
+                                    thermal(xpi,ypi,k)%temperature = taper_factor * temp_warped + &
+                                                                     (1.0_DP - taper_factor) * thermal(xpi,ypi,taper)%background
+                                end if
                             end if
-                        else
-                            exit
                         end if
                     end if
                 end do
