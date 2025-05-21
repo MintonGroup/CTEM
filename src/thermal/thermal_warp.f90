@@ -46,15 +46,15 @@ subroutine thermal_warp(user,thermal,crater)
     inc = min(rpix,user%gridsize-1)
 
     ! write out the background for testing
-    do i = 1,user%gridsize
-        do j = 1,user%gridsize
-            do k = 1,user%zgridsize
-                if (thermal(i,j,k)%warpedbg == 0) then
-                    thermal(i,j,k)%warpedbg = thermal(i,j,k)%background
-                end if
-            end do
-        end do
-    end do
+    ! do i = 1,user%gridsize
+    !     do j = 1,user%gridsize
+    !         do k = 1,user%zgridsize
+    !             if (thermal(i,j,k)%warpedbg == 0) then
+    !                 thermal(i,j,k)%warpedbg = thermal(i,j,k)%background
+    !             end if
+    !         end do
+    !     end do
+    ! end do
 
 
     do j = -inc,inc

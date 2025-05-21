@@ -70,7 +70,7 @@ subroutine thermal_remove(user,thermal,crater)
             tdepthpix = dz / user%zpix
 
             if (dz > 0.0_DP) then
-                 do k=1,tdepthpix
+                 do k=1,user%zgridsize
                     if (thermal(xpi,ypi,k)%depth > 0) then
                         if(thermal(xpi,ypi,k)%depth < maxtdepth) then
                             if (thermal(xpi,ypi,k)%depth < user%zpix) then
@@ -82,6 +82,8 @@ subroutine thermal_remove(user,thermal,crater)
                             else
                                 thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
                             end if
+                        else
+                            exit
                         end if
                     end if
                 end do
@@ -90,6 +92,15 @@ subroutine thermal_remove(user,thermal,crater)
     end do
 
     deallocate(oldtemps)
+
+    ! Change the warpedbg value back to 0
+    do i=1,user%gridsize
+        do j=1,user%gridsize
+            do k=1,user%zgridsize
+                thermal(i,j,k)%warpedbg = 0
+            end do
+        end do
+    end do
 
     return
 
