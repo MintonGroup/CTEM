@@ -31,7 +31,7 @@ subroutine thermal_dist(user,surf,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: inc,i,j,xpi,ypi,zinc,k
+    integer(I4B) :: inc,i,j,xpi,ypi,zinc,k,n
     real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative,distance,lradcubed
 
     ! Executable code
@@ -54,15 +54,24 @@ subroutine thermal_dist(user,surf,thermal,crater)
             y_relative = (crater%yl - yp)
             lradsq = x_relative**2 + y_relative**2
             lradcubed = lradsq + surf(xpi,ypi)%dem
+
+            n = 0
             
-            do k=1,zinc
-                !calculate the 3-dimensional distance from layer depth
-                if (thermal(xpi,ypi,k)%depth > 0) then
-                    distance = sqrt(lradsq+(thermal(xpi,ypi,k)%depth**2)) !currently uses "top left" instead of midpoint..
-                    if (distance == 0.0_DP) then
-                        distance = 750. !this could be avoided by using midpoint. 750 is just a test for now
+            do k=1,user%zgridsize
+                if (n <= zinc) then
+                    !calculate the 3-dimensional distance from layer depth
+                    if (thermal(xpi,ypi,k)%depth > 0) then
+                        distance = sqrt(lradsq+(thermal(xpi,ypi,k)%depth**2)) !currently uses "top left" instead of midpoint..
+                        if (distance == 0.0_DP) then
+                            distance = 750. !this could be avoided by using midpoint. 750 is just a test for now
+                        end if
+                        call thermal_initial_temperature(user,crater,thermal(xpi,ypi,k),distance)
+                        n = n + 1
+                    else
+                        continue
                     end if
-                    call thermal_initial_temperature(user,crater,thermal(xpi,ypi,k),distance)
+                else
+                    exit
                 end if
             end do
             
