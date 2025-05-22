@@ -54,7 +54,7 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
     end if
 
     !!!!!TEST DEBUG ONLY!!!!!!
-    maxtime = 100
+    !maxtime = 100
     !!!!!REMOVE THIS WHEN DONE!!!!!
 
     allocate(prev,source=thermal)
