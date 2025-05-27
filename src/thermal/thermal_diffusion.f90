@@ -46,7 +46,7 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
     write(*,*) "delta_t:", delta_t/(60*60*24*365), "yr."
 
-    if (user%testflag == .false. .or. domain%currentqmc == .true.) then
+    if (user%testflag .eqv. .false. .or. domain%currentqmc .eqv. .true.) then
         ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
         maxtime = ts / delta_t
     else
