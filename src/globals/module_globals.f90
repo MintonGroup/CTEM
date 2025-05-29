@@ -73,6 +73,12 @@ type thermaltype
    real(DP) :: warpedbg ! warped background temperature
 end type thermaltype
 
+type thermalhisttype
+   real(DP) :: time
+   real(DP) :: timeGa
+   real(DP) :: temperature
+end type thermalhisttype
+
 type regodatatype 
    real(SP),dimension(MAXAGEBINS) :: age 
    real(DP) :: thickness
@@ -81,6 +87,7 @@ type regodatatype
    real(DP) :: totvolume
    real(DP) :: ejm !ejected melt
    real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
+   type(thermalhisttype),dimension(:),allocatable :: thermalhist
 end type regodatatype
    
 type regolisttype

@@ -9,7 +9,7 @@
 !  
 !
 !  Input
-!    Arguments : regolayer :: array
+!    Arguments : 
 !
 !  Output
 !    Arguments :

@@ -47,6 +47,8 @@ pure subroutine util_init_array(user,regolayer,domain,initstat)
         regolayer(1)%distvol(:) = 0.0_SP
         regolayer(1)%meltvolume = 0.0_DP
         regolayer(1)%totvolume = regolayer(1)%thickness * user%pix * user%pix
+        allocate(regolayer(1)%thermalhist(1))
+        regolayer(1)%thermalhist(1)%temperature = 0.0_DP
     end if
  
     return
