@@ -113,7 +113,16 @@ save
         type(cratertype),intent(in) :: crater
         end subroutine thermal_warp
     end interface
-        
+
+    interface
+        subroutine thermal_link(user,thermal,surf)
+        use module_globals
+        implicit none
+        type(usertype),intent(in) :: user
+        type(thermaltype),dimension(:,:,:),intent(in) :: thermal
+        type(surftype),dimension(:,:),intent(inout) :: surf
+        end subroutine thermal_link
+    end interface
     
     ! interface
     !     subroutine thermal_uplift(user,thermal,crater,oldtemps)

@@ -155,6 +155,7 @@ SET(SRC_FILES
     ${SRC}/thermal/thermal_remove.f90
     ${SRC}/thermal/thermal_interior.f90
     ${SRC}/thermal/thermal_warp.f90
+    ${SRC}/thermal/thermal_link.f90
     ${SRC}/main/ctem_driver.f90
 )
 
