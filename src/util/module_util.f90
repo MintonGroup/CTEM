@@ -250,6 +250,15 @@ interface
 end interface
 
 interface
+   subroutine util_push_regotemp(regotemp)
+   use module_globals
+   implicit none
+   type(thermalhisttype),dimension(:),allocatable,intent(inout) :: regotemp
+   end subroutine util_push_regotemp
+end interface
+   
+
+interface
    function util_area_intersection(R,xbar,ybar,P) result(area)
    use module_globals
    implicit none
@@ -279,6 +288,7 @@ interface
 end interface
 
 
+
 ! added by jundu on 10/25/2022
 ! generate random number with a normal distribution
 
@@ -294,7 +304,6 @@ interface
       real(DP),intent(out) :: x
    end subroutine util_random_number_normal
 end interface
-
 
 
 
@@ -329,6 +338,7 @@ interface
    real(DP) :: time
    end function util_t_from_scale
 end interface
+
 
 end module
 

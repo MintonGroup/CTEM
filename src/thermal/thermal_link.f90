@@ -16,11 +16,12 @@
 !    Arguments :
 !           
 ! 
-!  Notes       : 
+!  Notes       : Adds a new array to thermalhist via the util_push_regotemp subroutine and fills that new array
 !
 !**********************************************************************************************************************************
 subroutine thermal_link(user,crater,thermal,surfi)
     use module_globals
+    use module_util
     use module_thermal, EXCEPT_THIS_ONE => thermal_link
     implicit none
 
@@ -44,6 +45,7 @@ subroutine thermal_link(user,crater,thermal,surfi)
                 current_depth = cum_thickness + surfi(i,j)%regolayer(k)%thickness 
                 !interpolate between minimum (cum_thickness) and maximum (current_depth) depth for this layer
                 average_depth = (cum_thickness + current_depth) / 2.0_DP
+                call util_push_regotemp(surfi(i,j)%regolayer(k)%thermalhist)
                 histsize = size(surfi(i,j)%regolayer(k)%thermalhist)
                 do m=1,user%zgridsize !Find temperature at the thermal location corresponding to this depth
                     current_therm_depth = thermal(i,j,m)%depth

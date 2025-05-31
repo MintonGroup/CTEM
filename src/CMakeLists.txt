@@ -57,6 +57,7 @@ SET(SRC_FILES
     ${SRC}/util/util_npf_timefunc.f90
     ${SRC}/util/util_tscale.f90
     ${SRC}/util/util_t_from_scale.f90
+    ${SRC}/util/util_push_regotemp.f90
     ${SRC}/io/io_read_const.f90
     ${SRC}/io/io_get_token.f90
     ${SRC}/io/io_input.f90
