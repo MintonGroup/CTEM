@@ -134,7 +134,6 @@ module driver
          call init_surf(user,surf,domain)
          if (user%dothermal) then 
             call init_thermal(user,thermal)
-            call thermal_link(user,thermal,surf)
          end if
          domain%hmax = maxval(surf%dem)
       end if

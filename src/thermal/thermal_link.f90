@@ -19,13 +19,14 @@
 !  Notes       : 
 !
 !**********************************************************************************************************************************
-subroutine thermal_link(user,thermal,surfi)
+subroutine thermal_link(user,crater,thermal,surfi)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_link
     implicit none
 
     ! Arguments
     type(usertype),intent(in) :: user
+    type(cratertype),intent(in) :: crater
     type(thermaltype),dimension(:,:,:),intent(in) :: thermal
     type(surftype),dimension(:,:),intent(inout) :: surfi
 
@@ -58,26 +59,32 @@ subroutine thermal_link(user,thermal,surfi)
                                 if (thermal(i,j,m)%depth > average_depth ) then ! use dplusone, so it's this voxel and dplusone
                                     dpercent = (average_depth - dminusone) / user%zpix
                                     surfi(i,j)%regolayer(k)%thermalhist(histsize)%temperature = dpercent * (temp - tminusone) + temp
+                                    surfi(i,j)%regolayer(k)%thermalhist(histsize)%time = crater%timestamp
+                                    surfi(i,j)%regolayer(k)%thermalhist(histsize)%timeGa = crater%timestampGa
                                     exit
                                 else
                                     continue
                                 end if
                             else
                                 surfi(i,j)%regolayer(k)%thermalhist(histsize)%temperature = thermal(i,j,m)%temperature
+                                surfi(i,j)%regolayer(k)%thermalhist(histsize)%time = crater%timestamp
+                                surfi(i,j)%regolayer(k)%thermalhist(histsize)%timeGa = crater%timestampGa
                             end if
                         else
                             surfi(i,j)%regolayer(k)%thermalhist(histsize)%temperature = thermal(i,j,m)%temperature
+                            surfi(i,j)%regolayer(k)%thermalhist(histsize)%time = crater%timestamp
+                            surfi(i,j)%regolayer(k)%thermalhist(histsize)%timeGa = crater%timestampGa
                         end if
                     else if (m == user%zgridsize) then !Contingency
                         write(*,*) "Depth of regolayer is greater than full depth of thermal"
                         !Could interpolate based on background temperature and geothermal gradient..?
                         surfi(i,j)%regolayer(k)%thermalhist(histsize)%temperature = ((13._DP/1000._DP) * average_depth ) + thermal(i,j,m)%temperature
+                        surfi(i,j)%regolayer(k)%thermalhist(histsize)%time = crater%timestamp
+                        surfi(i,j)%regolayer(k)%thermalhist(histsize)%timeGa = crater%timestampGa
                     else
                         continue
                     end if
                 end do
-
-                !And age too?
             end do
         end do
     end do

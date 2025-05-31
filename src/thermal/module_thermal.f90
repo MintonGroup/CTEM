@@ -115,10 +115,11 @@ save
     end interface
 
     interface
-        subroutine thermal_link(user,thermal,surf)
+        subroutine thermal_link(user,crater,thermal,surf)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
+        type(cratertype),intent(in) :: crater
         type(thermaltype),dimension(:,:,:),intent(in) :: thermal
         type(surftype),dimension(:,:),intent(inout) :: surf
         end subroutine thermal_link
