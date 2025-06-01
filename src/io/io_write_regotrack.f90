@@ -35,10 +35,13 @@ subroutine io_write_regotrack(user,surf,domain)
    integer(I4B), parameter :: FAGE = 13
    integer(I4B), parameter :: FMD = 14
    integer(I4B), parameter :: FEJM = 15
+   integer(I4B), parameter :: FRT = 16
+   integer(I4B), parameter :: FT = 17
+   integer(I4B), parameter :: FGA = 18
    !type(regolisttype),pointer :: current => null()
    type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
-   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
+   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume, regotemp, regotime, ga
    real(SP),dimension(:,:),allocatable :: age, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
@@ -54,6 +57,11 @@ subroutine io_write_regotrack(user,surf,domain)
    open(FAGE,file=AGEFILE,status='replace',form='unformatted')
    open(FMD,file=MDFILE,status='replace',form='unformatted')
    open(FEJM,file=EJMFILE,status='replace',form='unformatted')
+   if (user%dothermal) then
+      open(FRT,file=REGOTEMPFILE,status='replace',form='unformatted')
+      open(FT,file=REGOTIMEFILE,status='replace',form='unformatted')
+      open(FGA,file=GAFILE,status='replace',form='unformatted')
+   end if
 
    ! First pass to get stack numbers
    stacks_num(:,:) = 0
@@ -72,6 +80,7 @@ subroutine io_write_regotrack(user,surf,domain)
          !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
          allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
+         if (user%dothermal) allocate(regotemp(N),regotime(N),ga(N))
          allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
             meltvolume(k) = current(k)%meltvolume
@@ -81,6 +90,11 @@ subroutine io_write_regotrack(user,surf,domain)
             !write(*,*) i, j
             distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
+            if (user%dothermal) then
+               regotemp(k) = current(k)%thermalhist(:)%temperature
+               regotime(k) = current(k)%thermalhist(:)%time
+               ga(k) = current(k)%thermalhist(:)%timeGa
+            end if
          end do
          deallocate(current)
          write(FMELT) meltvolume(:)
@@ -89,7 +103,13 @@ subroutine io_write_regotrack(user,surf,domain)
          write(FAGE) age(:,:)
          write(FMD) distvol(:,:)
          write(FEJM) ejm(:)
+         if (user%dothermal) then
+            write(FRT) regotemp(:)
+            write(FT) regotime(:)
+            write(FGA) ga(:)
+         end if
          deallocate(meltvolume,thickness,comp,age,distvol,ejm)
+         if (user%dothermal) deallocate(regotemp,regotime,ga)
       end do 
    end do
    close(FMELT)
@@ -98,6 +118,11 @@ subroutine io_write_regotrack(user,surf,domain)
    close(FAGE)
    close(FMD)
    close(FEJM)
+   if (user%dothermal) then
+      close(FRT)
+      close(FT)
+      close(FGA)
+   end if
 
    recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
    open(LUN,file=STACKNUMFILE,status='replace',form='unformatted',recl=recsize,access='direct')

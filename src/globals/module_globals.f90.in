@@ -361,6 +361,9 @@ character(*),parameter :: RCFILE     = 'craterlist.dat'
 character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
 character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
 character(*),parameter :: THERMFILE  = 'surface_therm.dat'
+character(*),parameter :: REGOTEMPFILE = 'surface_regotemp.dat'
+character(*),parameter :: REGOTIMEFILE = 'surface_regotime.dat'
+character(*),parameter :: GAFILE     = 'surface_ga.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

@@ -246,6 +246,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             time_since_diff = tstart - crater%timestampGa  
             if (icrater .gt. 1) then 
                call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
+               call thermal_link(user,crater,thermal,surf)
                tstart = crater%timestampGa
                domain%thermalcoverage = 0
             end if
@@ -411,7 +412,12 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             open(56,file='thermD.dat',status='replace',form='unformatted')
             write(56) thermal(:,:,:)%temperature
             close(56)
-            if (user%testflag) call thermal_diffusion(user,thermal,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
+            ! Add temperature to regolayer immediately after crater emplacement
+            call thermal_link(user,crater,thermal,surf)
+            if (user%testflag) then
+               call thermal_diffusion(user,thermal,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
+               call thermal_link(user,crater,thermal,surf)
+            end if
          end if
          
          ! Find out if the current crater is the largest or smallest and if so record it
@@ -498,6 +504,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          if (icrater == (ntotcrat)) then
             !time_since_diff = tstart - crater%timestampGa
             call thermal_diffusion(user,thermal,domain,crater%timestampGa,domain%nqmc)
+            call thermal_link(user,crater,thermal,surf)
             tstart = 0.0_DP !should cause an error if diffusion is called again, which it shouldn't be
          end if
       end if
