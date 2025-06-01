@@ -41,12 +41,13 @@ subroutine io_write_regotrack(user,surf,domain)
    !type(regolisttype),pointer :: current => null()
    type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
-   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume, regotemp, regotime, ga
+   real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
+   real(DP),dimension(:),allocatable :: regotemp, regotime, ga
    real(SP),dimension(:,:),allocatable :: age, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
-   integer(I4B) :: itmp, N
+   integer(I4B) :: itmp, N, NT, t
    real(DP),dimension(user%gridsize,user%gridsize) :: comptop, rego
    real(DP),dimension(:),allocatable :: marehisto
 
@@ -80,7 +81,6 @@ subroutine io_write_regotrack(user,surf,domain)
          !current => surf(i,j)%regolayer
          N = stacks_num(i,j)
          allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
-         if (user%dothermal) allocate(regotemp(N),regotime(N),ga(N))
          allocate(current,source=surf(i,j)%regolayer)
          do k=1,N
             meltvolume(k) = current(k)%meltvolume
@@ -91,9 +91,17 @@ subroutine io_write_regotrack(user,surf,domain)
             distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
             if (user%dothermal) then
-               regotemp(k) = current(k)%thermalhist(:)%temperature
-               regotime(k) = current(k)%thermalhist(:)%time
-               ga(k) = current(k)%thermalhist(:)%timeGa
+               NT = size(current(k)%thermalhist)
+               allocate(regotemp(NT),regotime(NT),ga(NT))
+               do t = 1, NT
+                  ! Write a header so you know which layer and how many points
+                  write(FRT, *) i, j, k, NT
+                  write(FT,  *) i, j, k, NT
+                  write(FGA, *) i, j, k, NT
+                  write(FRT, *) current(k)%thermalhist(t)%temperature
+                  write(FT,  *) current(k)%thermalhist(t)%time
+                  write(FGA, *) current(k)%thermalhist(t)%timeGa
+               end do
             end if
          end do
          deallocate(current)
@@ -103,11 +111,11 @@ subroutine io_write_regotrack(user,surf,domain)
          write(FAGE) age(:,:)
          write(FMD) distvol(:,:)
          write(FEJM) ejm(:)
-         if (user%dothermal) then
-            write(FRT) regotemp(:)
-            write(FT) regotime(:)
-            write(FGA) ga(:)
-         end if
+         ! if (user%dothermal) then
+         !    write(FRT) regotemp(:)
+         !    write(FT) regotime(:)
+         !    write(FGA) ga(:)
+         ! end if
          deallocate(meltvolume,thickness,comp,age,distvol,ejm)
          if (user%dothermal) deallocate(regotemp,regotime,ga)
       end do 
