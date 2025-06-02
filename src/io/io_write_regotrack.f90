@@ -92,15 +92,17 @@ subroutine io_write_regotrack(user,surf,domain)
             ejm(k) = current(k)%ejm
             if (user%dothermal) then
                NT = size(current(k)%thermalhist)
-               allocate(regotemp(NT),regotime(NT),ga(NT))
+               if(.not. allocated(regotemp)) allocate(regotemp(NT))
+               if(.not. allocated(regotime)) allocate(regotime(NT))
+               if(.not. allocated(ga)) allocate(ga(NT))
                do t = 1, NT
                   ! Write a header so you know which layer and how many points
-                  write(FRT, *) i, j, k, NT
-                  write(FT,  *) i, j, k, NT
-                  write(FGA, *) i, j, k, NT
-                  write(FRT, *) current(k)%thermalhist(t)%temperature
-                  write(FT,  *) current(k)%thermalhist(t)%time
-                  write(FGA, *) current(k)%thermalhist(t)%timeGa
+                  write(FRT) i, j, k, NT
+                  write(FT) i, j, k, NT
+                  write(FGA) i, j, k, NT
+                  write(FRT) current(k)%thermalhist(t)%temperature
+                  write(FT) current(k)%thermalhist(t)%time
+                  write(FGA) current(k)%thermalhist(t)%timeGa
                end do
             end if
          end do

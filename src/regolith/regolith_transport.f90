@@ -70,6 +70,13 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
    end if
 
    newlayer%meltvolume = melt * newlayer%totvolume
+
+   if (.not. allocated(newlayer%thermalhist)) then
+      allocate(newlayer%thermalhist(1))
+      newlayer%thermalhist(1)%temperature = 0.0_DP
+      newlayer%thermalhist(1)%time = 0.0_DP
+      newlayer%thermalhist(1)%timeGa = 0.0_DP
+   end if
    
    call util_push_array(surfi%regolayer,newlayer)
 

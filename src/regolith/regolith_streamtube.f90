@@ -365,6 +365,13 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
       newlayer%age(:) = 0.0_SP
    end if
 
+   if (.not. allocated(newlayer%thermalhist)) then
+      allocate(newlayer%thermalhist(1))
+      newlayer%thermalhist(1)%temperature = 0.0_DP
+      newlayer%thermalhist(1)%time = 0.0_DP
+      newlayer%thermalhist(1)%timeGa = 0.0_DP
+   end if
+
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
 
   deallocate(xints,yints,distvol)

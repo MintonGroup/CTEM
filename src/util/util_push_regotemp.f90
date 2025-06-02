@@ -33,6 +33,10 @@ subroutine util_push_regotemp(regotemp)
 
     nold = size(regotemp)
 
+    if (.not. allocated(regotemp)) then
+        write(*,*) "ERROR"
+    end if
+
     allocate(newlayer(nold+1))
     newlayer(1:nold) = regotemp(1:nold)
     newlayer(nold+1)%temperature = 0.0_DP ! This will be filled in the thermal_link subroutine

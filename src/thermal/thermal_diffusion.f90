@@ -53,9 +53,9 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
         maxtime = 1 !diffusion test for testflag is an arbitrary number of timesteps
     end if
 
-    !!!!!TEST DEBUG ONLY!!!!!!
-    !maxtime = 100
-    !!!!!REMOVE THIS WHEN DONE!!!!!
+    !!!!TEST DEBUG ONLY!!!!!!
+    maxtime = 2
+    !!!!REMOVE THIS WHEN DONE!!!!!
 
     allocate(prev,source=thermal)
 

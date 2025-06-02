@@ -68,6 +68,13 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    newlayer%comp = newlayer%comp / newlayer%thickness 
 
    newlayer%totvolume = newlayer%thickness * user%pix * user%pix
+
+   if (.not. allocated(newlayer%thermalhist)) then
+      allocate(newlayer%thermalhist(1))
+      newlayer%thermalhist(1)%temperature = 0.0_DP
+      newlayer%thermalhist(1)%time = 0.0_DP
+      newlayer%thermalhist(1)%timeGa = 0.0_DP
+   end if
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
