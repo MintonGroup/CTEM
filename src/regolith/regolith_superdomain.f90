@@ -59,11 +59,13 @@ subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,
    vej         = cvpg * sqrt(user%gaccel * crater%grad) * (erad / crater%grad)**(-1.0_DP / user%mu_b) !equation 18 in Richardson 2009
    lrad        = ( vej **2 ) / user%gaccel !assume ejection angle is 45 degree.
    call regolith_melt_glass(user,crater,domain,ebh,rm,erad,lrad,deltar,newlayer,xmints,melt) 
-   if (.not. allocated(newlayer%thermalhist)) then
-      allocate(newlayer%thermalhist(1))
-      newlayer%thermalhist(1)%temperature = 0.0_DP
-      newlayer%thermalhist(1)%time = 0.0_DP
-      newlayer%thermalhist(1)%timeGa = 0.0_DP
+   if (.not. allocated(newlayer%regotemp)) then
+      allocate(newlayer%regotemp(1))
+      newlayer%regotemp = 0.0_SP
+   end if
+   if (.not. allocated(newlayer%regotime)) then
+      allocate(newlayer%regotime(1))
+      newlayer%regotime = 0.0_SP
    end if
    call util_push_array(regolayer,newlayer)
 

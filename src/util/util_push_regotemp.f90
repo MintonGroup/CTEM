@@ -17,16 +17,20 @@
 !  Notes       :  
 !
 !**********************************************************************************************************************************
-subroutine util_push_regotemp(regotemp)
+subroutine util_push_regotemp(regotemp,regotime)
     use module_globals
     use module_util, EXCEPT_THIS_ONE => util_push_regotemp
     implicit none
 
     ! Arguments
-    type(thermalhisttype),dimension(:),allocatable,intent(inout) :: regotemp
+    real(SP),dimension(:),allocatable,intent(inout) :: regotemp
+    real(SP),dimension(:),allocatable,intent(inout) :: regotime
+
 
     ! Internal variables
-    type(thermalhisttype), dimension(:), allocatable :: newlayer
+    real(SP), dimension(:), allocatable :: newtemp
+    real(SP), dimension(:), allocatable :: newtime
+
     integer(I4B) :: nold
 
     ! Executable code
@@ -37,10 +41,18 @@ subroutine util_push_regotemp(regotemp)
         write(*,*) "ERROR"
     end if
 
-    allocate(newlayer(nold+1))
-    newlayer(1:nold) = regotemp(1:nold)
-    newlayer(nold+1)%temperature = 0.0_DP ! This will be filled in the thermal_link subroutine
-    newlayer(nold+1)%time = 0.0_DP ! This will be filled in the thermal_link subroutine
-    newlayer(nold+1)%timeGa = 0.0_DP ! This will be filled in the thermal_link subroutine
-    call move_alloc(newlayer, regotemp)
+    if (.not. allocated(regotime)) then
+        write(*,*) "ERROR"
+    end if
+
+    allocate(newtemp(nold+1))
+    newtemp(1:nold) = regotemp(1:nold)
+    newtemp(nold+1) = 0.0_SP ! This will be filled in the thermal_link subroutine
+    call move_alloc(newtemp,regotemp)
+
+
+    allocate(newtime(nold+1))
+    newtime(1:nold) = regotime(1:nold)
+    newtime(nold+1) = 0.0_SP ! This will be filled in the thermal_link subroutine
+    call move_alloc(newtime, regotime)
 end subroutine util_push_regotemp
