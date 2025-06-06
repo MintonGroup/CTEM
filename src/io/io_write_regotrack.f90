@@ -41,12 +41,12 @@ subroutine io_write_regotrack(user,surf,domain)
    type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
    real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
-   real(SP),dimension(:),allocatable :: regotemp, regotime
+   real(SP),dimension(:,:),allocatable :: regotemp, regotime
    real(SP),dimension(:,:),allocatable :: age, distvol
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
-   integer(I4B) :: itmp, N, NT, t
+   integer(I4B) :: itmp, N, NT, t, NC
    real(DP),dimension(user%gridsize,user%gridsize) :: comptop, rego
    real(DP),dimension(:),allocatable :: marehisto
 
@@ -89,12 +89,13 @@ subroutine io_write_regotrack(user,surf,domain)
             distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
             if (user%dothermal) then
-               NT = size(current(k)%regotemp)
-               if(.not. allocated(regotemp)) allocate(regotemp(NT))
-               if(.not. allocated(regotime)) allocate(regotime(NT))
+               NT = size(current(k)%regotemp(1,:))
+               NC = size(current(k)%regotemp(:,1))
+               if(.not. allocated(regotemp)) allocate(regotemp(NC,NT))
+               if(.not. allocated(regotime)) allocate(regotime(NC,NT))
                do t = 1, NT
-                  write(FRT) current(k)%regotemp(:)
-                  write(FT) current(k)%regotime(:)
+                  write(FRT) current(k)%regotemp(:,:)
+                  write(FT) current(k)%regotime(:,:)
                end do
             end if
          end do

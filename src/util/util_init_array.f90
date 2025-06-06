@@ -47,10 +47,10 @@ pure subroutine util_init_array(user,regolayer,domain,initstat)
         regolayer(1)%distvol(:) = 0.0_SP
         regolayer(1)%meltvolume = 0.0_DP
         regolayer(1)%totvolume = regolayer(1)%thickness * user%pix * user%pix
-        allocate(regolayer(1)%regotemp(1))
-        allocate(regolayer(1)%regotime(1))
-        regolayer(1)%regotemp = 0.0_SP
-        regolayer(1)%regotime = 0.0_SP
+        allocate(regolayer(1)%regotemp(1,1))
+        allocate(regolayer(1)%regotime(1,1))
+        regolayer(1)%regotemp(1,1) = 0.0_SP
+        regolayer(1)%regotime(1,1) = 0.0_SP
     end if
  
     return

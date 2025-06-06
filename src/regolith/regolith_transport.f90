@@ -72,12 +72,12 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
    newlayer%meltvolume = melt * newlayer%totvolume
 
    if (.not. allocated(newlayer%regotemp)) then
-      allocate(newlayer%regotemp(1))
-      newlayer%regotemp = 0.0_SP
+      allocate(newlayer%regotemp(1,1))
+      newlayer%regotemp(1,1) = 0.0_SP
    end if
    if (.not. allocated(newlayer%regotime)) then
-      allocate(newlayer%regotime(1))
-      newlayer%regotime = 0.0_SP
+      allocate(newlayer%regotime(1,1))
+      newlayer%regotime(1,1) = 0.0_SP
    end if
    
    call util_push_array(surfi%regolayer,newlayer)

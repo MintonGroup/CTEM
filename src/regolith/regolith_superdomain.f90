@@ -60,12 +60,12 @@ subroutine regolith_superdomain(user,crater,domain,regolayer,ejdistribution,xpi,
    lrad        = ( vej **2 ) / user%gaccel !assume ejection angle is 45 degree.
    call regolith_melt_glass(user,crater,domain,ebh,rm,erad,lrad,deltar,newlayer,xmints,melt) 
    if (.not. allocated(newlayer%regotemp)) then
-      allocate(newlayer%regotemp(1))
-      newlayer%regotemp = 0.0_SP
+      allocate(newlayer%regotemp(1,1))
+      newlayer%regotemp(1,1) = 0.0_SP
    end if
    if (.not. allocated(newlayer%regotime)) then
-      allocate(newlayer%regotime(1))
-      newlayer%regotime = 0.0_SP
+      allocate(newlayer%regotime(1,1))
+      newlayer%regotime(1,1) = 0.0_SP
    end if
    call util_push_array(regolayer,newlayer)
 

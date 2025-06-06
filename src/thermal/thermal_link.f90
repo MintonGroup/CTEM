@@ -46,7 +46,7 @@ subroutine thermal_link(user,crater,thermal,surfi)
                 !interpolate between minimum (cum_thickness) and maximum (current_depth) depth for this layer
                 average_depth = (cum_thickness + current_depth) / 2.0_DP
                 call util_push_regotemp(surfi(i,j)%regolayer(k)%regotemp,surfi(i,j)%regolayer(k)%regotime)
-                histsize = size(surfi(i,j)%regolayer(k)%regotemp)
+                histsize = size(surfi(i,j)%regolayer(k)%regotemp(1,:)) !each row should be the same size
                 do m=1,user%zgridsize !Find temperature at the thermal location corresponding to this depth
                     current_therm_depth = thermal(i,j,m)%depth
                     if (current_therm_depth >= cum_thickness) then
@@ -60,25 +60,25 @@ subroutine thermal_link(user,crater,thermal,surfi)
                                 dminusone = thermal(i,j,m-1)%depth
                                 if (thermal(i,j,m)%depth > average_depth ) then ! use dplusone, so it's this voxel and dplusone
                                     dpercent = (average_depth - dminusone) / user%zpix
-                                    surfi(i,j)%regolayer(k)%regotemp(histsize) = dpercent * (temp - tminusone) + temp
-                                    surfi(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
+                                    surfi(i,j)%regolayer(k)%regotemp(:,histsize) = dpercent * (temp - tminusone) + temp
+                                    surfi(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                                     exit
                                 else
                                     continue
                                 end if
                             else
-                                surfi(i,j)%regolayer(k)%regotemp(histsize) = thermal(i,j,m)%temperature
-                                surfi(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
+                                surfi(i,j)%regolayer(k)%regotemp(:,histsize) = thermal(i,j,m)%temperature
+                                surfi(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                             end if
                         else
-                            surfi(i,j)%regolayer(k)%regotemp(histsize) = thermal(i,j,m)%temperature
-                            surfi(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
+                            surfi(i,j)%regolayer(k)%regotemp(:,histsize) = thermal(i,j,m)%temperature
+                            surfi(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                         end if
                     else if (m == user%zgridsize) then !Contingency
                         write(*,*) "Depth of regolayer is greater than full depth of thermal"
                         !Could interpolate based on background temperature and geothermal gradient..?
-                        surfi(i,j)%regolayer(k)%regotemp(histsize) = ((13._DP/1000._DP) * average_depth ) + thermal(i,j,m)%temperature
-                        surfi(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
+                        surfi(i,j)%regolayer(k)%regotemp(:,histsize) = ((13._DP/1000._DP) * average_depth ) + thermal(i,j,m)%temperature
+                        surfi(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                     else
                         continue
                     end if
