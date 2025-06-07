@@ -79,6 +79,10 @@ subroutine regolith_transport(user,surfi,crater,domain,ejb,ejtble,lrad,ebh,newla
       allocate(newlayer%regotime(1,1))
       newlayer%regotime(1,1) = 0.0_SP
    end if
+   if (.not. allocated(newlayer%frac)) then
+      allocate(newlayer%frac(1))
+      newlayer%frac = 0.0_SP
+  end if
    
    call util_push_array(surfi%regolayer,newlayer)
 

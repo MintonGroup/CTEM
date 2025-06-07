@@ -83,6 +83,7 @@ type regodatatype
    real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
    real(SP),dimension(:,:),allocatable :: regotime
    real(SP),dimension(:,:),allocatable :: regotemp
+   real(SP),dimension(:),allocatable :: frac
 end type regodatatype
 
 type regolisttype

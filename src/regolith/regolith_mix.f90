@@ -77,6 +77,12 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
       allocate(newlayer%regotime(1,1))
       newlayer%regotime(1,1) = 0.0_SP
    end if
+   if (.not. allocated(newlayer%frac)) then
+      allocate(newlayer%frac(1))
+      newlayer%frac = 0.0_SP
+  end if
+
+  
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
