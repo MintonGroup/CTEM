@@ -32,7 +32,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    type(regodatatype) :: newlayer
    !type(regolisttype),pointer :: poppedlist,poppedlist_top
    type(regodatatype),dimension(:),allocatable :: poppedarray
-   integer(I4B) :: i, j, N
+   integer(I4B) :: i, j, k, N, NT, X
 
    !===============================================
    ! Add up all layers' info until a desired depth
@@ -55,6 +55,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
    N = size(poppedarray)
+   NT = 0
    do i = N,1,-1
       newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
       newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
@@ -62,6 +63,10 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
       newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%distvol(:)
       newlayer%ejm       = newlayer%ejm + poppedarray(i)%ejm
       newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%meltvolume
+      X = size(poppedarray(i)%regotemp)
+      if (X > NT) then 
+         X = NT
+      end if
    end do
 
    ! Get average values of composition and melt fraction
@@ -80,19 +85,21 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    if (.not. allocated(newlayer%frac)) then
       allocate(newlayer%frac(1))
       newlayer%frac = 0.0_SP
-  end if
-
-  
+   end if
+   
+   do i=1,N
+      X = size(poppedarray(i)%regotemp)
+      do j=1,NT
+         if (j > X) then
+            newlayer%regotemp(i,j) = -1.0_SP !NoData value
+         else
+            newlayer%regotemp(i,j) = poppedarray(i)%regotemp(i,j)
+         end if
+      end do
+   end do
    
    call util_push_array(surfi%regolayer, newlayer)
-   !call util_destroy_list(poppedlist_top)
 
-
-   ! do i = N,1,-1
-   !    if (abs(surfi%regolayer(i)%meltvolume - sum(surfi%regolayer(i)%distvol) > 1e-5)) then
-   !    write(*,*) "melt array =/= melt value!", domain%nqmc, domain%currentqmc, abs(surfi%regolayer(i)%meltvolume - sum(surfi%regolayer(i)%distvol))
-   !    end if
-   ! end do
 
    return
 end subroutine regolith_mix
