@@ -360,7 +360,7 @@ character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
 character(*),parameter :: THERMFILE  = 'surface_therm.dat'
 character(*),parameter :: REGOTEMPFILE = 'surface_regotemp.dat'
 character(*),parameter :: REGOTIMEFILE = 'surface_regotime.dat'
-!character(*),parameter :: GAFILE     = 'surface_ga.dat'
+character(*),parameter :: FRACFILE     = 'surface_frac.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

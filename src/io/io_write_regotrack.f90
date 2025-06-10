@@ -37,12 +37,14 @@ subroutine io_write_regotrack(user,surf,domain)
    integer(I4B), parameter :: FEJM = 15
    integer(I4B), parameter :: FRT = 16
    integer(I4B), parameter :: FT = 17
+   integer(I4B), parameter :: FF = 18
    !type(regolisttype),pointer :: current => null()
    type(regodatatype),dimension(:),allocatable :: current
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num
    real(DP),dimension(:),allocatable :: thickness, comp, ejm, meltvolume
    real(SP),dimension(:,:),allocatable :: regotemp, regotime
    real(SP),dimension(:,:),allocatable :: age, distvol
+   real(SP),dimension(:),allocatable :: frac
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
@@ -60,6 +62,7 @@ subroutine io_write_regotrack(user,surf,domain)
    if (user%dothermal) then
       open(FRT,file=REGOTEMPFILE,status='replace',form='unformatted')
       open(FT,file=REGOTIMEFILE,status='replace',form='unformatted')
+      open(FF,file=FRACFILE,status='replace',form='unformatted')
    end if
 
    ! First pass to get stack numbers
@@ -89,13 +92,14 @@ subroutine io_write_regotrack(user,surf,domain)
             distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
             if (user%dothermal) then
-               NT = size(current(k)%regotemp(1,:))
-               NC = size(current(k)%regotemp(:,1))
+               NT = size(current(k)%regotemp, 1)
+               NC = size(current(k)%regotemp, 2)
                if(.not. allocated(regotemp)) allocate(regotemp(NC,NT))
                if(.not. allocated(regotime)) allocate(regotime(NC,NT))
                do t = 1, NT
                   write(FRT) current(k)%regotemp(:,:)
                   write(FT) current(k)%regotime(:,:)
+                  write(FF) current(k)%frac(:)
                end do
             end if
          end do
@@ -119,6 +123,7 @@ subroutine io_write_regotrack(user,surf,domain)
    if (user%dothermal) then
       close(FRT)
       close(FT)
+      close(FF)
    end if
 
    recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
