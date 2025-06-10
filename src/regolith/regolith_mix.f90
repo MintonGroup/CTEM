@@ -33,6 +33,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    !type(regolisttype),pointer :: poppedlist,poppedlist_top
    type(regodatatype),dimension(:),allocatable :: poppedarray
    integer(I4B) :: i, j, k, N, NT, X, total_rows, row_start, rows, cols, r, c, N2
+   real(DP) :: tot
 
    !===============================================
    ! Add up all layers' info until a desired depth
@@ -82,6 +83,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    !  allocate(poppedarray(1)%regotime(total_rows, NT))
     allocate(newlayer%regotemp(total_rows, NT))
     allocate(newlayer%regotime(total_rows, NT))
+    allocate(newlayer%frac(total_rows))
     newlayer%regotemp = -1.0_SP  ! Fill with NoData initially
     newlayer%regotime = -1.0_SP
 
@@ -91,6 +93,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
             rows = size(poppedarray(i)%regotemp, 1)
             cols = size(poppedarray(i)%regotemp, 2)
             do r = 1, rows
+               newlayer%frac(row_start + r - 1) = poppedarray(i)%thickness / mixing_depth
                 do c = 1, cols
                     newlayer%regotemp(row_start + r - 1, c) = poppedarray(i)%regotemp(r, c)
                     newlayer%regotime(row_start + r - 1, c) = poppedarray(i)%regotemp(r, c)
@@ -99,6 +102,9 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
             row_start = row_start + rows
         end if
     end do
+
+    tot = sum(newlayer%frac)
+    newlayer%frac(:) = newlayer%frac(:) / tot
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
