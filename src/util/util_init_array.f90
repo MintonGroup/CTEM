@@ -51,6 +51,8 @@ pure subroutine util_init_array(user,regolayer,domain,initstat)
         allocate(regolayer(1)%regotime(1,1))
         regolayer(1)%regotemp(1,1) = 0.0_SP
         regolayer(1)%regotime(1,1) = 0.0_SP
+        allocate(regolayer(1)%frac(1))
+        regolayer(1)%frac = 1.0_SP
     end if
  
     return

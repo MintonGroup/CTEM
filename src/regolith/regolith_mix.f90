@@ -32,7 +32,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    type(regodatatype) :: newlayer
    !type(regolisttype),pointer :: poppedlist,poppedlist_top
    type(regodatatype),dimension(:),allocatable :: poppedarray
-   integer(I4B) :: i, j, k, N, NT, X
+   integer(I4B) :: i, j, k, N, NT, X, total_rows, row_start, rows, cols, r, c, N2
 
    !===============================================
    ! Add up all layers' info until a desired depth
@@ -55,6 +55,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
    N = size(poppedarray)
+   N2 = size(surfi%regolayer)
    NT = 0
    do i = N,1,-1
       newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
@@ -65,38 +66,68 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
       newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%meltvolume
       X = size(poppedarray(i)%regotemp)
       if (X > NT) then 
-         X = NT
+         NT = X
       end if
    end do
+
+    total_rows = 0
+    do i = 1, N
+        if (allocated(poppedarray(i)%regotemp)) then
+            total_rows = total_rows + size(poppedarray(i)%regotemp, 1)
+        end if
+    end do
+
+   !  deallocate(poppedarray(1)%regotemp,poppedarray(1)%regotime)
+   !  allocate(poppedarray(1)%regotemp(total_rows, NT))
+   !  allocate(poppedarray(1)%regotime(total_rows, NT))
+    allocate(newlayer%regotemp(total_rows, NT))
+    allocate(newlayer%regotime(total_rows, NT))
+    newlayer%regotemp = -1.0_SP  ! Fill with NoData initially
+    newlayer%regotime = -1.0_SP
+
+    row_start = 1
+    do i = 1, N
+        if (allocated(poppedarray(i)%regotemp)) then
+            rows = size(poppedarray(i)%regotemp, 1)
+            cols = size(poppedarray(i)%regotemp, 2)
+            do r = 1, rows
+                do c = 1, cols
+                    newlayer%regotemp(row_start + r - 1, c) = poppedarray(i)%regotemp(r, c)
+                    newlayer%regotime(row_start + r - 1, c) = poppedarray(i)%regotemp(r, c)
+                end do
+            end do
+            row_start = row_start + rows
+        end if
+    end do
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
 
    newlayer%totvolume = newlayer%thickness * user%pix * user%pix
 
-   if (.not. allocated(newlayer%regotemp)) then
-      allocate(newlayer%regotemp(1,1))
-      newlayer%regotemp(1,1) = 0.0_SP
-   end if
-   if (.not. allocated(newlayer%regotime)) then
-      allocate(newlayer%regotime(1,1))
-      newlayer%regotime(1,1) = 0.0_SP
-   end if
-   if (.not. allocated(newlayer%frac)) then
-      allocate(newlayer%frac(1))
-      newlayer%frac = 0.0_SP
-   end if
+   ! if (.not. allocated(newlayer%regotemp)) then
+   !    allocate(newlayer%regotemp(1,1))
+   !    newlayer%regotemp(1,1) = 0.0_SP
+   ! end if
+   ! if (.not. allocated(newlayer%regotime)) then
+   !    allocate(newlayer%regotime(1,1))
+   !    newlayer%regotime(1,1) = 0.0_SP
+   ! end if
+   ! if (.not. allocated(newlayer%frac)) then
+   !    allocate(newlayer%frac(1))
+   !    newlayer%frac = 0.0_SP
+   ! end if
    
-   do i=1,N
-      X = size(poppedarray(i)%regotemp)
-      do j=1,NT
-         if (j > X) then
-            newlayer%regotemp(i,j) = -1.0_SP !NoData value
-         else
-            newlayer%regotemp(i,j) = poppedarray(i)%regotemp(i,j)
-         end if
-      end do
-   end do
+   ! do i=1,N
+   !    X = size(poppedarray(i)%regotemp)
+   !    do j=1,NT
+   !       if (j > X) then
+   !          newlayer%regotemp(i,j) = -1.0_SP !NoData value
+   !       else
+   !          newlayer%regotemp(i,j) = poppedarray(i)%regotemp(1,j)
+   !       end if
+   !    end do
+   ! end do
    
    call util_push_array(surfi%regolayer, newlayer)
 

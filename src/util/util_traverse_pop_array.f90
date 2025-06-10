@@ -36,7 +36,8 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
     type(regodatatype),dimension(:),allocatable         :: oldregodata
     !logical                     :: initstat
     real(DP)                    :: recyratio, depth_diff
-    integer(I4B)                :: i, N, maxi
+    integer(I4B)                :: i, N, maxi, j, k, NT, X, total_rows, rows, cols, r, c, row_start, total_cols
+    real(SP),dimension(:,:),allocatable :: oldregotime, oldregotemp
  
     N = size(regolayer)
     depth = 0._DP
@@ -66,8 +67,10 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
 
     allocate(poppedarray,source=regolayer(maxi:N))
     allocate(oldregodata,source=regolayer(maxi:maxi))
+    ! allocate(oldregotemp,source=poppedarray(:)%regotemp)
+    ! allocate(oldregotime,source=poppedarray(:)%regotime)
 
-    !for #1 element of poppedarray, shrink thickness by whatever was lefr over. In corresponding maxi of regolayer, also need to change that.
+    !for #1 element of poppedarray, shrink thickness by whatever was left over. In corresponding maxi of regolayer, also need to change that.
 
     poppedarray(1)%thickness = poppedarray(1)%thickness - depth_diff
     regolayer(maxi)%thickness = regolayer(maxi)%thickness - poppedarray(1)%thickness
@@ -83,7 +86,42 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
     poppedarray(1)%totvolume = poppedarray(1)%thickness * user%pix * user%pix
     regolayer(maxi)%totvolume = regolayer(maxi)%thickness * user%pix * user%pix
 
-    deallocate(oldregodata)
+    ! NT = 0
+    ! do i=1,N
+    !     if (allocated(poppedarray(i)%regotemp)) then
+    !         X = size(poppedarray(i)%regotemp)
+    !         if (X > NT) NT = X
+    !     end if
+    ! end do
+
+    ! total_rows = 0
+    ! do i = 1, N
+    !     if (allocated(poppedarray(i)%regotemp)) then
+    !         total_rows = total_rows + size(poppedarray(i)%regotemp, 1)
+    !     end if
+    ! end do
+
+    ! deallocate(poppedarray(1)%regotemp,poppedarray(1)%regotime)
+    ! allocate(poppedarray(1)%regotemp(total_rows, NT))
+    ! allocate(poppedarray(1)%regotime(total_rows, NT))
+    ! poppedarray(1)%regotemp = -1.0_SP  ! Fill with NoData initially
+
+    ! row_start = 1
+    ! do i = 1, N
+    !     if (allocated(poppedarray(i)%regotemp)) then
+    !         rows = size(oldregotemp, 1)
+    !         cols = size(oldregotemp, 2)
+    !         do r = 1, rows
+    !             do c = 1, cols
+    !                 poppedarray(1)%regotemp(row_start + r - 1, c) = oldregotemp(r, c)
+    !                 poppedarray(1)%regotime(row_start + r - 1, c) = oldregotime(r, c)
+    !             end do
+    !         end do
+    !         row_start = row_start + rows
+    !     end if
+    ! end do
+
+    deallocate(oldregodata)!,oldregotemp,oldregotime)
 
     ! copy regolayer from 1 to maxi to temp variable, then deallocate regolayer, then movealloc templayer onto regolayer <--may need temp array
     allocate(oldregodata,source=regolayer(1:maxi))
