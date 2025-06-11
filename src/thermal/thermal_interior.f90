@@ -70,7 +70,7 @@ subroutine thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
                         exit
                     else !Emplace melt sheet of a given thickness, then push the rest of the pixels down
                         if (thermal(xpi,ypi,k)%depth < hmeltsheet) then
-                            thermal(xpi,ypi,k)%temperature = 1087.
+                            thermal(xpi,ypi,k)%temperature = 1087.0_DP
                         else
                             if (thermal(xpi,ypi,k)%depth - hmeltsheet < user%zpix) then !final pixel of melt sheet
                                 thermal(xpi,ypi,k)%temperature = max((1087._DP * (thermal(xpi,ypi,k)%depth - hmeltsheet / user%zpix))&

@@ -367,15 +367,15 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
    if (.not. allocated(newlayer%regotemp)) then
       allocate(newlayer%regotemp(1,1))
-      newlayer%regotemp(1,1) = 0.0_SP
+      newlayer%regotemp(1,1) = -1.0_SP !NoData
    end if
    if (.not. allocated(newlayer%regotime)) then
       allocate(newlayer%regotime(1,1))
-      newlayer%regotime(1,1) = 0.0_SP
+      newlayer%regotime(1,1) = crater%timestamp
    end if
    if (.not. allocated(newlayer%frac)) then
       allocate(newlayer%frac(1))
-      newlayer%frac = 0.0_SP
+      newlayer%frac = 1.0_SP
   end if
 
   call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
