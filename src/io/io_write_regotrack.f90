@@ -48,7 +48,7 @@ subroutine io_write_regotrack(user,surf,domain)
    integer(kind=8) :: recsize
    real(DP) :: dtmp
    real(SP) :: stmp
-   integer(I4B) :: itmp, N, NT, t, NC
+   integer(I4B) :: itmp, N, NT, t, NC, c, l, m
    real(DP),dimension(user%gridsize,user%gridsize) :: comptop, rego
    real(DP),dimension(:),allocatable :: marehisto
 
@@ -92,15 +92,21 @@ subroutine io_write_regotrack(user,surf,domain)
             distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
             if (user%dothermal) then
-               NT = size(current(k)%regotemp, 1)
-               NC = size(current(k)%regotemp, 2)
-               if(.not. allocated(regotemp)) allocate(regotemp(NC,NT))
-               if(.not. allocated(regotime)) allocate(regotime(NC,NT))
-               do t = 1, NT
-                  write(FRT) current(k)%regotemp(:,:)
-                  write(FT) current(k)%regotime(:,:)
-                  write(FF) current(k)%frac(:)
-               end do
+               ! NT = size(current(k)%regotemp, 1)
+               ! NC = size(current(k)%regotemp, 2)
+               ! if(.not. allocated(regotemp)) allocate(regotemp(NC,NT))
+               ! if(.not. allocated(regotime)) allocate(regotime(NC,NT))
+               ! do t = 1, NT
+               !    do c = 1, NC
+               ! print *, 'regotemp bounds:', lbound(current(k)%regotemp), ubound(current(k)%regotemp)
+               ! print *, 'regotemp size:', size(current(k)%regotemp)
+               t = size(current(k)%regotemp,1)
+               c = size(current(k)%regotemp,2)
+               write(FRT) ((current(k)%regotemp(l,m), m=1,c), l=1,t)
+               write(FT) ((current(k)%regotime(l,m), m=1,c), l=1,t)
+               write(FF) current(k)%frac
+               !    end do
+               ! end do
             end if
          end do
          deallocate(current)
@@ -111,7 +117,7 @@ subroutine io_write_regotrack(user,surf,domain)
          write(FMD) distvol(:,:)
          write(FEJM) ejm(:)
          deallocate(meltvolume,thickness,comp,age,distvol,ejm)
-         if (user%dothermal) deallocate(regotemp,regotime)
+         !if (user%dothermal) deallocate(regotemp,regotime)
       end do 
    end do
    close(FMELT)

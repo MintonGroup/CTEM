@@ -96,7 +96,7 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
                newlayer%frac(row_start + r - 1) = poppedarray(i)%thickness / mixing_depth
                 do c = 1, cols
                     newlayer%regotemp(row_start + r - 1, c) = poppedarray(i)%regotemp(r, c)
-                    newlayer%regotime(row_start + r - 1, c) = poppedarray(i)%regotemp(r, c)
+                    newlayer%regotime(row_start + r - 1, c) = poppedarray(i)%regotime(r, c)
                 end do
             end do
             row_start = row_start + rows
