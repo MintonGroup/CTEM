@@ -77,7 +77,6 @@ subroutine thermal_remove(user,thermal,crater)
                             if (thermal(xpi,ypi,k)%depth < user%zpix) then
                                 reference = k
                             end if
-
                             if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                                 thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
                             else
@@ -88,7 +87,7 @@ subroutine thermal_remove(user,thermal,crater)
                                 end if
                             end if
                         else
-                           exit
+                            thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,k)%background !again, should be previous
                         end if
                     end if
                 end do
