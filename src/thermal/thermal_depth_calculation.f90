@@ -53,26 +53,22 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
                 dd = surfdepth / user%zpix !This only works if the old surfdepth is 0
                 thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - hmax
                 thermal(i,j,k)%elevation = hmax - thermal(i,j,k)%relative_depth
-                if (thermal(i,j,k)%relative_depth > (13*crater%imprad)) then
+                if (thermal(i,j,k)%relative_depth < surfdepth) then !voxel is empty space above the surface
+                    thermal(i,j,k)%temperature = 0.0_DP
+                    thermal(i,j,k)%background = 0.0_DP
                     thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
                 else
-                    if (thermal(i,j,k)%relative_depth < surfdepth) then !voxel is empty space above the surface
-                        thermal(i,j,k)%temperature = 0.0_DP
-                        thermal(i,j,k)%background = 0.0_DP
-                        thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
+                    ! shift the temperature values by the difference between the new and old hmax
+                    if (k-dd .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
+                        thermal(i,j,k)%temperature = thermal(i,j,user%zgridsize)%background
+                    else if (k-dd .lt. 1) then !? 
+                        thermal(i,j,k)%temperature = 0.0_DP !adding new space (this should never be triggered because of the earlier check)
                     else
-                        ! shift the temperature values by the difference between the new and old hmax
-                        if (k-dd .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
-                            thermal(i,j,k)%temperature = thermal(i,j,user%zgridsize)%background
-                        else if (k-dd .lt. 1) then !? 
-                            thermal(i,j,k)%temperature = 0.0_DP !adding new space (this should never be triggered because of the earlier check)
-                        else
-                            thermal(i,j,k)%temperature = oldtemps(i,j,k-dd)
-                        end if
-                        thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
-                        thermal(i,j,k)%background = (13._DP/1000._DP) * thermal(i,j,k)%depth !13K/km for now; must match init_thermal.f90 (this should probably be a global variable)
+                        thermal(i,j,k)%temperature = oldtemps(i,j,k-dd)
                     end if
-                end if              
+                    thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
+                    thermal(i,j,k)%background = (13._DP/1000._DP) * thermal(i,j,k)%depth !13K/km for now; must match init_thermal.f90 (this should probably be a global variable)
+                end if             
             end do
         end do
     end do

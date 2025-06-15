@@ -32,7 +32,7 @@ subroutine thermal_dist(user,surf,thermal,crater)
 
     ! Internal variables
     integer(I4B) :: inc,i,j,xpi,ypi,zinc,k,n
-    real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative,distance,lradcubed
+    real(DP) :: iradsq,lradsq,xp,yp,x_relative,y_relative,distance,lradcubed,prev
 
     ! Executable code
 
@@ -56,7 +56,7 @@ subroutine thermal_dist(user,surf,thermal,crater)
             lradcubed = lradsq + surf(xpi,ypi)%dem
 
             n = 0
-            
+
             do k=1,user%zgridsize
                 if (n <= zinc) then
                     !calculate the 3-dimensional distance from layer depth

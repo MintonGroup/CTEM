@@ -32,16 +32,17 @@ subroutine thermal_remove(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: h, i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix, k1,k2, taper
-    real(DP) :: xp, yp, r, tdepth, maxtdepth, dz, depth_above, z1,z2, T1, T2, frac, old_depth, depth_below
+    integer(I4B) :: i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix, k1,k2
+    real(DP) :: xp, yp, r, tdepth, maxtdepth, dz, depth_above, z1,z2, T1, T2, frac, old_depth, depth_below, limit
     type(thermaltype),dimension(:,:,:),allocatable :: oldtemps
-    real(DP) :: taper_factor, taperdepth, temp_warped
+    !real(DP),dimension(:,:,:),allocatable :: oldtemps
 
     allocate(oldtemps,source=thermal(:,:,:))
 
 
     rpix = crater%rad / user%pix
     inc = min(rpix,user%gridsize-1)
+    limit = 13.0*crater%imprad
 
     maxtdepth = crater%rad * ((-0.5 * (0.0_DP/crater%rad)**2) + 0.5) ! Parabolic relationship between r and depth of transient crater: 
                                                                     ! depth h = -0.5(r/R)**2 + (1/2) where r is radial distance and R is radius. 
@@ -69,40 +70,25 @@ subroutine thermal_remove(user,thermal,crater)
 
             tdepthpix = dz / user%zpix
 
-            taperdepth = maxtdepth * 1.5
-
-            do h=1,user%zgridsize
-                if (thermal(xpi,ypi,h)%depth>=taperdepth) then
-                    taper = h
-                    exit
-                else if (h==user%zgridsize) then
-                    taper = user%zgridsize
-                    exit
-                end if
-            end do
-
-
             if (dz > 0.0_DP) then
                  do k=1,user%zgridsize
                     if (thermal(xpi,ypi,k)%depth > 0) then
-                        if(thermal(xpi,ypi,k)%depth < taperdepth) then
+                        if(thermal(xpi,ypi,k)%depth < maxtdepth) then
+                            if (thermal(xpi,ypi,k)%depth < user%zpix) then
+                                reference = k
+                            end if
+
                             if (k+tdepthpix .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                                 thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,user%zgridsize)%background
                             else
-                                if (thermal(xpi,ypi,k)%depth < maxtdepth) then
-                                    ! Inside the uplifted crater zone
-                                    thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + &
-                                                                     oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
-                                else
-                                    ! Transition zone: blend to background
-                                    taper_factor = (taperdepth - thermal(xpi,ypi,k)%depth) / (taperdepth - maxtdepth)
-                                    taper_factor = max(min(taper_factor, 1.0_DP), 0.0_DP)
-                                    temp_warped = oldtemps(xpi,ypi,k+tdepthpix)%temperature + &
-                                                  oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
-                                    thermal(xpi,ypi,k)%temperature = taper_factor * temp_warped + &
-                                                                     (1.0_DP - taper_factor) * thermal(xpi,ypi,taper)%background
+                                if (thermal(xpi,ypi,k)%depth < limit) then !Remove transient stuff and shift
+                                    thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
+                                else !if k > limit, make thermal the background (for now, it should actually be the value of "prev")
+                                    thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,k)%background
                                 end if
                             end if
+                        else
+                           exit
                         end if
                     end if
                 end do
@@ -113,13 +99,15 @@ subroutine thermal_remove(user,thermal,crater)
     deallocate(oldtemps)
 
     ! Change the warpedbg value back to 0
-    do i=1,user%gridsize
-        do j=1,user%gridsize
-            do k=1,user%zgridsize
-                thermal(i,j,k)%warpedbg = 0
-            end do
-        end do
-    end do
+    ! do i=1,user%gridsize
+    !     do j=1,user%gridsize
+    !         do k=1,user%zgridsize
+    !             thermal(i,j,k)%warpedbg = 0
+    !         end do
+    !     end do
+    ! end do
+
+    thermal(:,:,:)%warpedbg = 0.0_DP
 
     return
 
