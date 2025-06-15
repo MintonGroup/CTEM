@@ -84,11 +84,12 @@ save
     end interface
 
     interface
-        subroutine thermal_remove(user,thermal,crater)
+        subroutine thermal_remove(user,thermal,crater,prev)
         use module_globals
         type(usertype),intent(in) :: user
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(cratertype),intent(in) :: crater
+        real(DP),dimension(:,:,:),allocatable,intent(in) :: prev
         end subroutine thermal_remove
     end interface
 

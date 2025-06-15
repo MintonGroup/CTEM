@@ -84,6 +84,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet, firstmc
    real(DP)                :: vmeltsheet, avgtemp
    real(DP)                :: time_since_diff, tstart
+   real(DP),dimension(:,:,:),allocatable :: prev
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -338,6 +339,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
          if (user%dothermal) then
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            allocate(prev,source=thermal(:,:,:)%temperature)
             open(51,file='therm0.dat',status='replace',form='unformatted')
             write(51) thermal(:,:,:)%temperature
             close(51)
@@ -371,11 +373,12 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if (user%dothermal) then 
             call thermal_warp(user,thermal,crater)
-            call thermal_remove(user,thermal,crater)
+            call thermal_remove(user,thermal,crater,prev)
             ! !Debug
             open(53,file='thermB.dat',status='replace',form='unformatted')
             write(53) thermal(:,:,:)%temperature
             close(53)
+            deallocate(prev)
          end if
 
          if (user%doregotrack) call regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltsheet)

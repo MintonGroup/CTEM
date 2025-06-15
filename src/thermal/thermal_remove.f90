@@ -20,7 +20,7 @@
 !  Notes       : 
 !
 !**********************************************************************************************************************************
-subroutine thermal_remove(user,thermal,crater)
+subroutine thermal_remove(user,thermal,crater,prev)
     use module_globals
     use module_util
     use module_thermal, EXCEPT_THIS_ONE => thermal_remove
@@ -30,6 +30,7 @@ subroutine thermal_remove(user,thermal,crater)
     type(usertype),intent(in) :: user
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
     type(cratertype),intent(in) :: crater
+    real(DP),dimension(:,:,:),allocatable,intent(in) :: prev
 
     ! Internal variables
     integer(I4B) :: i, j, k, xpi, ypi, rpix, inc, tdepthpix, reference, maxtdepthpix, npix, k1,k2
@@ -83,11 +84,11 @@ subroutine thermal_remove(user,thermal,crater)
                                 if (thermal(xpi,ypi,k)%depth < limit) then !Remove transient stuff and shift
                                     thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
                                 else !if k > limit, make thermal the background (for now, it should actually be the value of "prev")
-                                    thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,k)%background
+                                    thermal(xpi,ypi,k)%temperature = prev(xpi,ypi,k)
                                 end if
                             end if
                         else
-                            thermal(xpi,ypi,k)%temperature = thermal(xpi,ypi,k)%background !again, should be previous
+                            thermal(xpi,ypi,k)%temperature = prev(xpi,ypi,k)
                         end if
                     end if
                 end do
