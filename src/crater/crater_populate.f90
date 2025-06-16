@@ -338,7 +338,6 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
          if (user%dothermal) then
-            call thermal_depth_calculation(user,surf,crater,domain,thermal)
             allocate(prev,source=thermal(:,:,:)%temperature)
             open(51,file='therm0.dat',status='replace',form='unformatted')
             write(51) thermal(:,:,:)%temperature
@@ -371,7 +370,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ejtble = 0
          end if
 
-         if (user%dothermal) then 
+         if (user%dothermal) then
+            call thermal_depth_calculation(user,surf,crater,domain,thermal) 
             call thermal_warp(user,thermal,crater)
             call thermal_remove(user,thermal,crater,prev)
             ! !Debug
