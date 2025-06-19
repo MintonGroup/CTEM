@@ -83,7 +83,7 @@ subroutine thermal_remove(user,thermal,crater,prev)
                             else
                                 if (thermal(xpi,ypi,k)%depth < limit) then !Remove transient stuff and shift
                                     thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k+tdepthpix)%temperature + oldtemps(xpi,ypi,k+tdepthpix)%warpedbg
-                                else !if k > limit, make thermal the background (for now, it should actually be the value of "prev")
+                                else 
                                     thermal(xpi,ypi,k)%temperature = prev(xpi,ypi,k)
                                 end if
                             end if

@@ -371,7 +371,13 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
 
          if (user%dothermal) then
+            open(57,file='thermB0.dat',status='replace',form='unformatted')
+            write(57) thermal(:,:,:)%temperature
+            close(57)
             call thermal_depth_calculation(user,surf,crater,domain,thermal) 
+            open(58,file='thermB1.dat',status='replace',form='unformatted')
+            write(58) thermal(:,:,:)%temperature
+            close(58)
             call thermal_warp(user,thermal,crater)
             call thermal_remove(user,thermal,crater,prev)
             ! !Debug

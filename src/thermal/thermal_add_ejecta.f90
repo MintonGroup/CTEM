@@ -33,7 +33,7 @@ subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
 
     ! Internal variables
     real(DP) :: voxtemp, rem
-    integer(I4B) :: npix, i
+    integer(I4B) :: npix, i, k
 
     ! Executable code
 
@@ -43,23 +43,25 @@ subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
     npix = int(thickness / user%zpix)
     rem = mod(thickness,user%zpix)
     ! Shift thermal distribution down by the npix
-    do i=user%zgridsize,1,-1
+    k = 0
+    do i=1,user%zgridsize
         if (thermal(tx,ty,i)%depth > 0) then
-            if (thermal(tx,ty,i)%relative_depth > (13*crater%imprad)) then
-                continue
+            k = k + 1
+            if (thickness < user%zpix) then
+                thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + voxtemp
+                exit
             else
-                if (thickness < user%zpix) then
-                    thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + voxtemp
-                    exit
-                else
-                    if (i <= npix) then
-                        if (i == npix) then
-                            thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
-                        else
-                            thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
-                        end if
+                if (k <= npix) then
+                    if (k == npix) then
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
                     else
-                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i-npix)%temperature
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
+                    end if
+                else
+                    if (i+npix <= user%zgridsize) then
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,i+npix)%temperature
+                    else !temperature is equal to the background of the deepst voxel
+                        thermal(tx,ty,i)%temperature = thermal(tx,ty,user%zgridsize)%background
                     end if
                 end if
             end if
