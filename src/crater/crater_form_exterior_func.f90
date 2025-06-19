@@ -26,7 +26,7 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
-   type(domaintype),intent(in) :: domain
+   type(domaintype),intent(inout) :: domain
    real(DP),intent(in) :: rd,deltaMtot
    logical,intent(in) :: lastloop
    real(DP) :: ans
@@ -87,6 +87,8 @@ function crater_form_exterior_func(user,surf,crater,domain,rd,deltaMtot,lastloop
    end do !end area loopover 
    !$OMP END PARALLEL DO
    ans = deltaMtot + deltaMp
+   domain%hmax = maxval(surf(:,:)%dem)
    return
+
 end function crater_form_exterior_func
 

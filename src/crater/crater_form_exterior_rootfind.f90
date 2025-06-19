@@ -26,7 +26,7 @@ subroutine crater_form_exterior_rootfind(user,surf,crater,domain,deltaMtot)
    type(usertype),intent(in) :: user
    type(surftype),dimension(:,:),intent(inout) :: surf
    type(cratertype),intent(inout) :: crater
-   type(domaintype),intent(in) :: domain
+   type(domaintype),intent(inout) :: domain
    real(DP),intent(in) ::   deltaMtot
 
    ! Internal variables

@@ -324,6 +324,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          crater%maxinc = 0
          ! Do seismic shaking
          if (user%doseismic) call seismic_shake(user,surf,crater,domain)
+         domain%hmax = maxval(surf(:,:)%dem)
         
          ! find the average height and slope at crater location
          call crater_averages(user,surf,crater)
@@ -391,10 +392,12 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          if (user%dothermal) call thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
 
          if (user%dorealistic) call realistic_crater_topography(user,surf,crater,domain,ejecta_dem) 
+         domain%hmax = maxval(surf(:,:)%dem)
          deallocate(ejecta_dem)
 
          ! Collapse any remaining unstable slopes
          if (user%docollapse) call crater_slope_collapse(user,surf,crater,domain,(CRITSLP * user%pix)**2,ejbmass)
+         domain%hmax = maxval(surf(:,:)%dem)
 
          ! Record crater in an available layer as long as it is above the cutoff
          call crater_record(user,surf,crater)
@@ -421,6 +424,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             open(56,file='thermD.dat',status='replace',form='unformatted')
             write(56) thermal(:,:,:)%temperature
             close(56)
+            call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            open(59,file='thermE.dat',status='replace',form='unformatted')
+            write(59) thermal(:,:,:)%temperature
+            close(59)
             ! Add temperature to regolayer immediately after crater emplacement
             call thermal_link(user,crater,thermal,surf)
             if (user%testflag) then
@@ -472,6 +479,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             if (user%dotopodiffusion) then
                call crater_subpixel_diffusion(user,surf,nflux,domain,finterval,kdiff)
             end if
+            domain%hmax = maxval(surf(:,:)%dem)
 
                ! Do superdomain ray deposits
                ! Do sub-pixel craters vertical mixing

@@ -154,7 +154,7 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
-      type(domaintype),intent(in) :: domain
+      type(domaintype),intent(inout) :: domain
       real(DP),intent(in) :: rd,deltaMtot
       logical,intent(in) :: lastloop
       real(DP) :: ans
@@ -168,7 +168,7 @@ save
       type(usertype),intent(in) :: user
       type(surftype),dimension(:,:),intent(inout) :: surf
       type(cratertype),intent(inout) :: crater
-      type(domaintype),intent(in) :: domain
+      type(domaintype),intent(inout) :: domain
       real(DP),intent(in) ::   deltaMtot
       end subroutine crater_form_exterior_rootfind
    end interface
