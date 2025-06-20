@@ -75,9 +75,10 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
                     thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
                 else
                     ! shift the temperature values by the difference between the new and old depth
-                    if (shift(i,j) == 0) exit
                     depth_difference = thermal(i,j,k)%depth - old(i,j,k)%depth
+                    if (depth_difference == 0.0_DP) exit
                     dd = nint(depth_difference / user%zpix)
+                    if (dd == 0) exit
                     if (shift(i,j)+n .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                         thermal(i,j,k)%temperature = thermal(i,j,user%zgridsize)%background
                     else if (shift(i,j)+n .lt. 1) then !? 
