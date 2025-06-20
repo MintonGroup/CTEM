@@ -31,11 +31,25 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
 
     ! Internal variables
-    integer(I4B) :: i,j,k, dd, sd, md
+    integer(I4B) :: i,j,k, dd, sd, md, n
     real(DP) :: hmax, h, surfdepth, old_hmax, depth_difference, max_depth_difference
     type(thermaltype),dimension(:,:,:),allocatable :: old
+    integer(I4B),dimension(:,:),allocatable :: shift
 
     allocate(old,source=thermal(:,:,:))
+    allocate(shift(user%gridsize,user%gridsize))
+    do j=1,user%gridsize
+        do i=1,user%gridsize
+            do k=1,user%zgridsize
+                if (thermal(i,j,k)%depth > 0) then
+                    shift(i,j) = k
+                    exit
+                else
+                    continue
+                end if
+            end do
+        end do
+    end do
     
 
     ! Executable Code
@@ -48,6 +62,7 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
     do j=1,user%gridsize
         do i=1,user%gridsize
             h = surf(i,j)%dem
+            n = 0
             do k=1,user%zgridsize
                 surfdepth = hmax - h
                 sd = int(surfdepth / user%zpix + 0.5)
@@ -60,24 +75,26 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
                     thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
                 else
                     ! shift the temperature values by the difference between the new and old depth
+                    if (shift(i,j) == 0) exit
                     depth_difference = thermal(i,j,k)%depth - old(i,j,k)%depth
                     dd = nint(depth_difference / user%zpix)
-                    if (k-dd .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
+                    if (shift(i,j)+n .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                         thermal(i,j,k)%temperature = thermal(i,j,user%zgridsize)%background
-                    else if (k-dd .lt. 1) then !? 
+                    else if (shift(i,j)+n .lt. 1) then !? 
                         thermal(i,j,k)%temperature = 0.0_DP !adding new space (this should never be triggered because of the earlier check)
                     else
-                        thermal(i,j,k)%temperature = old(i,j,k-dd)%temperature
+                        thermal(i,j,k)%temperature = old(i,j,shift(i,j)+n)%temperature
                     end if
                     !thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
                     thermal(i,j,k)%background = (13._DP/1000._DP) * thermal(i,j,k)%depth !13K/km for now; must match init_thermal.f90 (this should probably be a global variable)
+                    n = n + 1
                 end if             
             end do
         end do
     end do
 
     domain%hmax = hmax
-    deallocate(old)
+    deallocate(old,shift)
 
     return
 
