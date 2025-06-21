@@ -257,6 +257,24 @@ interface
    real(SP),dimension(:),allocatable,intent(inout) :: regotime
    end subroutine util_push_regotemp
 end interface
+
+interface
+   subroutine util_sort_unique(input,output)
+   use module_globals
+   implicit none
+   real(SP),intent(in) :: input(:)
+   real(SP),allocatable,intent(out) :: output(:)
+   end subroutine util_sort_unique
+end interface
+
+interface
+   subroutine util_insertion_sort(arr)
+   use module_globals
+   implicit none
+   real(SP), intent(inout) :: arr(:)
+   end subroutine util_insertion_sort
+end interface
+
    
 
 interface

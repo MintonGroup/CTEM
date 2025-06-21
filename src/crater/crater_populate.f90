@@ -424,10 +424,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             open(56,file='thermD.dat',status='replace',form='unformatted')
             write(56) thermal(:,:,:)%temperature
             close(56)
-            call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            open(59,file='thermE.dat',status='replace',form='unformatted')
-            write(59) thermal(:,:,:)%temperature
-            close(59)
+            ! call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            ! open(59,file='thermE.dat',status='replace',form='unformatted')
+            ! write(59) thermal(:,:,:)%temperature
+            ! close(59)
             ! Add temperature to regolayer immediately after crater emplacement
             call thermal_link(user,crater,thermal,surf)
             if (user%testflag) then

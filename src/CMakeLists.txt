@@ -58,6 +58,8 @@ SET(SRC_FILES
     ${SRC}/util/util_tscale.f90
     ${SRC}/util/util_t_from_scale.f90
     ${SRC}/util/util_push_regotemp.f90
+    ${SRC}/util/util_sort_unique.f90
+    ${SRC}/util/util_insertion_sort.f90
     ${SRC}/io/io_read_const.f90
     ${SRC}/io/io_get_token.f90
     ${SRC}/io/io_input.f90
@@ -144,6 +146,7 @@ SET(SRC_FILES
     ${SRC}/regolith/regolith_shock_damage_zone.f90
     ${SRC}/regolith/regolith_shock_damage.f90
     ${SRC}/regolith/regolith_interior.f90
+    ${SRC}/regolith/regolith_combine_temperatures.f90
     ${SRC}/porosity/porosity_form_interior.f90
     ${SRC}/realistic/realistic_perlin_noise.f90
     ${SRC}/realistic/realistic_crater_topography.f90

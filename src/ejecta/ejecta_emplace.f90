@@ -379,11 +379,11 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
             end if
       
       
-               if (user%doregotrack .and. ebh>1.0e-8_DP) then
-                  call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
-                  vmelt = vmelt + volm
-                  !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
-               end if
+            if (user%doregotrack .and. ebh>1.0e-8_DP) then
+               call regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,lrad,ebh,rm,vsq,volm)
+               vmelt = vmelt + volm
+               !write(74,*) erad, surf(xpi,ypi)%regolayer%regodata%meltfrac
+            end if
          end do
       end do
    end if

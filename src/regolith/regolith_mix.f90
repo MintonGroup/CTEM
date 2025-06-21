@@ -32,7 +32,8 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    type(regodatatype) :: newlayer
    !type(regolisttype),pointer :: poppedlist,poppedlist_top
    type(regodatatype),dimension(:),allocatable :: poppedarray
-   integer(I4B) :: i, j, N
+   integer(I4B) :: i, j, N, N2, NT, X
+
 
    !===============================================
    ! Add up all layers' info until a desired depth
@@ -55,6 +56,8 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    !poppedlist => poppedlist_top
    !do while(associated(poppedlist%next))
    N = size(poppedarray)
+   N2 = size(surfi%regolayer)
+   NT = 0
    do i = N,1,-1
       newlayer%thickness = newlayer%thickness + poppedarray(i)%thickness
       newlayer%comp      = newlayer%comp + poppedarray(i)%thickness * poppedarray(i)%comp       
@@ -62,7 +65,22 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
       newlayer%distvol(:) = newlayer%distvol(:) + poppedarray(i)%distvol(:)
       newlayer%ejm       = newlayer%ejm + poppedarray(i)%ejm
       newlayer%meltvolume = newlayer%meltvolume + poppedarray(i)%meltvolume
+      if (user%dothermal) then
+         X = size(poppedarray(i)%regotemp)
+         if (X > NT) then 
+            NT = X
+         end if
+      end if
    end do
+
+   if (user%dothermal) call regolith_combine_temperatures(newlayer,poppedarray,N)
+
+   ! allocate(newlayer%regotemp(NT))
+   ! allocate(newlayer%regotime(NT))
+   ! newlayer%regotemp(:) = -1.0_DP
+   ! newlayer%regotime(:) = -1.0_DP
+
+
 
    ! Get average values of composition and melt fraction
    newlayer%comp = newlayer%comp / newlayer%thickness 
@@ -80,6 +98,8 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    
    call util_push_array(surfi%regolayer, newlayer)
    !call util_destroy_list(poppedlist_top)
+
+   !deallocate(regotemps,regotimes)
 
 
    ! do i = N,1,-1

@@ -333,5 +333,15 @@ save
       real(DP),intent(in)         :: vmeltsheet
       end subroutine regolith_interior
    end interface
+
+   interface
+      subroutine regolith_combine_temperatures(newlayer,layers,N)
+      use module_globals
+      type(regodatatype),intent(inout) :: newlayer
+      type(regodatatype),dimension(:),allocatable,intent(in) :: layers
+      integer(I4B),intent(in) :: N
+      end subroutine regolith_combine_temperatures
+   end interface
+
   
 end module
