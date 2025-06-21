@@ -339,6 +339,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
          if (user%dothermal) then
+            if(allocated(prev)) deallocate(prev)
             allocate(prev,source=thermal(:,:,:)%temperature)
             open(51,file='therm0.dat',status='replace',form='unformatted')
             write(51) thermal(:,:,:)%temperature
