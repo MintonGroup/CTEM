@@ -242,16 +242,16 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
       if (user%dothermal) then !Do thermal diffusion from the last diffusion time until now
 
-         if ((domain%thermalcoverage / real(user%gridsize**2,kind=DP) > THERMALCOVERAGE) .or. icrater == ntotcrat) then
+         !if ((domain%thermalcoverage / real(user%gridsize**2,kind=DP) > THERMALCOVERAGE) .or. icrater == ntotcrat) then
             !calculate how much time has passed between thermal diffusion timesteps
-            time_since_diff = tstart - crater%timestampGa  
-            if (icrater .gt. 1) then 
-               call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
-               call thermal_link(user,crater,thermal,surf)
-               tstart = crater%timestampGa
-               domain%thermalcoverage = 0
-            end if
+         time_since_diff = tstart - crater%timestampGa  
+         if (icrater .gt. 1) then 
+            call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
+            call thermal_link(user,crater,thermal,surf)
+            tstart = crater%timestampGa
+            domain%thermalcoverage = 0
          end if
+         !end if
       end if
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
@@ -330,26 +330,26 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          call crater_averages(user,surf,crater)
 
          ! Add initial thermal distribution from impact
-         if (user%dothermal) then
-            open(50,file='therm00.dat',status='replace',form='unformatted')
-            write(50) thermal(:,:,:)%temperature
-            close(50)
-         end if
+         ! if (user%dothermal) then
+         !    open(50,file='therm00.dat',status='replace',form='unformatted')
+         !    write(50) thermal(:,:,:)%temperature
+         !    close(50)
+         ! end if
 
          ! Place crater onto the surface
          call crater_emplace(user,surf,crater,domain,ejbmass,incval,nmeltsheet)
          if (user%dothermal) then
             if(allocated(prev)) deallocate(prev)
             allocate(prev,source=thermal(:,:,:)%temperature)
-            open(51,file='therm0.dat',status='replace',form='unformatted')
-            write(51) thermal(:,:,:)%temperature
-            close(51)
+            ! open(51,file='therm0.dat',status='replace',form='unformatted')
+            ! write(51) thermal(:,:,:)%temperature
+            ! close(51)
             call thermal_dist(user,surf,thermal,crater)
             call thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
             ! !Debug
-            open(52,file='thermA.dat',status='replace',form='unformatted')
-            write(52) thermal(:,:,:)%temperature
-            close(52)
+            ! open(52,file='thermA.dat',status='replace',form='unformatted')
+            ! write(52) thermal(:,:,:)%temperature
+            ! close(52)
          end if
          if (abs(ejbmass) < 2*tiny(1.0_DP)) cycle
 
@@ -373,19 +373,19 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
 
          if (user%dothermal) then
-            open(57,file='thermB0.dat',status='replace',form='unformatted')
-            write(57) thermal(:,:,:)%temperature
-            close(57)
+            ! open(57,file='thermB0.dat',status='replace',form='unformatted')
+            ! write(57) thermal(:,:,:)%temperature
+            ! close(57)
             call thermal_depth_calculation(user,surf,crater,domain,thermal) 
-            open(58,file='thermB1.dat',status='replace',form='unformatted')
-            write(58) thermal(:,:,:)%temperature
-            close(58)
+            ! open(58,file='thermB1.dat',status='replace',form='unformatted')
+            ! write(58) thermal(:,:,:)%temperature
+            ! close(58)
             call thermal_warp(user,thermal,crater)
             call thermal_remove(user,thermal,crater,prev)
             ! !Debug
-            open(53,file='thermB.dat',status='replace',form='unformatted')
-            write(53) thermal(:,:,:)%temperature
-            close(53)
+            ! open(53,file='thermB.dat',status='replace',form='unformatted')
+            ! write(53) thermal(:,:,:)%temperature
+            ! close(53)
             deallocate(prev)
          end if
 
@@ -418,13 +418,13 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
 
          if (user%dothermal) then
             !Debug
-            open(54,file='thermC.dat',status='replace',form='unformatted')
-            write(54) thermal(:,:,:)%temperature
-            close(54)
+            ! open(54,file='thermC.dat',status='replace',form='unformatted')
+            ! write(54) thermal(:,:,:)%temperature
+            ! close(54)
             call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            open(56,file='thermD.dat',status='replace',form='unformatted')
-            write(56) thermal(:,:,:)%temperature
-            close(56)
+            ! open(56,file='thermD.dat',status='replace',form='unformatted')
+            ! write(56) thermal(:,:,:)%temperature
+            ! close(56)
             ! call thermal_depth_calculation(user,surf,crater,domain,thermal)
             ! open(59,file='thermE.dat',status='replace',form='unformatted')
             ! write(59) thermal(:,:,:)%temperature

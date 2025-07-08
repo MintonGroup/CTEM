@@ -54,7 +54,7 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
     end if
 
     !!!!TEST DEBUG ONLY!!!!!!
-    maxtime = 2
+    !maxtime = 2
     !!!!REMOVE THIS WHEN DONE!!!!!
 
     allocate(prev,source=thermal)
@@ -115,37 +115,39 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
             end do
         end do
 
-        if (icrater == 1) then
-            if (time == 1) then
-                open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
-                write(3) prev(:,:,:)%temperature
-                close(3)
-            end if
+        prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
-            prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+        ! if (icrater == 1) then
+        !     ! if (time == 1) then
+        !     !     open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
+        !     !     write(3) prev(:,:,:)%temperature
+        !     !     close(3)
+        !     ! end if
 
-            ! Write out the timestep to the "misc" folder, which should be created already in the Python
-            write(num,'(I0.5)') time
-            filename = 'misc/therm'//trim(num)//'.dat'
-            open(3,file=filename,status='replace',form='unformatted')
-            write(3) thermal(:,:,:)%temperature
-            close(3)
-        else
-            if (time == 1) then
-                open(3,file='test/therm00000.dat',status='replace',form='unformatted')
-                write(3) prev(:,:,:)%temperature
-                close(3)
-            end if
+        !     prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
-            prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+        !     ! Write out the timestep to the "misc" folder, which should be created already in the Python
+        !     ! write(num,'(I0.5)') time
+        !     ! filename = 'misc/therm'//trim(num)//'.dat'
+        !     ! open(3,file=filename,status='replace',form='unformatted')
+        !     ! write(3) thermal(:,:,:)%temperature
+        !     ! close(3)
+        ! else
+        !     ! if (time == 1) then
+        !     !     open(3,file='test/therm00000.dat',status='replace',form='unformatted')
+        !     !     write(3) prev(:,:,:)%temperature
+        !     !     close(3)
+        !     ! end if
 
-            ! Write out the timestep to the "misc" folder, which should be created already in the Python
-            write(num,'(I0.5)') time
-            filename = 'test/therm'//trim(num)//'.dat'
-            open(3,file=filename,status='replace',form='unformatted')
-            write(3) thermal(:,:,:)%temperature
-            close(3)
-        end if
+        !     prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+
+        !     ! Write out the timestep to the "misc" folder, which should be created already in the Python
+        !     ! write(num,'(I0.5)') time
+        !     ! filename = 'test/therm'//trim(num)//'.dat'
+        !     ! open(3,file=filename,status='replace',form='unformatted')
+        !     ! write(3) thermal(:,:,:)%temperature
+        !     ! close(3)
+        ! end if
 
         if (nchanged == 0) exit !every voxel has cooled to the background temperature
 

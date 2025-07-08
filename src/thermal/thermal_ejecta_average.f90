@@ -76,7 +76,7 @@ subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
     end do
 
     allocate(temps(n))
-    m = 0
+    m = 1
 
     temps(:) = 0.0_DP
 
@@ -108,12 +108,12 @@ subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
             nvox = int(depth/user%zpix)
 
             do k=1,nvox
-                m = m + 1
                 if (thermal(xpi,ypi,k)%temperature < 3327.0) then
                     temps(m) = thermal(xpi,ypi,k)%temperature
                 else
                     temps(m) = 0.0_DP
                 end if
+                m = m + 1
             end do
         end do
     end do
@@ -128,12 +128,12 @@ subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
 
     allocate(nonzero(nz))
 
-    m = 0
+    m = 1
 
     do i=1,n
         if (temps(i) > 0.0_DP) then
-            m = m + 1
             nonzero(m) = temps(i)
+            m = m + 1
         end if
     end do
 
