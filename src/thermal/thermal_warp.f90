@@ -31,7 +31,7 @@ subroutine thermal_warp(user,thermal,crater)
     type(cratertype),intent(in) :: crater
 
     ! Internal variables
-    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix, k1, k2
+    integer(I4B) :: i,j,k,inc,xpi,ypi, maxzpix,rpix,wpix, k1, k2, mz2
     real(DP) :: Rcp, trans_depth, maxdisp, r, uz, maxz, z, xp, yp,z_warp,zfrac, w1, w2
     real(kind=8), dimension(:),allocatable :: temp_accum, temp_count
 
@@ -73,7 +73,8 @@ subroutine thermal_warp(user,thermal,crater)
             r = sqrt((crater%xl-xp)**2 + (crater%yl-yp)**2)
 
             maxz = 1.25*trans_depth
-            maxzpix = maxz / user%zpix
+            mz2 = maxz / user%zpix
+            maxzpix = min(mz2,user%zgridsize)
 
             if (r <= Rcp) then
                 allocate(temp_accum(maxzpix))

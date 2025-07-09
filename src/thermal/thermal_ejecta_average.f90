@@ -70,7 +70,7 @@ subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
                 depth = tdepth
             end if
 
-            nvox = int(depth/user%zpix)
+            nvox = min(int(depth/user%zpix),user%zgridsize)
             n = n + nvox
         end do
     end do
@@ -105,7 +105,7 @@ subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
                 depth = tdepth
             end if
 
-            nvox = int(depth/user%zpix)
+            nvox = min(int(depth/user%zpix),user%zgridsize)
 
             do k=1,nvox
                 if (thermal(xpi,ypi,k)%temperature < 3327.0) then
