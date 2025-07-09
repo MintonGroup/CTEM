@@ -92,10 +92,10 @@ subroutine io_write_regotrack(user,surf,domain)
                NT = size(current(k)%regotemp)
                if(.not. allocated(regotemp)) allocate(regotemp(NT))
                if(.not. allocated(regotime)) allocate(regotime(NT))
-               do t = 1, NT
-                  write(FRT) current(k)%regotemp(:)
-                  write(FT) current(k)%regotime(:)
-               end do
+               !do t = 1, NT
+               write(FRT) current(k)%regotemp(:)
+               write(FT) current(k)%regotime(:)
+               !end do
             end if
          end do
          deallocate(current)
