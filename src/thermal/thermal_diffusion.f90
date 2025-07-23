@@ -50,7 +50,7 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
         ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
         maxtime = ts / delta_t
     else
-        maxtime = 1 !diffusion test for testflag is an arbitrary number of timesteps
+        maxtime = 10000 !diffusion test for testflag is an arbitrary number of timesteps
     end if
 
     !!!!TEST DEBUG ONLY!!!!!!
@@ -95,21 +95,25 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
                     end if
 
                     ! Actually do the diffusion, factoring in the boundary conditions in the z dimension
-                    if (k == 1) then
-                        term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + top) / (user%zpix**2))
-                    else if (k == user%zgridsize) then
-                        term3 = ((bottom - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
+                    if (thermal(x,y,z)%temperature .eq. 0.0_DP .and. thermal(x,y,z)%background .eq. 0.0_DP) then !pixel is part of the boundary
+                        continue
                     else
-                        term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
-                    end if
-                    term1 = ((prev(xplusone,y,z)%temperature - (2*prev(x,y,z)%temperature) + prev(xminusone,y,z)%temperature) / (user%pix**2))
-                    term2 = ((prev(x,yplusone,z)%temperature - (2*prev(x,y,z)%temperature) + prev(x,yminusone,z)%temperature) / (user%pix**2))
-                    thermal(x,y,z)%temperature = prev(x,y,z)%temperature + delta_t * kappa * (term1 + term2 + term3)
+                        if (k == 1) then
+                            term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + top) / (user%zpix**2))
+                        else if (k == user%zgridsize) then
+                            term3 = ((bottom - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
+                        else
+                            term3 = ((prev(x,y,z+1)%temperature - (2*prev(x,y,z)%temperature) + prev(x,y,z-1)%temperature) / (user%zpix**2))
+                        end if
+                        term1 = ((prev(xplusone,y,z)%temperature - (2*prev(x,y,z)%temperature) + prev(xminusone,y,z)%temperature) / (user%pix**2))
+                        term2 = ((prev(x,yplusone,z)%temperature - (2*prev(x,y,z)%temperature) + prev(x,yminusone,z)%temperature) / (user%pix**2))
+                        thermal(x,y,z)%temperature = prev(x,y,z)%temperature + delta_t * kappa * (term1 + term2 + term3)
 
-                    if (thermal(x,y,z)%temperature .le. (thermal(x,y,z)%background+1.0_DP))  then
-                        thermal(x,y,z)%temperature = thermal(x,y,z)%background
-                    else
-                        nchanged = nchanged+1
+                        if (thermal(x,y,z)%temperature .le. (thermal(x,y,z)%background+1.0_DP))  then
+                            thermal(x,y,z)%temperature = thermal(x,y,z)%background
+                        else
+                            nchanged = nchanged+1
+                        end if
                     end if
                 end do
             end do
@@ -118,35 +122,35 @@ subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
         prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
         ! if (icrater == 1) then
-        !     ! if (time == 1) then
-        !     !     open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
-        !     !     write(3) prev(:,:,:)%temperature
-        !     !     close(3)
-        !     ! end if
+        !     if (time == 1) then
+        !         open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
+        !         write(3) prev(:,:,:)%temperature
+        !         close(3)
+        !     end if
 
-        !     prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+        !     !prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
         !     ! Write out the timestep to the "misc" folder, which should be created already in the Python
-        !     ! write(num,'(I0.5)') time
-        !     ! filename = 'misc/therm'//trim(num)//'.dat'
-        !     ! open(3,file=filename,status='replace',form='unformatted')
-        !     ! write(3) thermal(:,:,:)%temperature
-        !     ! close(3)
+        !     write(num,'(I0.5)') time
+        !     filename = 'misc/therm'//trim(num)//'.dat'
+        !     open(3,file=filename,status='replace',form='unformatted')
+        !     write(3) thermal(:,:,:)%temperature
+        !     close(3)
         ! else
-        !     ! if (time == 1) then
-        !     !     open(3,file='test/therm00000.dat',status='replace',form='unformatted')
-        !     !     write(3) prev(:,:,:)%temperature
-        !     !     close(3)
-        !     ! end if
+        !     if (time == 1) then
+        !         open(3,file='test/therm00000.dat',status='replace',form='unformatted')
+        !         write(3) prev(:,:,:)%temperature
+        !         close(3)
+        !     end if
 
-        !     prev(:,:,:)%temperature = thermal(:,:,:)%temperature
+        !     !prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
         !     ! Write out the timestep to the "misc" folder, which should be created already in the Python
-        !     ! write(num,'(I0.5)') time
-        !     ! filename = 'test/therm'//trim(num)//'.dat'
-        !     ! open(3,file=filename,status='replace',form='unformatted')
-        !     ! write(3) thermal(:,:,:)%temperature
-        !     ! close(3)
+        !     write(num,'(I0.5)') time
+        !     filename = 'test/therm'//trim(num)//'.dat'
+        !     open(3,file=filename,status='replace',form='unformatted')
+        !     write(3) thermal(:,:,:)%temperature
+        !     close(3)
         ! end if
 
         if (nchanged == 0) exit !every voxel has cooled to the background temperature
