@@ -38,20 +38,46 @@ save
     end interface
 
     interface
-        subroutine thermal_diffusion(user,thermal,domain,difftime,icrater)
+        subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
+        type(cratertype),intent(in) :: crater
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(domaintype),intent(in) :: domain
+        type(surftype),dimension(:,:),intent(inout) :: surf
         real(DP), intent(in) :: difftime
         integer(I4B),intent(in) :: icrater
         end subroutine thermal_diffusion
     end interface
 
     interface
+        subroutine thermal_loss_calc(user,crater,thermal,surf)
+        use module_globals
+        implicit none
+        type(usertype),intent(in) :: user
+        type(cratertype),intent(in) :: crater
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        type(surftype),dimension(:,:),intent(inout) :: surf
+        end subroutine thermal_loss_calc
+    end interface
+
+    interface
+        subroutine thermal_loss_link(user,crater,thermal,surfi,losses)
+        use module_globals
+        implicit none
+        type(usertype),intent(in) :: user
+        type(cratertype),intent(in) :: crater
+        type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        type(surftype),dimension(:,:),intent(inout) :: surfi
+        real(DP),dimension(:,:,:),intent(in) :: losses
+        end subroutine thermal_loss_link
+    end interface
+
+    interface
         subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
         use module_globals
+        implicit none
         type(usertype),intent(in) :: user
         type(surftype),dimension(:,:),intent(in) :: surf
         type(cratertype),intent(in) :: crater
@@ -63,6 +89,7 @@ save
     interface
         subroutine thermal_ejecta_average(user,surf,crater,thermal,avgtemp)
         use module_globals
+        implicit none
         type(usertype),intent(in) :: user
         type(surftype),dimension(:,:),intent(in) :: surf
         type(cratertype),intent(in) :: crater
@@ -74,6 +101,7 @@ save
     interface
         subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
         use module_globals
+        implicit none
         type(usertype),intent(in) :: user
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(cratertype),intent(in) :: crater
@@ -86,6 +114,7 @@ save
     interface
         subroutine thermal_remove(user,thermal,crater,prev)
         use module_globals
+        implicit none
         type(usertype),intent(in) :: user
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(cratertype),intent(in) :: crater

@@ -1,11 +1,11 @@
 !**********************************************************************************************************************************
 !
-!  Unit Name   : thermal_diffusion
+!  Unit Name   : thermal_loss_calc
 !  Unit Type   : subroutine
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
-!  Description : Solves the 3D heat equation using the Finite Difference Method
+!  Description : Solves the 3D heat equation using the Finite Difference Method for timescales relevant to fractional loss, then calculates fractional loss where relevant
 !  
 !
 !  Input
@@ -13,59 +13,42 @@
 !
 !
 !  Output
-!    Arguments : right now diffusion steps are outputted for movies; at release time they should not be written.
+!    Arguments : 
 !           
 ! 
 !  Notes       : -Currently uses the whole grid
 !
 !**********************************************************************************************************************************
-subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater)
+subroutine thermal_loss_calc(user,crater,thermal,surf)
     use module_globals
-    use module_thermal, EXCEPT_THIS_ONE => thermal_diffusion
+    use module_thermal, EXCEPT_THIS_ONE => thermal_loss_calc
     implicit none
 
     ! Arguments
     type(usertype),intent(in) :: user
     type(cratertype),intent(in) :: crater
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
-    type(domaintype),intent(in) :: domain
     type(surftype),dimension(:,:),intent(inout) :: surf
-    real(DP),intent(in) :: difftime !in Ga
-    integer(I4B),intent(in) :: icrater !for testing purposes only
 
     ! Internal variables
-    real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3, ts
+    real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3, ts, f, t, dr2
     integer(I4B) :: i,j,k,x,y,z,time,maxtime,nchanged,xplusone,xminusone,yplusone,yminusone
-    type(thermaltype),dimension(:,:,:),allocatable :: prev !Temperature at previous timestep (to prevent "new" temperature values from being used in diffusion)
-
-    ! Test variables that will not be used in the actual release
-    character(5) :: num
-    character(19) :: filename
-
-    ! Executable code
-
-    kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
-    delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
-    write(*,*) "delta_t:", delta_t/(60*60*24*365), "yr."
-
-    if (user%testflag .eqv. .false. .or. domain%currentqmc .eqv. .true.) then
-        ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
-        maxtime = ts / delta_t
-    else
-        maxtime = 10000 !diffusion test for testflag is an arbitrary number of timesteps
-    end if
-
-    !!!!TEST DEBUG ONLY!!!!!!
-    !maxtime = 2
-    !!!!REMOVE THIS WHEN DONE!!!!!
+    type(thermaltype),dimension(:,:,:),allocatable :: initial, prev !Temperature at previous timestep (to prevent "new" temperature values from being used in diffusion)
+    real(DP),dimension(:,:,:),allocatable :: times, losses
 
     allocate(prev,source=thermal)
+    allocate(initial,source=thermal)
+    allocate(losses(user%gridsize,user%gridsize,user%zgridsize))
+    losses(:,:,:) = -1.0_DP
+    allocate(times(user%gridsize,user%gridsize,user%zgridsize))
+    times(:,:,:) = -1.0_DP
 
-    if(maxval(thermal(:,:,:)%temperature) > 500 .and. delta_t > 1e3) call thermal_loss_calc(user,crater,thermal,surf)
+    maxtime = 10000
+    delta_t = 1e3_DP
 
     top = 0.0_DP !Temperature at top of stack
     bottom = thermal(1,1,user%zgridsize)%background !For now make it equal to the geothermal gradient value at the bottom voxel
-    write(*,*) "Doing diffusion for", maxtime, "timesteps."
+    !write(*,*) "Doing diffusion for", maxtime, "timesteps."
 
     do time = 1,maxtime
         nchanged = 0
@@ -119,48 +102,35 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater)
                             nchanged = nchanged+1
                         end if
                     end if
+                    
+                    if (initial(x,y,z)%temperature > 500.0_DP) then
+                        if (losses(x,y,z) < 0.0_DP) then
+                            times(x,y,z) = time * delta_t
+                            if (thermal(x,y,z)%temperature < (10+thermal(x,y,z)%background) .or. thermal(x,y,z)%temperature < (2+prev(x,y,z)%temperature)) then
+                                t = times(x,y,z)
+                                dr2  = exp(-2.10_DP*(1e4_DP/thermal(x,y,z)%temperature)+8.05_DP)
+                                f = ((6.0_DP/PI**(1.5_DP))*(((PI)**2.0_DP)*dr2*t)**(0.5_DP))-(((3/(PI**2.0_DP))*((PI)**2.0_DP)*dr2*t))
+                                if (f < 0._DP .or. f > 0.85_DP) then
+                                    f = 1.0_DP-(6.0_DP/PI**2.0_DP)*exp((-(PI)**2.0_DP)*dr2*t)
+                                end if
+                                if (f > 0._DP .and. f < 1._DP) then
+                                    losses(x,y,z) = f
+                                end if
+                            end if
+                        end if
+                    end if
                 end do
             end do
         end do
 
         prev(:,:,:)%temperature = thermal(:,:,:)%temperature
 
-        ! if (icrater == 1) then
-        !     if (time == 1) then
-        !         open(3,file='misc/therm00000.dat',status='replace',form='unformatted')
-        !         write(3) prev(:,:,:)%temperature
-        !         close(3)
-        !     end if
-
-        !     !prev(:,:,:)%temperature = thermal(:,:,:)%temperature
-
-        !     ! Write out the timestep to the "misc" folder, which should be created already in the Python
-        !     write(num,'(I0.5)') time
-        !     filename = 'misc/therm'//trim(num)//'.dat'
-        !     open(3,file=filename,status='replace',form='unformatted')
-        !     write(3) thermal(:,:,:)%temperature
-        !     close(3)
-        ! else
-        !     if (time == 1) then
-        !         open(3,file='test/therm00000.dat',status='replace',form='unformatted')
-        !         write(3) prev(:,:,:)%temperature
-        !         close(3)
-        !     end if
-
-        !     !prev(:,:,:)%temperature = thermal(:,:,:)%temperature
-
-        !     ! Write out the timestep to the "misc" folder, which should be created already in the Python
-        !     write(num,'(I0.5)') time
-        !     filename = 'test/therm'//trim(num)//'.dat'
-        !     open(3,file=filename,status='replace',form='unformatted')
-        !     write(3) thermal(:,:,:)%temperature
-        !     close(3)
-        ! end if
-
         if (nchanged == 0) exit !every voxel has cooled to the background temperature
 
     end do
-    deallocate(prev)
+
+    call thermal_loss_link(user,crater,thermal,surf,losses)
+    deallocate(prev,initial,losses,times)
 
 return
-end subroutine thermal_diffusion
+end subroutine thermal_loss_calc

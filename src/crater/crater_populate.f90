@@ -246,8 +246,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             !calculate how much time has passed between thermal diffusion timesteps
          time_since_diff = tstart - crater%timestampGa  
          if (icrater .gt. 1) then 
-            call thermal_diffusion(user,thermal,domain,time_since_diff,domain%nqmc)
-            call thermal_link(user,crater,thermal,surf)
+            call thermal_diffusion(user,crater,thermal,surf,domain,time_since_diff,domain%nqmc)
+            !call thermal_link(user,crater,thermal,surf)
             tstart = crater%timestampGa
             domain%thermalcoverage = 0
          end if
@@ -430,10 +430,10 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! write(59) thermal(:,:,:)%temperature
             ! close(59)
             ! Add temperature to regolayer immediately after crater emplacement
-            call thermal_link(user,crater,thermal,surf)
+            !call thermal_link(user,crater,thermal,surf)
             if (user%testflag) then
-               call thermal_diffusion(user,thermal,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
-               call thermal_link(user,crater,thermal,surf)
+               call thermal_diffusion(user,crater,thermal,surf,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
+               !call thermal_link(user,crater,thermal,surf)
             end if
          end if
          
@@ -521,8 +521,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
       if (user%dothermal) then
          if (icrater == (ntotcrat)) then
             !time_since_diff = tstart - crater%timestampGa
-            call thermal_diffusion(user,thermal,domain,crater%timestampGa,domain%nqmc)
-            call thermal_link(user,crater,thermal,surf)
+            call thermal_diffusion(user,crater,thermal,surf,domain,crater%timestampGa,domain%nqmc)
+            !call thermal_link(user,crater,thermal,surf)
             tstart = 0.0_DP !should cause an error if diffusion is called again, which it shouldn't be
          end if
       end if

@@ -160,6 +160,8 @@ SET(SRC_FILES
     ${SRC}/thermal/thermal_interior.f90
     ${SRC}/thermal/thermal_warp.f90
     ${SRC}/thermal/thermal_link.f90
+    ${SRC}/thermal/thermal_loss_calc.f90
+    ${SRC}/thermal/thermal_loss_link.f90
     ${SRC}/main/ctem_driver.f90
 )
 
