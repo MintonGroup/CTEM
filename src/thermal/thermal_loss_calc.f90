@@ -45,6 +45,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
 
     maxtime = 10000
     delta_t = 1e3_DP
+    kappa = 1e-6_DP
 
     top = 0.0_DP !Temperature at top of stack
     bottom = thermal(1,1,user%zgridsize)%background !For now make it equal to the geothermal gradient value at the bottom voxel

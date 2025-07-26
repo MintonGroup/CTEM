@@ -35,17 +35,16 @@ subroutine util_push_regotemp(regotemp,regotime)
 
     ! Executable code
 
-    nold = size(regotemp(1,:))
-
     if (.not. allocated(regotemp)) then
-        write(*,*) "ERROR"
+        write(*,*) "ERROR: Regotemp not allocated!"
     end if
 
     if (.not. allocated(regotime)) then
-        write(*,*) "ERROR"
+        write(*,*) "ERROR: Regotime not allocated!"
     end if
 
     NC = size(regotemp(:,1))
+    nold = size(regotemp(1,:))
 
     allocate(newtemp(NC,nold+1))
     newtemp(:,1:nold) = regotemp(:,1:nold)
