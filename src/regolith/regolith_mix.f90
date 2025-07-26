@@ -95,8 +95,8 @@ subroutine regolith_mix(user,surfi,mixing_depth,domain)
    allocate(newlayer%regotemp(total_rows, NT))
    allocate(newlayer%regotime(total_rows, NT))
    allocate(newlayer%frac(total_rows))
-   newlayer%regotemp = -1.0_SP  ! Fill with NoData initially
-   newlayer%regotime = -1.0_SP
+   newlayer%regotemp = 0.0_SP  ! Fill with NoData initially
+   newlayer%regotime = 0.0_SP
 
    row_start = 1
    do i = 1, N
