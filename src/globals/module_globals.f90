@@ -81,8 +81,9 @@ type regodatatype
    real(DP) :: totvolume
    real(DP) :: ejm !ejected melt
    real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
-   real(SP),dimension(:),allocatable :: regotime
-   real(SP),dimension(:),allocatable :: regotemp
+   real(SP),dimension(:,:),allocatable :: regotime
+   real(SP),dimension(:,:),allocatable :: regotemp
+   real(SP),dimension(:),allocatable :: frac
 end type regodatatype
 
 type regolisttype
@@ -359,6 +360,7 @@ character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
 character(*),parameter :: THERMFILE  = 'surface_therm.dat'
 character(*),parameter :: REGOTEMPFILE = 'surface_regotemp.dat'
 character(*),parameter :: REGOTIMEFILE = 'surface_regotime.dat'
+character(*),parameter :: FRACFILE     = 'surface_frac.dat'
 !character(*),parameter :: GAFILE     = 'surface_ga.dat'
 
 ! Global variables 

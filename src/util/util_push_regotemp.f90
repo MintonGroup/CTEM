@@ -23,19 +23,19 @@ subroutine util_push_regotemp(regotemp,regotime)
     implicit none
 
     ! Arguments
-    real(SP),dimension(:),allocatable,intent(inout) :: regotemp
-    real(SP),dimension(:),allocatable,intent(inout) :: regotime
+    real(SP),dimension(:,:),allocatable,intent(inout) :: regotemp
+    real(SP),dimension(:,:),allocatable,intent(inout) :: regotime
 
 
     ! Internal variables
-    real(SP), dimension(:), allocatable :: newtemp
-    real(SP), dimension(:), allocatable :: newtime
+    real(SP), dimension(:,:), allocatable :: newtemp
+    real(SP), dimension(:,:), allocatable :: newtime
 
-    integer(I4B) :: nold
+    integer(I4B) :: nold, NC
 
     ! Executable code
 
-    nold = size(regotemp)
+    nold = size(regotemp(1,:))
 
     if (.not. allocated(regotemp)) then
         write(*,*) "ERROR"
@@ -45,14 +45,16 @@ subroutine util_push_regotemp(regotemp,regotime)
         write(*,*) "ERROR"
     end if
 
-    allocate(newtemp(nold+1))
-    newtemp(1:nold) = regotemp(1:nold)
-    newtemp(nold+1) = 0.0_SP ! This will be filled in the thermal_link subroutine
+    NC = size(regotemp(:,1))
+
+    allocate(newtemp(NC,nold+1))
+    newtemp(:,1:nold) = regotemp(:,1:nold)
+    newtemp(:,nold+1) = 0.0_SP ! This will be filled in the thermal_link subroutine
     call move_alloc(newtemp,regotemp)
 
 
-    allocate(newtime(nold+1))
-    newtime(1:nold) = regotime(1:nold)
-    newtime(nold+1) = 0.0_SP ! This will be filled in the thermal_link subroutine
+    allocate(newtime(NC,nold+1))
+    newtime(:,1:nold) = regotime(:,1:nold)
+    newtime(:,nold+1) = 0.0_SP ! This will be filled in the thermal_link subroutine
     call move_alloc(newtime, regotime)
 end subroutine util_push_regotemp

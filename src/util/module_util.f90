@@ -253,8 +253,8 @@ interface
    subroutine util_push_regotemp(regotemp,regotime)
    use module_globals
    implicit none
-   real(SP),dimension(:),allocatable,intent(inout) :: regotemp
-   real(SP),dimension(:),allocatable,intent(inout) :: regotime
+   real(SP),dimension(:,:),allocatable,intent(inout) :: regotemp
+   real(SP),dimension(:,:),allocatable,intent(inout) :: regotime
    end subroutine util_push_regotemp
 end interface
 

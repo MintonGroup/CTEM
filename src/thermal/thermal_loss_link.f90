@@ -49,8 +49,9 @@ subroutine thermal_loss_link(user,crater,thermal,surfi,losses)
                     current_therm_depth = thermal(i,j,m)%depth
                     if (losses(i,j,m) > 0.0_DP) then
                         call util_push_regotemp(surfi(i,j)%regolayer(k)%regotemp,surfi(i,j)%regolayer(k)%regotime)
-                        surfi(i,j)%regolayer(k)%regotemp(histsize) = losses(i,j,m)
-                        surfi(i,i)%regolayer(k)%regotime(histsize) = crater%timestamp
+                        histsize = size(surfi(i,j)%regolayer(k)%regotemp)
+                        surfi(i,j)%regolayer(k)%regotemp(:,histsize) = losses(i,j,m)
+                        surfi(i,i)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                     end if
                 end do
             end do
