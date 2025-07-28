@@ -63,13 +63,13 @@ save
     end interface
 
     interface
-        subroutine thermal_loss_link(user,crater,thermal,surfi,losses)
+        subroutine thermal_loss_link(user,crater,thermal,surf,losses)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
         type(cratertype),intent(in) :: crater
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
-        type(surftype),dimension(:,:),intent(inout) :: surfi
+        type(surftype),dimension(:,:),intent(inout) :: surf
         real(DP),dimension(:,:,:),intent(in) :: losses
         end subroutine thermal_loss_link
     end interface

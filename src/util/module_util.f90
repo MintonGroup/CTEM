@@ -250,11 +250,10 @@ interface
 end interface
 
 interface
-   subroutine util_push_regotemp(regotemp,regotime)
+   subroutine util_push_regotemp(regolayer)
    use module_globals
    implicit none
-   real(SP),dimension(:,:),allocatable,intent(inout) :: regotemp
-   real(SP),dimension(:,:),allocatable,intent(inout) :: regotime
+   type(regodatatype),intent(inout) :: regolayer
    end subroutine util_push_regotemp
 end interface
 
