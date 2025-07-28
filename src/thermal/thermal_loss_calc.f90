@@ -43,7 +43,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
     allocate(times(user%gridsize,user%gridsize,user%zgridsize))
     times(:,:,:) = -1.0_DP
 
-    maxtime = 10
+    maxtime = 10000
     delta_t = 1e3_DP
     kappa = 1e-6_DP
 
