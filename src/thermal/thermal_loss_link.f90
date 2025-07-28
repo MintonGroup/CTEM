@@ -37,8 +37,8 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
     real(DP) :: dplusone, dminusone, dpercent
 
     ! Executable code
-    do i=1,user%gridsize
-        do j=1,user%gridsize
+    do j=1,user%gridsize
+        do i=1,user%gridsize
             regosize = size(surf(i,j)%regolayer)
             cum_thickness = 0
             do k=1,regosize
@@ -51,7 +51,7 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
                         call util_push_regotemp(surf(i,j)%regolayer(k))
                         histsize = size(surf(i,j)%regolayer(k)%regotemp)
                         surf(i,j)%regolayer(k)%regotemp(:,histsize) = losses(i,j,m)
-                        surf(i,i)%regolayer(k)%regotime(:,histsize) = crater%timestamp
+                        surf(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                     end if
                 end do
             end do
