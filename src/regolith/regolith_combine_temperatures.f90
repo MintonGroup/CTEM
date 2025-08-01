@@ -29,7 +29,7 @@ subroutine regolith_combine_temperatures(newlayer,layers,N)
 
     ! Internal variables
     integer(I4B) :: i, j, k, total_times, count, NT, M
-    real(SP), dimension(:), allocatable :: temp_times(:)
+    real(SP), dimension(:), allocatable :: temp_times(:), max_temps(:)
     logical :: found
     real(SP), allocatable :: sum_temp(:), sum_weight(:)
     real(SP) :: t, weight
@@ -61,38 +61,31 @@ subroutine regolith_combine_temperatures(newlayer,layers,N)
     sum_temp = 0.0_SP
     sum_weight = 0.0_SP
 
-    ! Step 3: Populate accumulators
+   ! Step 3: Find maximum temperature for each time
+    allocate(max_temps(M))
+    max_temps = -HUGE(0.0_SP)
+
     do i = 1, N
-        weight = layers(i)%thickness
         do j = 1, M
             t = newlayer%regotime(j)
             found = .false.
-            NT = size(layers(i)%regotemp)
             do k = 1, NT
                 if (abs(layers(i)%regotime(k) - t) < 1.0e-6_SP) then
-                    sum_temp(j) = sum_temp(j) + weight * layers(i)%regotemp(k)
+                    max_temps(j) = max(max_temps(j), layers(i)%regotemp(k))
                     found = .true.
                     exit
                 end if
             end do
             if (.not. found) then
-                sum_temp(j) = sum_temp(j) + weight * 0.0_SP !Background won't work as it didn't link
+                max_temps(j) = 0.0_SP
             end if
-            sum_weight(j) = sum_weight(j) + weight
         end do
     end do
 
-    ! Step 4: Compute weighted average
-    allocate(newlayer%regotemp(M))
-    do j = 1, M
-        if (sum_weight(j) > 0.0_SP) then
-            newlayer%regotemp(j) = sum_temp(j) / sum_weight(j)
-        else
-            newlayer%regotemp(j) = -1.0_SP  ! or mark as NaN
-        end if
-    end do
+    newlayer%regotemp = max_temps
 
-    deallocate(sum_temp,sum_weight,temp_times)
+
+    deallocate(sum_temp,sum_weight,temp_times,max_temps)
 
     return
 
