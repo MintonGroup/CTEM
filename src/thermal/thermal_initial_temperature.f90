@@ -35,8 +35,8 @@ subroutine thermal_initial_temperature(user,crater,thermi,distance)
 
     ! Executable code
     V0 = 1.0_DP / user%trho_r
-    K0 = 35.7e9 !This is the value for granite. need adiabatic bulk modulus for anorthosite at zero pressure
-    n = 3.94 !This is the value for granite. need pressure derivative of bulk modulus for anorthosite
+    K0 = 47.5e9 !zero-pressure bulk modulus for anorthosite (data from McQueen, 1967, method from Kieffer and Simmonds, 1980) <--from HEATING (Abramov et al., 2013)
+    n = 3.49 !constant for anorthosite (data from McQueen, 1967, method from Kieffer and Simmonds, 1980)  <--from HEATING (Abramov et al., 2013)
 
     k = 0.625_DP*log10(crater%impvel/1000._DP) + 1.25 !Equation 3 in Abramov et al. (2013)
     A = 0.25_DP * user%prho * crater%impvel**2 * crater%sinimpang ! Equation 4 in Abramov et al. (2013)
@@ -49,7 +49,7 @@ subroutine thermal_initial_temperature(user,crater,thermi,distance)
     term2 = 1 - ((P * n / K0) + 1)**(-1/n)
     term3 = (K0 * V0 / (n * (1 - n))) * (1 - ((P * n / K0) + 1)**(1 - (1/n)))
     deltaEw = term1 * term2 + term3 !Equation 1 in Abramov et al. (2013)
-    deltaT = deltaEw / 837. !837 is the value for granite. need specific waste heat for anorthosite
+    deltaT = deltaEw / 820. !820 is value for anorthosite in HEATING (Jones, 2015)
 
     thermi%temperature = thermi%temperature + deltaT
 

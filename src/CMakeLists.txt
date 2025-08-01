@@ -136,7 +136,6 @@ SET(SRC_FILES
     ${SRC}/regolith/regolith_streamtube_head.f90
     ${SRC}/regolith/regolith_streamtube_lineseg.f90
     ${SRC}/regolith/regolith_subpixel_streamtube.f90
-    ${SRC}/regolith/regolith_transport.f90
     ${SRC}/regolith/regolith_traverse_streamtube.f90
     ${SRC}/regolith/regolith_subcrater_mix.f90
     ${SRC}/regolith/regolith_melt_glass.f90
@@ -146,7 +145,6 @@ SET(SRC_FILES
     ${SRC}/regolith/regolith_shock_damage_zone.f90
     ${SRC}/regolith/regolith_shock_damage.f90
     ${SRC}/regolith/regolith_interior.f90
-    ${SRC}/regolith/regolith_combine_temperatures.f90
     ${SRC}/porosity/porosity_form_interior.f90
     ${SRC}/realistic/realistic_perlin_noise.f90
     ${SRC}/realistic/realistic_crater_topography.f90
@@ -159,7 +157,6 @@ SET(SRC_FILES
     ${SRC}/thermal/thermal_remove.f90
     ${SRC}/thermal/thermal_interior.f90
     ${SRC}/thermal/thermal_warp.f90
-    ${SRC}/thermal/thermal_link.f90
     ${SRC}/thermal/thermal_loss_calc.f90
     ${SRC}/thermal/thermal_loss_link.f90
     ${SRC}/main/ctem_driver.f90
