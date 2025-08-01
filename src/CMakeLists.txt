@@ -145,6 +145,7 @@ SET(SRC_FILES
     ${SRC}/regolith/regolith_shock_damage_zone.f90
     ${SRC}/regolith/regolith_shock_damage.f90
     ${SRC}/regolith/regolith_interior.f90
+    ${SRC}/regolith/regolith_combine_temperatures.f90
     ${SRC}/porosity/porosity_form_interior.f90
     ${SRC}/realistic/realistic_perlin_noise.f90
     ${SRC}/realistic/realistic_crater_topography.f90

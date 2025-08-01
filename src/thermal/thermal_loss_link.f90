@@ -47,18 +47,18 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
                 average_depth = (cum_thickness + current_depth) / 2.0_DP
                 if (current_depth > (user%zgridsize * user%zpix)) then !depth is greater than the crust. Assume mantle material that we don't care about. 
                     call util_push_regotemp(surf(i,j)%regolayer(k))
-                    histsize = size(surf(i,j)%regolayer(k)%regotemp, 2)
-                    surf(i,j)%regolayer(k)%regotemp(:,histsize) = -1.0_DP ! =1 = code for "mantle"
-                    surf(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp  
+                    histsize = size(surf(i,j)%regolayer(k)%regotemp)
+                    surf(i,j)%regolayer(k)%regotemp(histsize) = -1.0_DP ! =1 = code for "mantle"
+                    surf(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp  
                 else
                     do m=1,user%zgridsize !Find temperature at the thermal location corresponding to this depth
                         current_therm_depth = thermal(i,j,m)%depth
                         if (current_therm_depth >= cum_thickness) then
                             if (losses(i,j,m) > 0.1_DP) then
                                 call util_push_regotemp(surf(i,j)%regolayer(k))
-                                histsize = size(surf(i,j)%regolayer(k)%regotemp, 2)
-                                surf(i,j)%regolayer(k)%regotemp(:,histsize) = losses(i,j,m)
-                                surf(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
+                                histsize = size(surf(i,j)%regolayer(k)%regotemp)
+                                surf(i,j)%regolayer(k)%regotemp(histsize) = losses(i,j,m)
+                                surf(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
                             end if
                         end if
                     end do

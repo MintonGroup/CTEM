@@ -5,7 +5,7 @@
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
-!  Description : Combines temperatures in the layer structure (associated with the thermal part of mixing)        
+!  Description : Finds maximum value of Ar loss in a single mixed layer      
 !
 !  Input
 !    Arguments : 
@@ -13,7 +13,7 @@
 !  Output
 !    Arguments :
 ! 
-!  Notes       :  
+!  Notes       :  This has been "retrofitted" from a routine used to combine temperatures. As such, some variable names won't make sense (e.g. "regotemp" is actually Ar loss)
 !
 !**********************************************************************************************************************************
 subroutine regolith_combine_temperatures(newlayer,layers,N)

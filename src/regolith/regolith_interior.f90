@@ -77,17 +77,13 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
                 newlayer%age(domain%age_counter) = newlayer%meltvolume
             end if
             if (.not. allocated(newlayer%regotemp)) then
-                allocate(newlayer%regotemp(1,1))
-                newlayer%regotemp(1,1) = 0.0_SP
+                allocate(newlayer%regotemp(1))
+                newlayer%regotemp(1) = 0.0_SP
              end if
              if (.not. allocated(newlayer%regotime)) then
-                allocate(newlayer%regotime(1,1))
-                newlayer%regotime(1,1) = 0.0_SP
+                allocate(newlayer%regotime(1))
+                newlayer%regotime(1) = 0.0_SP
              end if
-             if (.not. allocated(newlayer%frac)) then
-                allocate(newlayer%frac(1))
-                newlayer%frac = 1.0_SP
-            end if
             call util_push_array(surf(xpi,ypi)%regolayer,newlayer)
         end do
     end do
