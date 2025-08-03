@@ -42,6 +42,7 @@ subroutine util_push_regotemp(regolayer)
         regolayer%regotime(1) = 0.0_SP
     end if
 
+    nold = size(regolayer%regotemp)
 
     allocate(newtemp(nold+1))
     newtemp(1:nold) = regolayer%regotemp(1:nold)
