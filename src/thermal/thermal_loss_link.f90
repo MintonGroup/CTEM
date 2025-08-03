@@ -60,6 +60,7 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
                                 surf(i,j)%regolayer(k)%regotemp(histsize) = losses(i,j,m)
                                 surf(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
                             end if
+                            exit
                         end if
                     end do
                 end if
