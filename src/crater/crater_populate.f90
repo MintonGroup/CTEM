@@ -426,6 +426,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! write(56) thermal(:,:,:)%temperature
             ! close(56)
             ! call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            call thermal_loss_calc(user,crater,thermal,surf)
             ! open(59,file='thermE.dat',status='replace',form='unformatted')
             ! write(59) thermal(:,:,:)%temperature
             ! close(59)

@@ -43,7 +43,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
     allocate(times(user%gridsize,user%gridsize,user%zgridsize))
     times(:,:,:) = -1.0_DP
 
-    maxtime = 10000
+    maxtime = 10!000
     delta_t = 1e3_DP
     kappa = 1e-6_DP
 
@@ -52,6 +52,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
     !write(*,*) "Doing diffusion for", maxtime, "timesteps."
 
     do time = 1,maxtime
+        if (maxval(initial(:,:,:)%temperature) < 500) exit
         nchanged = 0
         do k = 1,user%zgridsize
             do j = 1,user%gridsize
