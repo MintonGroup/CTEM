@@ -54,12 +54,13 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
                     do m=1,user%zgridsize !Find temperature at the thermal location corresponding to this depth
                         current_therm_depth = thermal(i,j,m)%depth
                         if (current_therm_depth >= cum_thickness) then
-                            if (losses(i,j,m) > 0.1_DP) then
+                            if (losses(i,j,m) > 0.5_DP) then
                                 call util_push_regotemp(surf(i,j)%regolayer(k))
                                 histsize = size(surf(i,j)%regolayer(k)%regotemp, 2)
                                 surf(i,j)%regolayer(k)%regotemp(:,histsize) = losses(i,j,m)
                                 surf(i,j)%regolayer(k)%regotime(:,histsize) = crater%timestamp
                             end if
+                            exit
                         end if
                     end do
                 end if
