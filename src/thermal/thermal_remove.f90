@@ -90,6 +90,9 @@ subroutine thermal_remove(user,thermal,crater,prev)
                         else
                             thermal(xpi,ypi,k)%temperature = prev(xpi,ypi,k)
                         end if
+                    else
+                        thermal(xpi,ypi,k)%temperature = 0.0_DP
+                        thermal(xpi,ypi,k)%background = 0.0_DP
                     end if
                 end do
             end if
