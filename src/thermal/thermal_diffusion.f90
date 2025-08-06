@@ -52,7 +52,7 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater)
         ts = difftime * (60._DP * 60._DP * 24._DP * 365._DP * 1e9_DP)
         maxtime = ts / delta_t
     else
-        maxtime = 10000 !diffusion test for testflag is an arbitrary number of timesteps
+        maxtime = 2 !diffusion test for testflag is an arbitrary number of timesteps
     end if
 
     !!!TEST DEBUG ONLY!!!!!!
