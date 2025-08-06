@@ -110,12 +110,12 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
                             times(x,y,z) = time * delta_t
                             if (thermal(x,y,z)%temperature < (10+thermal(x,y,z)%background) .or. time == maxtime) then
                                 t = times(x,y,z)
-                                dr2  = exp(-2.10_DP*(1e4_DP/(thermal(x,y,z)%temperature+223))+8.05_DP) ! Assumes -50C for surface temperature; change to +273 for 0C
+                                dr2  = exp(-2.10_DP*(1e4_DP/(initial(x,y,z)%temperature+223))+8.05_DP) ! Assumes -50C for surface temperature; change to +273 for 0C
                                 f = ((6.0_DP/PI**(1.5_DP))*(((PI)**2.0_DP)*dr2*t)**(0.5_DP))-(((3/(PI**2.0_DP))*((PI)**2.0_DP)*dr2*t))
                                 if (f < 0._DP .or. f > 0.85_DP) then
                                     f = 1.0_DP-(6.0_DP/PI**2.0_DP)*exp((-(PI)**2.0_DP)*dr2*t)
                                 end if
-                                if (f > 0._DP .and. f < 1._DP) then
+                                if (f >= 0._DP .and. f <= 1._DP) then
                                     losses(x,y,z) = f
                                 end if
                             end if
