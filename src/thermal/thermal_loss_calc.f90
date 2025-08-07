@@ -40,7 +40,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses)
     allocate(prev,source=thermal)
     allocate(initial,source=thermal)
 
-    maxtime = 10!000
+    maxtime = 10000
     !maxtime = 50
     delta_t = 1e3_DP
     kappa = 1e-6_DP

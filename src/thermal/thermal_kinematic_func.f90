@@ -47,7 +47,7 @@ function thermal_kinematic_func(vesq,angle,lrad) result(loss)
     if (f >= 0._DP .and. f <= 1._DP) then
         loss = f
     else
-        loss = 0.0_DP
+        loss = -1.0_DP
     end if
 end function thermal_kinematic_func
 
