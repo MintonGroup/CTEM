@@ -18,7 +18,7 @@
 !  Notes       : The uppermost elevation must be the baseline for the array 
 !
 !**********************************************************************************************************************************
-subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
+subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty,lrad,times,losses,vesqs,angles)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_add_ejecta
     implicit none
@@ -30,9 +30,12 @@ subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
     real(DP),intent(in) :: avgtemp
     real(DP),intent(in) :: thickness
     integer(I4B) :: tx, ty
+    real(DP),intent(in) :: lrad
+    real(DP),dimension(:,:,:),intent(inout) :: times,losses
+    real(DP),dimension(:,:),intent(in) :: vesqs,angles
 
     ! Internal variables
-    real(DP) :: voxtemp, rem
+    real(DP) :: voxtemp, rem, t, distance
     integer(I4B) :: npix, i, k
 
     ! Executable code
@@ -49,13 +52,18 @@ subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
             k = k + 1
             if (thickness < user%zpix) then
                 thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + voxtemp
+                if (vesqs(tx,ty) > 0 .and. angles(tx,ty) > 0) then
+                    losses(tx,ty,i) = thermal_kinematic_func(vesqs(tx,ty),angles(tx,ty),lrad)
+                end if
                 exit
             else
                 if (k <= npix) then
                     if (k == npix) then
                         thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + ((avgtemp * (rem/user%zpix)) + (thermal(tx,ty,i)%temperature*((user%zpix-thickness)/(user%zpix))) / 2.0_DP)
+                        losses(tx,ty,i) = thermal_kinematic_func(vesqs(tx,ty),angles(tx,ty),lrad)
                     else
                         thermal(tx,ty,i)%temperature = thermal(tx,ty,i)%temperature + avgtemp
+                        losses(tx,ty,i) = thermal_kinematic_func(vesqs(tx,ty),angles(tx,ty),lrad)
                     end if
                 else
                     if (i+npix <= user%zgridsize) then

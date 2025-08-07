@@ -52,13 +52,15 @@ save
     end interface
 
     interface
-        subroutine thermal_loss_calc(user,crater,thermal,surf)
+        subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
         type(cratertype),intent(in) :: crater
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(surftype),dimension(:,:),intent(inout) :: surf
+        real(DP),intent(in) :: avgtemp
+        real(DP),dimension(:,:,:),intent(inout) :: times,losses
         end subroutine thermal_loss_calc
     end interface
 
@@ -75,7 +77,7 @@ save
     end interface
 
     interface
-        subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
+        subroutine thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
@@ -83,6 +85,7 @@ save
         type(cratertype),intent(in) :: crater
         type(domaintype),intent(inout) :: domain
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        real(DP),dimension(:,:,:),intent(inout) :: times,losses
         end subroutine thermal_depth_calculation
     end interface
 
@@ -99,7 +102,7 @@ save
     end interface
 
     interface
-        subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty)
+        subroutine thermal_add_ejecta(user,thermal,crater,avgtemp,thickness,tx,ty,lrad,times,losses,vesqs,angles)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
@@ -108,6 +111,9 @@ save
         real(DP),intent(in) :: avgtemp
         real(DP),intent(in) :: thickness
         integer(I4B) :: tx, ty
+        real(DP),intent(in) :: lrad
+        real(DP),dimension(:,:,:),intent(inout) :: times,losses
+        real(DP),dimension(:,:),intent(in) :: vesqs,angles
         end subroutine thermal_add_ejecta
     end interface
 
@@ -153,6 +159,15 @@ save
         type(thermaltype),dimension(:,:,:),intent(in) :: thermal
         type(surftype),dimension(:,:),intent(inout) :: surf
         end subroutine thermal_link
+    end interface
+
+    interface
+        function thermal_kinematic_func(vesq,angle,lrad) result(loss)
+        use module_globals
+        implicit none
+        real(DP),intent(in) :: vesq,angle,lrad
+        real(DP) :: loss
+        end function thermal_kinematic_func
     end interface
     
     ! interface

@@ -84,7 +84,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet, firstmc
    real(DP)                :: vmeltsheet, avgtemp
    real(DP)                :: time_since_diff, tstart
-   real(DP),dimension(:,:,:),allocatable :: prev
+   real(DP),dimension(:,:,:),allocatable :: prev, times, losses
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -100,6 +100,12 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution, maxageGa, oldGa, agemin 
    integer(I4B)          :: age_counter
+
+   allocate(losses(user%gridsize,user%gridsize,user%zgridsize))
+   losses(:,:,:) = -1.0_DP
+   allocate(times(user%gridsize,user%gridsize,user%zgridsize))
+   times(:,:,:) = -1.0_DP
+   
 
    nmixingtimes = 0
 
@@ -183,6 +189,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    oldpbarpos = 0
    firstmc = 0
    do while (icrater < ntotcrat)
+      times(:,:,:) = -1.0_DP
+      losses(:,:,:) = -1.0_DP
       makecrater = .true.
       domain%currentqmc = .false.
       timestamp_old = real(curyear + real(icrater,kind=DP) / real(ntotcrat,kind=DP) * user%interval,kind=DP)
@@ -367,7 +375,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
                call ejecta_table_define(user,crater,domain,ejb,ejtble)
             end if
             call ejecta_emplace(user,surf,crater,domain,thermal,ejb(1:ejtble),ejtble,ejbmass,&
-               ejecta_dem,nmeltsheet,vmeltsheet,avgtemp)
+               ejecta_dem,nmeltsheet,vmeltsheet,avgtemp,times,losses)
          else
             ejtble = 0
          end if
@@ -376,7 +384,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! open(57,file='thermB0.dat',status='replace',form='unformatted')
             ! write(57) thermal(:,:,:)%temperature
             ! close(57)
-            call thermal_depth_calculation(user,surf,crater,domain,thermal) 
+            call thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses) 
             ! open(58,file='thermB1.dat',status='replace',form='unformatted')
             ! write(58) thermal(:,:,:)%temperature
             ! close(58)
@@ -421,12 +429,12 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! open(54,file='thermC.dat',status='replace',form='unformatted')
             ! write(54) thermal(:,:,:)%temperature
             ! close(54)
-            call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            call thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses)
             ! open(56,file='thermD.dat',status='replace',form='unformatted')
             ! write(56) thermal(:,:,:)%temperature
             ! close(56)
             ! call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            call thermal_loss_calc(user,crater,thermal,surf)
+            call thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses)
             ! open(59,file='thermE.dat',status='replace',form='unformatted')
             ! write(59) thermal(:,:,:)%temperature
             ! close(59)
@@ -528,6 +536,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
          end if
       end if
    end do  ! end crater production loop 
+
+   deallocate(times,losses)
 
    if (ntrue > 0) then
 

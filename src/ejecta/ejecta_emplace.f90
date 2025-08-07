@@ -76,7 +76,7 @@
 !
 !**********************************************************************************************************************************
 subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,cumulative_elchange,&
-   nmeltsheet,vmeltsheet,avgtemp)
+   nmeltsheet,vmeltsheet,avgtemp,times,losses)
    use module_globals
    use module_util
    use module_io
@@ -99,6 +99,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
    integer(I4B),intent(in) :: nmeltsheet
    real(DP),intent(out) :: vmeltsheet
    real(DP),intent(in) :: avgtemp
+   real(DP),dimension(:,:,:),intent(inout) :: times,losses
 
    ! Internal variables
    real(DP) :: lrad,lradsq
@@ -114,6 +115,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
    real(DP) :: vmelt, totmelt, volm
    real(DP) :: frayreduction = 0.5_DP ! Factor to apply to reduce the relative thickness of the ray for each subsequent pattern
    integer(I4B), parameter :: Npatt = 8 ! Number of times to call ray pattern
+   real(DP),dimension(:,:),allocatable :: vesqs, angles
    
 
    ! Ray mixing model variables 
@@ -145,6 +147,12 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
    rray = user%ejecta_truncation 
 
    ! Executable code
+
+   allocate(vesqs(user%gridsize,user%gridsize))
+   allocate(angles(user%gridsize,user%gridsize))
+
+   vesqs(:,:) = 0.0_DP
+   angles(:,:) = 0.0_DP
 
    if (user%doregotrack) call regolith_melt_zone(user,crater,crater%imp,crater%impvel,rm,dm,totmelt)
    vmelt = 0.0_DP
@@ -288,6 +296,9 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
             ! Interpolate on the table to find the flat plane equivalent landing distance for this velocity
             frac = (vsq - exp(ejb(klo)%vesq)) / (exp(ejb(klo+1)%vesq) - exp(ejb(klo)%vesq))
             distance = exp(ejb(klo)%lrad) + frac * (exp(ejb(klo+1)%lrad) - exp(ejb(klo)%lrad))
+            vesqs(xpi,ypi) = ejb(klo)%vesq
+            angles(xpi,ypi) = ejb(klo)%angle
+
          end do 
 
          if (vsq < 0.0_DP) cycle
@@ -375,7 +386,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
 
             !This ebh is much closer to the McGetchin estimate than the one above. Using this value for thermal ejecta thickness
             if (user%dothermal .and. ebh > 1.0e-8_DP .and. avgtemp > 1.0e-8_DP) then
-               call thermal_add_ejecta(user,thermal(:,:,:),crater,avgtemp,ebh,xpi,ypi)
+               call thermal_add_ejecta(user,thermal(:,:,:),crater,avgtemp,ebh,xpi,ypi,lrad,times,losses,vesqs,angles)
             end if
       
       
@@ -479,7 +490,7 @@ subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,c
       deallocate(big_cumulative_elchange,big_indarray,big_kdiff,big_cel)
    end if
 
-   deallocate(indarray,diffdistribution,ejdistribution,kdiff,cel)
+   deallocate(indarray,diffdistribution,ejdistribution,kdiff,cel,angles,vesqs)
 
    return
 end subroutine ejecta_emplace

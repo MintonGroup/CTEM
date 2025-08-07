@@ -26,7 +26,7 @@ save
 
    interface
       subroutine ejecta_emplace(user,surf,crater,domain,thermal,ejb,ejtble,deltaMtot,cumulative_elchange,&
-         nmeltsheet,vmeltsheet,avgtemp)
+         nmeltsheet,vmeltsheet,avgtemp,times,losses)
       use module_globals
       implicit none
       type(usertype),intent(in) :: user
@@ -41,6 +41,7 @@ save
       integer(I4B),intent(in) :: nmeltsheet
       real(DP),intent(out) :: vmeltsheet
       real(DP),intent(in) :: avgtemp
+      real(DP),dimension(:,:,:),intent(inout) :: times,losses
       end subroutine ejecta_emplace
    end interface
 

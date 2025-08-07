@@ -19,7 +19,7 @@
 !  Notes       : -Currently uses the whole grid
 !
 !**********************************************************************************************************************************
-subroutine thermal_loss_calc(user,crater,thermal,surf)
+subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_loss_calc
     implicit none
@@ -29,21 +29,18 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
     type(cratertype),intent(in) :: crater
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
     type(surftype),dimension(:,:),intent(inout) :: surf
+    real(DP),intent(in) :: avgtemp
+    real(DP),dimension(:,:,:),intent(inout) :: times,losses
 
     ! Internal variables
     real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3, ts, f, t, dr2
     integer(I4B) :: i,j,k,x,y,z,time,maxtime,nchanged,xplusone,xminusone,yplusone,yminusone
     type(thermaltype),dimension(:,:,:),allocatable :: initial, prev !Temperature at previous timestep (to prevent "new" temperature values from being used in diffusion)
-    real(DP),dimension(:,:,:),allocatable :: times, losses
 
     allocate(prev,source=thermal)
     allocate(initial,source=thermal)
-    allocate(losses(user%gridsize,user%gridsize,user%zgridsize))
-    losses(:,:,:) = -1.0_DP
-    allocate(times(user%gridsize,user%gridsize,user%zgridsize))
-    times(:,:,:) = -1.0_DP
 
-    maxtime = 10000
+    maxtime = 10!000
     !maxtime = 50
     delta_t = 1e3_DP
     kappa = 1e-6_DP
@@ -53,7 +50,6 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
     !write(*,*) "Doing diffusion for", maxtime, "timesteps."
 
     do time = 1,maxtime
-        if (maxval(initial(:,:,:)%temperature) < 500) exit
         nchanged = 0
         do k = 1,user%zgridsize
             do j = 1,user%gridsize
@@ -61,6 +57,10 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
                     x = i
                     y = j
                     z = k
+                    if (initial(x,y,z)%temperature == avgtemp) then
+                        write(*,*) '1'
+                    end if
+                    if (maxval(initial(:,:,:)%temperature) < 500) cycle
                     ! Factor in the repeating boundary conditions for the x and y dimensions
                     if (i == 1) then
                         xminusone = user%gridsize
@@ -133,7 +133,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf)
     end do
 
     call thermal_loss_link(user,crater,thermal,surf,losses)
-    deallocate(prev,initial,losses,times)
+    deallocate(prev,initial)!,losses,times)
 
 return
 end subroutine thermal_loss_calc

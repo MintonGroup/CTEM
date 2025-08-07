@@ -18,7 +18,7 @@
 !  Notes       : The uppermost elevation must be the baseline for the array 
 !
 !**********************************************************************************************************************************
-subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
+subroutine thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_depth_calculation
     implicit none
@@ -29,12 +29,17 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
     type(cratertype),intent(in) :: crater
     type(domaintype),intent(inout) :: domain
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+    real(DP),dimension(:,:,:),intent(inout) :: times,losses
 
     ! Internal variables
     integer(I4B) :: i,j,k, dd, sd, md, n
     real(DP) :: hmax, h, surfdepth, old_hmax, depth_difference, max_depth_difference
     type(thermaltype),dimension(:,:,:),allocatable :: old
     integer(I4B),dimension(:,:),allocatable :: shift
+    real(DP),dimension(:,:,:),allocatable :: old_times, old_losses
+
+    allocate(old_times,source=times)
+    allocate(old_losses,source=losses)
 
     allocate(old,source=thermal(:,:,:))
     allocate(shift(user%gridsize,user%gridsize))
@@ -73,6 +78,8 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
                     thermal(i,j,k)%temperature = 0.0_DP
                     thermal(i,j,k)%background = 0.0_DP
                     thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
+                    losses(i,j,k) = -1.0_DP
+                    times(i,j,k) = -1.0_DP
                 else
                     ! shift the temperature values by the difference between the new and old depth
                     depth_difference = thermal(i,j,k)%depth - old(i,j,k)%depth
@@ -81,10 +88,16 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
                     if (dd == 0) exit
                     if (shift(i,j)+n .gt. user%zgridsize) then !temperature is equal to the background of the deepst voxel
                         thermal(i,j,k)%temperature = thermal(i,j,user%zgridsize)%background
+                        losses(i,j,k) = -1.0_DP
+                        times(i,j,k) = -1.0_DP
                     else if (shift(i,j)+n .lt. 1) then !? 
                         thermal(i,j,k)%temperature = 0.0_DP !adding new space (this should never be triggered because of the earlier check)
+                        losses(i,j,k) = -1.0_DP
+                        times(i,j,k) = -1.0_DP
                     else
                         thermal(i,j,k)%temperature = old(i,j,shift(i,j)+n)%temperature
+                        losses(i,j,k) = old_losses(i,j,shift(i,j)+n)
+                        times(i,j,k) = old_times(i,j,shift(i,j)+n)
                     end if
                     !thermal(i,j,k)%depth = thermal(i,j,k)%relative_depth - surfdepth
                     thermal(i,j,k)%background = (13._DP/1000._DP) * thermal(i,j,k)%depth !13K/km for now; must match init_thermal.f90 (this should probably be a global variable)
@@ -95,7 +108,7 @@ subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
     end do
 
     domain%hmax = hmax
-    deallocate(old,shift)
+    deallocate(old,shift,old_times,old_losses)
 
     return
 
