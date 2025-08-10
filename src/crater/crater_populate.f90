@@ -83,8 +83,8 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    real(DP)                :: hmax, hmin
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet, firstmc
    real(DP)                :: vmeltsheet, avgtemp
-   real(DP)                :: time_since_diff, tstart
-   real(DP),dimension(:,:,:),allocatable :: prev
+   real(DP)                :: time_since_diff, tstart, cratertime
+   real(DP),dimension(:,:,:),allocatable :: prev, times, losses
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
@@ -100,6 +100,12 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution, maxageGa, oldGa, agemin 
    integer(I4B)          :: age_counter
+
+   allocate(losses(user%gridsize,user%gridsize,user%zgridsize))
+   losses(:,:,:) = -1.0_DP
+   allocate(times(user%gridsize,user%gridsize,user%zgridsize))
+   times(:,:,:) = -1.0_DP
+   
 
    nmixingtimes = 0
 
@@ -173,6 +179,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
    domain%age_counter = 1
    oldGa = 0._DP
    tstart = maxageGa
+   cratertime = 0
 
    ! Reset coverage map
    domain%tallycoverage = 0
@@ -246,13 +253,15 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             !calculate how much time has passed between thermal diffusion timesteps
          time_since_diff = tstart - crater%timestampGa  
          if (icrater .gt. 1) then 
-            call thermal_diffusion(user,crater,thermal,surf,domain,time_since_diff,domain%nqmc)
+            call thermal_diffusion(user,crater,thermal,surf,domain,time_since_diff,domain%nqmc,cratertime,times,losses)
             !call thermal_link(user,crater,thermal,surf)
             tstart = crater%timestampGa
             domain%thermalcoverage = 0
          end if
          !end if
       end if
+      times(:,:,:) = -1.0_DP
+      losses(:,:,:) = -1.0_DP
       ! generate random crater
       call crater_generate(user,crater,domain,prod,production_list,vdist,surf)
       if (user%testflag) then
@@ -376,7 +385,7 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! open(57,file='thermB0.dat',status='replace',form='unformatted')
             ! write(57) thermal(:,:,:)%temperature
             ! close(57)
-            call thermal_depth_calculation(user,surf,crater,domain,thermal) 
+            call thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses) 
             ! open(58,file='thermB1.dat',status='replace',form='unformatted')
             ! write(58) thermal(:,:,:)%temperature
             ! close(58)
@@ -421,19 +430,19 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
             ! open(54,file='thermC.dat',status='replace',form='unformatted')
             ! write(54) thermal(:,:,:)%temperature
             ! close(54)
-            call thermal_depth_calculation(user,surf,crater,domain,thermal)
+            call thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses)
             ! open(56,file='thermD.dat',status='replace',form='unformatted')
             ! write(56) thermal(:,:,:)%temperature
             ! close(56)
             ! call thermal_depth_calculation(user,surf,crater,domain,thermal)
-            call thermal_loss_calc(user,crater,thermal,surf)
+            call thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,crater%timestamp)
             ! open(59,file='thermE.dat',status='replace',form='unformatted')
             ! write(59) thermal(:,:,:)%temperature
             ! close(59)
             ! Add temperature to regolayer immediately after crater emplacement
             !call thermal_link(user,crater,thermal,surf)
             if (user%testflag) then
-               call thermal_diffusion(user,crater,thermal,surf,domain,1.0_DP,domain%nqmc) !test diffusion with 3rd argument unused for test case
+               call thermal_diffusion(user,crater,thermal,surf,domain,1.0_DP,domain%nqmc,crater%timestamp,times,losses) !test diffusion with 3rd argument unused for test case
                !call thermal_link(user,crater,thermal,surf)
             end if
          end if
@@ -522,12 +531,15 @@ subroutine crater_populate(user,surf,crater,domain,thermal,prod,production_list,
       if (user%dothermal) then
          if (icrater == (ntotcrat)) then
             !time_since_diff = tstart - crater%timestampGa
-            call thermal_diffusion(user,crater,thermal,surf,domain,crater%timestampGa,domain%nqmc)
+            call thermal_diffusion(user,crater,thermal,surf,domain,crater%timestampGa,domain%nqmc,crater%timestamp,times,losses)
             !call thermal_link(user,crater,thermal,surf)
             tstart = 0.0_DP !should cause an error if diffusion is called again, which it shouldn't be
          end if
       end if
+      cratertime = crater%timestamp
    end do  ! end crater production loop 
+
+   deallocate(times,losses)
 
    if (ntrue > 0) then
 

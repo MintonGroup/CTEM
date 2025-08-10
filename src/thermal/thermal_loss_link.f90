@@ -19,7 +19,7 @@
 !  Notes       : THE ARRAY "REGOTEMP" IS ACTUALLY FRACTIONAL LOSS!!!!   
 !
 !**********************************************************************************************************************************
-subroutine thermal_loss_link(user,crater,thermal,surf,losses)
+subroutine thermal_loss_link(user,crater,thermal,surf,losses,timestamp)
     use module_globals
     use module_thermal, EXCEPT_THIS_ONE => thermal_loss_link
     implicit none
@@ -30,6 +30,7 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
     type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
     type(surftype),dimension(:,:),intent(inout) :: surf
     real(DP),dimension(:,:,:),intent(in) :: losses
+    real(DP),intent(in) :: timestamp
 
     integer(I4B) :: i,j,k,m,regosize,histsize
 
@@ -58,7 +59,7 @@ subroutine thermal_loss_link(user,crater,thermal,surf,losses)
                                 call util_push_regotemp(surf(i,j)%regolayer(k))
                                 histsize = size(surf(i,j)%regolayer(k)%regotemp)
                                 surf(i,j)%regolayer(k)%regotemp(histsize) = losses(i,j,m)
-                                surf(i,j)%regolayer(k)%regotime(histsize) = crater%timestamp
+                                surf(i,j)%regolayer(k)%regotime(histsize) = timestamp
                             end if
                             exit
                         end if

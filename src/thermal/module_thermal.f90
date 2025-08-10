@@ -38,7 +38,7 @@ save
     end interface
 
     interface
-        subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater)
+        subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,timestamp,times,losses)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
@@ -48,22 +48,27 @@ save
         type(surftype),dimension(:,:),intent(inout) :: surf
         real(DP), intent(in) :: difftime
         integer(I4B),intent(in) :: icrater
+        real(DP),intent(in) :: timestamp
+        real(DP),dimension(:,:,:),intent(inout) :: times,losses
         end subroutine thermal_diffusion
     end interface
 
     interface
-        subroutine thermal_loss_calc(user,crater,thermal,surf)
+        subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,timestamp)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
         type(cratertype),intent(in) :: crater
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(surftype),dimension(:,:),intent(inout) :: surf
+        real(DP),intent(in) :: avgtemp
+        real(DP),dimension(:,:,:),intent(inout) :: times,losses
+        real(DP),intent(in) :: timestamp
         end subroutine thermal_loss_calc
     end interface
 
     interface
-        subroutine thermal_loss_link(user,crater,thermal,surf,losses)
+        subroutine thermal_loss_link(user,crater,thermal,surf,losses,timestamp)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
@@ -71,11 +76,12 @@ save
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
         type(surftype),dimension(:,:),intent(inout) :: surf
         real(DP),dimension(:,:,:),intent(in) :: losses
+        real(DP),intent(in) :: timestamp
         end subroutine thermal_loss_link
     end interface
 
     interface
-        subroutine thermal_depth_calculation(user,surf,crater,domain,thermal)
+        subroutine thermal_depth_calculation(user,surf,crater,domain,thermal,times,losses)
         use module_globals
         implicit none
         type(usertype),intent(in) :: user
@@ -83,6 +89,7 @@ save
         type(cratertype),intent(in) :: crater
         type(domaintype),intent(inout) :: domain
         type(thermaltype),dimension(:,:,:),intent(inout) :: thermal
+        real(DP),dimension(:,:,:),intent(inout) :: times,losses
         end subroutine thermal_depth_calculation
     end interface
 
@@ -154,6 +161,15 @@ save
         type(surftype),dimension(:,:),intent(inout) :: surf
         end subroutine thermal_link
     end interface
+
+    ! interface
+    !     function thermal_kinematic_func(vesq,angle,lrad) result(loss)
+    !     use module_globals
+    !     implicit none
+    !     real(DP),intent(in) :: vesq,angle,lrad
+    !     real(DP) :: loss
+    !     end function thermal_kinematic_func
+    ! end interface
     
     ! interface
     !     subroutine thermal_uplift(user,thermal,crater,oldtemps)
