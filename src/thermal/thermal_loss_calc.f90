@@ -70,6 +70,11 @@ subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,times
 
     end do
 
+    !TEST (remove when done)
+    ! delta_t = 1e3_DP
+    ! diff = 0
+    !!!!!!!
+
     top = 0.0_DP !Temperature at top of stack
     bottom = thermal(1,1,user%zgridsize)%background !For now make it equal to the geothermal gradient value at the bottom voxel
     !write(*,*) "Doing diffusion for", maxtime, "timesteps."
@@ -85,7 +90,6 @@ subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,times
                         x = i
                         y = j
                         z = k
-                        if (maxval(initial(:,:,:)%temperature) < 500) cycle
                         ! Factor in the repeating boundary conditions for the x and y dimensions
                         if (i == 1) then
                             xminusone = user%gridsize
