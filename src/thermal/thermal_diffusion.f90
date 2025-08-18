@@ -36,7 +36,7 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
     real(DP),dimension(:,:,:),intent(inout) :: times,losses
 
     ! Internal variables
-    real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3, ts, dr2, f, t
+    real(DP) :: kappa, gamma, delta_t, top, bottom, term1, term2, term3, ts, dr2, f, t, mv
     integer(I4B) :: i,j,k,x,y,z,time,maxtime,nchanged,xplusone,xminusone,yplusone,yminusone
     type(thermaltype),dimension(:,:,:),allocatable :: initial, prev !Temperature at previous timestep (to prevent "new" temperature values from being used in diffusion)
 
@@ -63,6 +63,8 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
 
     allocate(prev,source=thermal)
     allocate(initial,source=thermal)
+
+    mv = maxval(thermal(:,:,:)%temperature)
 
     !if(maxval(thermal(:,:,:)%temperature) > 500 .and. delta_t > 1e3) call thermal_loss_calc(user,crater,thermal,surf)
 
@@ -130,7 +132,11 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
                                     dr2  = exp(-2.10_DP*(1e4_DP/(initial(x,y,z)%temperature+223))+8.05_DP) ! Assumes -50C for surface temperature; change to +273 for 0C
                                     f = ((6.0_DP/PI**(1.5_DP))*(((PI)**2.0_DP)*dr2*t)**(0.5_DP))-(((3/(PI**2.0_DP))*((PI)**2.0_DP)*dr2*t))
                                     if (f < 0._DP .or. f > 0.85_DP) then
-                                        f = 1.0_DP-(6.0_DP/PI**2.0_DP)*exp((-(PI)**2.0_DP)*dr2*t)
+                                        if ( -((PI)**2.0_DP)*dr2*t < log(tiny(1.0_DP)) ) then
+                                            f = 1.0_DP
+                                        else
+                                            f = 1.0_DP-(6.0_DP/PI**2.0_DP)*exp((-(PI)**2.0_DP)*dr2*t)
+                                        end if
                                     end if
                                     if (f >= 0._DP .and. f <= 1._DP) then
                                         losses(x,y,z) = f
@@ -180,6 +186,9 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
         if (nchanged == 0) exit !every voxel has cooled to the background temperature
 
     end do
+    mv = maxval(losses(:,:,:))
+
+    if (mv > 0.1) call thermal_loss_link(user,crater,thermal,surf,losses,timestamp)
     deallocate(prev,initial)
 
 return
