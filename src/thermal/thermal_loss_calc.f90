@@ -42,6 +42,8 @@ subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,times
     allocate(prev,source=thermal)
     allocate(initial,source=thermal)
 
+    open(87,file='calcloss.csv',form='formatted',status='unknown',action='write',position='append')
+
     maxtime = 10000
     !maxtime = 50
     delta_t = 1e3_DP
@@ -157,6 +159,7 @@ subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,times
                                     end if
                                     if (f >= 0.1_DP .and. f <= 1._DP) then
                                         losses(x,y,z) = f
+                                        if (f .lt. 1.0_DP) write(87,'(F12.6,1X,I0,1X,I0,1X,I0,1X,F12.6)') crater%timestamp, i, j, k, f
                                     end if
                                 end if
                             end if
@@ -176,6 +179,8 @@ subroutine thermal_loss_calc(user,crater,thermal,surf,avgtemp,times,losses,times
 
     if (mv > 0.1) call thermal_loss_link(user,crater,thermal,surf,losses,timestamp)
     deallocate(prev,initial)!,losses,times)
+
+    close(87)
 
 return
 end subroutine thermal_loss_calc

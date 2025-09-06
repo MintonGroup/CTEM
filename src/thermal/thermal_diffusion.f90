@@ -46,6 +46,8 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
 
     ! Executable code
 
+    open(78,file='diffloss.csv',form='formatted',status='unknown',action='write',position='append')
+
     kappa = 1e-6_DP !m/s^2; this is the value for "rock" (Jaeger et al., 1968; cited in Vaughn et al. 2013)
     delta_t = (1.0_DP/(2.0_DP * kappa)) * ((1.0_DP/(user%pix**2))+(1.0_DP/(user%pix**2))+(1.0_DP/(user%zpix**2)))**(-1.0_DP) !in s
     write(*,*) "delta_t:", delta_t/(60*60*24*365), "yr."
@@ -138,8 +140,9 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
                                             f = 1.0_DP-(6.0_DP/PI**2.0_DP)*exp((-(PI)**2.0_DP)*dr2*t)
                                         end if
                                     end if
-                                    if (f >= 0._DP .and. f <= 1._DP) then
+                                    if (f >= 0.1_DP .and. f <= 1._DP) then
                                         losses(x,y,z) = f
+                                        if (f .lt. 1.0_DP) write(78,'(F12.6,1X,I0,1X,I0,1X,I0,1X,F12.6)') crater%timestamp, i, j, k, f
                                     end if
                                 end if
                             end if
@@ -190,6 +193,8 @@ subroutine thermal_diffusion(user,crater,thermal,surf,domain,difftime,icrater,ti
 
     if (mv > 0.1) call thermal_loss_link(user,crater,thermal,surf,losses,timestamp)
     deallocate(prev,initial)
+
+    close(78)
 
 return
 end subroutine thermal_diffusion
