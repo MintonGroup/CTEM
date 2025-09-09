@@ -31,8 +31,8 @@ subroutine regolith_combine_temperatures(newlayer,layers,N)
     integer(I4B) :: i, j, k, total_times, count, NT, M
     real(SP), dimension(:), allocatable :: temp_times(:), max_temps(:)
     logical :: found
-    real(SP), allocatable :: sum_temp(:), sum_weight(:)
-    real(SP) :: t, weight
+    real(SP), allocatable :: sum_temp(:), sum_weight(:), avg_temps(:)
+    real(SP) :: t, weight, local_sum, local_cnt
 
     ! Executable code
 
@@ -61,25 +61,37 @@ subroutine regolith_combine_temperatures(newlayer,layers,N)
     sum_temp = 0.0_SP
     sum_weight = 0.0_SP
 
-   ! Step 3: Find maximum temperature for each time
-    allocate(max_temps(M))
-    max_temps = -HUGE(0.0_SP)
-
+! Step 3: Accumulate ALL matching entries (no exit), counting duplicates too
     do i = 1, N
+        NT = size(layers(i)%regotime)
         do j = 1, M
             t = newlayer%regotime(j)
-            found = .false.
+            local_sum = 0.0_SP
+            local_cnt = 0.0_SP
+    
             do k = 1, NT
                 if (abs(layers(i)%regotime(k) - t) < 1.0e-6_SP) then
-                    max_temps(j) = max(max_temps(j), layers(i)%regotemp(k))
-                    found = .true.
-                    exit
+                    local_sum = local_sum + layers(i)%regotemp(k)
+                    local_cnt = local_cnt + 1.0_SP
                 end if
             end do
-            if (.not. found) then
-                max_temps(j) = 0.0_SP
+    
+            ! Add ALL matches from this layer for time t
+            if (local_cnt > 0.0_SP) then
+                sum_temp(j)   = sum_temp(j)   + local_sum
+                sum_weight(j) = sum_weight(j) + local_cnt
             end if
         end do
+    end do
+    
+    ! Step 4: Compute averages
+    allocate(avg_temps(M))
+    do j = 1, M
+        if (sum_weight(j) > 0.0_SP) then
+            avg_temps(j) = sum_temp(j) / sum_weight(j)
+        else
+            avg_temps(j) = 0.0_SP 
+        end if
     end do
 
     newlayer%regotemp = max_temps
