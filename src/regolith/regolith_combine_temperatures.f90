@@ -94,10 +94,10 @@ subroutine regolith_combine_temperatures(newlayer,layers,N)
         end if
     end do
 
-    newlayer%regotemp = max_temps
+    newlayer%regotemp = avg_temps
 
 
-    deallocate(sum_temp,sum_weight,temp_times,max_temps)
+    deallocate(sum_temp,sum_weight,temp_times,avg_temps)
 
     return
 
