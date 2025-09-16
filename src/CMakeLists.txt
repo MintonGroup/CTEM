@@ -52,6 +52,7 @@ SET(SRC_FILES
     ${SRC}/util/util_traverse_pop_array.f90
     ${SRC}/util/util_destroy_list.f90
     ${SRC}/util/util_init_array.f90
+    ${SRC}/util/util_init_array_split.f90
     ${SRC}/util/util_perlin_noise.f90
     ${SRC}/util/util_random_number_normal.f90
     ${SRC}/util/util_npf_timefunc.f90
