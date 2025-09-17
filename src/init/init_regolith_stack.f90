@@ -37,11 +37,19 @@ subroutine init_regolith_stack(user,surf,domain)
    !=======================================
    ! Initialize the grid space  
    !=======================================
-   do yp=1,user%gridsize
-      do xp=1,user%gridsize
-         call util_init_array(user,surf(xp,yp)%regolayer,domain,initstat)
+   if (user%dothermal) then
+      do yp=1,user%gridsize
+         do xp=1,user%gridsize
+            call util_init_array_split(user,surf(xp,yp)%regolayer,domain,initstat)
+         end do
       end do
-   end do
+   else
+      do yp=1,user%gridsize
+         do xp=1,user%gridsize
+            call util_init_array(user,surf(xp,yp)%regolayer,domain,initstat)
+         end do
+      end do
+   end if
 
    return
 end subroutine init_regolith_stack

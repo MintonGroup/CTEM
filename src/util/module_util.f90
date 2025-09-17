@@ -122,6 +122,17 @@ interface
 end interface
 
 interface
+   pure subroutine util_init_array_split(user,regolayer,domain,initstat)
+   use module_globals
+   implicit none
+   type(usertype),intent(in) :: user
+   type(regodatatype),dimension(:),allocatable,intent(inout) :: regolayer
+   type(domaintype),intent(in)    :: domain
+   logical, intent(out)     :: initstat
+   end subroutine util_init_array_split
+end interface
+
+interface
    subroutine util_add_to_layer(user,surfi,crater)
    use module_globals
    implicit none
