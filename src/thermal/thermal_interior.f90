@@ -15,7 +15,7 @@
 !    Arguments :
 !           
 ! 
-!  Notes       : Assumes the melt sheet temperature is the coolest possible temperature of melt: 1087 C according to Abramov et al. (2013) 
+!  Notes       : 
 !
 !**********************************************************************************************************************************
 subroutine thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
@@ -33,10 +33,12 @@ subroutine thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
 
     !internal variables
     integer(I4B) xpi,ypi,i,j,k,inc,incsq,iradsq,npix
-    real(DP) :: lradsq, x_relative, y_relative, xp, yp, hmeltsheet
+    real(DP) :: lradsq, x_relative, y_relative, xp, yp, hmeltsheet, tmelt
     type(thermaltype),dimension(:,:,:),allocatable :: oldtemps
 
     !Executable code
+
+    tmelt = 0.5_DP * (user%tsolidus + user%tliquidus)
 
     allocate(oldtemps,source=thermal(:,:,:))
 
@@ -65,16 +67,16 @@ subroutine thermal_interior(user,thermal,crater,incval,nmeltsheet,vmeltsheet)
             do k=1,user%zgridsize
                 if (thermal(xpi,ypi,k)%depth > 0) then
                     if (hmeltsheet < user%zpix) then !Average melt sheet with the current temperature of the pixel
-                        thermal(xpi,ypi,k)%temperature = max((1087._DP * (hmeltsheet / user%zpix))&
-                         + (thermal(xpi,ypi,k)%temperature * ((user%zpix-hmeltsheet)/(user%zpix))),1087._DP)
+                        thermal(xpi,ypi,k)%temperature = max((tmelt * (hmeltsheet / user%zpix))&
+                         + (thermal(xpi,ypi,k)%temperature * ((user%zpix-hmeltsheet)/(user%zpix))),tmelt)
                         exit
                     else !Emplace melt sheet of a given thickness, then push the rest of the pixels down
                         if (thermal(xpi,ypi,k)%depth < hmeltsheet) then
-                            thermal(xpi,ypi,k)%temperature = 1087.
+                            thermal(xpi,ypi,k)%temperature = tmelt
                         else
                             if (thermal(xpi,ypi,k)%depth - hmeltsheet < user%zpix) then !final pixel of melt sheet
-                                thermal(xpi,ypi,k)%temperature = max((1087._DP * (thermal(xpi,ypi,k)%depth - hmeltsheet / user%zpix))&
-                                    + (thermal(xpi,ypi,k)%temperature * ((user%zpix-(thermal(xpi,ypi,k)%depth - hmeltsheet))/(user%zpix))),1087._DP)
+                                thermal(xpi,ypi,k)%temperature = max((tmelt * (thermal(xpi,ypi,k)%depth - hmeltsheet / user%zpix))&
+                                    + (thermal(xpi,ypi,k)%temperature * ((user%zpix-(thermal(xpi,ypi,k)%depth - hmeltsheet))/(user%zpix))),tmelt)
                             else !no melt sheet, but shift the distribution down
                                 thermal(xpi,ypi,k)%temperature = oldtemps(xpi,ypi,k-npix)%temperature
                             end if

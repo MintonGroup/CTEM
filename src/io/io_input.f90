@@ -98,6 +98,8 @@ subroutine io_input(infile,user)
    user%dothermal = .false.
    user%zpix = 1e3_DP
    user%zgridsize = 1
+   user%tsolidus = 985
+   user%tliquidus = 1393
    write(user%sfdfile,*) trim(adjustl(SFDFILE))
    
    open(unit=LUN,file=trim(adjustl(infile)),status="old",iostat=ierr)
@@ -229,6 +231,16 @@ subroutine io_input(infile,user)
             call io_get_token(line, ilength, ifirst, ilast, ierr)
             token = line(ifirst:ilast)
             read(token, *) user%deplimit
+         case ("TSOLIDUS")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%tsolidus
+         case ("TLIQUIDUS")
+            ifirst = ilast + 1
+            call io_get_token(line, ilength, ifirst, ilast, ierr)
+            token = line(ifirst:ilast)
+            read(token, *) user%tliquidus
          case ("ZPIX")
             ifirst = ilast + 1
             call io_get_token(line, ilength, ifirst, ilast, ierr)

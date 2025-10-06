@@ -222,6 +222,8 @@ type usertype
    real(DP)          :: deplimit  ! complex crater depth limit
    real(DP)          :: zpix      ! 3D pixel depth in the z-direction
    integer(I4B)      :: zgridsize ! number of pixels in the z-direction
+   real(DP)          :: tsolidus  ! solidus temperature (default is 985, which is 935 C in the current temperature system that treats 0 as -50C. This is the basalt solidus according to Lange et al., 1994)
+   real(DP)          :: tliquidus ! liquidus temperature (default is 1393, which is 1343 C in the current temperature system that treats 0 as -50C. This is the basalt solidus according to Lange et al., 1994)
 
    ! Seismic input variables 
    logical ::  doseismic   ! Set to T if you want to do the seismic shaking model

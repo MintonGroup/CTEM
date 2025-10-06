@@ -31,7 +31,7 @@ subroutine thermal_initial_temperature(user,crater,thermi,distance)
     real(DP),intent(in) :: distance
 
     ! Internal variables
-    real(DP) :: term1,term2,term3, deltaT, deltaEw, P, k, A, V0, K0, n
+    real(DP) :: term1,term2,term3, deltaT, deltaEw, P, k, A, V0, K0, n, C, Cprime, oldtemp
 
     ! Executable code
     V0 = 1.0_DP / user%trho_r
@@ -43,15 +43,22 @@ subroutine thermal_initial_temperature(user,crater,thermi,distance)
                                                                   !prho assumed to be the same as target density
                                                                   ! Collins et al. (2002) may have the derivation for this equation
                                                                   ! (in case I need to modify it for when densities are different)
+    C = 800. !820 is value for anorthosite in HEATING (Jones, 2015). 800 for bssalt
     P = A*(distance/crater%imprad)**(-k) !Equation 2 in Abramov et al. (2013)
 
     term1 = 0.5_DP * (P * V0 - (2 * K0 * V0) / n)
     term2 = 1 - ((P * n / K0) + 1)**(-1/n)
     term3 = (K0 * V0 / (n * (1 - n))) * (1 - ((P * n / K0) + 1)**(1 - (1/n)))
     deltaEw = term1 * term2 + term3 !Equation 1 in Abramov et al. (2013)
-    deltaT = deltaEw / 800. !820. !820 is value for anorthosite in HEATING (Jones, 2015)
-
+    deltaT = deltaEw / C 
+    oldtemp = thermi%temperature
     thermi%temperature = thermi%temperature + deltaT
+
+    if (thermi%temperature >= user%tsolidus .and. thermi%temperature <= user%tliquidus) then !Add latent heat calculation
+        Cprime = C + (330. / (user%tliquidus - user%tsolidus)) ! 330 is latent heat of fusion for basalt as used by Melosh 2000
+        deltaT = deltaEw / Cprime
+        thermi%temperature = oldtemp + deltaT
+    end if
 
     return
 end subroutine thermal_initial_temperature
