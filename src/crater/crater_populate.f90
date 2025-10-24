@@ -50,7 +50,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
 
    ! Internal variables
    real(DP)                :: cmin     ! Minimum crater diameter (m) blahblahblah
-   real(DP)                :: cmax     ! Maximum crater diameter (m)
+   real(DP)                :: cmax     ! Maximum crater diameter (m) this is another test
    real(DP)                :: imin     ! Minimum impactor diameter (m)
    real(DP)                :: imax     ! Maximum impactor diameter (m)
    real(DP)                :: rmin     ! Depth of smallest crater (m)
