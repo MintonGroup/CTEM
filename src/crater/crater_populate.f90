@@ -49,7 +49,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP),dimension(:,:), intent(in)             :: rclist !array of 'real' craters for quasiMC
 
    ! Internal variables
-   real(DP)                :: cmin     ! Minimum crater diameter (m)
+   real(DP)                :: cmin     ! Minimum crater diameter (m) blahblahblah
    real(DP)                :: cmax     ! Maximum crater diameter (m)
    real(DP)                :: imin     ! Minimum impactor diameter (m)
    real(DP)                :: imax     ! Maximum impactor diameter (m)
