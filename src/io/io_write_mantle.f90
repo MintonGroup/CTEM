@@ -22,7 +22,7 @@ subroutine io_write_mantle(user,surf,domain)
     implicit none
 
     ! Arguments
-
+!test
     type(usertype),intent(in)                :: user
     type(surftype),dimension(:,:),intent(in) :: surf
     type(domaintype),intent(in) :: domain
