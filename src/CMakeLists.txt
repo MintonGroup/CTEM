@@ -60,7 +60,6 @@ SET(SRC_FILES
     ${SRC}/io/io_get_token.f90
     ${SRC}/io/io_input.f90
     ${SRC}/io/io_read_craterlist.f90
-    ${SRC}/io/io_read_mantle.f90
     ${SRC}/io/io_read_prod.f90
     ${SRC}/io/io_read_regotrack.f90
     ${SRC}/io/io_read_vdist.f90
@@ -69,6 +68,7 @@ SET(SRC_FILES
     ${SRC}/io/io_write_dist.f90
     ${SRC}/io/io_write_tally.f90
     ${SRC}/io/io_write_surf.f90
+    ${SRC}/io/io_write_mantle.f90
     ${SRC}/io/io_write_const.f90
     ${SRC}/io/io_write_regotrack.f90
     ${SRC}/io/io_crater_profile.f90
