@@ -231,4 +231,14 @@ save
       end subroutine io_write_age_depth
   end interface
 
+  interface
+      subroutine io_read_mantle(user,surf,domain)
+      use module_globals
+      implicit none
+      type(usertype),intent(in)                :: user
+      type(surftype),dimension(:,:),intent(in) :: surf
+      type(domaintype),intent(in) :: domain
+      end subroutine io_read_mantle
+   end interface
+
 end module module_io

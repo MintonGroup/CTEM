@@ -60,6 +60,7 @@ SET(SRC_FILES
     ${SRC}/io/io_get_token.f90
     ${SRC}/io/io_input.f90
     ${SRC}/io/io_read_craterlist.f90
+    ${SRC}/io/io_read_mantle.f90
     ${SRC}/io/io_read_prod.f90
     ${SRC}/io/io_read_regotrack.f90
     ${SRC}/io/io_read_vdist.f90
