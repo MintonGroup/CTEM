@@ -70,6 +70,7 @@ type regodatatype
    real(DP) :: meltvolume
    real(DP) :: totvolume
    real(DP) :: ejm !ejected melt
+   real(DP) :: mejm ! ejected mantle material
    real(SP),dimension(:),allocatable :: distvol !its dimension should be the number of quasimc craters + 1
 end type regodatatype
    
@@ -338,6 +339,7 @@ character(*),parameter :: MASSFILE   = 'impactmass.dat'
 character(*),parameter :: RCFILE     = 'craterlist.dat'
 character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
 character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
+character(*),parameter :: MEJMFILE   = 'surface_mejm.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

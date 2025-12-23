@@ -90,6 +90,7 @@ class Simulation:
             'distfrac' : 'surface_distfrac.dat',
             'ejm' : 'surface_ejm.dat',
             'ejmf' : 'surface_ejmf.dat',
+            'mejm' : 'surface_mejm.dat',
             'meltdist' : 'surface_meltdist.dat',
             'meltfrac' : 'surface_meltfrac.dat'
         }
