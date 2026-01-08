@@ -333,5 +333,15 @@ save
       real(DP),intent(in)         :: vmeltsheet
       end subroutine regolith_interior
    end interface
+
+   interface 
+     subroutine regolith_emplace_preexi_data(user,surf,domain,mejm)
+     use module_globals
+     type(usertype),intent(in)             :: user
+     type(surftype),intent(out)        :: surf
+     type(domaintype),intent(in)           :: domain
+     real(DP),intent(out)                  :: mejm
+     end subroutine regolith_emplace_preexi_data
+   end interface
   
 end module

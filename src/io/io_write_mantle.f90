@@ -5,7 +5,7 @@
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
-!  Description : Reads in files for emplacing pre-existing mantle ejecta data
+!  Description : Reads in pre-existing mantle ejecta data to use in the regolith_emplace_mantle.f90 subroutine
 !
 !  Input
 !    Arguments : 
