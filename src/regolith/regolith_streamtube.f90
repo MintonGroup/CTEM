@@ -322,18 +322,19 @@ subroutine regolith_streamtube(user,surf,crater,domain,ejb,ejtble,xp,yp,xpi,ypi,
 
   !Apply a correction factor to ensure conservation of volume
 
-  factor = (newlayer%totvolume-newlayer%ejm) / totvol
+  factor = (newlayer%totvolume-newlayer%ejm-newlayer%mejm) / totvol
   meltinejecta = meltinejecta * factor
   distvol(:) = distvol(:) * factor
   !totvol = newlayer%totvolume - meltinejecta
-  if (newlayer%ejm > newlayer%totvolume) then !entire pixel is ejected melt
-      newlayer%ejm = newlayer%totvolume
-      newlayer%meltvolume = newlayer%ejm
+  if (newlayer%ejm + newlayer%mejm > newlayer%totvolume) then !entire pixel is ejected melt
+      newlayer%ejm = newlayer%totvolume - newlayer%mejm
+      newlayer%mejm = newlayer%totvolume - newlayer%ejm
+      newlayer%meltvolume = newlayer%ejm + newlayer%mejm
    else
-      if (meltinejecta + newlayer%ejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
-         meltinejecta = newlayer%totvolume - newlayer%ejm
+      if (meltinejecta + newlayer%ejm + newlayer%mejm > newlayer%totvolume) then !entire pixel is melt, but not all of it is ejected
+         meltinejecta = newlayer%totvolume - newlayer%ejm - newlayer%mejm
       end if
-      newlayer%meltvolume = meltinejecta + newlayer%ejm
+      newlayer%meltvolume = meltinejecta + newlayer%ejm + newlayer%mejm
       if (newlayer%meltvolume > newlayer%totvolume) then !edge case caused by floating point math could result in melt fraction slightly higher than 1
          factor = newlayer%totvolume / newlayer%meltvolume
          newlayer%meltvolume = newlayer%totvolume

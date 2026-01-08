@@ -66,6 +66,7 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
 
             !fill top layer with melt sheet of given thickness hmeltsheet
             newlayer%ejm = 0.0_DP
+            newlayer%mejm = 0.0_DP
             newlayer%thickness = hmeltsheet
             newlayer%meltvolume = vmeltsheet / nmeltsheet
             newlayer%totvolume = newlayer%meltvolume

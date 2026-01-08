@@ -43,6 +43,7 @@ pure subroutine util_init_array(user,regolayer,domain,initstat)
         regolayer(1)%comp = 0.0_DP
         regolayer(1)%age(:)   = 0.0_SP
         regolayer(1)%ejm = 0.0_DP
+        regolayer(1)%mejm = 0.0_DP
         allocate(regolayer(1)%distvol(1+domain%rcnum))
         regolayer(1)%distvol(:) = 0.0_SP
         regolayer(1)%meltvolume = 0.0_DP

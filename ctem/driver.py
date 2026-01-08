@@ -336,7 +336,7 @@ class Simulation:
                 self.redirect_outputs(['tcum'], 'dist')
             self.redirect_outputs(['impmass'], 'misc')
             if (self.user['saverego'].upper() == 'T') :
-               self.redirect_outputs(['stack','rego','age','melt','comp','ejm','meltdist'], 'rego')
+               self.redirect_outputs(['stack','rego','age','melt','comp','ejm','meltdist','mejm'], 'rego')
             
 
 

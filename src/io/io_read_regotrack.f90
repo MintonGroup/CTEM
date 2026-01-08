@@ -35,11 +35,12 @@ subroutine io_read_regotrack(user,surf,domain)
    integer(I4B), parameter :: FAGE = 13
    integer(I4B), parameter :: FMD = 14
    integer(I4B), parameter :: FEJM = 15
+   integer(I4B), parameter :: FMEJM = 16
    ! real(DP),dimension(user%gridsize,user%gridsize) :: regotop,melt,comp,ejm,ejmf,meltfrac
    ! real(SP),dimension(user%gridsize,user%gridsize,domain%rcnum) :: meltdist, distfrac
    ! real(SP),dimension(user%gridsize,user%gridsize,MAXAGEBINS) :: age
    integer(I4B),dimension(user%gridsize,user%gridsize) :: stacks_num 
-   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,thickness,meltvolume,agei
+   real(DP),dimension(:),allocatable :: regotop,melt,comp,ejm,mejm,thickness,meltvolume,agei
    real(SP),dimension(:,:),allocatable :: age, distvol
    !real(DP), dimension(:), allocatable :: regotopi,melti,compi,agei,dfi,ejmi,ejmfi,mdi,mfi
    type(regodatatype) :: newsurfi
@@ -85,6 +86,12 @@ subroutine io_read_regotrack(user,surf,domain)
        stop
    end if
 
+   open(FMEJM,file=MEJMFILE,status='old',form='unformatted',iostat=ioerr)
+   if (ioerr/=0) then 
+       write(*,*) 'Error! Cannot read file ',trim(adjustl(MEJMFILE))
+       stop
+   end if
+
    open(FMD,file=MDFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
        write(*,*) 'Error! Cannot read file ',trim(adjustl(MDFILE))
@@ -107,7 +114,7 @@ subroutine io_read_regotrack(user,surf,domain)
          !call util_init_list(surf(i,j)%regolayer,initstat)
          !call util_init_array(user,surf(i,j)%regolayer,domain,initstat)
          N = stacks_num(i,j)
-         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N))
+         allocate(meltvolume(N),thickness(N),comp(N),age(MAXAGEBINS,N),distvol(1+domain%rcnum,N),ejm(N),mejm(N))
 
          read(FMELT) meltvolume(:)
          read(FREGO) thickness(:)
@@ -115,6 +122,7 @@ subroutine io_read_regotrack(user,surf,domain)
          read(FAGE) age(:,:)
          read(FMD) distvol(:,:)
          read(FEJM) ejm(:)
+         read(FMEJM) mejm(:)
  
          allocate(agei(MAXAGEBINS * stacks_num(i,j)))
 
@@ -133,6 +141,7 @@ subroutine io_read_regotrack(user,surf,domain)
             newsurfi%comp = comp(k)
             newsurfi%meltvolume = meltvolume(k)
             newsurfi%ejm = ejm(k)
+            newsurfi%mejm = mejm(k)
             newsurfi%totvolume = thickness(k) * user%gridsize * user%gridsize
             do q=1,MAXAGEBINS
                newsurfi%age(q) = agei(MAXAGEBINS*k-(MAXAGEBINS-q))
@@ -143,7 +152,7 @@ subroutine io_read_regotrack(user,surf,domain)
             call util_push_array(surf(i,j)%regolayer,newsurfi)
          end do
 
-         deallocate(meltvolume,thickness,comp,age,distvol,ejm,agei)
+         deallocate(meltvolume,thickness,comp,age,distvol,ejm,mejm,agei)
 
       end do
    end do
@@ -153,5 +162,6 @@ subroutine io_read_regotrack(user,surf,domain)
    close(FAGE)
    close(FEJM)
    close(FMD)
+   close(FMEJM)
    return
 end subroutine io_read_regotrack

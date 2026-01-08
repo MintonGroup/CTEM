@@ -74,9 +74,11 @@ subroutine util_traverse_pop_array(user,regolayer,traverse_depth,poppedarray)
     poppedarray(1)%meltvolume = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%meltvolume
     poppedarray(1)%distvol(:) = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%distvol(:)
     poppedarray(1)%ejm = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%ejm
+    poppedarray(1)%mejm = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%mejm
     regolayer(maxi)%meltvolume = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%meltvolume
     regolayer(maxi)%distvol(:) = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%distvol(:)
     regolayer(maxi)%ejm = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%ejm
+    regolayer(maxi)%mejm = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%mejm
     poppedarray(1)%age(:) = (poppedarray(1)%thickness/oldregodata(1)%thickness) * oldregodata(1)%age(:)
     regolayer(maxi)%age(:) = (regolayer(maxi)%thickness/oldregodata(1)%thickness) * oldregodata(1)%age(:)
 
