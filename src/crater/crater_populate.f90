@@ -175,6 +175,10 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    pbarpos = 0
    call io_updatePbar("")
    oldpbarpos = 0
+
+   ! If needed, place the pre-existing data at the start of the simulation
+   !call regolith_emplace_preexi_data(user,surf,domain,mejm)
+
    do while (icrater < ntotcrat)
       makecrater = .true.
       domain%currentqmc = .false.

@@ -5,7 +5,7 @@
 !  Project     : CTEM
 !  Language    : Fortran 2003
 !
-!  Description : Reads in pre-existing mantle ejecta data to use in the regolith_emplace_mantle.f90 subroutine
+!  Description : Reads in pre-existing mantle ejecta data to use in the regolith_emplace_preexi_data.f90 subroutine
 !
 !  Input
 !    Arguments : 
@@ -29,8 +29,8 @@ subroutine io_write_mantle(user,surf,domain)
 
     ! Internals
 
-    character(len=*), parameter :: infile  = "SPA_ejecta_thickness_angle30dimp260vimp13.txt"
-    character(len=*), parameter :: outdat = "mantle_ejecta.dat"
+    character(len=*), parameter :: datainfile  = PREEXIDATAINFILE ! If applicable, change the "datainfile" variable
+    character(len=*), parameter :: outdat = 'output_mantle.dat'   ! in module_globals.f90(.in) to your file's name
 
     real(8), parameter :: blank = 0.0d0
     !real(8), parameter :: xmin = -2000.0d0, xmax = 2000.0d0
@@ -43,9 +43,9 @@ subroutine io_write_mantle(user,surf,domain)
 
     ! Executable code
 
-    open(newunit=iu_in, file=infile, status="old", action="read", iostat=ios)
+    open(newunit=iu_in, file=datainfile, status="old", action="read", iostat=ios)
     if (ios /= 0) then
-      write(*,*) "Error: cannot open ", infile
+      write(*,*) "Error: cannot open ", datainfile
       stop 1
     end if
 
