@@ -341,6 +341,7 @@ character(*),parameter :: MDFILE     = 'surface_meltdist.dat'
 character(*),parameter :: EJMFILE    = 'surface_ejm.dat'
 character(*),parameter :: MEJMFILE   = 'surface_mejm.dat'
 character(*),parameter :: PREEXIDATAINFILE = 'SPA_ejecta_thickness_angle30dimp260vimp13.in'
+character(*),parameter :: MODIFDATAINFILE = 'modified_preexi_data.dat'
 
 ! Global variables 
 integer(I4B),parameter :: PBCLIM = 1             ! periodic boundary condition limit

@@ -29,8 +29,8 @@ subroutine io_write_mantle(user,surf,domain)
 
     ! Internals
 
-    character(len=*), parameter :: datainfile  = PREEXIDATAINFILE ! If applicable, change the "datainfile" variable
-    character(len=*), parameter :: outdat = 'output_mantle.dat'   ! in module_globals.f90(.in) to your file's name
+    character(len=*), parameter :: datainfile  = PREEXIDATAINFILE ! If applicable, change the "PREEXIDATAINFILE" variable
+    character(len=*), parameter :: outdat = MODIFDATAINFILE   ! in module_globals.f90(.in) to your file's name
 
     real(8), parameter :: blank = 0.0d0
     !real(8), parameter :: xmin = -2000.0d0, xmax = 2000.0d0
