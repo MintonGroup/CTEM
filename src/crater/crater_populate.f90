@@ -81,6 +81,7 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(DP)                :: hmax, hmin
    integer(I4B)            :: nmixingtimes, incval, nmeltsheet
    real(DP)                :: vmeltsheet
+   !real(DP),allocatable                :: mejm
 
    ! ejecta blanket array
    type(ejbtype),dimension(EJBTABSIZE) :: ejb       ! Ejecta blanket lookup table
