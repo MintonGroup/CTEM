@@ -335,12 +335,12 @@ save
    end interface
 
    interface 
-     subroutine regolith_emplace_preexi_data(user,surf,domain,mejm)
+     subroutine regolith_emplace_preexi_data(user,surf,domain,rego)
      use module_globals
      type(usertype),intent(in)             :: user
-     type(surftype),intent(out)        :: surf
+     type(surftype),intent(inout)        :: surf
      type(domaintype),intent(in)           :: domain
-     real(DP),intent(out)                  :: mejm
+     type(regodatatype),intent(inout)      :: rego
      end subroutine regolith_emplace_preexi_data
    end interface
   
