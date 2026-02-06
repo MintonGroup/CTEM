@@ -95,10 +95,9 @@ subroutine crater_populate(user,surf,crater,domain,prod,production_list,vdist,nt
    real(SP),dimension(60)                            :: agetot
    type(regolisttype),pointer                        :: current => null()
    real(DP)              :: age_resolution, maxageGa, oldGa, agemin 
-   integer(I4B)          :: age_counter, testvar3
+   integer(I4B)          :: age_counter
 
    nmixingtimes = 0
-   testvar3 = 7.0
 
    if (user%testflag) then
       write(*,*) "Generating a test crater"
