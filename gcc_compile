@@ -1,0 +1,106 @@
+#!/bin/zsh -l
+# Builds MintonGroup projects, including Swiftest, CTEM, and Cratermaker, on the Purdue RCAC cluster system 
+# The default build type is Release. Pass other build types as a string argument. This script is called by specialized scripts
+# for each project, which only need the BUILD_TYPE argument
+# 
+# Example:
+# Calling the mintonbuild script on the Bell cluster with the Debug build type, like this
+# $ mintonbuild "Debug"
+
+set -a
+BUILD_TYPE=${1:-"Release"}
+# Set the OMP_NUM_THREADS variable to be the number of CPUS if this is a compute node, or 1 if this is a frontend or login node
+if { hostname | grep -E 'fe|login'; } >/dev/null 2>&1; then
+    OMP_NUM_THREADS=1
+else
+    OMP_NUM_THREADS=$(squeue -u $(whoami) | grep $SLURM_JOB_ID | awk -F' ' '{print $9}')
+fi
+
+MACHINE_NAME=$(uname -n | awk -F. '{ 
+    if ($2 == "negishi" || $2 == "bell") 
+        print $2; 
+    else {
+        split($1, a, "-"); 
+        if (length(a) > 1) 
+            print a[1]; 
+        else 
+            print "Unknown"; 
+    }
+}')
+
+# case "${FC}" in
+#   *"gfortran"*) FCNAME="gfortran" ;;
+#   *"/usr/bin/gfortran"*) FCNAME="gfortran" ;;
+#   *"mpif"*) FCNAME="gfortran" ;;
+#   *"ifort"*) FCNAME="ifort" ;;
+#   *"mpii"*) FCNAME="ifx" ;;
+#   *"ifx"*) FCNAME="ifx" ;;
+#   *) echo "Can't identify Fortran compiler." ;;
+# esac
+
+FCNAME="gfortran"
+FC="/usr/bin/gfortran"
+
+# Only do the following if statement if MACHINE_CODE_VALUE is not currently set
+if [[ -z "$MACHINE_CODE_VALUE" ]]; then
+    if [[ $MACHINE_NAME == "negishi" ]]; then
+        if [[ $FCNAME == "gfortran" ]]; then
+            MACHINE_CODE_VALUE="native"
+        else
+            MACHINE_CODE_VALUE="SSE2"
+        fi
+    else
+        MACHINE_CODE_VALUE="Host"
+    fi
+fi
+
+GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
+GIT_COMMAND_EXIT_CODE=$?
+
+if [ -z "$GIT_ROOT_DIR" ]; then
+    echo "Error: Not inside a Git repository. Please navigate to a Git repository and try again."
+    exit 1
+fi
+
+# Extract the name of the repository by getting the basename of the git root directory
+PROJECT_NAME=$(basename "$GIT_ROOT_DIR")
+
+# Check if the repository name is 'swiftest' and the script is run from the git root directory
+# if [[ "$PWD" == "$GIT_ROOT_DIR" ]]; then
+#     echo "Building ${PROJECT_NAME}...."
+# else
+#     echo "Error: This script must be run from the root directory of the ${PROJECT_NAME} git repository."
+#     exit 1
+# fi
+USE_SIMD="${USE_SIMD:-ON}"
+USE_OPENMP="${USE_OPENMP:-ON}"
+USE_COARRAY="${USE_COARRAY:-OFF}"
+PIPARGS=(
+  --config-settings=build-dir=build
+  --config-settings=cmake.build-type=${BUILD_TYPE}
+  --config-settings=cmake.args=-DUSE_SIMD=${USE_SIMD}
+  --config-settings=cmake.args=-DUSE_OPENMP=${USE_OPENMP}
+  --config-settings=cmake.args=-DUSE_COARRAY=${USE_COARRAY}
+  --config-settings=cmake.args=-DCMAKE_Fortran_COMPILER=${FC}
+  --config-settings=cmake.args=-DMACHINE_CODE_VALUE=${MACHINE_CODE_VALUE}
+  --config-settings=install.strip=false
+)
+
+cmake -P distclean.cmake
+pip uninstall ${PROJECT_NAME} -y
+echo "Building ${PROJECT_NAME} with ${BUILD_TYPE} build type and the following arguments:\n${PIPARGS}"
+if [[ $BUILD_TYPE == "Release" ]]; then
+    pip install "${PIPARGS[@]}" -v .
+else
+    pip install "${PIPARGS[@]}" -ve . 
+    if [[ $PROJECT_NAME == "CTEM" ]]; then
+        PROJECT_NAME_LOWER=$(echo $PROJECT_NAME | tr '[:upper:]' '[:lower:]') 
+        cd ${PROJECT_NAME_LOWER}
+        rm ${PROJECT_NAME}
+        ln -s  ../build/src/${PROJECT_NAME} .
+    else
+        cd ${PROJECT_NAME_LOWER}
+        rm ${PROJECT_NAME}
+        ln -s  ../build/bin/${PROJECT_NAME} .
+    fi
+fi
