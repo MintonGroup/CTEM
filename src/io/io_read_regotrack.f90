@@ -67,11 +67,11 @@ subroutine io_read_regotrack(user,surf,domain)
        stop
    end if
 
-   open(FCOMP,file=COMPFILE,status='old',form='unformatted',iostat=ioerr)
-   if (ioerr/=0) then
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(COMPFILE))
-       stop
-   end if 
+   ! open(FCOMP,file=COMPFILE,status='old',form='unformatted',iostat=ioerr)
+   ! if (ioerr/=0) then
+   !     write(*,*) 'Error! Cannot read file ',trim(adjustl(COMPFILE))
+   !     stop
+   ! end if 
 
    open(FMELT,file=MELTFILE,status='old',form='unformatted',iostat=ioerr)
    if (ioerr/=0) then 
@@ -85,18 +85,18 @@ subroutine io_read_regotrack(user,surf,domain)
        stop
    end if
 
-   open(FMD,file=MDFILE,status='old',form='unformatted',iostat=ioerr)
-   if (ioerr/=0) then 
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(MDFILE))
-       stop
-   end if  
+   ! open(FMD,file=MDFILE,status='old',form='unformatted',iostat=ioerr)
+   ! if (ioerr/=0) then 
+   !     write(*,*) 'Error! Cannot read file ',trim(adjustl(MDFILE))
+   !     stop
+   ! end if  
 
 
-   open(FAGE,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
-   if (ioerr/=0) then
-       write(*,*) 'Error! Cannot read file ',trim(adjustl(AGEFILE))
-       stop
-   end if
+   ! open(FAGE,file=AGEFILE,status='old',form='unformatted',iostat=ioerr)
+   ! if (ioerr/=0) then
+   !     write(*,*) 'Error! Cannot read file ',trim(adjustl(AGEFILE))
+   !     stop
+   ! end if
 
    ! Start pushing regolith thickness and melt fraction of each layer
    allocate(newsurfi%distvol(1+domain%rcnum))
@@ -111,10 +111,15 @@ subroutine io_read_regotrack(user,surf,domain)
 
          read(FMELT) meltvolume(:)
          read(FREGO) thickness(:)
-         read(FCOMP) comp(:)
-         read(FAGE) age(:,:)
-         read(FMD) distvol(:,:)
+         !read(FCOMP) comp(:)
+         !read(FAGE) age(:,:)
+         !read(FMD) distvol(:,:)
          read(FEJM) ejm(:)
+
+         ! Temporary
+         comp(:) = 0.0_DP
+         age(:,:) = 0.0_DP
+         distvol(:,:) = 0.0_DP
  
          allocate(agei(MAXAGEBINS * stacks_num(i,j)))
 
@@ -130,7 +135,7 @@ subroutine io_read_regotrack(user,surf,domain)
          !do k=max(stacks_num(i,j),1),1,-1
          do k=1,max(stacks_num(i,j),1),1
             newsurfi%thickness = thickness(k)
-            newsurfi%comp = comp(k)
+            !newsurfi%comp = comp(k)
             newsurfi%meltvolume = meltvolume(k)
             newsurfi%ejm = ejm(k)
             newsurfi%totvolume = thickness(k) * user%gridsize * user%gridsize
@@ -149,9 +154,9 @@ subroutine io_read_regotrack(user,surf,domain)
    end do
    close(FMELT)
    close(FREGO)
-   close(FCOMP)
-   close(FAGE)
+   ! close(FCOMP)
+   ! close(FAGE)
    close(FEJM)
-   close(FMD)
+   !close(FMD)
    return
 end subroutine io_read_regotrack

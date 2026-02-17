@@ -2,7 +2,7 @@
 
 
 ! Testing input. These are used to perform non-Monte Carlo tests.
-testflag     T                                 ! Set to T to create a single crater with user-defined impactor properties
+testflag     F                                 ! Set to T to create a single crater with user-defined impactor properties
 testimp      15000.0       ! Diameter of test impactor (m)
 testvel      18.3e3                            ! Velocity of test crater (m/s)
 testang      90.0                              ! Impact angle of test crater (deg) - Default 90.0
@@ -10,8 +10,8 @@ testxoffset  0.0                             ! x-axis offset of crater center fr
 testyoffset  0.0                            ! y-axis offset of crater center from grid center (m) - Default 0.0
 tallyonly    F                                 ! Tally the craters without generating any craters
 testtally    F   
-quasimc      F                                 ! MC run constrained by non-MC 'real' craters given in a list
-realcraterlist    craterlist.in                ! list of 'real' craters for Quasi-MC runs
+quasimc      T                                 ! MC run constrained by non-MC 'real' craters given in a list
+realcraterlist    test.in                ! list of 'real' craters for Quasi-MC runs
 
 
 

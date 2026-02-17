@@ -50,9 +50,9 @@ subroutine io_write_regotrack(user,surf,domain)
    ! Executable code
    open(FMELT,file=MELTFILE,status='replace',form='unformatted')
    open(FREGO,file=REGOFILE,status='replace',form='unformatted')
-   open(FCOMP,file=COMPFILE,status='replace',form='unformatted')
-   open(FAGE,file=AGEFILE,status='replace',form='unformatted')
-   open(FMD,file=MDFILE,status='replace',form='unformatted')
+   !open(FCOMP,file=COMPFILE,status='replace',form='unformatted')
+   !open(FAGE,file=AGEFILE,status='replace',form='unformatted')
+   !open(FMD,file=MDFILE,status='replace',form='unformatted')
    open(FEJM,file=EJMFILE,status='replace',form='unformatted')
 
    ! First pass to get stack numbers
@@ -76,27 +76,27 @@ subroutine io_write_regotrack(user,surf,domain)
          do k=1,N
             meltvolume(k) = current(k)%meltvolume
             thickness(k) = current(k)%thickness
-            comp(k) = current(k)%comp
-            age(:,k) = current(k)%age(:)
+            ! comp(k) = current(k)%comp
+            ! age(:,k) = current(k)%age(:)
             !write(*,*) i, j
-            distvol(:,k) = current(k)%distvol(:)
+            !distvol(:,k) = current(k)%distvol(:)
             ejm(k) = current(k)%ejm
          end do
          deallocate(current)
          write(FMELT) meltvolume(:)
          write(FREGO) thickness(:)
-         write(FCOMP) comp(:)
-         write(FAGE) age(:,:)
-         write(FMD) distvol(:,:)
+         ! write(FCOMP) comp(:)
+         ! write(FAGE) age(:,:)
+         ! write(FMD) distvol(:,:)
          write(FEJM) ejm(:)
          deallocate(meltvolume,thickness,comp,age,distvol,ejm)
       end do 
    end do
    close(FMELT)
    close(FREGO)
-   close(FCOMP)
-   close(FAGE)
-   close(FMD)
+   ! close(FCOMP)
+   ! close(FAGE)
+   ! close(FMD)
    close(FEJM)
 
    recsize = storage_size(itmp) * user%gridsize * user%gridsize / 8
