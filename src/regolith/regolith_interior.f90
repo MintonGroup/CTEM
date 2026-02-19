@@ -64,11 +64,14 @@ subroutine regolith_interior(user,surf,crater,domain,incval,nmeltsheet,vmeltshee
             call util_traverse_pop_array(user,surf(xpi,ypi)%regolayer,surf(xpi,ypi)%abselc,poppedarray)
             deallocate(poppedarray)
 
-            !fill top layer with melt sheet of given thickness hmeltsheet
+            !fill top layer with a breccia lens for megaregolith that is a proportion of crater size (upper limit based on Richardson and Abramov 2020) <--NOTE: Melt sheet has been turned off on this branch and replaced with breccia lens.
             newlayer%ejm = 0.0_DP
-            newlayer%thickness = hmeltsheet
-            newlayer%meltvolume = vmeltsheet / nmeltsheet
-            newlayer%totvolume = newlayer%meltvolume
+            newlayer%thickness = 0.684 * crater%floordepth !same for all craters since this is an upper limit
+            newlayer%meltvolume = 0.0_DP !Turn off melt sheet and consider the breccia lens non-melt (mega)regolith
+            newlayer%totvolume = newlayer%thickness * (user%pix*user%pix)
+            !newlayer%thickness = hmeltsheet
+            ! newlayer%meltvolume = vmeltsheet / nmeltsheet
+            ! newlayer%totvolume = newlayer%meltvolume
             newlayer%distvol(:) = 0.0_SP
             if(domain%currentqmc) then
                 newlayer%distvol(domain%nqmc) = newlayer%meltvolume
